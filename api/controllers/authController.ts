@@ -32,6 +32,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
             _id: user._id,
             name: user.name,
             email: user.email,
+            avatar: user.avatar,
             role: user.role,
             token: generateToken(user._id),
         }
@@ -57,6 +58,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
             _id: user._id,
             name: user.name,
             email: user.email,
+            avatar: user.avatar,
             role: user.role,
             token: generateToken(user._id),
         }
