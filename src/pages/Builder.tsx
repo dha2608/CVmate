@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { useResumeStore } from '@/store/resumeStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 const Builder = () => {
   const { currentResume, updatePersonalInfo, updateField } = useResumeStore();
   const [activeTab, setActiveTab] = useState('personal');
+  const navigate = useNavigate();
 
   const handleSave = async () => {
     // TODO: Implement save logic to backend
@@ -20,11 +23,16 @@ const Builder = () => {
     <div className="flex h-screen bg-gray-100 overflow-hidden">
       {/* Editor Side */}
       <div className="w-1/2 flex flex-col border-r border-gray-200 bg-white">
-        <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-white z-10">
-          <h2 className="text-2xl font-bold text-secondary">CV Builder</h2>
+        <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-white z-10">
+          <div className="flex items-center gap-3">
+             <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} className="rounded-full hover:bg-gray-100">
+                <ArrowLeft size={20} />
+             </Button>
+             <h2 className="text-xl font-bold text-secondary">CV Builder</h2>
+          </div>
           <div className="space-x-2">
-             <Button variant="outline" onClick={handleSave}>Save</Button>
-             <Button onClick={handleDownload}>Download PDF</Button>
+             <Button variant="outline" size="sm" onClick={handleSave}>Save Draft</Button>
+             <Button size="sm" onClick={handleDownload}>Download PDF</Button>
           </div>
         </div>
         

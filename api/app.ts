@@ -17,6 +17,9 @@ import resumeRoutes from './routes/resume.js'
 import interviewRoutes from './routes/interview.js'
 import postRoutes from './routes/posts.js'
 import articleRoutes from './routes/articles.js'
+import jobRoutes from './routes/jobs.js'
+import messageRoutes from './routes/messages.js'
+import notificationRoutes from './routes/notifications.js'
 
 // for esm mode
 const __filename = fileURLToPath(import.meta.url)
@@ -42,6 +45,9 @@ app.use('/api/resumes', resumeRoutes)
 app.use('/api/interviews', interviewRoutes)
 app.use('/api/posts', postRoutes)
 app.use('/api/articles', articleRoutes)
+app.use('/api/jobs', jobRoutes)
+app.use('/api/messages', messageRoutes)
+app.use('/api/notifications', notificationRoutes)
 
 /**
  * health

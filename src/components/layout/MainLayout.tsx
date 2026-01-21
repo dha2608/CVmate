@@ -56,9 +56,9 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
               <NavItem icon={<Home size={22} />} label="Home" active={isActive('/dashboard')} onClick={() => navigate('/dashboard')} />
               <NavItem icon={<Users size={22} />} label="Community" active={isActive('/community')} onClick={() => navigate('/community')} />
               <NavItem icon={<FileText size={22} />} label="Blog" active={isActive('/blog')} onClick={() => navigate('/blog')} />
-              <NavItem icon={<Briefcase size={22} />} label="Jobs" active={false} />
-              <NavItem icon={<MessageSquare size={22} />} label="Messaging" active={false} />
-              <NavItem icon={<Bell size={22} />} label="Notifications" active={false} />
+              <NavItem icon={<Briefcase size={22} />} label="Jobs" active={isActive('/jobs')} onClick={() => navigate('/jobs')} />
+              <NavItem icon={<MessageSquare size={22} />} label="Messaging" active={isActive('/messaging')} onClick={() => navigate('/messaging')} />
+              <NavItem icon={<Bell size={22} />} label="Notifications" active={isActive('/notifications')} onClick={() => navigate('/notifications')} />
               
               <li className="flex flex-col items-center justify-center cursor-pointer border-l pl-6 ml-2 h-full">
                 <div className="flex flex-col items-center group relative">

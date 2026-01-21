@@ -7,6 +7,9 @@ import Builder from "@/pages/Builder";
 import Interview from "@/pages/Interview";
 import Community from "@/pages/Community";
 import Blog from "@/pages/Blog";
+import Jobs from "@/pages/Jobs";
+import Messaging from "@/pages/Messaging";
+import Notifications from "@/pages/Notifications";
 
 export default function App() {
   return (
@@ -20,6 +23,9 @@ export default function App() {
         <Route path="/interview" element={<Interview />} />
         <Route path="/community" element={<Community />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/messaging" element={<Messaging />} />
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
