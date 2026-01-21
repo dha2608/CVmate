@@ -15,6 +15,8 @@ import connectDB from './config/db.js'
 import authRoutes from './routes/auth.js'
 import resumeRoutes from './routes/resume.js'
 import interviewRoutes from './routes/interview.js'
+import postRoutes from './routes/posts.js'
+import articleRoutes from './routes/articles.js'
 
 // for esm mode
 const __filename = fileURLToPath(import.meta.url)
@@ -38,6 +40,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use('/api/auth', authRoutes)
 app.use('/api/resumes', resumeRoutes)
 app.use('/api/interviews', interviewRoutes)
+app.use('/api/posts', postRoutes)
+app.use('/api/articles', articleRoutes)
 
 /**
  * health

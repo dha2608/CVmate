@@ -5,6 +5,8 @@ import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
 import Builder from "@/pages/Builder";
 import Interview from "@/pages/Interview";
+import Community from "@/pages/Community";
+import Blog from "@/pages/Blog";
 
 export default function App() {
   return (
@@ -16,6 +18,8 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/builder" element={<Builder />} />
         <Route path="/interview" element={<Interview />} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/blog" element={<Blog />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
