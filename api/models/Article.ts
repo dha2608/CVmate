@@ -1,9 +1,21 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-const articleSchema = new mongoose.Schema({
+export interface IArticle extends Document {
+  title: string;
+  content: string;
+  category: 'Tips CV' | 'Interview Hack' | 'Market News';
+  summary?: string;
+  author: mongoose.Types.ObjectId;
+  image?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const articleSchema = new Schema<IArticle>({
   title: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   content: {
     type: String,
@@ -15,11 +27,13 @@ const articleSchema = new mongoose.Schema({
     default: 'Tips CV'
   },
   summary: {
-    type: String
+    type: String,
+    trim: true
   },
   author: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   image: {
     type: String
@@ -28,4 +42,7 @@ const articleSchema = new mongoose.Schema({
   timestamps: true
 });
 
-export default mongoose.model('Article', articleSchema);
+articleSchema.index({ title: 'text', content: 'text' });
+articleSchema.index({ category: 1 });
+
+export default mongoose.model<IArticle>('Article', articleSchema);
