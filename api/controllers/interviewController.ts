@@ -1,35 +1,14 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import OpenAI from 'openai';
-import { Document, Types } from 'mongoose';
-import Interview from '../models/Interview.js';
+import Interview, { IInterview } from '../models/Interview.js'; // Import Interface từ Model
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-type PersonaType = 'friendly-hr' | 'strict-manager' | 'english-native';
-
-interface IInterview extends Document {
-  user: Types.ObjectId;
-  persona: string;
-  chatHistory: Array<{
-    role: string;
-    content: string;
-    timestamp: Date;
-  }>;
-  isCompleted: boolean;
-  feedback?: {
-    score: number;
-    strengths: string[];
-    improvements: string[];
-    summary: string;
-  };
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const PERSONA_CONFIG: Record<PersonaType, { prompt: string; firstMessage: string }> = {
+// Định nghĩa cấu hình Persona
+const PERSONA_CONFIG = {
   'friendly-hr': {
     prompt: "You are a friendly HR recruiter named Sarah. Your goal is to assess culture fit and soft skills. Be warm, encouraging, and polite. Ask one question at a time. Keep responses concise.",
     firstMessage: "Hi there! I'm Sarah from HR. Thanks for joining me today. To start, could you tell me a little bit about yourself and what brings you here?"
@@ -43,6 +22,8 @@ const PERSONA_CONFIG: Record<PersonaType, { prompt: string; firstMessage: string
     firstMessage: "Hello! I'm Alex. We're going to have a casual conversation to practice your English. How has your day been so far?"
   }
 };
+
+type PersonaType = keyof typeof PERSONA_CONFIG;
 
 export const startInterview = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -70,7 +51,7 @@ export const startInterview = async (req: AuthRequest, res: Response, next: Next
           timestamp: new Date()
         }
       ],
-      isCompleted: false
+      status: 'active' // Dùng status thay vì isCompleted
     });
 
     res.status(201).json({ success: true, data: interview });
@@ -84,37 +65,41 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
     const { message } = req.body;
     const { id } = req.params;
 
-    const interview = (await Interview.findById(id)) as unknown as IInterview;
+    const interview = await Interview.findById(id);
 
     if (!interview) {
       res.status(404).json({ success: false, message: 'Interview session not found' });
       return;
     }
 
+    // So sánh ID an toàn
     if (interview.user.toString() !== req.user?._id.toString()) {
       res.status(403).json({ success: false, message: 'Not authorized' });
       return;
     }
 
-    if (interview.isCompleted) {
+    if (interview.status === 'completed') {
       res.status(400).json({ success: false, message: 'This interview has already ended.' });
       return;
     }
 
+    // 1. Lưu tin nhắn User
     interview.chatHistory.push({
       role: 'user',
       content: message,
       timestamp: new Date()
     });
 
+    // 2. Chuẩn bị context cho AI (System prompt + 10 tin nhắn gần nhất)
     const historyForAI = [
-      interview.chatHistory[0],
-      ...interview.chatHistory.slice(-10)
+      interview.chatHistory[0], // System prompt
+      ...interview.chatHistory.slice(-10) // Context window
     ].map(msg => ({
       role: msg.role as 'system' | 'user' | 'assistant',
       content: msg.content
     }));
 
+    // 3. Gọi OpenAI
     try {
       const completion = await openai.chat.completions.create({
         messages: historyForAI,
@@ -122,8 +107,9 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
         temperature: 0.7,
       });
 
-      const aiResponse = completion.choices[0].message.content || "I'm sorry, I didn't catch that. Could you repeat?";
+      const aiResponse = completion.choices[0].message.content || "I'm sorry, I didn't catch that.";
 
+      // 4. Lưu phản hồi AI
       interview.chatHistory.push({
         role: 'assistant',
         content: aiResponse,
@@ -134,8 +120,8 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       res.json({ success: true, data: interview });
 
     } catch (aiError) {
-      console.error(aiError);
-      res.status(503).json({ success: false, message: 'AI service is temporarily unavailable. Please try again.' });
+      console.error('OpenAI Error:', aiError);
+      res.status(503).json({ success: false, message: 'AI service unavailable.' });
     }
 
   } catch (error) {
@@ -146,7 +132,7 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
 export const endInterview = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const interview = (await Interview.findById(id)) as unknown as IInterview;
+    const interview = await Interview.findById(id);
 
     if (!interview) {
       res.status(404).json({ success: false, message: 'Interview not found' });
@@ -158,11 +144,13 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
-    if (interview.isCompleted && interview.feedback?.summary) {
+    // Nếu đã có kết quả rồi thì trả về luôn
+    if (interview.status === 'completed' && interview.feedback?.suggestions) {
       res.json({ success: true, data: interview });
       return;
     }
 
+    // Tổng hợp nội dung chat để AI chấm điểm
     const conversationText = interview.chatHistory
       .filter(msg => msg.role !== 'system')
       .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
@@ -171,10 +159,10 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
     const feedbackPrompt = `
       Analyze the following interview conversation based on the persona "${interview.persona}".
       Provide a JSON response with:
-      1. "score" (number 0-100 based on quality of answers)
+      1. "score" (number 0-100)
       2. "strengths" (array of strings)
       3. "improvements" (array of strings)
-      4. "summary" (short paragraph feedback)
+      4. "summary" (short paragraph)
       
       Conversation:
       ${conversationText}
@@ -187,28 +175,29 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
         response_format: { type: 'json_object' },
       });
 
-      const feedbackData = JSON.parse(completion.choices[0].message.content || '{}');
+      const aiData = JSON.parse(completion.choices[0].message.content || '{}');
 
+      // Map dữ liệu từ AI sang Structure của Model (Interview.ts)
       interview.feedback = {
-        score: feedbackData.score || 0,
-        strengths: feedbackData.strengths || [],
-        improvements: feedbackData.improvements || [],
-        summary: feedbackData.summary || 'No feedback generated.'
+        confidenceScore: aiData.score || 0,
+        contentScore: aiData.score || 0, // Hoặc tính toán riêng nếu cần
+        // Model hiện tại lưu suggestions là String, nên ta gộp mảng lại
+        suggestions: `SUMMARY: ${aiData.summary}\n\nSTRENGTHS:\n- ${aiData.strengths?.join('\n- ')}\n\nIMPROVEMENTS:\n- ${aiData.improvements?.join('\n- ')}`
       };
-      interview.isCompleted = true;
       
+      interview.status = 'completed';
       await interview.save();
 
       res.json({ success: true, data: interview });
 
     } catch (error) {
-      console.error(error);
-      interview.isCompleted = true;
+      console.error('Feedback Gen Error:', error);
+      // Fallback nếu AI lỗi
+      interview.status = 'completed';
       interview.feedback = {
-        score: 0,
-        strengths: [],
-        improvements: [],
-        summary: "Feedback generation failed due to service error."
+        confidenceScore: 0,
+        contentScore: 0,
+        suggestions: "Feedback generation failed. Please try again later."
       };
       await interview.save();
       res.json({ success: true, data: interview });
@@ -222,7 +211,7 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
 export const getInterviews = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const interviews = await Interview.find({ user: req.user?._id })
-      .select('persona feedback.score isCompleted createdAt updatedAt')
+      .select('persona feedback status createdAt updatedAt') // Chọn field cần thiết
       .sort({ createdAt: -1 });
       
     res.json({ success: true, data: interviews });
@@ -240,7 +229,7 @@ export const getInterviewById = async (req: AuthRequest, res: Response, next: Ne
       return;
     }
 
-    if (interview.get('user').toString() !== req.user?._id.toString()) {
+    if (interview.user.toString() !== req.user?._id.toString()) {
       res.status(403).json({ success: false, message: 'Not authorized' });
       return;
     }

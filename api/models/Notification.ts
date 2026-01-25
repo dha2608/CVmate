@@ -1,13 +1,25 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-const notificationSchema = new mongoose.Schema({
+export interface INotification extends Document {
+  recipient: mongoose.Types.ObjectId;
+  sender?: mongoose.Types.ObjectId;
+  type: 'like' | 'comment' | 'job_alert' | 'system';
+  message: string;
+  link?: string;
+  read: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const notificationSchema = new Schema<INotification>({
   recipient: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
+    index: true
   },
-  sender: { // Optional, e.g., system notification doesn't have a sender user
-    type: mongoose.Schema.Types.ObjectId,
+  sender: {
+    type: Schema.Types.ObjectId,
     ref: 'User'
   },
   type: {
@@ -20,7 +32,7 @@ const notificationSchema = new mongoose.Schema({
     required: true
   },
   link: {
-    type: String // Where to go when clicked
+    type: String
   },
   read: {
     type: Boolean,
@@ -30,4 +42,8 @@ const notificationSchema = new mongoose.Schema({
   timestamps: true
 });
 
-export default mongoose.model('Notification', notificationSchema);
+notificationSchema.index({ recipient: 1, createdAt: -1 });
+
+notificationSchema.index({ recipient: 1, read: 1 });
+
+export default mongoose.model<INotification>('Notification', notificationSchema);
