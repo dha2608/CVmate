@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
-import { Types } from 'mongoose'; // Cần import Types
-import Post, { IComment } from '../models/Post.js'; // Cần import IComment để ép kiểu
+import mongoose, { Types } from 'mongoose';
+import Post from '../models/Post.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
 export const createPost = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -98,22 +98,23 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    // FIX: Tạo object đúng chuẩn IComment với _id thủ công
+    // --- FIX QUAN TRỌNG: Ép kiểu khi tạo comment ---
     const newComment = {
-      _id: new Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(), // Tự tạo ID
       user: req.user?._id,
-      text,
+      text: text,
       createdAt: new Date()
-    } as IComment;
+    };
 
-    post.comments.push(newComment);
+    // Sử dụng 'as any' để TypeScript không báo lỗi thiếu thuộc tính
+    post.comments.push(newComment as any); 
+    
     await post.save();
 
     const updatedPost = await Post.findById(req.params.id)
         .populate('user', 'name avatar')
         .populate('comments.user', 'name avatar');
 
-    // Trả về danh sách comments đã populate
     res.json({ success: true, data: updatedPost?.comments });
   } catch (error) {
     next(error);

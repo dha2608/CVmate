@@ -1,89 +1,129 @@
-import { useResumeStore, Education } from '@/store/resumeStore';
+import React from 'react';
+import { useResumeStore, type IEducation } from '@/store/resumeStore'; // Import đúng type
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Plus } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Trash2, Plus, GraduationCap } from 'lucide-react';
 
 const EducationForm = () => {
   const { currentResume, addEducation, updateEducation, removeEducation } = useResumeStore();
 
   const handleAdd = () => {
-      const newEdu: Education = {
-          id: Date.now().toString(),
-          institution: '',
-          degree: '',
-          startDate: '',
-          endDate: '',
-          description: ''
-      };
-      addEducation(newEdu);
+    const newEdu: IEducation = {
+      id: crypto.randomUUID(), 
+      institution: '',
+      degree: '',
+      startDate: '',
+      endDate: '',
+      description: ''
+    };
+    addEducation(newEdu);
+  };
+
+  const handleCurrentStudyChange = (index: number, isChecked: boolean, currentEdu: IEducation) => {
+    updateEducation(index, {
+        ...currentEdu,
+        endDate: isChecked ? 'Present' : ''
+    });
   };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-        <h3 className="text-lg font-medium flex justify-between items-center">
-            Education
-            <Button size="sm" onClick={handleAdd} className="gap-2">
-                <Plus size={16} /> Add Education
-            </Button>
-        </h3>
-        
+      <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+        <div>
+            <h3 className="text-lg font-semibold text-gray-800">Education</h3>
+            <p className="text-sm text-gray-500">Add your academic background</p>
+        </div>
+        <Button onClick={handleAdd} size="sm" className="gap-2">
+          <Plus size={16} /> Add Education
+        </Button>
+      </div>
+
+      <div className="space-y-4">
         {currentResume.education.map((edu, index) => (
-            <div key={edu.id || index} className="p-4 border border-gray-200 rounded-lg bg-gray-50 space-y-4 relative group">
-                <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          <div key={edu.id} className="relative bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4 group">
+            
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
                     onClick={() => removeEducation(index)}
                 >
-                    <Trash2 size={18} />
+                    <Trash2 size={16} />
                 </Button>
+            </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-xs font-medium uppercase text-gray-500">Institution</label>
-                        <Input 
-                            value={edu.institution} 
-                            onChange={(e) => updateEducation(index, { ...edu, institution: e.target.value })}
-                            placeholder="University / School"
-                            className="bg-white"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-medium uppercase text-gray-500">Degree</label>
-                        <Input 
-                            value={edu.degree} 
-                            onChange={(e) => updateEducation(index, { ...edu, degree: e.target.value })}
-                            placeholder="Bachelor of Science"
-                            className="bg-white"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-medium uppercase text-gray-500">Start Date</label>
-                        <Input 
-                            value={edu.startDate} 
-                            onChange={(e) => updateEducation(index, { ...edu, startDate: e.target.value })}
-                            placeholder="YYYY"
-                            className="bg-white"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-medium uppercase text-gray-500">End Date</label>
-                        <Input 
-                            value={edu.endDate} 
-                            onChange={(e) => updateEducation(index, { ...edu, endDate: e.target.value })}
-                            placeholder="YYYY"
-                            className="bg-white"
-                        />
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-2 col-span-2 md:col-span-1">
+                <Label>School / University</Label>
+                <div className="relative">
+                    <GraduationCap className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                    <Input
+                        value={edu.institution}
+                        onChange={(e) => updateEducation(index, { ...edu, institution: e.target.value })}
+                        placeholder="Harvard University"
+                        className="pl-9"
+                    />
                 </div>
-            </div>
-        ))}
+              </div>
 
-        {currentResume.education.length === 0 && (
-            <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
-                No education added yet. Click "Add Education" to start.
+              <div className="space-y-2 col-span-2 md:col-span-1">
+                <Label>Degree / Major</Label>
+                <Input
+                  value={edu.degree}
+                  onChange={(e) => updateEducation(index, { ...edu, degree: e.target.value })}
+                  placeholder="Bachelor of Computer Science"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 col-span-2">
+                <div className="space-y-2">
+                    <Label>Start Date</Label>
+                    <Input
+                        type="month"
+                        value={edu.startDate}
+                        onChange={(e) => updateEducation(index, { ...edu, startDate: e.target.value })}
+                    />
+                </div>
+                
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center mb-2">
+                        <Label className="mb-0">End Date</Label>
+                        <div className="flex items-center gap-2">
+                            <Checkbox 
+                                id={`current-${edu.id}`}
+                                checked={edu.endDate === 'Present'}
+                                onCheckedChange={(checked) => handleCurrentStudyChange(index, checked as boolean, edu)}
+                            />
+                            <label htmlFor={`current-${edu.id}`} className="text-xs text-gray-500 cursor-pointer">
+                                Currently study here
+                            </label>
+                        </div>
+                    </div>
+                    <Input
+                        type="month"
+                        value={edu.endDate === 'Present' ? '' : edu.endDate}
+                        disabled={edu.endDate === 'Present'}
+                        onChange={(e) => updateEducation(index, { ...edu, endDate: e.target.value })}
+                        placeholder={edu.endDate === 'Present' ? 'Present' : ''}
+                    />
+                </div>
+              </div>
+
+              <div className="col-span-2 space-y-2">
+                <Label>Description</Label>
+                <Input 
+                    value={edu.description || ''}
+                    onChange={(e) => updateEducation(index, { ...edu, description: e.target.value })}
+                    placeholder="Achievements, GPA, etc."
+                />
+              </div>
             </div>
-        )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
