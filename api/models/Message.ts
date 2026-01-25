@@ -1,19 +1,31 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-const messageSchema = new mongoose.Schema({
+export interface IMessage extends Document {
+  sender: mongoose.Types.ObjectId;
+  receiver: mongoose.Types.ObjectId;
+  content: string;
+  read: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const messageSchema = new Schema<IMessage>({
   sender: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
+    index: true
   },
   receiver: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
+    index: true
   },
   content: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   read: {
     type: Boolean,
@@ -23,4 +35,7 @@ const messageSchema = new mongoose.Schema({
   timestamps: true
 });
 
-export default mongoose.model('Message', messageSchema);
+messageSchema.index({ sender: 1, receiver: 1, createdAt: 1 });
+messageSchema.index({ receiver: 1, sender: 1, createdAt: 1 });
+
+export default mongoose.model<IMessage>('Message', messageSchema);
