@@ -1,20 +1,16 @@
-/**
- * local server entry file, for local development
- */
 import app from './app.js';
+import dotenv from 'dotenv';
 
-/**
- * start server with port
- */
-const PORT = process.env.PORT || 3001;
+dotenv.config();
+
+// Sử dụng cổng 5001 để tránh lỗi trùng cổng 5000 cũ
+const PORT = process.env.PORT || 5001;
 
 const server = app.listen(PORT, () => {
-  console.log(`Server ready on port ${PORT}`);
+  console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
 
-/**
- * close server
- */
+// Xử lý tắt server gọn gàng khi bấm Ctrl + C
 process.on('SIGTERM', () => {
   console.log('SIGTERM signal received');
   server.close(() => {
@@ -30,5 +26,3 @@ process.on('SIGINT', () => {
     process.exit(0);
   });
 });
-
-export default app;
