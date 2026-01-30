@@ -12,7 +12,7 @@ const Home = () => {
         title="CV Mate - Tạo CV chuẩn ATS và Luyện Phỏng Vấn với AI"
         description="Nền tảng All-in-one hỗ trợ sự nghiệp. Tạo CV chuẩn ATS trong 5 phút, luyện phỏng vấn với AI, và kết nối cộng đồng."
       />
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white page-transition">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
@@ -23,7 +23,7 @@ const Home = () => {
             </div>
             
             {/* Main Headline */}
-            <h1 className="text-5xl md:text-7xl font-black text-jet-black mb-6 leading-tight tracking-tight">
+            <h1 className="text-5xl md:text-7xl font-black text-jet-black mb-6 leading-tight tracking-tight animate-fade-in">
               Create Your Perfect CV
               <br />
               <span className="text-crimson-red">in Under 5 Minutes</span>
@@ -37,10 +37,10 @@ const Home = () => {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <Button 
                 size="lg" 
-                className="bg-crimson-red hover:bg-fire-red text-white px-8 py-6 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all"
+                className="bg-crimson-red hover:bg-fire-red text-white px-8 py-6 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl hover-lift transition-all duration-300"
                 onClick={() => navigate('/register')}
               >
                 Get Started Free
@@ -49,7 +49,7 @@ const Home = () => {
               <Button 
                 variant="outline" 
                 size="lg"
-                className="border-2 border-jet-black text-jet-black hover:bg-jet-black hover:text-white px-8 py-6 text-lg font-semibold rounded-lg"
+                className="border-2 border-jet-black text-jet-black hover:bg-jet-black hover:text-white px-8 py-6 text-lg font-semibold rounded-lg hover-lift transition-all duration-300"
                 onClick={() => navigate('/login')}
               >
                 Sign In
@@ -95,28 +95,34 @@ const Home = () => {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Feature 1: CV Builder */}
-            <FeatureCard
-              icon={<FileText className="w-8 h-8" />}
-              title="AI CV Builder"
-              description="Create ATS-friendly resumes in minutes. AI enhances your content to make it professional and impactful."
-              color="text-crimson-red"
-            />
+            <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <FeatureCard
+                icon={<FileText className="w-8 h-8" />}
+                title="AI CV Builder"
+                description="Create ATS-friendly resumes in minutes. AI enhances your content to make it professional and impactful."
+                color="text-crimson-red"
+              />
+            </div>
 
             {/* Feature 2: Interview Simulator */}
-            <FeatureCard
-              icon={<Video className="w-8 h-8" />}
-              title="AI Interview Practice"
-              description="Practice with different AI personas - Friendly HR, Strict Manager, or English Native. Get instant feedback."
-              color="text-crimson-red"
-            />
+            <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <FeatureCard
+                icon={<Video className="w-8 h-8" />}
+                title="AI Interview Practice"
+                description="Practice with different AI personas - Friendly HR, Strict Manager, or English Native. Get instant feedback."
+                color="text-crimson-red"
+              />
+            </div>
 
             {/* Feature 3: Community */}
-            <FeatureCard
-              icon={<Users className="w-8 h-8" />}
-              title="Career Community"
-              description="Share your CV, get feedback, and connect with professionals. Learn from others' experiences."
-              color="text-crimson-red"
-            />
+            <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <FeatureCard
+                icon={<Users className="w-8 h-8" />}
+                title="Career Community"
+                description="Share your CV, get feedback, and connect with professionals. Learn from others' experiences."
+                color="text-crimson-red"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -221,11 +227,11 @@ const Home = () => {
 };
 
 const FeatureCard = ({ icon, title, description, color }: any) => (
-  <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl transition-all group">
-    <div className={`${color} mb-4 inline-flex p-3 rounded-lg bg-light-grey group-hover:bg-crimson-red group-hover:text-white transition-all`}>
+  <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl hover-lift transition-all duration-300 group">
+    <div className={`${color} mb-4 inline-flex p-3 rounded-lg bg-light-grey group-hover:bg-crimson-red group-hover:text-white transition-all duration-300`}>
       {icon}
     </div>
-    <h3 className="text-2xl font-bold text-jet-black mb-3">{title}</h3>
+    <h3 className="text-2xl font-bold text-jet-black mb-3 group-hover:text-crimson-red transition-colors duration-300">{title}</h3>
     <p className="text-gray-600 leading-relaxed">{description}</p>
   </div>
 );

@@ -117,11 +117,12 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
       const enhancedText = completion.choices[0].message.content;
       res.json({ success: true, data: enhancedText });
 
-    } catch (apiError) {
+    } catch (apiError: any) {
       console.error('OpenAI Error:', apiError);
-      res.json({ 
-        success: true, 
-        data: `(Mock) Enhanced: ${text}. *Successfully demonstrated achievement in optimizing workflow efficiency by 20%.* (AI Service Unavailable)` 
+      res.status(503).json({ 
+        success: false, 
+        message: 'AI service is currently unavailable. Please check your OpenAI API key and try again later.',
+        error: apiError.message || 'OpenAI API error'
       });
     }
   } catch (error) {
@@ -173,17 +174,12 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
 
       res.json({ success: true, data: analysis });
 
-    } catch (e) {
-      res.json({ 
-        success: true, 
-        data: {
-          score: 75,
-          strengths: ["Good structure", "Clear contact info"],
-          improvements: ["Add more keywords", "Quantify achievements"],
-          summary: "This is a mock analysis because AI service is unavailable.",
-          missingKeywords: jobDescription ? ["React", "TypeScript", "Node.js"] : [],
-          matchScore: jobDescription ? 70 : null
-        } 
+    } catch (e: any) {
+      console.error('OpenAI Analysis Error:', e);
+      res.status(503).json({ 
+        success: false, 
+        message: 'ATS analysis service is currently unavailable. Please check your OpenAI API key and try again later.',
+        error: e.message || 'OpenAI API error'
       });
     }
 

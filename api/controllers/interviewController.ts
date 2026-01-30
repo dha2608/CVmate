@@ -119,9 +119,13 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       await interview.save();
       res.json({ success: true, data: interview });
 
-    } catch (aiError) {
+    } catch (aiError: any) {
       console.error('OpenAI Error:', aiError);
-      res.status(503).json({ success: false, message: 'AI service unavailable.' });
+      res.status(503).json({ 
+        success: false, 
+        message: 'AI interview service is currently unavailable. Please check your OpenAI API key and try again later.',
+        error: aiError.message || 'OpenAI API error'
+      });
     }
 
   } catch (error) {
@@ -190,17 +194,13 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
 
       res.json({ success: true, data: interview });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Feedback Gen Error:', error);
-      // Fallback nếu AI lỗi
-      interview.status = 'completed';
-      interview.feedback = {
-        confidenceScore: 0,
-        contentScore: 0,
-        suggestions: "Feedback generation failed. Please try again later."
-      };
-      await interview.save();
-      res.json({ success: true, data: interview });
+      res.status(503).json({ 
+        success: false, 
+        message: 'Feedback generation service is currently unavailable. Please check your OpenAI API key and try again later.',
+        error: error.message || 'OpenAI API error'
+      });
     }
 
   } catch (error) {

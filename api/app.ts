@@ -18,6 +18,7 @@ import messageRoutes from './routes/messages.js';
 import notificationRoutes from './routes/notifications.js';
 import dashboardRoutes from './routes/dashboard.js';
 import speechRoutes from './routes/speech.js';
+import newsRoutes from './routes/news.js';
 
 // Load env
 dotenv.config();
@@ -35,16 +36,18 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Session for OAuth
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'cvmate-secret-key',
-  resave: false,
-  saveUninitialized: false,
-}));
+// Session for OAuth (only if Google OAuth is configured)
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'cvmate-secret-key',
+    resave: false,
+    saveUninitialized: false,
+  }));
 
-// Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
+  // Initialize Passport
+  app.use(passport.initialize());
+  app.use(passport.session());
+}
 
 /**
  * API Routes
@@ -59,6 +62,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/speech', speechRoutes);
+app.use('/api/news', newsRoutes);
 
 /**
  * Health Check

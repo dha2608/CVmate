@@ -10,48 +10,54 @@ const generateToken = (id: string) => {
   });
 };
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        // Tìm user theo Google ID hoặc email
-        let user = await User.findOne({ googleId: profile.id });
+// Chỉ khởi tạo Google Strategy nếu có đủ env vars
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          // Tìm user theo Google ID hoặc email
+          let user = await User.findOne({ googleId: profile.id });
 
-        if (!user) {
-          // Kiểm tra xem email đã tồn tại chưa
-          user = await User.findOne({ email: profile.emails?.[0]?.value });
+          if (!user) {
+            // Kiểm tra xem email đã tồn tại chưa
+            user = await User.findOne({ email: profile.emails?.[0]?.value });
 
-          if (user) {
-            // Nếu user đã tồn tại với email/password, link Google account
-            user.googleId = profile.id;
-            if (!user.avatar && profile.photos?.[0]?.value) {
-              user.avatar = profile.photos[0].value;
+            if (user) {
+              // Nếu user đã tồn tại với email/password, link Google account
+              user.googleId = profile.id;
+              if (!user.avatar && profile.photos?.[0]?.value) {
+                user.avatar = profile.photos[0].value;
+              }
+              await user.save();
+            } else {
+              // Tạo user mới
+              user = await User.create({
+                name: profile.displayName || profile.name?.givenName || 'User',
+                email: profile.emails?.[0]?.value,
+                googleId: profile.id,
+                avatar: profile.photos?.[0]?.value || '',
+                onboardingCompleted: false,
+              });
             }
-            await user.save();
-          } else {
-            // Tạo user mới
-            user = await User.create({
-              name: profile.displayName || profile.name?.givenName || 'User',
-              email: profile.emails?.[0]?.value,
-              googleId: profile.id,
-              avatar: profile.photos?.[0]?.value || '',
-              onboardingCompleted: false,
-            });
           }
-        }
 
-        return done(null, user);
-      } catch (error: any) {
-        return done(error, null);
+          return done(null, user);
+        } catch (error: any) {
+          return done(error, null);
+        }
       }
-    }
-  )
-);
+    )
+  );
+  console.log('✅ Google OAuth strategy initialized');
+} else {
+  console.log('⚠️  Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable.');
+}
 
 passport.serializeUser((user: any, done) => {
   done(null, user._id);

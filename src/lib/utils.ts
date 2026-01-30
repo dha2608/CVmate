@@ -177,4 +177,16 @@ export const api = {
   getArticles: () => apiRequest<{ success: boolean; data: any[] }>('/articles'),
   
   getArticle: (id: string) => apiRequest<{ success: boolean; data: any }>(`/articles/${id}`),
+
+  // News
+  getNews: (limit?: number) =>
+    apiRequest<{ success: boolean; data: any[]; count: number }>(`/news?limit=${limit || 20}`, {
+      requiresAuth: false,
+    }),
+
+  refreshNews: () =>
+    apiRequest<{ success: boolean; data: any[]; count: number }>('/news/refresh', {
+      method: 'POST',
+      requiresAuth: false,
+    }),
 };
