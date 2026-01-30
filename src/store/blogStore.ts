@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api } from '@/lib/utils';
 
 interface Article {
   _id: string;
@@ -18,8 +19,6 @@ interface BlogState {
   createArticle: (data: any) => Promise<void>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
 export const useBlogStore = create<BlogState>((set) => ({
   articles: [],
   isLoading: false,
@@ -28,12 +27,11 @@ export const useBlogStore = create<BlogState>((set) => ({
   fetchArticles: async () => {
     set({ isLoading: true });
     try {
-      const res = await fetch(`${API_URL}/articles`);
-      const data = await res.json();
-      if (data.success) {
-        set({ articles: data.data, isLoading: false });
+      const res = await api.getArticles();
+      if (res.success) {
+        set({ articles: res.data as Article[], isLoading: false });
       } else {
-        set({ error: data.message, isLoading: false });
+        set({ error: (res as any).message || 'Failed to load articles', isLoading: false });
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
@@ -42,21 +40,28 @@ export const useBlogStore = create<BlogState>((set) => ({
 
   createArticle: async (articleData: any) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/articles`, {
+      // Blog creation uses direct fetch to preserve auth header via apiRequest helper
+      const tokenData = localStorage.getItem('user');
+      const token = tokenData ? JSON.parse(tokenData).token : null;
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/articles`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify(articleData)
+        headers,
+        body: JSON.stringify(articleData),
       });
-      const data = await res.json();
+      const data = await response.json();
+
       if (data.success) {
-        set((state) => ({ articles: [data.data, ...state.articles] }));
+        set((state) => ({ articles: [data.data as Article, ...state.articles] }));
       }
     } catch (error) {
       console.error(error);
     }
-  }
+  },
 }));

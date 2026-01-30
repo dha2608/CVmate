@@ -14,6 +14,7 @@ import articleRoutes from './routes/articles.js';
 import jobRoutes from './routes/jobs.js';
 import messageRoutes from './routes/messages.js';
 import notificationRoutes from './routes/notifications.js';
+import dashboardRoutes from './routes/dashboard.js';
 
 // Load env
 dotenv.config();
@@ -39,6 +40,7 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 /**
  * Health Check

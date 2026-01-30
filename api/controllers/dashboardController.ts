@@ -33,12 +33,12 @@ export const getDashboardStats = async (req: AuthRequest, res: Response, next: N
 
       // 2. Interview Statistics
       Interview.aggregate([
-        { $match: { user: userId, isCompleted: true } },
+        { $match: { user: userId, status: 'completed' } },
         {
           $group: {
             _id: null,
             count: { $sum: 1 },
-            avgScore: { $avg: '$feedback.score' }
+            avgScore: { $avg: '$feedback.confidenceScore' }
           }
         }
       ]),

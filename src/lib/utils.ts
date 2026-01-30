@@ -6,7 +6,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Mặc định dùng port 5001 để khớp với backend (xem api/server.ts),
+// có thể override bằng biến môi trường VITE_API_URL.
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 // Get auth token from localStorage
 const getAuthToken = (): string | null => {
@@ -111,10 +113,10 @@ export const api = {
     }),
 
   // Interview
-  startInterview: (personaType: string) =>
+  startInterview: (persona: string) =>
     apiRequest<{ success: boolean; data: any }>('/interviews/start', {
       method: 'POST',
-      body: JSON.stringify({ personaType }),
+      body: JSON.stringify({ persona }),
     }),
 
   sendInterviewMessage: (interviewId: string, message: string) =>
@@ -122,6 +124,17 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ message }),
     }),
+
+  endInterview: (interviewId: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/interviews/${interviewId}/end`, {
+      method: 'POST',
+    }),
+
+  getInterview: (interviewId: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/interviews/${interviewId}`),
+
+  getInterviews: () =>
+    apiRequest<{ success: boolean; data: any[] }>('/interviews'),
 
   // Dashboard
   getDashboardStats: () =>
@@ -133,18 +146,18 @@ export const api = {
   createPost: (content: string, imageUrl?: string) =>
     apiRequest<{ success: boolean; data: any }>('/posts', {
       method: 'POST',
-      body: JSON.stringify({ content, imageUrl }),
+      body: JSON.stringify({ content, image: imageUrl }),
     }),
 
   likePost: (postId: string) =>
     apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/like`, {
-      method: 'POST',
+      method: 'PUT',
     }),
 
   commentPost: (postId: string, content: string) =>
     apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/comment`, {
       method: 'POST',
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ text: content }),
     }),
 
   // Articles

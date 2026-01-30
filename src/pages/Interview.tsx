@@ -1,43 +1,62 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useInterviewStore } from '@/store/interviewStore';
 
 const Interview = () => {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
-  const [activePersona, setActivePersona] = useState<string | null>(null);
+  const {
+    persona,
+    messages,
+    feedback,
+    status,
+    isStarting,
+    isSending,
+    isEnding,
+    error,
+    startSession,
+    sendUserMessage,
+    endSession,
+    reset,
+  } = useInterviewStore();
 
-  const startInterview = async (persona: string) => {
-    setActivePersona(persona);
-    // Mock initial message
-    setMessages([{ role: 'assistant', content: `Hello! I'm your ${persona.replace('-', ' ')}. Shall we begin?` }]);
-    
-    // TODO: Connect to backend API
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleStartInterview = async (personaId: 'friendly-hr' | 'strict-manager' | 'english-native') => {
+    await startSession(personaId);
   };
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    const newMsgs = [...messages, { role: 'user', content: input }];
-    setMessages(newMsgs);
+  const handleSend = async () => {
+    if (!input.trim() || status === 'completed') return;
+    const text = input;
     setInput('');
-    
-    // Mock AI response
-    setTimeout(() => {
-        setMessages(prev => [...prev, { role: 'assistant', content: "That's a good answer. Can you give me a specific example?" }]);
-    }, 1000);
+    await sendUserMessage(text);
   };
 
-  if (!activePersona) {
+  const handleEnd = async () => {
+    await endSession();
+  };
+
+  const handleBackToDashboard = () => {
+    reset();
+    navigate('/dashboard');
+  };
+
+  if (!persona) {
       return (
           <div className="min-h-screen bg-neutral-50 p-8 flex flex-col items-center justify-center relative">
               <Button 
                 variant="ghost" 
                 className="absolute top-8 left-8 flex items-center gap-2 hover:bg-transparent hover:text-gray-900"
-                onClick={() => navigate('/dashboard')}
+                onClick={handleBackToDashboard}
               >
                  <ArrowLeft size={20} /> Back to Dashboard
               </Button>
@@ -54,7 +73,7 @@ const Interview = () => {
                       <div 
                         key={p.id} 
                         className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-accent transition-all group relative overflow-hidden" 
-                        onClick={() => startInterview(p.id)}
+                        onClick={() => handleStartInterview(p.id as any)}
                       >
                           <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                           
@@ -86,29 +105,36 @@ const Interview = () => {
     <div className="flex flex-col h-screen bg-gray-50">
         <header className="bg-white shadow-sm border-b p-4 flex justify-between items-center z-10">
             <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" onClick={() => setActivePersona(null)}>
+                <Button variant="ghost" size="icon" onClick={handleBackToDashboard}>
                     <ArrowLeft size={20} />
                 </Button>
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 overflow-hidden">
-                        <img src={getPersonaAvatar(activePersona)} alt="Persona" className="w-full h-full" />
+                        <img src={getPersonaAvatar(persona)} alt="Persona" className="w-full h-full" />
                     </div>
                     <div>
-                        <h2 className="font-bold text-secondary capitalize text-sm">{activePersona.replace('-', ' ')}</h2>
+                        <h2 className="font-bold text-secondary capitalize text-sm">{persona.replace('-', ' ')}</h2>
                         <span className="text-xs text-green-600 flex items-center gap-1">
-                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Online
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> {status === 'completed' ? 'Completed' : 'Online'}
                         </span>
                     </div>
                 </div>
             </div>
-            <Button variant="destructive" size="sm" onClick={() => setActivePersona(null)}>End Session</Button>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={handleEnd}
+              disabled={isEnding || status === 'completed'}
+            >
+              {isEnding ? 'Ending...' : status === 'completed' ? 'Ended' : 'End Session'}
+            </Button>
         </header>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-[#f0f2f5]">
             {/* 3D Avatar Placeholder / Visualizer */}
             <div className="flex justify-center mb-8">
                  <div className="relative w-32 h-32 md:w-48 md:h-48 rounded-full border-4 border-white shadow-lg bg-gradient-to-b from-blue-50 to-blue-100 flex items-center justify-center overflow-hidden">
-                    <img src={getPersonaAvatar(activePersona)} alt="Talking Head" className="w-full h-full object-cover transform scale-110" />
+                    <img src={getPersonaAvatar(persona)} alt="Talking Head" className="w-full h-full object-cover transform scale-110" />
                     {/* Audio visualizer effect */}
                     <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent flex items-end justify-center gap-1 pb-4">
                         <div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
@@ -118,20 +144,31 @@ const Interview = () => {
                  </div>
             </div>
 
-            {messages.map((msg, idx) => (
+            {messages
+              .filter((msg) => msg.role !== 'system')
+              .map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
-                    <div className={`max-w-[80%] md:max-w-[60%] p-4 rounded-2xl shadow-sm relative ${
-                        msg.role === 'user' 
-                        ? 'bg-accent text-white rounded-tr-none' 
-                        : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
-                    }`}>
-                        {msg.content}
-                        <span className="text-[10px] opacity-70 absolute bottom-1 right-3">
-                            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                    </div>
+                  <div className={`max-w-[80%] md:max-w-[60%] p-4 rounded-2xl shadow-sm relative ${
+                    msg.role === 'user' 
+                      ? 'bg-accent text-white rounded-tr-none' 
+                      : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
+                  }`}>
+                    {msg.content}
+                    <span className="text-[10px] opacity-70 absolute bottom-1 right-3">
+                      {new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
                 </div>
-            ))}
+              ))}
+
+            <div ref={messagesEndRef} />
+
+            {feedback && (
+              <div className="mt-6 bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">AI Feedback Summary</h3>
+                <p className="text-xs text-gray-700 whitespace-pre-wrap">{feedback.suggestions}</p>
+              </div>
+            )}
         </div>
         
         <div className="p-4 bg-white border-t flex gap-2 items-center">
@@ -158,11 +195,15 @@ const Interview = () => {
                     placeholder={isRecording ? "Listening..." : "Type your answer..."}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                     className="rounded-full pl-5 pr-12 h-12 border-gray-300 focus:border-accent focus:ring-accent"
-                    disabled={isRecording}
+                    disabled={isRecording || isSending || status === 'completed'}
                 />
             </div>
-            <Button onClick={handleSend} className="rounded-full h-12 px-6 bg-secondary hover:bg-secondary/90 shadow-md transition-transform active:scale-95" disabled={!input.trim() && !isRecording}>
-                Send
+            <Button 
+              onClick={handleSend} 
+              className="rounded-full h-12 px-6 bg-secondary hover:bg-secondary/90 shadow-md transition-transform active:scale-95" 
+              disabled={(!input.trim() && !isRecording) || isSending || status === 'completed'}
+            >
+                {isSending ? 'Sending...' : 'Send'}
             </Button>
         </div>
     </div>

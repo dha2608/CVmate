@@ -25,9 +25,9 @@ interface MessageState {
   setActiveConversation: (user: User) => void;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-export const useMessageStore = create<MessageState>((set, get) => ({
+export const useMessageStore = create<MessageState>((set) => ({
   conversations: [],
   activeConversation: null,
   messages: [],
@@ -37,7 +37,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/messages/conversations`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (data.success) {
@@ -53,11 +53,13 @@ export const useMessageStore = create<MessageState>((set, get) => ({
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/messages/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (data.success) {
         set({ messages: data.data, isLoading: false });
+      } else {
+        set({ isLoading: false });
       }
     } catch (error) {
       console.error(error);
@@ -70,11 +72,11 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/messages`, {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}` 
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ receiverId, content })
+        body: JSON.stringify({ receiverId, content }),
       });
       const data = await res.json();
       if (data.success) {
@@ -85,5 +87,5 @@ export const useMessageStore = create<MessageState>((set, get) => ({
     }
   },
 
-  setActiveConversation: (user) => set({ activeConversation: user })
+  setActiveConversation: (user) => set({ activeConversation: user }),
 }));

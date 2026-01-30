@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api } from '@/lib/utils';
 
 interface User {
   _id: string;
@@ -33,9 +34,7 @@ interface CommunityState {
   commentPost: (postId: string, text: string) => Promise<void>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-export const useCommunityStore = create<CommunityState>((set, get) => ({
+export const useCommunityStore = create<CommunityState>((set) => ({
   posts: [],
   isLoading: false,
   error: null,
@@ -43,15 +42,11 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
   fetchPosts: async () => {
     set({ isLoading: true });
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/posts`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        set({ posts: data.data, isLoading: false });
+      const res = await api.getPosts();
+      if (res.success) {
+        set({ posts: res.data as Post[], isLoading: false });
       } else {
-        set({ error: data.message, isLoading: false });
+        set({ error: (res as any).message || 'Failed to load posts', isLoading: false });
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
@@ -60,18 +55,9 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
 
   createPost: async (content: string, image?: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/posts`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ content, image })
-      });
-      const data = await res.json();
-      if (data.success) {
-        set((state) => ({ posts: [data.data, ...state.posts] }));
+      const res = await api.createPost(content, image);
+      if (res.success) {
+        set((state) => ({ posts: [res.data as Post, ...state.posts] }));
       }
     } catch (error: any) {
       console.error(error);
@@ -80,17 +66,12 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
 
   likePost: async (postId: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/posts/${postId}/like`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
+      const res = await api.likePost(postId);
+      if (res.success) {
         set((state) => ({
-          posts: state.posts.map(post => 
-            post._id === postId ? { ...post, likes: data.data } : post
-          )
+          posts: state.posts.map((post) =>
+            post._id === postId ? { ...post, likes: res.data as string[] } : post
+          ),
         }));
       }
     } catch (error) {
@@ -100,25 +81,16 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
 
   commentPost: async (postId: string, text: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/posts/${postId}/comment`, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ text })
-      });
-      const data = await res.json();
-      if (data.success) {
+      const res = await api.commentPost(postId, text);
+      if (res.success) {
         set((state) => ({
-          posts: state.posts.map(post => 
-            post._id === postId ? { ...post, comments: data.data } : post
-          )
+          posts: state.posts.map((post) =>
+            post._id === postId ? { ...post, comments: res.data as Comment[] } : post
+          ),
         }));
       }
     } catch (error) {
       console.error(error);
     }
-  }
+  },
 }));
