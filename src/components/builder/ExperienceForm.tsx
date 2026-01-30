@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useResumeStore, Experience } from '@/store/resumeStore';
+import { useResumeStore, IExperience } from '@/store/resumeStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,7 +10,7 @@ const ExperienceForm = () => {
   const [loadingAi, setLoadingAi] = useState<number | null>(null);
 
   const handleAdd = () => {
-      const newExp: Experience = {
+      const newExp: IExperience = {
           id: Date.now().toString(),
           company: '',
           position: '',

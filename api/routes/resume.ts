@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createResume, getResumes, getResumeById, updateResume, deleteResume, aiEnhance } from '../controllers/resumeController.js';
+import { createResume, getResumes, getResumeById, updateResume, deleteResume, aiEnhance, analyzeResume } from '../controllers/resumeController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = Router();
@@ -13,6 +13,7 @@ router.route('/:id')
   .put(protect, updateResume)
   .delete(protect, deleteResume);
 
-router.post('/enhance', protect, aiEnhance);
+router.post('/ai-enhance', protect, aiEnhance);
+router.post('/:id/analyze', protect, analyzeResume);
 
 export default router;

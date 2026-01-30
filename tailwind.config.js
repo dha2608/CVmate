@@ -18,6 +18,11 @@ export default {
   	},
   	extend: {
   		colors: {
+  			// CV Mate Design System Colors
+  			'jet-black': '#121212',
+  			'crimson-red': '#DC143C',
+  			'fire-red': '#CE1126',
+  			'light-grey': '#F5F5F5',
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
@@ -58,6 +63,9 @@ export default {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			}
+  		},
+  		fontFamily: {
+  			sans: ['Inter', 'Roboto', 'system-ui', 'sans-serif'],
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

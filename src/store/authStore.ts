@@ -18,11 +18,21 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: JSON.parse(localStorage.getItem('user') || 'null'),
   setUser: (user) => {
-    localStorage.setItem('user', JSON.stringify(user));
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+      // Sync legacy token key so existing stores that read from localStorage['token'] still work
+      if (user.token) {
+        localStorage.setItem('token', user.token);
+      }
+    } else {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    }
     set({ user });
   },
   logout: () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     set({ user: null });
   },
 }));

@@ -48,6 +48,8 @@ interface ResumeState {
   // Actions
   setResume: (resume: IResume) => void;
   updatePersonalInfo: (field: keyof IPersonalInfo, value: string) => void;
+  updateField: (field: keyof IResume, value: any) => void;
+  setSkills: (skills: string[]) => void;
   
   // Experience
   addExperience: (exp: IExperience) => void;
@@ -58,6 +60,9 @@ interface ResumeState {
   addEducation: (edu: IEducation) => void;
   updateEducation: (index: number, edu: IEducation) => void;
   removeEducation: (index: number) => void;
+
+  // AI Enhance
+  aiEnhanceText: (text: string, type?: string) => Promise<string>;
 
   resetResume: () => void;
 }
@@ -86,6 +91,16 @@ export const useResumeStore = create<ResumeState>()(
             ...state.currentResume,
             personalInfo: { ...state.currentResume.personalInfo, [field]: value },
           },
+        })),
+
+      updateField: (field, value) =>
+        set((state) => ({
+          currentResume: { ...state.currentResume, [field]: value },
+        })),
+
+      setSkills: (skills) =>
+        set((state) => ({
+          currentResume: { ...state.currentResume, skills },
         })),
 
       // Experience Logic
@@ -131,6 +146,17 @@ export const useResumeStore = create<ResumeState>()(
             education: state.currentResume.education.filter((_, i) => i !== index),
           },
         })),
+
+      aiEnhanceText: async (text: string, type?: string) => {
+        try {
+          const { api } = await import('@/lib/utils');
+          const response = await api.aiEnhance(text, type);
+          return response.data || text;
+        } catch (error) {
+          console.error('AI Enhance failed:', error);
+          return text; // Return original text on error
+        }
+      },
 
       resetResume: () => set({ currentResume: initialResume }),
     }),

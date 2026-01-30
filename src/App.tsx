@@ -19,13 +19,8 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Nếu chưa đăng nhập, vào "/" sẽ redirect tới "/login" */}
-        <Route 
-          path="/" 
-          element={
-            user && user.token ? <Home /> : <Navigate to="/login" replace />
-          } 
-        />
+        {/* Home page - public */}
+        <Route path="/" element={<Home />} />
         
         {/* Public routes */}
         <Route path="/login" element={<Login />} />

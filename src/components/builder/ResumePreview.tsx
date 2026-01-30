@@ -1,15 +1,11 @@
-import { forwardRef } from 'react';
-import { Resume } from '@/store/resumeStore';
+import { useResumeStore } from '@/store/resumeStore';
 
-interface ResumePreviewProps {
-  resume: Resume;
-}
-
-const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(({ resume }, ref) => {
-  const { personalInfo, summary, experience, education, skills } = resume;
+const ResumePreview = () => {
+  const { currentResume } = useResumeStore();
+  const { personalInfo, summary, experience, education, skills } = currentResume;
 
   return (
-    <div ref={ref} className="bg-white shadow-xl w-[210mm] min-h-[297mm] p-[20mm] text-sm leading-relaxed text-gray-800 mx-auto print:shadow-none print:w-full print:h-auto print:p-0 print:m-0">
+    <div id="resume-preview" className="bg-white shadow-xl w-[210mm] min-h-[297mm] p-[20mm] text-sm leading-relaxed text-gray-800 mx-auto print:shadow-none print:w-full print:h-auto print:p-0 print:m-0">
         {/* Header */}
         <header className="border-b-2 border-gray-900 pb-6 mb-6">
             <h1 className="text-4xl font-bold text-gray-900 uppercase tracking-wide mb-2">
@@ -90,6 +86,6 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(({ resume }
         )}
     </div>
   );
-});
+};
 
 export default ResumePreview;
