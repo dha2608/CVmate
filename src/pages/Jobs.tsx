@@ -11,7 +11,7 @@ const Jobs = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [fetchJobs]);
+  }, []);
 
   const filteredJobs = jobs.filter(job => 
     job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -57,11 +57,37 @@ const Jobs = () => {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-10">Loading jobs...</div>
+        <div className="text-center py-10">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-crimson-red"></div>
+          <p className="mt-2 text-sm text-gray-500">Loading jobs...</p>
+        </div>
+      ) : filteredJobs.length === 0 ? (
+        <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
+          <Briefcase className="mx-auto text-gray-400 mb-4" size={48} />
+          <h3 className="text-lg font-bold text-gray-900 mb-2">No jobs available</h3>
+          <p className="text-gray-600 mb-4">
+            {jobs.length === 0 
+              ? "There are no job listings at the moment. Check back later!" 
+              : "No jobs match your search criteria. Try different keywords."}
+          </p>
+          {jobs.length === 0 && searchTerm && (
+            <Button 
+              onClick={() => setSearchTerm('')} 
+              variant="outline"
+              className="mt-2"
+            >
+              Clear Search
+            </Button>
+          )}
+        </div>
       ) : (
         <div className="space-y-4">
-            {filteredJobs.map(job => (
-                <div key={job._id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+            {filteredJobs.map((job, index) => (
+                <div 
+                  key={job._id} 
+                  className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover-lift transition-all duration-300 animate-fade-in"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
                     <div className="flex gap-4">
                         <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center font-bold text-gray-400">
                             {job.logo ? <img src={job.logo} className="w-full h-full object-cover" /> : job.company.charAt(0)}
@@ -78,16 +104,18 @@ const Jobs = () => {
                             <p className="mt-3 text-sm text-gray-600 line-clamp-2">{job.description}</p>
                         </div>
                         <div>
-                            <Button size="sm" onClick={() => applyJob(job._id)} variant="outline" className="text-accent border-accent hover:bg-red-50">
+                            <Button 
+                              size="sm" 
+                              onClick={() => applyJob(job._id)} 
+                              variant="outline" 
+                              className="text-crimson-red border-crimson-red hover:bg-crimson-red hover:text-white transition-all duration-300"
+                            >
                                 Apply
                             </Button>
                         </div>
                     </div>
                 </div>
             ))}
-            {filteredJobs.length === 0 && (
-                <div className="text-center py-10 text-gray-500">No jobs found matching your criteria.</div>
-            )}
         </div>
       )}
     </MainLayout>

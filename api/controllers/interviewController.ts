@@ -3,9 +3,14 @@ import OpenAI from 'openai';
 import Interview, { IInterview } from '../models/Interview.js'; // Import Interface từ Model
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Khởi tạo OpenAI client chỉ khi có API key
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new OpenAI({ apiKey });
+};
 
 // Định nghĩa cấu hình Persona
 const PERSONA_CONFIG = {
@@ -100,10 +105,19 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
     }));
 
     // 3. Gọi OpenAI
+    const openai = getOpenAIClient();
+    if (!openai) {
+      res.status(503).json({ 
+        success: false, 
+        message: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in your environment variables.',
+      });
+      return;
+    }
+
     try {
       const completion = await openai.chat.completions.create({
         messages: historyForAI,
-        model: "gpt-3.5-turbo",
+        model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
         temperature: 0.7,
       });
 
@@ -121,9 +135,19 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
 
     } catch (aiError: any) {
       console.error('OpenAI Error:', aiError);
+      
+      let errorMessage = 'AI interview service is currently unavailable.';
+      if (aiError.status === 401) {
+        errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
+      } else if (aiError.status === 429) {
+        errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
+      } else if (aiError.message?.includes('API key')) {
+        errorMessage = 'OpenAI API key is invalid or missing.';
+      }
+
       res.status(503).json({ 
         success: false, 
-        message: 'AI interview service is currently unavailable. Please check your OpenAI API key and try again later.',
+        message: errorMessage,
         error: aiError.message || 'OpenAI API error'
       });
     }
@@ -172,21 +196,35 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
       ${conversationText}
     `;
 
+    const openai = getOpenAIClient();
+    if (!openai) {
+      res.status(503).json({ 
+        success: false, 
+        message: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in your environment variables.',
+      });
+      return;
+    }
+
     try {
       const completion = await openai.chat.completions.create({
         messages: [{ role: 'user', content: feedbackPrompt }],
-        model: 'gpt-3.5-turbo',
+        model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
         response_format: { type: 'json_object' },
       });
 
-      const aiData = JSON.parse(completion.choices[0].message.content || '{}');
+      const responseContent = completion.choices[0].message.content;
+      if (!responseContent) {
+        throw new Error('No response from OpenAI');
+      }
+
+      const aiData = JSON.parse(responseContent);
 
       // Map dữ liệu từ AI sang Structure của Model (Interview.ts)
       interview.feedback = {
         confidenceScore: aiData.score || 0,
         contentScore: aiData.score || 0, // Hoặc tính toán riêng nếu cần
         // Model hiện tại lưu suggestions là String, nên ta gộp mảng lại
-        suggestions: `SUMMARY: ${aiData.summary}\n\nSTRENGTHS:\n- ${aiData.strengths?.join('\n- ')}\n\nIMPROVEMENTS:\n- ${aiData.improvements?.join('\n- ')}`
+        suggestions: `SUMMARY: ${aiData.summary || 'No summary available'}\n\nSTRENGTHS:\n- ${(aiData.strengths || []).join('\n- ') || 'None identified'}\n\nIMPROVEMENTS:\n- ${(aiData.improvements || []).join('\n- ') || 'None identified'}`
       };
       
       interview.status = 'completed';
@@ -196,9 +234,19 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
 
     } catch (error: any) {
       console.error('Feedback Gen Error:', error);
+      
+      let errorMessage = 'Feedback generation service is currently unavailable.';
+      if (error.status === 401) {
+        errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
+      } else if (error.status === 429) {
+        errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
+      } else if (error.message?.includes('API key')) {
+        errorMessage = 'OpenAI API key is invalid or missing.';
+      }
+
       res.status(503).json({ 
         success: false, 
-        message: 'Feedback generation service is currently unavailable. Please check your OpenAI API key and try again later.',
+        message: errorMessage,
         error: error.message || 'OpenAI API error'
       });
     }

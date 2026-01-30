@@ -8,7 +8,14 @@ interface Article {
   category: string;
   summary: string;
   image?: string;
+  coverImage?: string;
   createdAt: string;
+  author?: {
+    _id: string;
+    name: string;
+    avatar?: string;
+  } | string;
+  views?: number;
 }
 
 interface BlogState {
@@ -50,7 +57,7 @@ export const useBlogStore = create<BlogState>((set) => ({
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/articles`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/articles`, {
         method: 'POST',
         headers,
         body: JSON.stringify(articleData),
@@ -58,7 +65,16 @@ export const useBlogStore = create<BlogState>((set) => ({
       const data = await response.json();
 
       if (data.success) {
-        set((state) => ({ articles: [data.data as Article, ...state.articles] }));
+        // Refresh articles list to get latest data from server
+        const refreshRes = await api.getArticles();
+        if (refreshRes.success) {
+          set({ articles: refreshRes.data as Article[] });
+        } else {
+          // Fallback: add to local state
+          set((state) => ({ articles: [data.data as Article, ...state.articles] }));
+        }
+      } else {
+        throw new Error(data.message || 'Failed to create article');
       }
     } catch (error) {
       console.error(error);

@@ -7,6 +7,11 @@ export interface IArticle extends Document {
   summary?: string;
   author: mongoose.Types.ObjectId;
   image?: string;
+  coverImage?: string;
+  slug?: string;
+  tags?: string[];
+  isPublished?: boolean;
+  views?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +42,25 @@ const articleSchema = new Schema<IArticle>({
   },
   image: {
     type: String
+  },
+  coverImage: {
+    type: String
+  },
+  slug: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  tags: [{
+    type: String
+  }],
+  isPublished: {
+    type: Boolean,
+    default: true
+  },
+  views: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true

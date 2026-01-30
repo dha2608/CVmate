@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import SEOHead from '@/components/SEOHead';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
@@ -15,29 +16,79 @@ const BlogDetail = () => {
   useEffect(() => {
     const fetchArticle = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/articles/${id}`);
+            const userData = localStorage.getItem('user');
+            const token = userData ? JSON.parse(userData).token : null;
+            
+            const headers: HeadersInit = {
+              'Content-Type': 'application/json',
+            };
+            if (token) {
+              headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const res = await fetch(`${API_BASE_URL}/articles/${id}`, {
+              headers
+            });
             const data = await res.json();
             if (data.success) {
                 setArticle(data.data);
+            } else {
+                console.error('Failed to load article:', data.message);
             }
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching article:', error);
         } finally {
             setLoading(false);
         }
     };
-    fetchArticle();
+    if (id) {
+      fetchArticle();
+    }
   }, [id]);
 
-  if (loading) return <MainLayout><div className="text-center py-10">Loading...</div></MainLayout>;
-  if (!article) return <MainLayout><div className="text-center py-10">Article not found</div></MainLayout>;
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="text-center py-10">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-crimson-red"></div>
+          <p className="mt-2 text-sm text-gray-500">Loading article...</p>
+        </div>
+      </MainLayout>
+    );
+  }
+  
+  if (!article) {
+    return (
+      <MainLayout>
+        <div className="text-center py-10">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Article not found</h2>
+          <p className="text-gray-600 mb-4">The article you're looking for doesn't exist or has been removed.</p>
+          <Button onClick={() => navigate('/blog')} className="bg-crimson-red hover:bg-fire-red text-white">
+            Back to Blog
+          </Button>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
-    <MainLayout>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            {article.image && (
+    <>
+      <SEOHead 
+        title={article.title || 'Article - CV Mate'} 
+        description={article.summary || article.content?.substring(0, 160) || 'Read this article on CV Mate'}
+      />
+      <MainLayout>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-fade-in">
+            {(article.image || article.coverImage) && (
                 <div className="h-64 w-full relative">
-                    <img src={article.image} alt={article.title} className="w-full h-full object-cover" />
+                    <img 
+                      src={article.image || article.coverImage} 
+                      alt={article.title} 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
                     <Button 
                         variant="ghost" 
                         size="icon" 
@@ -71,7 +122,8 @@ const BlogDetail = () => {
                 </div>
             </div>
         </div>
-    </MainLayout>
+      </MainLayout>
+    </>
   );
 };
 

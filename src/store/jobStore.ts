@@ -45,20 +45,36 @@ export const useJobStore = create<JobState>((set) => ({
 
   applyJob: async (jobId: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
+      const token = userData ? JSON.parse(userData).token : null;
+      
+      if (!token) {
+        alert('Please login to apply for jobs');
+        return;
+      }
+
       const res = await fetch(`${API_URL}/jobs/${jobId}/apply`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        }
       });
       const data = await res.json();
       if (data.success) {
         alert('Applied successfully!');
+        // Refresh jobs to update application status
+        const refreshRes = await fetch(`${API_URL}/jobs`);
+        const refreshData = await refreshRes.json();
+        if (refreshData.success) {
+          set({ jobs: refreshData.data });
+        }
       } else {
         alert(data.message || 'Failed to apply');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Error applying');
+      alert('Error applying: ' + (error.message || 'Unknown error'));
     }
   }
 }));

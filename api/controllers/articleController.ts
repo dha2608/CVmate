@@ -3,9 +3,14 @@ import OpenAI from 'openai';
 import Article from '../models/Article.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Khởi tạo OpenAI client chỉ khi có API key
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new OpenAI({ apiKey });
+};
 
 export const createArticle = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -26,26 +31,41 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
     let summary = '';
     let tags: string[] = [];
 
-    try {
-      const completion = await openai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an SEO expert. Analyze the article content provided.',
-          },
-          {
-            role: 'user',
-            content: `Analyze the following article content. Return a JSON object with two keys: "summary" (a professional 3-sentence summary) and "tags" (an array of 5 relevant keywords). Content: ${content.substring(0, 2000)}`,
-          },
-        ],
-        model: 'gpt-3.5-turbo',
-        response_format: { type: 'json_object' },
-      });
+    const openai = getOpenAIClient();
+    if (openai) {
+      try {
+        const completion = await openai.chat.completions.create({
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an SEO expert. Analyze the article content provided.',
+            },
+            {
+              role: 'user',
+              content: `Analyze the following article content. Return a JSON object with two keys: "summary" (a professional 3-sentence summary) and "tags" (an array of 5 relevant keywords). Content: ${content.substring(0, 2000)}`,
+            },
+          ],
+          model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+          response_format: { type: 'json_object' },
+        });
 
-      const aiResponse = JSON.parse(completion.choices[0].message.content || '{}');
-      summary = aiResponse.summary || content.substring(0, 150) + '...';
-      tags = aiResponse.tags || [];
-    } catch (error) {
+        const responseContent = completion.choices[0].message.content;
+        if (responseContent) {
+          const aiResponse = JSON.parse(responseContent);
+          summary = aiResponse.summary || content.substring(0, 150) + '...';
+          tags = aiResponse.tags || [];
+        } else {
+          summary = content.substring(0, 150) + '...';
+          tags = ['general'];
+        }
+      } catch (error) {
+        console.error('OpenAI summary generation error:', error);
+        // Fallback to simple summary if AI fails
+        summary = content.substring(0, 150) + '...';
+        tags = ['general'];
+      }
+    } else {
+      // No API key, use simple fallback
       summary = content.substring(0, 150) + '...';
       tags = ['general'];
     }
@@ -58,6 +78,7 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
       category,
       summary,
       tags,
+      image: image, // Store in both fields for compatibility
       coverImage: image,
       isPublished: true,
     });
@@ -75,7 +96,10 @@ export const getArticles = async (req: Request, res: Response, next: NextFunctio
     const skip = (page - 1) * limit;
     const { search, category } = req.query;
 
-    const query: any = { isPublished: true };
+    const query: any = {};
+    
+    // Show all articles (isPublished filter can be added if needed)
+    // For now, show all articles to users
 
     if (search) {
       query.$or = [

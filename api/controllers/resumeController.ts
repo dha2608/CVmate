@@ -3,9 +3,14 @@ import OpenAI from 'openai';
 import Resume from '../models/Resume.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Khởi tạo OpenAI client chỉ khi có API key
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new OpenAI({ apiKey });
+};
 
 export const createResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -15,7 +20,18 @@ export const createResume = async (req: AuthRequest, res: Response, next: NextFu
       ...req.body
     });
     res.status(201).json({ success: true, data: resume });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Create Resume Error:', error);
+    // Kiểm tra lỗi validation từ Mongoose
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err: any) => err.message);
+      res.status(400).json({ 
+        success: false, 
+        message: 'Validation error', 
+        errors 
+      });
+      return;
+    }
     next(error);
   }
 };
@@ -95,6 +111,15 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
       return;
     }
 
+    const openai = getOpenAIClient();
+    if (!openai) {
+      res.status(503).json({ 
+        success: false, 
+        message: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in your environment variables.',
+      });
+      return;
+    }
+
     const prompt = `
       Act as a professional resume writer. Enhance the following ${type || 'text'} to be more impactful.
       - Use strong action verbs.
@@ -110,18 +135,33 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
     try {
       const completion = await openai.chat.completions.create({
         messages: [{ role: "user", content: prompt }],
-        model: "gpt-3.5-turbo",
+        model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
         temperature: 0.7,
       });
 
       const enhancedText = completion.choices[0].message.content;
+      if (!enhancedText) {
+        throw new Error('No response from OpenAI');
+      }
+
       res.json({ success: true, data: enhancedText });
 
     } catch (apiError: any) {
       console.error('OpenAI Error:', apiError);
+      
+      // Phân loại lỗi để có message phù hợp
+      let errorMessage = 'AI service is currently unavailable.';
+      if (apiError.status === 401) {
+        errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
+      } else if (apiError.status === 429) {
+        errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
+      } else if (apiError.message?.includes('API key')) {
+        errorMessage = 'OpenAI API key is invalid or missing.';
+      }
+
       res.status(503).json({ 
         success: false, 
-        message: 'AI service is currently unavailable. Please check your OpenAI API key and try again later.',
+        message: errorMessage,
         error: apiError.message || 'OpenAI API error'
       });
     }
@@ -160,6 +200,15 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
       prompt += `\n\nJob Description:\n${jobDescription.substring(0, 2000)}\n\nCompare the resume with the job description. Identify missing keywords and calculate match score.`;
     }
 
+    const openai = getOpenAIClient();
+    if (!openai) {
+      res.status(503).json({ 
+        success: false, 
+        message: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in your environment variables.',
+      });
+      return;
+    }
+
     try {
       const completion = await openai.chat.completions.create({
         messages: [{ role: "user", content: prompt }],
@@ -167,7 +216,12 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
         response_format: { type: "json_object" }
       });
 
-      const analysis = JSON.parse(completion.choices[0].message.content || '{}');
+      const responseContent = completion.choices[0].message.content;
+      if (!responseContent) {
+        throw new Error('No response from OpenAI');
+      }
+
+      const analysis = JSON.parse(responseContent);
       
       resume.atsScore = analysis.score || 0;
       await resume.save();
@@ -176,9 +230,19 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
 
     } catch (e: any) {
       console.error('OpenAI Analysis Error:', e);
+      
+      let errorMessage = 'ATS analysis service is currently unavailable.';
+      if (e.status === 401) {
+        errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
+      } else if (e.status === 429) {
+        errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
+      } else if (e.message?.includes('API key')) {
+        errorMessage = 'OpenAI API key is invalid or missing.';
+      }
+
       res.status(503).json({ 
         success: false, 
-        message: 'ATS analysis service is currently unavailable. Please check your OpenAI API key and try again later.',
+        message: errorMessage,
         error: e.message || 'OpenAI API error'
       });
     }

@@ -35,11 +35,17 @@ const Blog = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createArticle({ title, category, content, image });
-    setShowCreate(false);
-    setTitle('');
-    setContent('');
-    setImage('');
+    try {
+      await createArticle({ title, category, content, image });
+      setShowCreate(false);
+      setTitle('');
+      setContent('');
+      setImage('');
+      // Refresh articles after creation
+      await fetchArticles();
+    } catch (error: any) {
+      alert('Failed to create article: ' + (error.message || 'Unknown error'));
+    }
   };
 
   if (!user) return null;
@@ -266,11 +272,30 @@ const Blog = () => {
                                     key={article._id} 
                                     className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl hover-lift transition-all duration-300 cursor-pointer animate-fade-in"
                                     style={{ animationDelay: `${index * 0.1}s` }}
-                                    onClick={() => navigate(`/blog/${article._id}`)}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      navigate(`/blog/${article._id}`);
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        navigate(`/blog/${article._id}`);
+                                      }
+                                    }}
+                                    tabIndex={0}
+                                    role="button"
+                                    aria-label={`Read article: ${article.title}`}
                                 >
-                        {article.image && (
-                            <div className="h-48 w-full overflow-hidden">
-                                <img src={article.image} alt={article.title} className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" />
+                        {(article.image || article.coverImage) && (
+                            <div className="h-48 w-full overflow-hidden bg-gray-100">
+                                <img 
+                                  src={article.image || article.coverImage} 
+                                  alt={article.title} 
+                                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" 
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
                             </div>
                         )}
                         <div className="p-4">
@@ -290,12 +315,35 @@ const Blog = () => {
                             
                             <div className="flex items-center justify-between border-t border-gray-100 pt-3 mt-2">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500">
-                                        A
-                                    </div>
-                                    <span className="text-xs text-gray-500 font-medium">Author Name</span>
+                                    {article.author && typeof article.author === 'object' && article.author.name ? (
+                                      <>
+                                        {article.author.avatar ? (
+                                          <img 
+                                            src={article.author.avatar} 
+                                            alt={article.author.name} 
+                                            className="w-6 h-6 rounded-full object-cover"
+                                          />
+                                        ) : (
+                                          <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500">
+                                            {article.author.name.charAt(0).toUpperCase()}
+                                          </div>
+                                        )}
+                                        <span className="text-xs text-gray-500 font-medium">
+                                          {article.author.name}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500">
+                                          A
+                                        </div>
+                                        <span className="text-xs text-gray-500 font-medium">Author</span>
+                                      </>
+                                    )}
                                 </div>
-                                <span className="text-xs text-gray-400">3 min read</span>
+                                <span className="text-xs text-gray-400">
+                                  {article.views ? `${article.views} views` : 'New'}
+                                </span>
                             </div>
                                     </div>
                                 </div>

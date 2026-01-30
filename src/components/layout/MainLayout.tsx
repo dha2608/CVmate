@@ -114,18 +114,13 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
                     >
                       {user?.name}
                     </h3>
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mt-1">Full Stack Developer</p>
-                </div>
-                
-                <div className="py-4 px-6 border-b border-gray-100">
-                    <div className="flex justify-between items-center text-sm text-gray-600 mb-3">
-                        <span>Profile Views</span>
-                        <span className="font-bold text-red-600">128</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm text-gray-600">
-                        <span>Impressions</span>
-                        <span className="font-bold text-red-600">4,203</span>
-                    </div>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mt-1">
+                      {user?.careerGoal ? 
+                        user.careerGoal === 'new-job' ? 'Job Seeker' :
+                        user.careerGoal === 'internship' ? 'Intern' :
+                        user.careerGoal === 'career-switch' ? 'Career Switcher' : 'Professional'
+                      : 'Professional'}
+                    </p>
                 </div>
                 
                 <div className="p-4 hover:bg-gray-50 transition-colors">
