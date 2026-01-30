@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import OpenAI from 'openai';
 import Resume from '../models/Resume.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import logger from '../utils/logger.js';
 
-// Khởi tạo OpenAI client chỉ khi có API key
 const getOpenAIClient = () => {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -20,11 +20,13 @@ export const createResume = async (req: AuthRequest, res: Response, next: NextFu
       ...req.body
     });
     res.status(201).json({ success: true, data: resume });
-  } catch (error: any) {
-    console.error('Create Resume Error:', error);
-    // Kiểm tra lỗi validation từ Mongoose
-    if (error.name === 'ValidationError') {
-      const errors = Object.values(error.errors).map((err: any) => err.message);
+  } catch (error: unknown) {
+    logger.error('Create Resume Error', error instanceof Error ? error : new Error(String(error)), {
+      userId: req.user?._id,
+    });
+    if (error instanceof Error && error.name === 'ValidationError') {
+      const mongooseError = error as { errors?: Record<string, { message: string }> };
+      const errors = mongooseError.errors ? Object.values(mongooseError.errors).map((err) => err.message) : [];
       res.status(400).json({ 
         success: false, 
         message: 'Validation error', 
@@ -146,23 +148,27 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
 
       res.json({ success: true, data: enhancedText });
 
-    } catch (apiError: any) {
-      console.error('OpenAI Error:', apiError);
+    } catch (apiError: unknown) {
+      const error = apiError instanceof Error ? apiError : new Error(String(apiError));
+      logger.error('OpenAI Error in AI Enhance', error, {
+        userId: req.user?._id,
+        type,
+      });
       
-      // Phân loại lỗi để có message phù hợp
       let errorMessage = 'AI service is currently unavailable.';
-      if (apiError.status === 401) {
+      const errorObj = apiError as { status?: number; message?: string };
+      if (errorObj.status === 401) {
         errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
-      } else if (apiError.status === 429) {
+      } else if (errorObj.status === 429) {
         errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
-      } else if (apiError.message?.includes('API key')) {
+      } else if (errorObj.message?.includes('API key')) {
         errorMessage = 'OpenAI API key is invalid or missing.';
       }
 
       res.status(503).json({ 
         success: false, 
         message: errorMessage,
-        error: apiError.message || 'OpenAI API error'
+        error: error.message || 'OpenAI API error'
       });
     }
   } catch (error) {
@@ -172,7 +178,7 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
 
 export const analyzeResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { jobDescription } = req.body; // Optional JD for comparison
+    const { jobDescription } = req.body;
     const resume = await Resume.findOne({ _id: req.params.id, user: req.user?._id });
 
     if (!resume) {
@@ -228,22 +234,27 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
 
       res.json({ success: true, data: analysis });
 
-    } catch (e: any) {
-      console.error('OpenAI Analysis Error:', e);
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      logger.error('OpenAI Analysis Error', error, {
+        resumeId: req.params.id,
+        userId: req.user?._id,
+      });
       
       let errorMessage = 'ATS analysis service is currently unavailable.';
-      if (e.status === 401) {
+      const errorObj = e as { status?: number; message?: string };
+      if (errorObj.status === 401) {
         errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
-      } else if (e.status === 429) {
+      } else if (errorObj.status === 429) {
         errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
-      } else if (e.message?.includes('API key')) {
+      } else if (errorObj.message?.includes('API key')) {
         errorMessage = 'OpenAI API key is invalid or missing.';
       }
 
       res.status(503).json({ 
         success: false, 
         message: errorMessage,
-        error: e.message || 'OpenAI API error'
+        error: error.message || 'OpenAI API error'
       });
     }
 

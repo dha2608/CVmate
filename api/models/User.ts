@@ -43,7 +43,7 @@ const userSchema = new Schema<IUser>({
   password: { 
     type: String, 
     required: function(this: IUser) {
-      return !this.googleId; // Password chỉ required nếu không có Google OAuth
+      return !this.googleId;
     }
   },
   googleId: {
@@ -100,7 +100,6 @@ const userSchema = new Schema<IUser>({
 
 
 userSchema.pre('save', async function(next) {
-  // Chỉ hash password nếu có password và đã được modify
   if (!this.isModified('password') || !this.password) {
     return next(); 
   }

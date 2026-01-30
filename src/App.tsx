@@ -17,6 +17,9 @@ import Onboarding from "@/pages/Onboarding";
 import AuthCallback from "@/pages/AuthCallback";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import PaymentCancel from "@/pages/PaymentCancel";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
+import About from "@/pages/About";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function App() {
@@ -25,15 +28,15 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Home page - public */}
         <Route path="/" element={<Home />} />
-        
-        {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/about" element={<About />} />
         <Route 
           path="/onboarding" 
           element={
@@ -42,8 +45,6 @@ export default function App() {
             </ProtectedRoute>
           } 
         />
-        
-        {/* Protected routes - yêu cầu phải đăng nhập */}
         <Route 
           path="/dashboard" 
           element={
@@ -124,8 +125,6 @@ export default function App() {
             </ProtectedRoute>
           } 
         />
-        
-        {/* Catch-all route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

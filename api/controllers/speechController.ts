@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import OpenAI from 'openai';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import logger from '../utils/logger.js';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -59,12 +60,15 @@ export const speechToText = async (req: AuthRequest, res: Response, next: NextFu
           text: transcription.text,
         },
       });
-    } catch (apiError: any) {
-      console.error('OpenAI Whisper Error:', apiError);
+    } catch (apiError: unknown) {
+      const errorMessage = apiError instanceof Error ? apiError.message : 'Unknown error';
+      logger.error('OpenAI Whisper Error', apiError instanceof Error ? apiError : new Error(String(apiError)), {
+        userId: req.user?._id,
+      });
       res.status(503).json({
         success: false,
         message: 'Speech-to-text service unavailable. Please try typing instead.',
-        error: apiError.message,
+        error: errorMessage,
       });
     }
   } catch (error) {

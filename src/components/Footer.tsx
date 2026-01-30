@@ -1,0 +1,165 @@
+import { Link } from 'react-router-dom';
+import { FileText, Video, Users, Briefcase, BookOpen, HelpCircle, Mail, Facebook, Twitter, Linkedin, Github } from 'lucide-react';
+
+const Footer = () => {
+  return (
+    <footer className="bg-jet-black text-white border-t border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
+          {/* Brand Column */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-crimson-red rounded-lg text-white font-black text-xl flex items-center justify-center">
+                CV
+              </div>
+              <span className="text-xl font-bold">CV Mate</span>
+            </div>
+            <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+              Nền tảng AI-powered giúp bạn tạo CV chuyên nghiệp, luyện phỏng vấn và phát triển sự nghiệp. 
+              Tất cả trong một nơi.
+            </p>
+            <div className="flex gap-4">
+              <a href="#" className="text-gray-400 hover:text-crimson-red transition-colors" aria-label="Facebook">
+                <Facebook size={20} />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-crimson-red transition-colors" aria-label="Twitter">
+                <Twitter size={20} />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-crimson-red transition-colors" aria-label="LinkedIn">
+                <Linkedin size={20} />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-crimson-red transition-colors" aria-label="GitHub">
+                <Github size={20} />
+              </a>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+              <Briefcase size={18} />
+              Quick Links
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/builder" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
+                  <FileText size={14} />
+                  CV Builder
+                </Link>
+              </li>
+              <li>
+                <Link to="/interview" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
+                  <Video size={14} />
+                  Interview Practice
+                </Link>
+              </li>
+              <li>
+                <Link to="/jobs" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
+                  <Briefcase size={14} />
+                  Job Search
+                </Link>
+              </li>
+              <li>
+                <Link to="/blog" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
+                  <BookOpen size={14} />
+                  Career Blog
+                </Link>
+              </li>
+              <li>
+                <Link to="/community" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
+                  <Users size={14} />
+                  Community
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="font-bold text-white mb-4">Company</h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li>
+                <Link to="/about" className="hover:text-crimson-red transition-colors">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/blog" className="hover:text-crimson-red transition-colors">
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-crimson-red transition-colors">
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link to="/careers" className="hover:text-crimson-red transition-colors">
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link to="/partners" className="hover:text-crimson-red transition-colors">
+                  Partners
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal & Support */}
+          <div>
+            <h3 className="font-bold text-white mb-4">Legal & Support</h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li>
+                <Link to="/terms" className="hover:text-crimson-red transition-colors">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="hover:text-crimson-red transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/cookie-policy" className="hover:text-crimson-red transition-colors">
+                  Cookie Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/help" className="hover:text-crimson-red transition-colors flex items-center gap-2">
+                  <HelpCircle size={14} />
+                  Help Center
+                </Link>
+              </li>
+              <li>
+                <a href="mailto:support@cvmate.com" className="hover:text-crimson-red transition-colors flex items-center gap-2">
+                  <Mail size={14} />
+                  support@cvmate.com
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-gray-800">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+            <div>
+              © {new Date().getFullYear()} CV Mate. All rights reserved.
+            </div>
+            <div className="flex gap-6">
+              <Link to="/sitemap" className="hover:text-crimson-red transition-colors">
+                Sitemap
+              </Link>
+              <Link to="/accessibility" className="hover:text-crimson-red transition-colors">
+                Accessibility
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

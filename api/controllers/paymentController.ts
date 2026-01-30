@@ -1,13 +1,13 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Stripe from 'stripe';
 import User from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import logger from '../utils/logger.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-11-20.acacia',
 });
 
-// Tạo checkout session cho Premium subscription
 export const createCheckoutSession = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -21,7 +21,6 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, nex
       return;
     }
 
-    // Tạo hoặc lấy Stripe customer
     let customerId = user.subscription?.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -37,7 +36,6 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, nex
       await user.save();
     }
 
-    // Tạo checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -49,7 +47,7 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, nex
               name: 'CV Mate Premium',
               description: 'Unlimited AI features, priority support, and more',
             },
-            unit_amount: 999, // $9.99
+            unit_amount: 999,
             recurring: {
               interval: 'month',
             },
@@ -72,19 +70,29 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, nex
         url: session.url,
       },
     });
-  } catch (error: any) {
-    console.error('Stripe Error:', error);
-    res.status(500).json({ success: false, message: error.message || 'Failed to create checkout session' });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create checkout session';
+    logger.error('Stripe Error creating checkout session', error instanceof Error ? error : new Error(String(error)), {
+      userId: req.user?._id,
+    });
+    res.status(500).json({ success: false, message: errorMessage });
   }
 };
 
-// Webhook handler cho Stripe events
-export const stripeWebhook = async (req: any, res: Response, next: NextFunction) => {
+interface StripeWebhookRequest extends Request {
+  body: Buffer;
+  headers: {
+    'stripe-signature'?: string;
+    [key: string]: string | undefined;
+  };
+}
+
+export const stripeWebhook = async (req: StripeWebhookRequest, res: Response, next: NextFunction) => {
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.error('Stripe webhook secret not configured');
+    logger.error('Stripe webhook secret not configured', new Error('Missing STRIPE_WEBHOOK_SECRET'));
     return res.status(400).send('Webhook secret not configured');
   }
 
@@ -92,9 +100,10 @@ export const stripeWebhook = async (req: any, res: Response, next: NextFunction)
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-  } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    logger.error('Webhook signature verification failed', err instanceof Error ? err : new Error(String(err)));
+    return res.status(400).send(`Webhook Error: ${errorMessage}`);
   }
 
   try {
@@ -145,17 +154,18 @@ export const stripeWebhook = async (req: any, res: Response, next: NextFunction)
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.info(`Unhandled Stripe webhook event type: ${event.type}`);
     }
 
     res.json({ received: true });
-  } catch (error: any) {
-    console.error('Webhook handler error:', error);
+  } catch (error: unknown) {
+    logger.error('Webhook handler error', error instanceof Error ? error : new Error(String(error)), {
+      eventType: event.type,
+    });
     res.status(500).json({ error: 'Webhook handler failed' });
   }
 };
 
-// Lấy subscription status
 export const getSubscriptionStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const user = await User.findById(req.user?._id);
@@ -166,7 +176,6 @@ export const getSubscriptionStatus = async (req: AuthRequest, res: Response, nex
 
     const subscription = user.subscription || { plan: 'free', status: 'active' };
 
-    // Check if premium subscription is expired
     if (subscription.plan === 'premium' && subscription.endDate) {
       if (new Date() > subscription.endDate) {
         subscription.status = 'expired';
@@ -188,7 +197,6 @@ export const getSubscriptionStatus = async (req: AuthRequest, res: Response, nex
   }
 };
 
-// Cancel subscription
 export const cancelSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -213,8 +221,11 @@ export const cancelSubscription = async (req: AuthRequest, res: Response, next: 
       success: true,
       message: 'Subscription will be cancelled at the end of the billing period',
     });
-  } catch (error: any) {
-    console.error('Cancel subscription error:', error);
-    res.status(500).json({ success: false, message: error.message || 'Failed to cancel subscription' });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to cancel subscription';
+    logger.error('Cancel subscription error', error instanceof Error ? error : new Error(String(error)), {
+      userId: req.user?._id,
+    });
+    res.status(500).json({ success: false, message: errorMessage });
   }
 };

@@ -6,13 +6,11 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Tạo thư mục uploads nếu chưa có
 const uploadsDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Cấu hình storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
@@ -23,7 +21,6 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter - chỉ cho phép images
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -39,13 +36,10 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
 export const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
+    fileSize: parseInt(process.env.MAX_FILE_SIZE || '5242880') // Default: 5MB
   },
   fileFilter
 });
 
-// Single file upload middleware
 export const uploadSingle = upload.single('avatar');
-
-// Multiple files upload middleware (nếu cần)
 export const uploadMultiple = upload.array('images', 10);

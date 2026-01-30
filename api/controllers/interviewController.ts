@@ -1,9 +1,9 @@
 import { Response, NextFunction } from 'express';
 import OpenAI from 'openai';
-import Interview, { IInterview } from '../models/Interview.js'; // Import Interface từ Model
+import Interview, { IInterview } from '../models/Interview.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import logger from '../utils/logger.js';
 
-// Khởi tạo OpenAI client chỉ khi có API key
 const getOpenAIClient = () => {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -12,7 +12,6 @@ const getOpenAIClient = () => {
   return new OpenAI({ apiKey });
 };
 
-// Định nghĩa cấu hình Persona
 const PERSONA_CONFIG = {
   'friendly-hr': {
     prompt: "You are a friendly HR recruiter named Sarah. Your goal is to assess culture fit and soft skills. Be warm, encouraging, and polite. Ask one question at a time. Keep responses concise.",
@@ -56,7 +55,7 @@ export const startInterview = async (req: AuthRequest, res: Response, next: Next
           timestamp: new Date()
         }
       ],
-      status: 'active' // Dùng status thay vì isCompleted
+      status: 'active'
     });
 
     res.status(201).json({ success: true, data: interview });
@@ -77,7 +76,6 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    // So sánh ID an toàn
     if (interview.user.toString() !== req.user?._id.toString()) {
       res.status(403).json({ success: false, message: 'Not authorized' });
       return;
@@ -88,23 +86,20 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    // 1. Lưu tin nhắn User
     interview.chatHistory.push({
       role: 'user',
       content: message,
       timestamp: new Date()
     });
 
-    // 2. Chuẩn bị context cho AI (System prompt + 10 tin nhắn gần nhất)
     const historyForAI = [
-      interview.chatHistory[0], // System prompt
-      ...interview.chatHistory.slice(-10) // Context window
+      interview.chatHistory[0],
+      ...interview.chatHistory.slice(-10)
     ].map(msg => ({
       role: msg.role as 'system' | 'user' | 'assistant',
       content: msg.content
     }));
 
-    // 3. Gọi OpenAI
     const openai = getOpenAIClient();
     if (!openai) {
       res.status(503).json({ 
@@ -123,7 +118,6 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
 
       const aiResponse = completion.choices[0].message.content || "I'm sorry, I didn't catch that.";
 
-      // 4. Lưu phản hồi AI
       interview.chatHistory.push({
         role: 'assistant',
         content: aiResponse,
@@ -133,22 +127,27 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       await interview.save();
       res.json({ success: true, data: interview });
 
-    } catch (aiError: any) {
-      console.error('OpenAI Error:', aiError);
+    } catch (aiError: unknown) {
+      const error = aiError instanceof Error ? aiError : new Error(String(aiError));
+      logger.error('OpenAI Error in interview chat', error, {
+        interviewId: id,
+        userId: req.user?._id,
+      });
       
       let errorMessage = 'AI interview service is currently unavailable.';
-      if (aiError.status === 401) {
+      const errorObj = aiError as { status?: number; message?: string };
+      if (errorObj.status === 401) {
         errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
-      } else if (aiError.status === 429) {
+      } else if (errorObj.status === 429) {
         errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
-      } else if (aiError.message?.includes('API key')) {
+      } else if (errorObj.message?.includes('API key')) {
         errorMessage = 'OpenAI API key is invalid or missing.';
       }
 
       res.status(503).json({ 
         success: false, 
         message: errorMessage,
-        error: aiError.message || 'OpenAI API error'
+        error: error.message || 'OpenAI API error'
       });
     }
 
@@ -172,13 +171,11 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
-    // Nếu đã có kết quả rồi thì trả về luôn
     if (interview.status === 'completed' && interview.feedback?.suggestions) {
       res.json({ success: true, data: interview });
       return;
     }
 
-    // Tổng hợp nội dung chat để AI chấm điểm
     const conversationText = interview.chatHistory
       .filter(msg => msg.role !== 'system')
       .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
@@ -219,11 +216,9 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
 
       const aiData = JSON.parse(responseContent);
 
-      // Map dữ liệu từ AI sang Structure của Model (Interview.ts)
       interview.feedback = {
         confidenceScore: aiData.score || 0,
-        contentScore: aiData.score || 0, // Hoặc tính toán riêng nếu cần
-        // Model hiện tại lưu suggestions là String, nên ta gộp mảng lại
+        contentScore: aiData.score || 0,
         suggestions: `SUMMARY: ${aiData.summary || 'No summary available'}\n\nSTRENGTHS:\n- ${(aiData.strengths || []).join('\n- ') || 'None identified'}\n\nIMPROVEMENTS:\n- ${(aiData.improvements || []).join('\n- ') || 'None identified'}`
       };
       
@@ -232,15 +227,20 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
 
       res.json({ success: true, data: interview });
 
-    } catch (error: any) {
-      console.error('Feedback Gen Error:', error);
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Feedback generation error', err, {
+        interviewId: id,
+        userId: req.user?._id,
+      });
       
       let errorMessage = 'Feedback generation service is currently unavailable.';
-      if (error.status === 401) {
+      const errorObj = error as { status?: number; message?: string };
+      if (errorObj.status === 401) {
         errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
-      } else if (error.status === 429) {
+      } else if (errorObj.status === 429) {
         errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
-      } else if (error.message?.includes('API key')) {
+      } else if (errorObj.message?.includes('API key')) {
         errorMessage = 'OpenAI API key is invalid or missing.';
       }
 
@@ -259,7 +259,7 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
 export const getInterviews = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const interviews = await Interview.find({ user: req.user?._id })
-      .select('persona feedback status createdAt updatedAt') // Chọn field cần thiết
+      .select('persona feedback status createdAt updatedAt')
       .sort({ createdAt: -1 });
       
     res.json({ success: true, data: interviews });

@@ -6,6 +6,8 @@ import {
   Home, Users, Briefcase, MessageSquare, Bell, Search, 
   User as UserIcon, LogOut, FileText, Sparkles, MoreHorizontal, Menu
 } from 'lucide-react';
+import Footer from '@/components/Footer';
+import SupportChat from '@/components/SupportChat';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -164,6 +166,12 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
 
         </div>
       </main>
+
+      {/* Footer */}
+      <Footer />
+
+      {/* Support Chat Widget */}
+      <SupportChat />
     </div>
   );
 };

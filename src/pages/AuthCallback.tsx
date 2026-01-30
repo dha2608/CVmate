@@ -12,10 +12,10 @@ const AuthCallback = () => {
     const needsOnboarding = searchParams.get('onboarding') === 'true';
 
     if (token) {
-      // Lưu token và fetch user info
       const fetchUser = async () => {
         try {
-          const response = await fetch('http://localhost:5001/api/auth/me', {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+          const response = await fetch(`${API_URL}/auth/me`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -24,12 +24,10 @@ const AuthCallback = () => {
           const data = await response.json();
 
           if (data.success) {
-            // Lưu user vào localStorage và store
             const userData = { ...data.data, token };
             localStorage.setItem('user', JSON.stringify(userData));
             setUser(userData);
 
-            // Redirect dựa trên onboarding status
             if (needsOnboarding || !data.data.onboardingCompleted) {
               navigate('/onboarding');
             } else {

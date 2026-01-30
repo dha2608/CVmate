@@ -13,13 +13,7 @@ export const uploadAvatar = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
-    // Trong production, nên upload lên Cloudinary hoặc S3
-    // Ở đây ta trả về URL local để frontend có thể hiển thị
     const fileUrl = `/uploads/${req.file.filename}`;
-    
-    // Hoặc nếu dùng Cloudinary:
-    // const result = await cloudinary.uploader.upload(req.file.path);
-    // const fileUrl = result.secure_url;
 
     res.json({
       success: true,
@@ -34,7 +28,6 @@ export const uploadAvatar = async (req: AuthRequest, res: Response, next: NextFu
   }
 };
 
-// Helper để convert file thành base64 (cho frontend preview)
 export const getFileAsBase64 = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { filename } = req.params;

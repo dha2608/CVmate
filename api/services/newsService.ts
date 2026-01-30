@@ -1,5 +1,6 @@
 import Parser from 'rss-parser';
 import axios from 'axios';
+import logger from '../utils/logger.js';
 
 const parser = new Parser({
   customFields: {
@@ -107,7 +108,7 @@ const fetchFromNewsAPI = async (apiKey?: string): Promise<NewsArticle[]> => {
       }));
     }
   } catch (error) {
-    console.error('NewsAPI Error:', error);
+    logger.error('NewsAPI Error', error instanceof Error ? error : new Error(String(error)));
   }
 
   return [];
@@ -162,7 +163,7 @@ export const fetchCareerNews = async (limit: number = 20): Promise<NewsArticle[]
         }
         return [];
       } catch (error) {
-        console.error(`Error fetching ${feed.name}:`, error);
+        logger.warn(`Error fetching RSS feed: ${feed.name}`, { feedUrl: feed.url });
         return [];
       }
     });
@@ -188,7 +189,7 @@ export const fetchCareerNews = async (limit: number = 20): Promise<NewsArticle[]
 
     return sortedArticles;
   } catch (error) {
-    console.error('Error fetching career news:', error);
+    logger.error('Error fetching career news', error instanceof Error ? error : new Error(String(error)));
     throw new Error('Failed to fetch career news');
   }
 };

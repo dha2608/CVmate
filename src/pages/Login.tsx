@@ -36,7 +36,6 @@ const Login = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-white">
       <div className="w-full max-w-md p-10 space-y-8">
-        {/* Logo */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-crimson-red rounded-xl text-white font-black text-2xl mb-4">
             CV
@@ -96,7 +95,6 @@ const Login = () => {
           variant="outline" 
           className="w-full h-12 border-2 border-gray-200 hover:bg-gray-50 font-semibold"
           onClick={() => {
-            // Redirect to Google OAuth
             window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/google`;
           }}
         >

@@ -20,7 +20,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   setUser: (user) => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
-      // Sync legacy token key so existing stores that read from localStorage['token'] still work
       if (user.token) {
         localStorage.setItem('token', user.token);
       }

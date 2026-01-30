@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import OpenAI from 'openai';
 import Article from '../models/Article.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import logger from '../utils/logger.js';
 
-// Khởi tạo OpenAI client chỉ khi có API key
 const getOpenAIClient = () => {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -59,13 +59,14 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
           tags = ['general'];
         }
       } catch (error) {
-        console.error('OpenAI summary generation error:', error);
-        // Fallback to simple summary if AI fails
+        logger.error('OpenAI summary generation error', error instanceof Error ? error : new Error(String(error)), {
+          articleTitle: title,
+          userId: req.user?._id,
+        });
         summary = content.substring(0, 150) + '...';
         tags = ['general'];
       }
     } else {
-      // No API key, use simple fallback
       summary = content.substring(0, 150) + '...';
       tags = ['general'];
     }
@@ -78,7 +79,7 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
       category,
       summary,
       tags,
-      image: image, // Store in both fields for compatibility
+      image: image,
       coverImage: image,
       isPublished: true,
     });
@@ -96,10 +97,10 @@ export const getArticles = async (req: Request, res: Response, next: NextFunctio
     const skip = (page - 1) * limit;
     const { search, category } = req.query;
 
-    const query: any = {};
-    
-    // Show all articles (isPublished filter can be added if needed)
-    // For now, show all articles to users
+    const query: {
+      $or?: Array<{ title?: { $regex: string; $options: string }; summary?: { $regex: string; $options: string } }>;
+      category?: string;
+    } = {};
 
     if (search) {
       query.$or = [

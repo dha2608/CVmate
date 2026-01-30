@@ -41,10 +41,7 @@ const Dashboard = () => {
 
   return (
     <MainLayout>
-      {/* Chỉ giữ lại wrapper cho cột giữa, bỏ Grid tổng */}
       <div className="space-y-6">
-             
-         {/* 1. Welcome & Post Input Section */}
          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between gap-4 mb-6">
                <div className="flex-1">
@@ -56,7 +53,6 @@ const Dashboard = () => {
                </Button>
             </div>
 
-            {/* Input giả lập để viết bài */}
             <div 
                onClick={() => navigate('/community')}
                className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors border border-gray-200/50"
@@ -68,7 +64,6 @@ const Dashboard = () => {
             </div>
          </div>
 
-         {/* 2. Quick Actions (Hành động nhanh) */}
          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <QuickActionCard 
                icon={<FileText className="text-blue-600" size={24} />}
@@ -100,7 +95,6 @@ const Dashboard = () => {
             />
          </div>
 
-         {/* 3. Dashboard Stats (Thống kê) */}
          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
                <TrendingUp size={18} className="text-rose-500" />
@@ -113,7 +107,6 @@ const Dashboard = () => {
             </div>
          </div>
 
-         {/* 4. Recommended Feed */}
          <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
                <h2 className="font-bold text-gray-900">Recommended for you</h2>
@@ -141,7 +134,6 @@ const Dashboard = () => {
   );
 };
 
-// Sub-components
 const QuickActionCard = ({ icon, title, desc, color, onClick }: any) => (
    <div 
       onClick={onClick}

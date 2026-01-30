@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import session from 'express-session';
 import connectDB from './config/db.js';
 import passport from './config/passport.js';
+import logger from './utils/logger.js';
 
 // Import Routes
 import authRoutes from './routes/auth.js';
@@ -91,7 +92,11 @@ app.use((req: Request, res: Response) => {
  * Error Handler
  */
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
-  console.error(`[Error] ${req.method} ${req.path}:`, error);
+  logger.error(`Error ${req.method} ${req.path}`, error instanceof Error ? error : new Error(String(error)), {
+    method: req.method,
+    path: req.path,
+    statusCode: error.statusCode || 500,
+  });
   const statusCode = error.statusCode || 500;
   res.status(statusCode).json({
     success: false,

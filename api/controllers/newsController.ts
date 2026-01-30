@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { getCachedNews } from '../services/newsService.js';
+import logger from '../utils/logger.js';
 
 export const getNews = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -11,12 +12,13 @@ export const getNews = async (req: Request, res: Response, next: NextFunction) =
       data: news,
       count: news.length,
     });
-  } catch (error: any) {
-    console.error('Error fetching news:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error fetching news', error instanceof Error ? error : new Error(String(error)));
     res.status(500).json({
       success: false,
       message: 'Failed to fetch career news',
-      error: error.message,
+      error: errorMessage,
     });
   }
 };
@@ -34,12 +36,13 @@ export const refreshNews = async (req: Request, res: Response, next: NextFunctio
       data: news,
       count: news.length,
     });
-  } catch (error: any) {
-    console.error('Error refreshing news:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error refreshing news', error instanceof Error ? error : new Error(String(error)));
     res.status(500).json({
       success: false,
       message: 'Failed to refresh career news',
-      error: error.message,
+      error: errorMessage,
     });
   }
 };

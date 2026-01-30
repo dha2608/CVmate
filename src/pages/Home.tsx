@@ -1,10 +1,31 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import SEOHead from '@/components/SEOHead';
-import { Sparkles, FileText, Video, Users, ArrowRight, Check } from 'lucide-react';
+import { Sparkles, FileText, Video, Users, ArrowRight, Check, BookOpen, ExternalLink } from 'lucide-react';
+import { api } from '@/lib/utils';
+import Footer from '@/components/Footer';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [latestArticles, setLatestArticles] = useState<any[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(true);
+
+  useEffect(() => {
+    const fetchLatestArticles = async () => {
+      try {
+        const response = await api.getArticles();
+        if (response.success) {
+          setLatestArticles(response.data.slice(0, 3)); // Get latest 3 articles
+        }
+      } catch (error) {
+        console.error('Failed to fetch articles:', error);
+      } finally {
+        setLoadingArticles(false);
+      }
+    };
+    fetchLatestArticles();
+  }, []);
 
   return (
     <>
@@ -159,6 +180,97 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Latest Articles Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <BookOpen className="w-8 h-8 text-crimson-red" />
+              <h2 className="text-4xl md:text-5xl font-black text-jet-black">
+                Latest Career Insights
+              </h2>
+            </div>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Đọc các bài viết mới nhất từ cộng đồng chuyên gia
+            </p>
+          </div>
+
+          {loadingArticles ? (
+            <div className="grid md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-gray-100 rounded-lg h-64 animate-pulse" />
+              ))}
+            </div>
+          ) : latestArticles.length > 0 ? (
+            <div className="grid md:grid-cols-3 gap-6">
+              {latestArticles.map((article, index) => (
+                <article
+                  key={article._id}
+                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl hover-lift transition-all duration-300 cursor-pointer animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                  onClick={() => navigate(`/blog/${article._id}`)}
+                >
+                  {article.image || article.coverImage ? (
+                    <div className="h-48 w-full overflow-hidden bg-gray-100">
+                      <img
+                        src={article.image || article.coverImage}
+                        alt={article.title}
+                        className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-48 w-full bg-gradient-to-br from-crimson-red to-fire-red flex items-center justify-center">
+                      <BookOpen className="w-16 h-16 text-white opacity-50" />
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-crimson-red uppercase tracking-wider">
+                        {article.category}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {new Date(article.createdAt).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-jet-black mb-3 leading-tight line-clamp-2 hover:text-crimson-red transition-colors">
+                      {article.title}
+                    </h3>
+                    {article.summary && (
+                      <p className="text-sm text-gray-600 line-clamp-3 mb-4">{article.summary}</p>
+                    )}
+                    <div className="flex items-center gap-2 text-sm font-semibold text-crimson-red hover:text-fire-red transition-colors">
+                      Đọc thêm
+                      <ExternalLink size={14} />
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <BookOpen className="mx-auto text-gray-400 mb-4" size={48} />
+              <p className="text-gray-600">Chưa có bài viết nào. Hãy là người đầu tiên viết bài!</p>
+            </div>
+          )}
+
+          {latestArticles.length > 0 && (
+            <div className="text-center mt-8">
+              <Button
+                onClick={() => navigate('/blog')}
+                variant="outline"
+                className="border-2 border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white"
+              >
+                Xem tất cả bài viết
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-24 bg-jet-black text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -181,46 +293,7 @@ const Home = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-jet-black text-white py-12 border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center justify-center w-12 h-12 bg-crimson-red rounded-lg text-white font-black text-xl mb-4">
-                CV
-              </div>
-              <p className="text-gray-400 text-sm">
-                AI-powered career platform helping professionals succeed.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Product</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">CV Builder</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Interview Practice</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">ATS Checker</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Company</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Legal</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-12 pt-8 border-t border-gray-800 text-center text-sm text-gray-400">
-            © 2024 CV Mate. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <Footer />
       </div>
     </>
   );

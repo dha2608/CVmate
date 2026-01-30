@@ -2,10 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
-import User from '../models/User.js';
+import User, { IUser } from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
-// Generate JWT Token helper (export để dùng ở passport config)
 export const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET as string, {
     expiresIn: '30d',
@@ -95,7 +94,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
 export const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = req.user as any;
+    const user = req.user as IUser | undefined;
     
     if (!user) {
       res.status(401).json({ success: false, message: 'Google authentication failed' });
@@ -104,7 +103,6 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
 
     const token = generateToken((user._id as Types.ObjectId).toString());
     
-    // Redirect về frontend với token
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.redirect(`${frontendUrl}/auth/callback?token=${token}&onboarding=${!user.onboardingCompleted}`);
   } catch (error) {
@@ -114,7 +112,6 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
 
 export const getMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    // req.user
     const user = await User.findById(req.user?._id).select('-password');
     
     if (!user) {

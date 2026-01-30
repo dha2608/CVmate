@@ -2,6 +2,7 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import logger from '../utils/logger.js';
 
 // Generate JWT Token
 const generateToken = (id: string) => {
@@ -54,9 +55,9 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       }
     )
   );
-  console.log('✅ Google OAuth strategy initialized');
+  logger.info('✅ Google OAuth strategy initialized');
 } else {
-  console.log('⚠️  Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable.');
+  logger.warn('⚠️  Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable.');
 }
 
 passport.serializeUser((user: any, done) => {

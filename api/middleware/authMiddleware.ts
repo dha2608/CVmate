@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import User from '../models/User.js';
+import User, { IUser } from '../models/User.js';
 
 interface DecodedToken {
   id: string;
@@ -9,7 +9,7 @@ interface DecodedToken {
 }
 
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: IUser;
 }
 
 export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {

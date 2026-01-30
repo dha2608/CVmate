@@ -5,12 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// API Configuration
-// Mặc định dùng port 5001 để khớp với backend (xem api/server.ts),
-// có thể override bằng biến môi trường VITE_API_URL.
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
-// Get auth token from localStorage
 const getAuthToken = (): string | null => {
   const user = localStorage.getItem('user');
   if (user) {
@@ -23,8 +19,6 @@ const getAuthToken = (): string | null => {
   }
   return null;
 };
-
-// API Request Helper
 interface ApiOptions extends RequestInit {
   requiresAuth?: boolean;
 }
@@ -60,9 +54,7 @@ export const apiRequest = async <T = any>(
   return response.json();
 };
 
-// Specific API Methods
 export const api = {
-  // Auth
   login: (email: string, password: string) =>
     apiRequest<{ success: boolean; data: any }>('/auth/login', {
       method: 'POST',
@@ -85,7 +77,6 @@ export const api = {
       body: JSON.stringify(payload),
     }),
 
-  // Resume
   getResumes: () => apiRequest<{ success: boolean; data: any[] }>('/resumes'),
   
   getResume: (id: string) => apiRequest<{ success: boolean; data: any }>(`/resumes/${id}`),
@@ -125,7 +116,6 @@ export const api = {
       body: JSON.stringify({ careerGoal }),
     }),
 
-  // Interview
   startInterview: (persona: string) =>
     apiRequest<{ success: boolean; data: any }>('/interviews/start', {
       method: 'POST',
@@ -149,11 +139,9 @@ export const api = {
   getInterviews: () =>
     apiRequest<{ success: boolean; data: any[] }>('/interviews'),
 
-  // Dashboard
   getDashboardStats: () =>
     apiRequest<{ success: boolean; data: any }>('/dashboard/stats'),
 
-  // Posts
   getPosts: () => apiRequest<{ success: boolean; data: any[] }>('/posts'),
   
   createPost: (content: string, imageUrl?: string) =>
@@ -173,12 +161,10 @@ export const api = {
       body: JSON.stringify({ text: content }),
     }),
 
-  // Articles
   getArticles: () => apiRequest<{ success: boolean; data: any[] }>('/articles'),
   
   getArticle: (id: string) => apiRequest<{ success: boolean; data: any }>(`/articles/${id}`),
 
-  // News
   getNews: (limit?: number) =>
     apiRequest<{ success: boolean; data: any[]; count: number }>(`/news?limit=${limit || 20}`, {
       requiresAuth: false,
@@ -190,7 +176,6 @@ export const api = {
       requiresAuth: false,
     }),
 
-  // Payment
   createCheckoutSession: () =>
     apiRequest<{ success: boolean; data: { sessionId: string; url: string } }>('/payment/create-checkout-session', {
       method: 'POST',
@@ -200,11 +185,10 @@ export const api = {
     apiRequest<{ success: boolean; data: { plan: string; status: string; endDate?: string } }>('/payment/subscription-status'),
 
   cancelSubscription: () =>
-    apiRequest<{ success: boolean; message: string }>('/payment/cancel-subscription', {
+    apiRequest<{ success: boolean;       message: string }>('/payment/cancel-subscription', {
       method: 'POST',
     }),
 
-  // Jobs
   getJobs: (params?: { page?: number; limit?: number; search?: string; type?: string; location?: string }) => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
