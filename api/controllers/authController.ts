@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 import User from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
-// Hàm tạo Token JWT
+//tạo Token JWT
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET as string, {
     expiresIn: '30d',
@@ -45,7 +45,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
           name: user.name,
           email: user.email,
           avatar: user.avatar,
-          role: user.role, // Giả sử model User có trường role
+          role: user.role,
           token: generateToken((user._id as Types.ObjectId).toString()),
         },
       });
@@ -90,7 +90,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
 export const getMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    // req.user đã được middleware protect gắn vào
+    // req.user
     const user = await User.findById(req.user?._id).select('-password');
     
     if (!user) {
@@ -111,7 +111,7 @@ export const updateUserProfile = async (req: AuthRequest, res: Response, next: N
     if (user) {
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
-      // user.bio = req.body.bio || user.bio; // Bỏ comment nếu User model có field bio
+      // user.bio = req.body.bio || user.bio; /
       user.avatar = req.body.avatar || user.avatar;
 
       if (req.body.password) {

@@ -19,7 +19,7 @@ export const getDashboardStats = async (req: AuthRequest, res: Response, next: N
       recentResumes,
       recentInterviews
     ] = await Promise.all([
-      // 1. Resume Statistics (Count & Average ATS Score)
+      // 1. Resume Statistics 
       Resume.aggregate([
         { $match: { user: userId } },
         {
@@ -31,7 +31,7 @@ export const getDashboardStats = async (req: AuthRequest, res: Response, next: N
         }
       ]),
 
-      // 2. Interview Statistics (Count & Average Performance Score)
+      // 2. Interview Statistics
       Interview.aggregate([
         { $match: { user: userId, isCompleted: true } },
         {
@@ -48,7 +48,7 @@ export const getDashboardStats = async (req: AuthRequest, res: Response, next: N
       Article.countDocuments({ author: userId }),
       Job.countDocuments({ applicants: userId }),
 
-      // 4. Recent Activities (For Quick Access UI)
+      // 4. Recent Activities
       Resume.find({ user: userId })
         .select('title atsScore themeConfig.template updatedAt')
         .sort({ updatedAt: -1 })

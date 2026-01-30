@@ -20,14 +20,14 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-sans text-slate-900">
-      {/* Navbar: Trắng tinh khôi, shadow nhẹ */}
+      {/* Navbar*/}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             
             {/* Logo & Search */}
             <div className="flex items-center gap-6">
-              {/* Logo Đỏ Đen nổi bật */}
+              {/* Logo */}
               <div 
                 className="flex items-center justify-center w-10 h-10 bg-red-600 rounded-lg text-white font-black text-xl cursor-pointer hover:bg-red-700 transition-colors"
                 onClick={() => navigate('/dashboard')}
@@ -45,7 +45,7 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
               </div>
             </div>
 
-            {/* Nav Icons: Active sẽ màu Đỏ */}
+            {/* Nav Icons*/}
             <ul className="flex items-center gap-1 sm:gap-6 h-full">
               <NavItem icon={<Home size={20} />} label="Home" active={isActive('/dashboard')} onClick={() => navigate('/dashboard')} />
               <NavItem icon={<Users size={20} />} label="Community" active={isActive('/community')} onClick={() => navigate('/community')} />
@@ -94,7 +94,7 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
           {/* Left Sidebar (Profile) */}
           <div className="hidden md:block col-span-3">
              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden sticky top-24 group">
-                {/* Header Profile: Màu đen sang trọng */}
+                {/* Header Profile */}
                 <div className="h-24 bg-zinc-900 relative">
                    <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
                         <div className="w-20 h-20 rounded-full border-4 border-white bg-white overflow-hidden flex items-center justify-center shadow-md">
@@ -137,7 +137,7 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
             {children}
           </div>
 
-          {/* Right Sidebar (News) */}
+          {/* News */}
           <div className="hidden md:block col-span-3">
             {rightSidebar || (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-24">
@@ -164,7 +164,6 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
   );
 };
 
-// NavItem Component (Red Active State)
 const NavItem = ({ icon, label, active, onClick }: { icon: any, label: string, active: boolean, onClick?: () => void }) => (
   <li 
     className={`flex flex-col items-center justify-center cursor-pointer px-4 h-full border-b-[3px] transition-all duration-200 group relative ${active ? 'border-red-600 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}
