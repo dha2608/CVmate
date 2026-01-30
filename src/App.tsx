@@ -15,6 +15,8 @@ import Notifications from "@/pages/Notifications";
 import Profile from "@/pages/Profile";
 import Onboarding from "@/pages/Onboarding";
 import AuthCallback from "@/pages/AuthCallback";
+import PaymentSuccess from "@/pages/PaymentSuccess";
+import PaymentCancel from "@/pages/PaymentCancel";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function App() {
@@ -30,6 +32,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/payment/cancel" element={<PaymentCancel />} />
         <Route 
           path="/onboarding" 
           element={

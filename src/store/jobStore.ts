@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api } from '@/lib/utils';
 
 interface Job {
   _id: string;
@@ -11,70 +12,75 @@ interface Job {
   requirements: string[];
   logo?: string;
   postedAt: string;
+  postedBy?: any;
+  applicants?: string[];
 }
 
 interface JobState {
   jobs: Job[];
   isLoading: boolean;
   error: string | null;
-  fetchJobs: () => Promise<void>;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  } | null;
+  fetchJobs: (params?: { page?: number; limit?: number; search?: string; type?: string; location?: string }) => Promise<void>;
   applyJob: (jobId: string) => Promise<void>;
+  getJob: (id: string) => Promise<Job | null>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-
-export const useJobStore = create<JobState>((set) => ({
+export const useJobStore = create<JobState>((set, get) => ({
   jobs: [],
   isLoading: false,
   error: null,
+  pagination: null,
 
-  fetchJobs: async () => {
-    set({ isLoading: true });
+  fetchJobs: async (params = {}) => {
+    set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`${API_URL}/jobs`);
-      const data = await res.json();
-      if (data.success) {
-        set({ jobs: data.data, isLoading: false });
+      const response = await api.getJobs(params);
+      if (response.success) {
+        set({ 
+          jobs: response.data, 
+          pagination: response.pagination,
+          isLoading: false 
+        });
       } else {
-        set({ error: data.message, isLoading: false });
+        set({ error: 'Failed to fetch jobs', isLoading: false });
       }
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ error: error.message || 'Failed to fetch jobs', isLoading: false });
+    }
+  },
+
+  getJob: async (id: string) => {
+    try {
+      const response = await api.getJob(id);
+      if (response.success) {
+        return response.data;
+      }
+      return null;
+    } catch (error: any) {
+      console.error('Failed to fetch job:', error);
+      return null;
     }
   },
 
   applyJob: async (jobId: string) => {
     try {
-      const userData = localStorage.getItem('user');
-      const token = userData ? JSON.parse(userData).token : null;
-      
-      if (!token) {
-        alert('Please login to apply for jobs');
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/jobs/${jobId}/apply`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        }
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert('Applied successfully!');
+      const response = await api.applyJob(jobId);
+      if (response.success) {
         // Refresh jobs to update application status
-        const refreshRes = await fetch(`${API_URL}/jobs`);
-        const refreshData = await refreshRes.json();
-        if (refreshData.success) {
-          set({ jobs: refreshData.data });
-        }
+        await get().fetchJobs();
+        return true;
       } else {
-        alert(data.message || 'Failed to apply');
+        throw new Error(response.message || 'Failed to apply');
       }
     } catch (error: any) {
-      console.error(error);
-      alert('Error applying: ' + (error.message || 'Unknown error'));
+      console.error('Error applying:', error);
+      throw error;
     }
   }
 }));

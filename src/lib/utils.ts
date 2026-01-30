@@ -189,4 +189,43 @@ export const api = {
       method: 'POST',
       requiresAuth: false,
     }),
+
+  // Payment
+  createCheckoutSession: () =>
+    apiRequest<{ success: boolean; data: { sessionId: string; url: string } }>('/payment/create-checkout-session', {
+      method: 'POST',
+    }),
+
+  getSubscriptionStatus: () =>
+    apiRequest<{ success: boolean; data: { plan: string; status: string; endDate?: string } }>('/payment/subscription-status'),
+
+  cancelSubscription: () =>
+    apiRequest<{ success: boolean; message: string }>('/payment/cancel-subscription', {
+      method: 'POST',
+    }),
+
+  // Jobs
+  getJobs: (params?: { page?: number; limit?: number; search?: string; type?: string; location?: string }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.type) queryParams.append('type', params.type);
+    if (params?.location) queryParams.append('location', params.location);
+    return apiRequest<{ success: boolean; data: any[]; pagination: any }>(`/jobs?${queryParams.toString()}`);
+  },
+
+  getJob: (id: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/jobs/${id}`),
+
+  createJob: (data: any) =>
+    apiRequest<{ success: boolean; data: any }>('/jobs', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  applyJob: (id: string) =>
+    apiRequest<{ success: boolean; message: string }>(`/jobs/${id}/apply`, {
+      method: 'POST',
+    }),
 };

@@ -1,22 +1,59 @@
 import { useEffect, useState } from 'react';
 import { useJobStore } from '@/store/jobStore';
+import { useAuthStore } from '@/store/authStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Briefcase, MapPin, DollarSign, Clock } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign, Clock, Search, Filter, CheckCircle2 } from 'lucide-react';
 
 const Jobs = () => {
-  const { jobs, fetchJobs, applyJob, isLoading } = useJobStore();
+  const { user } = useAuthStore();
+  const { jobs, fetchJobs, applyJob, isLoading, pagination } = useJobStore();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState<string>('All');
+  const [locationFilter, setLocationFilter] = useState('');
+  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    fetchJobs();
+    fetchJobs({ page: 1, limit: 20 });
   }, []);
 
-  const filteredJobs = jobs.filter(job => 
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    job.company.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    // Check which jobs user has applied to
+    if (user && jobs.length > 0) {
+      const applied = new Set<string>();
+      jobs.forEach(job => {
+        if (job.applicants?.some((id: any) => id.toString() === user._id)) {
+          applied.add(job._id);
+        }
+      });
+      setAppliedJobs(applied);
+    }
+  }, [jobs, user]);
+
+  const handleSearch = () => {
+    fetchJobs({
+      page: 1,
+      limit: 20,
+      search: searchTerm || undefined,
+      type: selectedType !== 'All' ? selectedType : undefined,
+      location: locationFilter || undefined,
+    });
+  };
+
+  const handleApply = async (jobId: string) => {
+    if (!user) {
+      alert('Please login to apply for jobs');
+      return;
+    }
+    try {
+      await applyJob(jobId);
+      setAppliedJobs(prev => new Set([...prev, jobId]));
+      alert('Applied successfully!');
+    } catch (error: any) {
+      alert(error.message || 'Failed to apply');
+    }
+  };
 
   return (
     <MainLayout
@@ -43,16 +80,49 @@ const Jobs = () => {
           </div>
       }
     >
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Find your dream job</h1>
-        <div className="flex gap-2">
-            <Input 
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6 animate-fade-in">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Find your dream job</h1>
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <Input 
                 placeholder="Search by title, skill, or company" 
-                className="flex-1"
+                className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              />
+            </div>
+            <Button onClick={handleSearch} className="bg-accent hover:bg-red-700 text-white">
+              <Search size={18} className="mr-2" />
+              Search
+            </Button>
+          </div>
+          <div className="flex gap-4 items-center">
+            <div className="flex items-center gap-2">
+              <Filter size={18} className="text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">Filters:</span>
+            </div>
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option>All</option>
+              <option>Full-time</option>
+              <option>Part-time</option>
+              <option>Remote</option>
+              <option>Contract</option>
+              <option>Internship</option>
+            </select>
+            <Input
+              placeholder="Location"
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              className="w-48"
             />
-            <Button className="bg-accent hover:bg-red-700">Search</Button>
+          </div>
         </div>
       </div>
 
@@ -104,14 +174,26 @@ const Jobs = () => {
                             <p className="mt-3 text-sm text-gray-600 line-clamp-2">{job.description}</p>
                         </div>
                         <div>
-                            <Button 
-                              size="sm" 
-                              onClick={() => applyJob(job._id)} 
-                              variant="outline" 
-                              className="text-crimson-red border-crimson-red hover:bg-crimson-red hover:text-white transition-all duration-300"
-                            >
+                            {appliedJobs.has(job._id) ? (
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                disabled
+                                className="text-green-600 border-green-600 cursor-not-allowed"
+                              >
+                                <CheckCircle2 size={14} className="mr-1" />
+                                Applied
+                              </Button>
+                            ) : (
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleApply(job._id)} 
+                                variant="outline" 
+                                className="text-crimson-red border-crimson-red hover:bg-crimson-red hover:text-white transition-all duration-300"
+                              >
                                 Apply
-                            </Button>
+                              </Button>
+                            )}
                         </div>
                     </div>
                 </div>

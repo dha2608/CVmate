@@ -13,6 +13,15 @@ export interface IUser extends Document {
   onboardingCompleted: boolean;
   careerGoal?: 'new-job' | 'internship' | 'career-switch';
   googleId?: string;
+  subscription?: {
+    plan: 'free' | 'premium';
+    status: 'active' | 'cancelled' | 'expired';
+    startDate?: Date;
+    endDate?: Date;
+    paymentMethod?: string;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
@@ -67,6 +76,23 @@ const userSchema = new Schema<IUser>({
     type: String,
     enum: ['new-job', 'internship', 'career-switch'],
     default: null
+  },
+  subscription: {
+    plan: {
+      type: String,
+      enum: ['free', 'premium'],
+      default: 'free'
+    },
+    status: {
+      type: String,
+      enum: ['active', 'cancelled', 'expired'],
+      default: 'active'
+    },
+    startDate: Date,
+    endDate: Date,
+    paymentMethod: String,
+    stripeCustomerId: String,
+    stripeSubscriptionId: String
   }
 }, { 
   timestamps: true 

@@ -19,6 +19,8 @@ import notificationRoutes from './routes/notifications.js';
 import dashboardRoutes from './routes/dashboard.js';
 import speechRoutes from './routes/speech.js';
 import newsRoutes from './routes/news.js';
+import uploadRoutes from './routes/upload.js';
+import paymentRoutes from './routes/payment.js';
 
 // Load env
 dotenv.config();
@@ -63,6 +65,13 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/speech', speechRoutes);
 app.use('/api/news', newsRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/payment', paymentRoutes);
+
+// Serve uploaded files statically
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 /**
  * Health Check

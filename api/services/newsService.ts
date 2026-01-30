@@ -39,6 +39,46 @@ const RSS_FEEDS = [
     url: 'https://www.inc.com/rss.xml',
     source: 'Inc.',
   },
+  {
+    name: 'Forbes Careers',
+    url: 'https://www.forbes.com/careers/feed/',
+    source: 'Forbes',
+  },
+  {
+    name: 'LinkedIn News',
+    url: 'https://www.linkedin.com/feed/',
+    source: 'LinkedIn',
+  },
+  {
+    name: 'Glassdoor Blog',
+    url: 'https://www.glassdoor.com/blog/feed/',
+    source: 'Glassdoor',
+  },
+  {
+    name: 'Indeed Career Guide',
+    url: 'https://www.indeed.com/career-advice/rss',
+    source: 'Indeed',
+  },
+  {
+    name: 'Monster Career Advice',
+    url: 'https://www.monster.com/career-advice/rss',
+    source: 'Monster',
+  },
+  {
+    name: 'CareerBuilder Blog',
+    url: 'https://www.careerbuilder.com/advice/rss',
+    source: 'CareerBuilder',
+  },
+  {
+    name: 'Workopolis',
+    url: 'https://www.workopolis.com/content/feed/',
+    source: 'Workopolis',
+  },
+  {
+    name: 'The Balance Careers',
+    url: 'https://www.thebalancecareers.com/rss',
+    source: 'The Balance',
+  },
 ];
 
 // Fallback: Sử dụng NewsAPI nếu có API key
