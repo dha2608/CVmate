@@ -113,9 +113,16 @@ export const api = {
       body: JSON.stringify({ text, type }),
     }),
 
-  analyzeResume: (id: string) =>
+  analyzeResume: (id: string, jobDescription?: string) =>
     apiRequest<{ success: boolean; data: any }>(`/resumes/${id}/analyze`, {
       method: 'POST',
+      body: JSON.stringify({ jobDescription }),
+    }),
+
+  completeOnboarding: (careerGoal: 'new-job' | 'internship' | 'career-switch') =>
+    apiRequest<{ success: boolean; data: any }>('/auth/onboarding', {
+      method: 'POST',
+      body: JSON.stringify({ careerGoal }),
     }),
 
   // Interview

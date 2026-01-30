@@ -5,11 +5,14 @@ import bcrypt from 'bcryptjs';
 export interface IUser extends Document {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   avatar?: string;
   role: 'user' | 'admin';
   bio?: string;
   cv_list: mongoose.Types.ObjectId[];
+  onboardingCompleted: boolean;
+  careerGoal?: 'new-job' | 'internship' | 'career-switch';
+  googleId?: string;
   createdAt: Date;
   updatedAt: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
@@ -30,7 +33,14 @@ const userSchema = new Schema<IUser>({
   },
   password: { 
     type: String, 
-    required: true 
+    required: function(this: IUser) {
+      return !this.googleId; // Password chỉ required nếu không có Google OAuth
+    }
+  },
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true
   },
   avatar: { 
     type: String, 
@@ -48,15 +58,24 @@ const userSchema = new Schema<IUser>({
   cv_list: [{ 
     type: Schema.Types.ObjectId, 
     ref: 'Resume' 
-  }]
+  }],
+  onboardingCompleted: {
+    type: Boolean,
+    default: false
+  },
+  careerGoal: {
+    type: String,
+    enum: ['new-job', 'internship', 'career-switch'],
+    default: null
+  }
 }, { 
   timestamps: true 
 });
 
 
 userSchema.pre('save', async function(next) {
-
-  if (!this.isModified('password')) {
+  // Chỉ hash password nếu có password và đã được modify
+  if (!this.isModified('password') || !this.password) {
     return next(); 
   }
 

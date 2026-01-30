@@ -13,6 +13,8 @@ import Jobs from "@/pages/Jobs";
 import Messaging from "@/pages/Messaging";
 import Notifications from "@/pages/Notifications";
 import Profile from "@/pages/Profile";
+import Onboarding from "@/pages/Onboarding";
+import AuthCallback from "@/pages/AuthCallback";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function App() {
@@ -27,6 +29,15 @@ export default function App() {
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route 
+          path="/onboarding" 
+          element={
+            <ProtectedRoute>
+              <Onboarding />
+            </ProtectedRoute>
+          } 
+        />
         
         {/* Protected routes - yêu cầu phải đăng nhập */}
         <Route 

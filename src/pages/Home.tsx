@@ -1,12 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import SEOHead from '@/components/SEOHead';
 import { Sparkles, FileText, Video, Users, ArrowRight, Check } from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <SEOHead 
+        title="CV Mate - Tạo CV chuẩn ATS và Luyện Phỏng Vấn với AI"
+        description="Nền tảng All-in-one hỗ trợ sự nghiệp. Tạo CV chuẩn ATS trong 5 phút, luyện phỏng vấn với AI, và kết nối cộng đồng."
+      />
+      <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
@@ -209,7 +215,8 @@ const Home = () => {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 };
 

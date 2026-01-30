@@ -131,6 +131,7 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
 
 export const analyzeResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const { jobDescription } = req.body; // Optional JD for comparison
     const resume = await Resume.findOne({ _id: req.params.id, user: req.user?._id });
 
     if (!resume) {
@@ -140,22 +141,28 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
 
     const resumeContent = JSON.stringify(resume);
     
-    const prompt = `
+    let prompt = `
       Analyze this resume JSON data for ATS (Applicant Tracking System) compatibility and general quality.
       Provide a response in JSON format with:
       1. "score" (0-100)
       2. "strengths" (array of strings)
       3. "improvements" (array of strings)
       4. "summary" (short feedback)
+      5. "missingKeywords" (array of strings - if JD provided)
+      6. "matchScore" (0-100 - if JD provided)
 
       Resume Data:
       ${resumeContent.substring(0, 3000)}
     `;
 
+    if (jobDescription) {
+      prompt += `\n\nJob Description:\n${jobDescription.substring(0, 2000)}\n\nCompare the resume with the job description. Identify missing keywords and calculate match score.`;
+    }
+
     try {
       const completion = await openai.chat.completions.create({
         messages: [{ role: "user", content: prompt }],
-        model: "gpt-3.5-turbo",
+        model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
         response_format: { type: "json_object" }
       });
 
@@ -173,7 +180,9 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
           score: 75,
           strengths: ["Good structure", "Clear contact info"],
           improvements: ["Add more keywords", "Quantify achievements"],
-          summary: "This is a mock analysis because AI service is unavailable."
+          summary: "This is a mock analysis because AI service is unavailable.",
+          missingKeywords: jobDescription ? ["React", "TypeScript", "Node.js"] : [],
+          matchScore: jobDescription ? 70 : null
         } 
       });
     }

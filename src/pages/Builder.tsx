@@ -59,31 +59,71 @@ const Builder = () => {
     }
   };
 
-  const handleDownload = () => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      const content = document.getElementById('resume-preview')?.innerHTML || '';
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Resume - ${currentResume.personalInfo.fullName || 'CV'}</title>
-            <style>
-              @media print {
-                @page { margin: 0; size: A4; }
-                body { margin: 0; }
-              }
-              body { font-family: 'Inter', sans-serif; }
-            </style>
-          </head>
-          <body>${content}</body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => {
-        printWindow.print();
-      }, 250);
+  const handleDownload = async () => {
+    try {
+      // Dynamic import để giảm bundle size
+      const { default: jsPDF } = await import('jspdf');
+      const { default: html2canvas } = await import('html2canvas');
+      
+      const element = document.getElementById('resume-preview');
+      if (!element) {
+        alert('Resume preview not found');
+        return;
+      }
+
+      // Capture element as canvas
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 0;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`${currentResume.personalInfo.fullName || 'resume'}-CV.pdf`);
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      // Fallback to print method
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        const content = document.getElementById('resume-preview')?.innerHTML || '';
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Resume - ${currentResume.personalInfo.fullName || 'CV'}</title>
+              <style>
+                @media print {
+                  @page { margin: 0; size: A4; }
+                  body { margin: 0; }
+                }
+                body { font-family: 'Inter', sans-serif; }
+                * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              </style>
+            </head>
+            <body>${content}</body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+          printWindow.print();
+        }, 250);
+      }
     }
   };
 

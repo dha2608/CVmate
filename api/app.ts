@@ -3,7 +3,9 @@ import cors from 'cors';
 import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
+import session from 'express-session';
 import connectDB from './config/db.js';
+import passport from './config/passport.js';
 
 // Import Routes
 import authRoutes from './routes/auth.js';
@@ -15,6 +17,7 @@ import jobRoutes from './routes/jobs.js';
 import messageRoutes from './routes/messages.js';
 import notificationRoutes from './routes/notifications.js';
 import dashboardRoutes from './routes/dashboard.js';
+import speechRoutes from './routes/speech.js';
 
 // Load env
 dotenv.config();
@@ -25,9 +28,23 @@ connectDB();
 const app: express.Application = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Session for OAuth
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'cvmate-secret-key',
+  resave: false,
+  saveUninitialized: false,
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 /**
  * API Routes
@@ -41,6 +58,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/speech', speechRoutes);
 
 /**
  * Health Check

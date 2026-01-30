@@ -5,10 +5,50 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useInterviewStore } from '@/store/interviewStore';
 
+// Type definitions for Speech Recognition API
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: any) => void) | null;
+  onend: (() => void) | null;
+}
+
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResultList {
+  [index: number]: SpeechRecognitionResult;
+  length: number;
+}
+
+interface SpeechRecognitionResult {
+  [index: number]: SpeechRecognitionAlternative;
+  length: number;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
 const Interview = () => {
   const navigate = useNavigate();
   const [input, setInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const {
     persona,
     messages,
@@ -29,6 +69,43 @@ const Interview = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(prev => prev + (prev ? ' ' : '') + transcript);
+        setIsRecording(false);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsRecording(false);
+        if (event.error === 'not-allowed') {
+          alert('Microphone permission denied. Please enable it in your browser settings.');
+        }
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
 
   const handleStartInterview = async (personaId: 'friendly-hr' | 'strict-manager' | 'english-native') => {
     await startSession(personaId);
@@ -175,7 +252,21 @@ const Interview = () => {
             <Button 
                 variant="outline" 
                 size="icon"
-                onClick={() => setIsRecording(!isRecording)} 
+                onClick={() => {
+                  if (!recognitionRef.current) {
+                    alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+                    return;
+                  }
+                  
+                  if (isRecording) {
+                    recognitionRef.current.stop();
+                    setIsRecording(false);
+                  } else {
+                    recognitionRef.current.start();
+                    setIsRecording(true);
+                  }
+                }} 
+                disabled={!recognitionRef.current || status === 'completed'}
                 className={`rounded-full h-12 w-12 flex-shrink-0 transition-all duration-300 ${
                     isRecording 
                     ? 'bg-red-50 border-red-500 text-red-600 scale-110 shadow-lg ring-4 ring-red-100' 
@@ -183,9 +274,9 @@ const Interview = () => {
                 }`}
             >
                 {isRecording ? (
-                    <span className="animate-pulse">●</span>
+                    <span className="animate-pulse text-2xl">●</span>
                 ) : (
-                    <span>🎤</span>
+                    <span className="text-xl">🎤</span>
                 )}
             </Button>
             <div className="flex-1 relative">
