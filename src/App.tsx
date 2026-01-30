@@ -8,9 +8,11 @@ import Builder from "@/pages/Builder";
 import Interview from "@/pages/Interview";
 import Community from "@/pages/Community";
 import Blog from "@/pages/Blog";
+import BlogDetail from "@/pages/BlogDetail";
 import Jobs from "@/pages/Jobs";
 import Messaging from "@/pages/Messaging";
 import Notifications from "@/pages/Notifications";
+import Profile from "@/pages/Profile";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function App() {
@@ -64,6 +66,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Blog />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/blog/:id" 
+          element={
+            <ProtectedRoute>
+              <BlogDetail />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           } 
         />

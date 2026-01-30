@@ -79,6 +79,12 @@ export const api = {
 
   getMe: () => apiRequest<{ success: boolean; data: any }>('/auth/me'),
 
+  updateProfile: (payload: { name?: string; avatar?: string; email?: string; password?: string }) =>
+    apiRequest<{ success: boolean; data: any }>('/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+
   // Resume
   getResumes: () => apiRequest<{ success: boolean; data: any[] }>('/resumes'),
   

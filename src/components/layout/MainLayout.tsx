@@ -108,7 +108,12 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
                 </div>
                 
                 <div className="pt-12 pb-6 px-4 text-center border-b border-gray-100">
-                    <h3 className="font-bold text-lg text-gray-900 hover:text-red-600 cursor-pointer transition-colors">{user?.name}</h3>
+                    <h3 
+                      className="font-bold text-lg text-gray-900 hover:text-red-600 cursor-pointer transition-colors"
+                      onClick={() => navigate('/profile')}
+                    >
+                      {user?.name}
+                    </h3>
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mt-1">Full Stack Developer</p>
                 </div>
                 
@@ -124,7 +129,11 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
                 </div>
                 
                 <div className="p-4 hover:bg-gray-50 transition-colors">
-                    <Button variant="outline" className="w-full border-zinc-900 text-zinc-900 hover:bg-zinc-900 hover:text-white transition-all">
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-zinc-900 text-zinc-900 hover:bg-zinc-900 hover:text-white transition-all"
+                      onClick={() => navigate('/profile')}
+                    >
                         <Sparkles size={16} className="mr-2" /> 
                         Go Premium
                     </Button>

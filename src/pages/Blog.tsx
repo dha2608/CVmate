@@ -122,7 +122,11 @@ const Blog = () => {
         ) : (
             <div className="space-y-4">
                 {articles.map((article) => (
-                    <div key={article._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
+                    <div 
+                      key={article._id} 
+                      className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => navigate(`/blog/${article._id}`)}
+                    >
                         {article.image && (
                             <div className="h-48 w-full overflow-hidden">
                                 <img src={article.image} alt={article.title} className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" />

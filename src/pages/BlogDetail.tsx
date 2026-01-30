@@ -4,6 +4,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
 const BlogDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -13,7 +15,7 @@ const BlogDetail = () => {
   useEffect(() => {
     const fetchArticle = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/articles/${id}`);
+            const res = await fetch(`${API_BASE_URL}/articles/${id}`);
             const data = await res.json();
             if (data.success) {
                 setArticle(data.data);

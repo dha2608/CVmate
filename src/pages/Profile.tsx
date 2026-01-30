@@ -4,8 +4,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Camera, Save, X, Loader2, Shield, AlertCircle, CheckCircle2 } from 'lucide-react';
-
-const API_URL = 'http://localhost:3001/api';
+import { api } from '@/lib/utils';
 
 const Profile = () => {
   const { user, setUser } = useAuthStore();
@@ -49,30 +48,18 @@ const Profile = () => {
     setStatus({ type: null, message: '' });
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/auth/updatedetails`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          avatar: formData.avatar
-        })
+      const response = await api.updateProfile({
+        name: formData.name,
+        avatar: formData.avatar,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to update profile');
+      if (!response.success) {
+        throw new Error((response as any).message || 'Failed to update profile');
       }
 
-      if (data.success) {
-        setUser(data.data);
-        setStatus({ type: 'success', message: 'Profile updated successfully!' });
-        setIsEditing(false);
-      }
+      setUser(response.data);
+      setStatus({ type: 'success', message: 'Profile updated successfully!' });
+      setIsEditing(false);
     } catch (error: any) {
       setStatus({ type: 'error', message: error.message || 'Something went wrong' });
     } finally {
