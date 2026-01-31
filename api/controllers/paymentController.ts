@@ -4,13 +4,24 @@ import User from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-11-20.acacia',
-});
+/**
+ * Get Stripe instance - lazy initialization
+ * Only creates Stripe instance if API key is available
+ */
+const getStripe = (): Stripe | null => {
+  const apiKey = process.env.STRIPE_SECRET_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new Stripe(apiKey, {
+    apiVersion: '2024-11-20.acacia',
+  });
+};
 
 export const createCheckoutSession = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    if (!process.env.STRIPE_SECRET_KEY) {
+    const stripe = getStripe();
+    if (!stripe) {
       res.status(503).json({ success: false, message: 'Payment service is not configured' });
       return;
     }
@@ -94,6 +105,12 @@ export const stripeWebhook = async (req: StripeWebhookRequest, res: Response, ne
   if (!webhookSecret) {
     logger.error('Stripe webhook secret not configured', new Error('Missing STRIPE_WEBHOOK_SECRET'));
     return res.status(400).send('Webhook secret not configured');
+  }
+
+  const stripe = getStripe();
+  if (!stripe) {
+    logger.error('Stripe not initialized for webhook', new Error('Missing STRIPE_SECRET_KEY'));
+    return res.status(503).send('Payment service is not configured');
   }
 
   let event: Stripe.Event;
@@ -199,7 +216,8 @@ export const getSubscriptionStatus = async (req: AuthRequest, res: Response, nex
 
 export const cancelSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    if (!process.env.STRIPE_SECRET_KEY) {
+    const stripe = getStripe();
+    if (!stripe) {
       res.status(503).json({ success: false, message: 'Payment service is not configured' });
       return;
     }

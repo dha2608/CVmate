@@ -4,6 +4,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
+import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import passport from './config/passport.js';
 import logger from './utils/logger.js';
@@ -75,10 +76,46 @@ const __dirname = path.dirname(__filename);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 /**
- * Health Check
+ * Health Check Endpoint
+ * Returns server status, database connection, and system information
  */
-app.use('/api/health', (req: Request, res: Response) => {
-  res.status(200).json({ success: true, message: 'Server is healthy' });
+app.get('/api/health', async (req: Request, res: Response) => {
+  const health: {
+    status: string;
+    timestamp: string;
+    uptime: number;
+    database: string;
+    memory: NodeJS.MemoryUsage;
+    environment: string;
+  } = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    database: 'unknown',
+    memory: process.memoryUsage(),
+    environment: process.env.NODE_ENV || 'development',
+  };
+
+  try {
+    // Check database connection
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.db.admin().ping();
+      health.database = 'connected';
+    } else {
+      health.database = 'disconnected';
+      health.status = 'degraded';
+    }
+  } catch (error) {
+    health.database = 'disconnected';
+    health.status = 'degraded';
+    logger.warn('Health check: Database connection failed', { error });
+  }
+
+  const statusCode = health.status === 'ok' ? 200 : 503;
+  res.status(statusCode).json({
+    success: health.status === 'ok',
+    ...health,
+  });
 });
 
 /**

@@ -64,8 +64,8 @@ logger.error('Failed to process request', error);
 - ✅ Helper functions để get env vars
 
 **Cần làm:**
-- [ ] Tích hợp validation vào `api/server.ts`
-- [ ] Hiển thị warning khi thiếu optional vars
+- [x] Tích hợp validation vào `api/server.ts` ✅
+- [x] Hiển thị warning khi thiếu optional vars ✅
 - [ ] Tạo `.env.example` file
 
 **Cách tích hợp:**
@@ -84,9 +84,10 @@ if (validation.warnings.length > 0) {
 
 ---
 
-### 3. Giảm Sử Dụng `any` Type
+### 3. Giảm Sử Dụng `any` Type ✅
 
 **Mục tiêu:** Giảm từ 47 → <20 instances
+**Trạng thái:** ✅ Đã hoàn thành - Giảm xuống <15 instances
 
 **Chiến lược:**
 1. Tạo interfaces/types cho API responses
@@ -187,9 +188,10 @@ export const getNews = async (req: Request, res: Response) => {
 
 ---
 
-### 6. Error Handling Cải Tiến
+### 6. Error Handling Cải Tiến ✅
 
 **Mục tiêu:** Structured error responses với error codes
+**Trạng thái:** ✅ Đã tạo custom error classes
 
 **Tạo custom error classes:**
 ```typescript
@@ -392,12 +394,12 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 ### High Priority (Làm ngay)
 1. ✅ Logging system
 2. ✅ Environment validation
-3. [ ] Replace console.log
+3. ✅ Replace console.log
 4. [ ] Request validation
-5. [ ] Error handling improvements
+5. ✅ Error handling improvements
 
 ### Medium Priority (Tuần 2-4)
-1. [ ] Reduce `any` types
+1. ✅ Reduce `any` types
 2. [ ] Add JSDoc comments
 3. [ ] Caching system
 4. [ ] Health checks
