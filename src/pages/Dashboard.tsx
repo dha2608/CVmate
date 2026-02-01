@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useDashboardStore } from '@/store/dashboardStore';
 import { useCommunityStore } from '@/store/communityStore';
+import { useBlogStore } from '@/store/blogStore';
 import { useI18n } from '@/store/i18nStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -13,13 +14,15 @@ import {
     Video, 
     TrendingUp,
     Search,
-    PenTool
+    PenTool,
+    ExternalLink
 } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuthStore();
   const { stats, fetchStats } = useDashboardStore();
   const { posts, fetchPosts } = useCommunityStore();
+  const { articles, fetchArticles } = useBlogStore();
   const { t } = useI18n();
   const navigate = useNavigate();
   const [greeting, setGreeting] = useState('');
@@ -37,7 +40,8 @@ const Dashboard = () => {
 
     fetchStats();
     fetchPosts();
-  }, [user, navigate, t]);
+    fetchArticles();
+  }, [user, navigate, t, fetchStats, fetchPosts, fetchArticles]);
 
   if (!user) return null;
 
@@ -111,25 +115,34 @@ const Dashboard = () => {
 
          <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-               <h2 className="font-bold text-gray-900">{t('dashboard.recommendedForYou')}</h2>
-               <Button variant="link" className="text-rose-500 text-sm p-0 h-auto font-semibold">{t('dashboard.viewAll')}</Button>
+               <h2 className="font-bold text-gray-900 dark:text-white">{t('dashboard.recommendedForYou')}</h2>
+               <Button 
+                 variant="link" 
+                 className="text-rose-500 dark:text-rose-400 text-sm p-0 h-auto font-semibold"
+                 onClick={() => navigate('/blog')}
+               >
+                 {t('dashboard.viewAll')}
+               </Button>
             </div>
 
-            <RecommendationCard 
-               image="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=300&h=200"
-               title="Top 10 CV Templates for 2024"
-               author="CV Mate Editorial"
-               views="24k"
-               desc="Discover the latest trends in resume design. ATS-friendly templates are becoming the standard..."
-            />
-            
-            <RecommendationCard 
-               image="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300&h=200"
-               title="Mastering the Behavioral Interview"
-               author="HR Insider"
-               views="12k"
-               desc="The STAR method is your best friend when answering 'Tell me about a time when...' questions."
-            />
+            {articles.length > 0 ? (
+              articles.slice(0, 2).map((article) => (
+                <RecommendationCard 
+                  key={article._id}
+                  image={article.image || article.coverImage}
+                  title={article.title}
+                  author={typeof article.author === 'object' ? article.author?.name || 'Author' : 'Author'}
+                  views={article.views ? `${article.views} ${t('blog.views')}` : t('blog.new')}
+                  desc={article.summary || article.content?.substring(0, 100) + '...'}
+                  onClick={() => navigate(`/blog/${article._id}`)}
+                />
+              ))
+            ) : (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+                <FileText className="mx-auto text-gray-400 mb-4" size={48} />
+                <p className="text-gray-600 dark:text-gray-400">{t('blog.noArticlesYet')}</p>
+              </div>
+            )}
          </div>
       </div>
     </MainLayout>
@@ -158,21 +171,37 @@ const StatItem = ({ label, value, color }: any) => (
    </div>
 );
 
-const RecommendationCard = ({ image, title, author, views, desc }: any) => (
-   <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer flex gap-4 items-start">
-      <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 border border-gray-100">
-         <img src={image} alt={title} className="w-full h-full object-cover" />
+const RecommendationCard = ({ image, title, author, views, desc, onClick }: any) => {
+  const { t } = useI18n();
+  
+  return (
+    <div 
+      className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all cursor-pointer flex gap-4 items-start group"
+      onClick={onClick}
+    >
+      <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700 border border-gray-100 dark:border-gray-600">
+         {image ? (
+           <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+         ) : (
+           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900">
+             <FileText className="w-8 h-8 text-indigo-400" />
+           </div>
+         )}
       </div>
       <div className="flex-1 min-w-0">
-         <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1 hover:text-rose-600 transition-colors">{title}</h3>
-         <div className="text-xs text-gray-500 mb-2 flex items-center gap-2">
-            <span className="font-medium text-gray-700">{author}</span>
-            <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-            <span>{views} viewers</span>
+         <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-1 line-clamp-1 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">{title}</h3>
+         <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-2">
+            <span className="font-medium text-gray-700 dark:text-gray-300">{author}</span>
+            <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></span>
+            <span>{views}</span>
          </div>
-         <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">{desc}</p>
+         <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">{desc}</p>
+         <div className="mt-2 flex items-center gap-1 text-xs text-rose-500 dark:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity">
+           {t('home.readMore')} <ExternalLink size={12} />
+         </div>
       </div>
-   </div>
-);
+    </div>
+  );
+};
 
 export default Dashboard;

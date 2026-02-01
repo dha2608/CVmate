@@ -2,16 +2,20 @@ import { useEffect, useState } from 'react';
 import { useBlogStore } from '@/store/blogStore';
 import { useNewsStore } from '@/store/newsStore';
 import { useAuthStore } from '@/store/authStore';
+import { useI18n } from '@/store/i18nStore';
+import { useToastStore } from '@/store/toastStore';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SkeletonCard, SkeletonText } from '@/components/ui/skeleton';
-import { PenTool, RefreshCw, ExternalLink, Newspaper } from 'lucide-react';
+import { PenTool, RefreshCw, ExternalLink, Newspaper, Loader2 } from 'lucide-react';
 import SEOHead from '@/components/SEOHead';
 
 const Blog = () => {
   const { user } = useAuthStore();
+  const { t } = useI18n();
+  const toast = useToastStore();
   const { articles, fetchArticles, createArticle, isLoading } = useBlogStore();
   const { articles: newsArticles, fetchNews, refreshNews, isLoading: newsLoading, error: newsError } = useNewsStore();
   const navigate = useNavigate();
@@ -41,10 +45,10 @@ const Blog = () => {
       setTitle('');
       setContent('');
       setImage('');
-      // Refresh articles after creation
+      toast.success(t('toast.articlePublished'));
       await fetchArticles();
     } catch (error: any) {
-      alert('Failed to create article: ' + (error.message || 'Unknown error'));
+      toast.error(error.message || t('toast.articlePublishFailed'));
     }
   };
 
@@ -53,8 +57,8 @@ const Blog = () => {
   return (
     <>
       <SEOHead 
-        title="Career Blog & News - CV Mate" 
-        description="Latest career insights, job market news, and professional tips. Stay updated with industry trends and expert advice."
+        title={t('blog.title')} 
+        description={t('blog.description')}
       />
       <MainLayout
         rightSidebar={
@@ -78,57 +82,63 @@ const Blog = () => {
             </div>
         }
     >
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6 animate-fade-in">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6 animate-fade-in">
             <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h1 className="text-3xl font-black text-jet-black mb-2">Career Blog & News</h1>
-                    <p className="text-gray-600">Latest insights, tips, and industry news for your professional journey.</p>
+                    <h1 className="text-3xl font-black text-jet-black dark:text-white mb-2">{t('blog.title')}</h1>
+                    <p className="text-gray-600 dark:text-gray-400">{t('blog.description')}</p>
                 </div>
             </div>
             
             {/* Tabs */}
-            <div className="flex gap-2 border-b border-gray-200">
+            <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
                 <button
                     onClick={() => setActiveTab('news')}
                     className={`px-6 py-3 font-semibold text-sm transition-all duration-300 border-b-2 ${
                         activeTab === 'news'
-                            ? 'border-crimson-red text-crimson-red'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-crimson-red dark:border-red-500 text-crimson-red dark:text-red-400'
+                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                     }`}
                 >
                     <Newspaper className="inline mr-2" size={16} />
-                    Latest News
+                    {t('blog.latestNews')}
                 </button>
                 <button
                     onClick={() => setActiveTab('blog')}
                     className={`px-6 py-3 font-semibold text-sm transition-all duration-300 border-b-2 ${
                         activeTab === 'blog'
-                            ? 'border-crimson-red text-crimson-red'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-crimson-red dark:border-red-500 text-crimson-red dark:text-red-400'
+                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                     }`}
                 >
                     <PenTool className="inline mr-2" size={16} />
-                    Community Articles
+                    {t('blog.communityArticles')}
                 </button>
             </div>
         </div>
 
         {showCreate && (
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6 animate-scale-in">
-                <div className="flex items-center gap-2 mb-4 text-gray-900 font-semibold border-b pb-2">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6 animate-scale-in">
+                <div className="flex items-center gap-2 mb-4 text-gray-900 dark:text-white font-semibold border-b dark:border-gray-700 pb-2">
                     <PenTool size={18} />
-                    <h2>Create New Article</h2>
+                    <h2>{t('blog.createNewArticle')}</h2>
                 </div>
                 <form onSubmit={handleCreate} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                        <Input value={title} onChange={e => setTitle(e.target.value)} required placeholder="e.g. 5 Tips for a Perfect CV" />
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('blog.titleLabel')}</label>
+                        <Input 
+                          value={title} 
+                          onChange={e => setTitle(e.target.value)} 
+                          required 
+                          placeholder="e.g. 5 Tips for a Perfect CV"
+                          className="dark:bg-gray-700 dark:border-gray-600"
+                        />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('blog.categoryLabel')}</label>
                             <select 
-                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm rounded-md border"
+                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-accent focus:border-accent sm:text-sm rounded-md border"
                                 value={category}
                                 onChange={e => setCategory(e.target.value)}
                             >
@@ -138,14 +148,19 @@ const Blog = () => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                            <Input value={image} onChange={e => setImage(e.target.value)} placeholder="https://..." />
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('blog.imageUrlLabel')}</label>
+                            <Input 
+                              value={image} 
+                              onChange={e => setImage(e.target.value)} 
+                              placeholder="https://..."
+                              className="dark:bg-gray-700 dark:border-gray-600"
+                            />
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('blog.contentLabel')}</label>
                         <textarea 
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-accent focus:border-accent"
+                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-3 focus:ring-accent focus:border-accent"
                             rows={8}
                             value={content}
                             onChange={e => setContent(e.target.value)}
@@ -154,8 +169,8 @@ const Blog = () => {
                         />
                     </div>
                     <div className="flex justify-end gap-2">
-                        <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
-                        <Button type="submit" className="bg-accent hover:bg-red-700 text-white">Publish</Button>
+                        <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>{t('common.cancel')}</Button>
+                        <Button type="submit" className="bg-accent hover:bg-red-700 text-white">{t('blog.publish')}</Button>
                     </div>
                 </form>
             </div>
@@ -165,7 +180,7 @@ const Blog = () => {
         {activeTab === 'news' && (
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-jet-black">Latest Career News</h2>
+                    <h2 className="text-xl font-bold text-jet-black dark:text-white">{t('blog.latestNews')}</h2>
                     <Button
                         onClick={() => refreshNews()}
                         disabled={newsLoading}
@@ -174,12 +189,12 @@ const Blog = () => {
                         className="flex items-center gap-2"
                     >
                         <RefreshCw className={newsLoading ? 'animate-spin' : ''} size={16} />
-                        Refresh
+                        {t('blog.refresh')}
                     </Button>
                 </div>
 
                 {newsError && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg animate-fade-in">
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg animate-fade-in">
                         {newsError}
                     </div>
                 )}
@@ -191,20 +206,20 @@ const Blog = () => {
                         ))}
                     </div>
                 ) : newsArticles.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-50 rounded-lg">
-                        <Newspaper className="mx-auto text-gray-400 mb-4" size={48} />
-                        <p className="text-gray-600">No news available at the moment.</p>
+                    <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <Newspaper className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
+                        <p className="text-gray-600 dark:text-gray-400">{t('blog.noNewsAvailable')}</p>
                     </div>
                 ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {newsArticles.map((article, index) => (
                             <article
                                 key={`${article.link}-${index}`}
-                                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl hover-lift transition-all duration-300 animate-fade-in"
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl hover-lift transition-all duration-300 animate-fade-in"
                                 style={{ animationDelay: `${index * 0.1}s` }}
                             >
                                 {article.image && (
-                                    <div className="h-48 w-full overflow-hidden bg-gray-100">
+                                    <div className="h-48 w-full overflow-hidden bg-gray-100 dark:bg-gray-700">
                                         <img 
                                             src={article.image} 
                                             alt={article.title} 
@@ -217,26 +232,26 @@ const Blog = () => {
                                 )}
                                 <div className="p-5">
                                     <div className="flex items-center justify-between mb-3">
-                                        <span className="text-xs font-semibold text-crimson-red uppercase tracking-wider">
+                                        <span className="text-xs font-semibold text-crimson-red dark:text-red-400 uppercase tracking-wider">
                                             {article.source}
                                         </span>
-                                        <span className="text-xs text-gray-400">
+                                        <span className="text-xs text-gray-400 dark:text-gray-500">
                                             {new Date(article.pubDate).toLocaleDateString()}
                                         </span>
                                     </div>
-                                    <h3 className="text-lg font-bold text-jet-black mb-3 leading-tight line-clamp-2 hover:text-crimson-red transition-colors">
+                                    <h3 className="text-lg font-bold text-jet-black dark:text-white mb-3 leading-tight line-clamp-2 hover:text-crimson-red dark:hover:text-red-400 transition-colors">
                                         {article.title}
                                     </h3>
-                                    <p className="text-sm text-gray-600 line-clamp-3 mb-4">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
                                         {article.description}
                                     </p>
                                     <a
                                         href={article.link}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 text-sm font-semibold text-crimson-red hover:text-fire-red transition-colors"
+                                        className="inline-flex items-center gap-2 text-sm font-semibold text-crimson-red dark:text-red-400 hover:text-fire-red dark:hover:text-red-500 transition-colors"
                                     >
-                                        Read More
+                                        {t('blog.readMore')}
                                         <ExternalLink size={14} />
                                     </a>
                                 </div>
@@ -259,18 +274,18 @@ const Blog = () => {
                 ) : (
                     <div className="space-y-6">
                         {articles.length === 0 ? (
-                            <div className="text-center py-12 bg-gray-50 rounded-lg">
-                                <PenTool className="mx-auto text-gray-400 mb-4" size={48} />
-                                <p className="text-gray-600 mb-4">No articles yet. Be the first to write one!</p>
+                            <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <PenTool className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
+                                <p className="text-gray-600 dark:text-gray-400 mb-4">{t('blog.noArticlesYet')}</p>
                                 <Button onClick={() => setShowCreate(true)} className="bg-crimson-red hover:bg-fire-red text-white">
-                                    Write First Article
+                                    {t('blog.writeFirstArticle')}
                                 </Button>
                             </div>
                         ) : (
                             articles.map((article, index) => (
                                 <div 
                                     key={article._id} 
-                                    className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl hover-lift transition-all duration-300 cursor-pointer animate-fade-in"
+                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl hover-lift transition-all duration-300 cursor-pointer animate-fade-in"
                                     style={{ animationDelay: `${index * 0.1}s` }}
                                     onClick={(e) => {
                                       e.preventDefault();
@@ -287,7 +302,7 @@ const Blog = () => {
                                     aria-label={`Read article: ${article.title}`}
                                 >
                         {(article.image || article.coverImage) && (
-                            <div className="h-48 w-full overflow-hidden bg-gray-100">
+                            <div className="h-48 w-full overflow-hidden bg-gray-100 dark:bg-gray-700">
                                 <img 
                                   src={article.image || article.coverImage} 
                                   alt={article.title} 
@@ -300,20 +315,20 @@ const Blog = () => {
                         )}
                         <div className="p-4">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-semibold text-accent uppercase tracking-wider">{article.category}</span>
-                                <span className="text-xs text-gray-400">{new Date(article.createdAt).toLocaleDateString()}</span>
+                                <span className="text-xs font-semibold text-accent dark:text-red-400 uppercase tracking-wider">{article.category}</span>
+                                <span className="text-xs text-gray-400 dark:text-gray-500">{new Date(article.createdAt).toLocaleDateString()}</span>
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight hover:text-blue-600 transition-colors">{article.title}</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-tight hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{article.title}</h3>
                             
                             {article.summary && (
-                                <div className="bg-gray-50 p-3 rounded mb-3 border-l-2 border-accent/50">
-                                    <p className="text-xs text-gray-600 italic line-clamp-2">{article.summary}</p>
+                                <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded mb-3 border-l-2 border-accent/50 dark:border-red-500/50">
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 italic line-clamp-2">{article.summary}</p>
                                 </div>
                             )}
                             
-                            <p className="text-sm text-gray-600 line-clamp-3 mb-3">{article.content}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-3">{article.content}</p>
                             
-                            <div className="flex items-center justify-between border-t border-gray-100 pt-3 mt-2">
+                            <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-3 mt-2">
                                 <div className="flex items-center gap-2">
                                     {article.author && typeof article.author === 'object' && article.author.name ? (
                                       <>
@@ -324,25 +339,25 @@ const Blog = () => {
                                             className="w-6 h-6 rounded-full object-cover"
                                           />
                                         ) : (
-                                          <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500">
+                                          <div className="w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-300">
                                             {article.author.name.charAt(0).toUpperCase()}
                                           </div>
                                         )}
-                                        <span className="text-xs text-gray-500 font-medium">
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                                           {article.author.name}
                                         </span>
                                       </>
                                     ) : (
                                       <>
-                                        <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500">
+                                        <div className="w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-300">
                                           A
                                         </div>
-                                        <span className="text-xs text-gray-500 font-medium">Author</span>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Author</span>
                                       </>
                                     )}
                                 </div>
-                                <span className="text-xs text-gray-400">
-                                  {article.views ? `${article.views} views` : 'New'}
+                                <span className="text-xs text-gray-400 dark:text-gray-500">
+                                  {article.views ? `${article.views} ${t('blog.views')}` : t('blog.new')}
                                 </span>
                             </div>
                                     </div>

@@ -21,12 +21,14 @@ import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import About from "@/pages/About";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Toast from "@/components/Toast";
 
 export default function App() {
   const { user } = useAuthStore();
 
   return (
     <Router>
+      <Toast />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

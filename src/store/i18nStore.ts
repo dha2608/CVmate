@@ -12,24 +12,27 @@ interface Translations {
     alerts: string;
     signOut: string;
   };
-  common: {
-    search: string;
-    loading: string;
-    error: string;
-    success: string;
-    save: string;
-    cancel: string;
-    edit: string;
-    delete: string;
-    confirm: string;
-    close: string;
-    back: string;
-    next: string;
-    submit: string;
-    upload: string;
-    choose: string;
-    or: string;
-  };
+    common: {
+      search: string;
+      loading: string;
+      error: string;
+      success: string;
+      save: string;
+      cancel: string;
+      edit: string;
+      delete: string;
+      confirm: string;
+      close: string;
+      back: string;
+      next: string;
+      submit: string;
+      upload: string;
+      choose: string;
+      or: string;
+      posting: string;
+      post: string;
+      imageUrl: string;
+    };
   profile: {
     title: string;
     editProfile: string;
@@ -134,6 +137,154 @@ interface Translations {
     download: string;
     generate: string;
   };
+  login: {
+    welcomeBack: string;
+    signInToContinue: string;
+    signingIn: string;
+    signIn: string;
+    orContinueWith: string;
+    signInWithGoogle: string;
+    dontHaveAccount: string;
+    createOne: string;
+    invalidCredentials: string;
+    somethingWentWrong: string;
+  };
+  register: {
+    createAccount: string;
+    startBuilding: string;
+    creatingAccount: string;
+    passwordTooShort: string;
+    registrationFailed: string;
+    signUpWithGoogle: string;
+    alreadyHaveAccount: string;
+    signIn: string;
+  };
+    community: {
+      sortBy: string;
+      top: string;
+      loadingFeed: string;
+      noPostsYet: string;
+      beFirstToShare: string;
+      sharePlaceholder: string;
+    };
+  blog: {
+    title: string;
+    description: string;
+    latestInsights: string;
+    writingGoodArticle: string;
+    focusTopic: string;
+    useHeadings: string;
+    addCoverImage: string;
+    keepConcise: string;
+    writeArticle: string;
+    cancel: string;
+    createNewArticle: string;
+    titleLabel: string;
+    categoryLabel: string;
+    imageUrlLabel: string;
+    contentLabel: string;
+    publish: string;
+    latestNews: string;
+    refresh: string;
+    noNewsAvailable: string;
+    readMore: string;
+    communityArticles: string;
+    noArticlesYet: string;
+    writeFirstArticle: string;
+    views: string;
+    new: string;
+  };
+  interview: {
+    simulator: string;
+    choosePersona: string;
+    friendlyHR: string;
+    friendlyHRDesc: string;
+    strictManager: string;
+    strictManagerDesc: string;
+    englishNative: string;
+    englishNativeDesc: string;
+    startInterview: string;
+    backToDashboard: string;
+    online: string;
+    completed: string;
+    ending: string;
+    ended: string;
+    endSession: string;
+    aiFeedbackSummary: string;
+    listening: string;
+    typeAnswer: string;
+    sending: string;
+    send: string;
+    microphoneDenied: string;
+    speechNotSupported: string;
+  };
+  jobs: {
+    findDreamJob: string;
+    searchPlaceholder: string;
+    search: string;
+    filters: string;
+    all: string;
+    fullTime: string;
+    partTime: string;
+    remote: string;
+    contract: string;
+    internship: string;
+    location: string;
+    loadingJobs: string;
+    noJobsAvailable: string;
+    noJobsMatch: string;
+    noJobsAtMoment: string;
+    clearSearch: string;
+    applied: string;
+    apply: string;
+    pleaseLogin: string;
+    appliedSuccessfully: string;
+    failedToApply: string;
+    jobSeekerGuidance: string;
+    recommendedBasedOn: string;
+    improveResume: string;
+    exploreBuilder: string;
+    salaryInsights: string;
+    seeWhatWorth: string;
+  };
+  footer: {
+    description: string;
+    quickLinks: string;
+    company: string;
+    legalSupport: string;
+    cvBuilder: string;
+    interviewPractice: string;
+    jobSearch: string;
+    careerBlog: string;
+    community: string;
+    aboutUs: string;
+    blog: string;
+    contact: string;
+    careers: string;
+    partners: string;
+    termsOfService: string;
+    privacyPolicy: string;
+    cookiePolicy: string;
+    helpCenter: string;
+    allRightsReserved: string;
+    sitemap: string;
+    accessibility: string;
+  };
+  toast: {
+    loginSuccess: string;
+    loginFailed: string;
+    registerSuccess: string;
+    registerFailed: string;
+    postCreated: string;
+    postFailed: string;
+    profileUpdated: string;
+    profileUpdateFailed: string;
+    articlePublished: string;
+    articlePublishFailed: string;
+    jobApplied: string;
+    jobApplyFailed: string;
+    somethingWentWrong: string;
+  };
 }
 
 const translations: Record<Language, Translations> = {
@@ -164,6 +315,9 @@ const translations: Record<Language, Translations> = {
       upload: 'Tải lên',
       choose: 'Chọn',
       or: 'hoặc',
+      posting: 'Đang đăng...',
+      post: 'Đăng',
+      imageUrl: 'URL ảnh (tùy chọn)',
     },
     profile: {
       title: 'Hồ sơ',
@@ -269,6 +423,116 @@ const translations: Record<Language, Translations> = {
       download: 'Tải xuống',
       generate: 'Tạo',
     },
+    login: {
+      welcomeBack: 'Chào mừng trở lại',
+      signInToContinue: 'Đăng nhập để tiếp tục hành trình sự nghiệp',
+      signingIn: 'Đang đăng nhập...',
+      signIn: 'Đăng nhập',
+      orContinueWith: 'Hoặc tiếp tục với',
+      signInWithGoogle: 'Đăng nhập với Google',
+      dontHaveAccount: 'Chưa có tài khoản?',
+      createOne: 'Tạo tài khoản',
+      invalidCredentials: 'Email hoặc mật khẩu không đúng',
+      somethingWentWrong: 'Đã xảy ra lỗi',
+    },
+    register: {
+      createAccount: 'Tạo tài khoản',
+      startBuilding: 'Bắt đầu tạo CV hoàn hảo ngay hôm nay',
+      creatingAccount: 'Đang tạo tài khoản...',
+      passwordTooShort: 'Mật khẩu phải có ít nhất 6 ký tự',
+      registrationFailed: 'Đăng ký thất bại',
+      signUpWithGoogle: 'Đăng ký với Google',
+      alreadyHaveAccount: 'Đã có tài khoản?',
+      signIn: 'Đăng nhập',
+    },
+    community: {
+      sortBy: 'Sắp xếp theo:',
+      top: 'Nổi bật',
+      loadingFeed: 'Đang tải feed...',
+      noPostsYet: 'Chưa có bài đăng nào',
+      beFirstToShare: 'Hãy là người đầu tiên chia sẻ với cộng đồng!',
+      sharePlaceholder: 'Chia sẻ cập nhật sự nghiệp hoặc hỏi về phản hồi CV...',
+    },
+    blog: {
+      title: 'Blog & Tin tức Sự nghiệp',
+      description: 'Thông tin mới nhất, mẹo và tin tức ngành cho hành trình chuyên nghiệp của bạn.',
+      latestInsights: 'Thông tin sự nghiệp mới nhất',
+      writingGoodArticle: 'Viết bài viết hay',
+      focusTopic: 'Tập trung vào một chủ đề cụ thể',
+      useHeadings: 'Sử dụng tiêu đề rõ ràng',
+      addCoverImage: 'Thêm ảnh bìa',
+      keepConcise: 'Giữ nội dung ngắn gọn',
+      writeArticle: 'Viết bài viết',
+      cancel: 'Hủy',
+      createNewArticle: 'Tạo bài viết mới',
+      titleLabel: 'Tiêu đề',
+      categoryLabel: 'Danh mục',
+      imageUrlLabel: 'URL ảnh',
+      contentLabel: 'Nội dung',
+      publish: 'Xuất bản',
+      latestNews: 'Tin tức sự nghiệp mới nhất',
+      refresh: 'Làm mới',
+      noNewsAvailable: 'Hiện không có tin tức.',
+      readMore: 'Đọc thêm',
+      communityArticles: 'Bài viết cộng đồng',
+      noArticlesYet: 'Chưa có bài viết nào. Hãy là người đầu tiên viết!',
+      writeFirstArticle: 'Viết bài viết đầu tiên',
+      views: 'lượt xem',
+      new: 'Mới',
+    },
+    interview: {
+      simulator: 'Mô phỏng phỏng vấn',
+      choosePersona: 'Chọn nhân vật để bắt đầu phiên luyện tập',
+      friendlyHR: 'HR Thân thiện',
+      friendlyHRDesc: 'Tập trung vào văn hóa và kỹ năng mềm. Nhẹ nhàng và khuyến khích.',
+      strictManager: 'Quản lý Nghiêm khắc',
+      strictManagerDesc: 'Đi sâu vào chi tiết kỹ thuật và giải quyết vấn đề. Trực tiếp và thách thức.',
+      englishNative: 'Người bản ngữ',
+      englishNativeDesc: 'Kiểm tra trình độ ngôn ngữ, ngữ pháp và sự trôi chảy của bạn.',
+      startInterview: 'Bắt đầu phỏng vấn',
+      backToDashboard: 'Quay lại Dashboard',
+      online: 'Trực tuyến',
+      completed: 'Hoàn thành',
+      ending: 'Đang kết thúc...',
+      ended: 'Đã kết thúc',
+      endSession: 'Kết thúc phiên',
+      aiFeedbackSummary: 'Tóm tắt phản hồi AI',
+      listening: 'Đang nghe...',
+      typeAnswer: 'Nhập câu trả lời của bạn...',
+      sending: 'Đang gửi...',
+      send: 'Gửi',
+      microphoneDenied: 'Quyền truy cập microphone bị từ chối. Vui lòng bật trong cài đặt trình duyệt.',
+      speechNotSupported: 'Nhận dạng giọng nói không được hỗ trợ trong trình duyệt của bạn. Vui lòng sử dụng Chrome hoặc Edge.',
+    },
+    jobs: {
+      findDreamJob: 'Tìm công việc mơ ước',
+      searchPlaceholder: 'Tìm kiếm theo chức danh, kỹ năng hoặc công ty',
+      search: 'Tìm kiếm',
+      filters: 'Bộ lọc:',
+      all: 'Tất cả',
+      fullTime: 'Toàn thời gian',
+      partTime: 'Bán thời gian',
+      remote: 'Làm việc từ xa',
+      contract: 'Hợp đồng',
+      internship: 'Thực tập',
+      location: 'Địa điểm',
+      loadingJobs: 'Đang tải việc làm...',
+      noJobsAvailable: 'Không có việc làm',
+      noJobsMatch: 'Không có việc làm phù hợp với tiêu chí tìm kiếm. Thử từ khóa khác.',
+      noJobsAtMoment: 'Hiện không có danh sách việc làm. Vui lòng quay lại sau!',
+      clearSearch: 'Xóa tìm kiếm',
+      applied: 'Đã ứng tuyển',
+      apply: 'Ứng tuyển',
+      pleaseLogin: 'Vui lòng đăng nhập để ứng tuyển',
+      appliedSuccessfully: 'Ứng tuyển thành công!',
+      failedToApply: 'Ứng tuyển thất bại',
+      jobSeekerGuidance: 'Hướng dẫn người tìm việc',
+      recommendedBasedOn: 'Đề xuất dựa trên hồ sơ và lịch sử tìm kiếm của bạn',
+      improveResume: 'Tôi muốn cải thiện CV',
+      exploreBuilder: 'Khám phá trình tạo CV',
+      salaryInsights: 'Thông tin lương',
+      seeWhatWorth: 'Xem bạn đáng giá bao nhiêu',
+    },
   },
   en: {
     nav: {
@@ -297,6 +561,9 @@ const translations: Record<Language, Translations> = {
       upload: 'Upload',
       choose: 'Choose',
       or: 'or',
+      posting: 'Posting...',
+      post: 'Post',
+      imageUrl: 'Image URL (optional)',
     },
     profile: {
       title: 'Profile',
@@ -401,6 +668,153 @@ const translations: Record<Language, Translations> = {
       preview: 'Preview',
       download: 'Download',
       generate: 'Generate',
+    },
+    login: {
+      welcomeBack: 'Welcome Back',
+      signInToContinue: 'Sign in to continue your career journey',
+      signingIn: 'Signing in...',
+      signIn: 'Sign In',
+      orContinueWith: 'Or continue with',
+      signInWithGoogle: 'Sign in with Google',
+      dontHaveAccount: "Don't have an account?",
+      createOne: 'Create one',
+      invalidCredentials: 'Invalid email or password',
+      somethingWentWrong: 'Something went wrong',
+    },
+    register: {
+      createAccount: 'Create Account',
+      startBuilding: 'Start building your perfect CV today',
+      creatingAccount: 'Creating account...',
+      passwordTooShort: 'Password must be at least 6 characters',
+      registrationFailed: 'Registration failed',
+      signUpWithGoogle: 'Sign up with Google',
+      alreadyHaveAccount: 'Already have an account?',
+      signIn: 'Sign in',
+    },
+    community: {
+      sortBy: 'Sort by:',
+      top: 'Top',
+      loadingFeed: 'Loading feed...',
+      noPostsYet: 'No posts yet',
+      beFirstToShare: 'Be the first to share something with the community!',
+    },
+    blog: {
+      title: 'Career Blog & News',
+      description: 'Latest insights, tips, and industry news for your professional journey.',
+      latestInsights: 'Latest Career Insights',
+      writingGoodArticle: 'Writing a good article',
+      focusTopic: 'Focus on a specific topic',
+      useHeadings: 'Use clear headings',
+      addCoverImage: 'Add a cover image',
+      keepConcise: 'Keep it concise',
+      writeArticle: 'Write an Article',
+      cancel: 'Cancel',
+      createNewArticle: 'Create New Article',
+      titleLabel: 'Title',
+      categoryLabel: 'Category',
+      imageUrlLabel: 'Image URL',
+      contentLabel: 'Content',
+      publish: 'Publish',
+      latestNews: 'Latest Career News',
+      refresh: 'Refresh',
+      noNewsAvailable: 'No news available at the moment.',
+      readMore: 'Read More',
+      communityArticles: 'Community Articles',
+      noArticlesYet: 'No articles yet. Be the first to write one!',
+      writeFirstArticle: 'Write First Article',
+      views: 'views',
+      new: 'New',
+    },
+    interview: {
+      simulator: 'Interview Simulator',
+      choosePersona: 'Choose a persona to start your practice session',
+      friendlyHR: 'Friendly HR',
+      friendlyHRDesc: 'Focuses on culture fit and soft skills. Gentle and encouraging.',
+      strictManager: 'Strict Manager',
+      strictManagerDesc: 'Drills into technical details and problem solving. Direct and challenging.',
+      englishNative: 'English Native',
+      englishNativeDesc: 'Checks your language proficiency, grammar, and fluency.',
+      startInterview: 'Start Interview',
+      backToDashboard: 'Back to Dashboard',
+      online: 'Online',
+      completed: 'Completed',
+      ending: 'Ending...',
+      ended: 'Ended',
+      endSession: 'End Session',
+      aiFeedbackSummary: 'AI Feedback Summary',
+      listening: 'Listening...',
+      typeAnswer: 'Type your answer...',
+      sending: 'Sending...',
+      send: 'Send',
+      microphoneDenied: 'Microphone permission denied. Please enable it in your browser settings.',
+      speechNotSupported: 'Speech recognition is not supported in your browser. Please use Chrome or Edge.',
+    },
+    jobs: {
+      findDreamJob: 'Find your dream job',
+      searchPlaceholder: 'Search by title, skill, or company',
+      search: 'Search',
+      filters: 'Filters:',
+      all: 'All',
+      fullTime: 'Full-time',
+      partTime: 'Part-time',
+      remote: 'Remote',
+      contract: 'Contract',
+      internship: 'Internship',
+      location: 'Location',
+      loadingJobs: 'Loading jobs...',
+      noJobsAvailable: 'No jobs available',
+      noJobsMatch: 'No jobs match your search criteria. Try different keywords.',
+      noJobsAtMoment: 'There are no job listings at the moment. Check back later!',
+      clearSearch: 'Clear Search',
+      applied: 'Applied',
+      apply: 'Apply',
+      pleaseLogin: 'Please login to apply for jobs',
+      appliedSuccessfully: 'Applied successfully!',
+      failedToApply: 'Failed to apply',
+      jobSeekerGuidance: 'Job Seeker Guidance',
+      recommendedBasedOn: 'Recommended based on your profile and search history',
+      improveResume: 'I want to improve my resume',
+      exploreBuilder: 'Explore our resume builder',
+      salaryInsights: 'Salary insights',
+      seeWhatWorth: 'See what you are worth',
+    },
+    footer: {
+      description: 'AI-powered platform helping you create professional CVs, practice interviews, and grow your career. All in one place.',
+      quickLinks: 'Quick Links',
+      company: 'Company',
+      legalSupport: 'Legal & Support',
+      cvBuilder: 'CV Builder',
+      interviewPractice: 'Interview Practice',
+      jobSearch: 'Job Search',
+      careerBlog: 'Career Blog',
+      community: 'Community',
+      aboutUs: 'About Us',
+      blog: 'Blog',
+      contact: 'Contact',
+      careers: 'Careers',
+      partners: 'Partners',
+      termsOfService: 'Terms of Service',
+      privacyPolicy: 'Privacy Policy',
+      cookiePolicy: 'Cookie Policy',
+      helpCenter: 'Help Center',
+      allRightsReserved: 'All rights reserved.',
+      sitemap: 'Sitemap',
+      accessibility: 'Accessibility',
+    },
+    toast: {
+      loginSuccess: 'Login successful!',
+      loginFailed: 'Login failed. Please check your credentials.',
+      registerSuccess: 'Registration successful!',
+      registerFailed: 'Registration failed. Please try again.',
+      postCreated: 'Post created successfully!',
+      postFailed: 'Failed to create post. Please try again.',
+      profileUpdated: 'Profile updated successfully!',
+      profileUpdateFailed: 'Failed to update profile. Please try again.',
+      articlePublished: 'Article published successfully!',
+      articlePublishFailed: 'Failed to publish article. Please try again.',
+      jobApplied: 'Applied successfully!',
+      jobApplyFailed: 'Failed to apply. Please try again.',
+      somethingWentWrong: 'Something went wrong. Please try again later.',
     },
   },
 };

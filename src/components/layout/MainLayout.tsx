@@ -3,11 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useI18n } from '@/store/i18nStore';
+import { useNewsStore } from '@/store/newsStore';
 import { Button } from '@/components/ui/button';
 import { 
   Home, Users, Briefcase, MessageSquare, Bell, Search, 
   User as UserIcon, LogOut, FileText, Sparkles, MoreHorizontal, Menu,
-  Sun, Moon, Globe
+  Sun, Moon, Globe, ExternalLink
 } from 'lucide-react';
 import Footer from '@/components/Footer';
 import SupportChat from '@/components/SupportChat';
@@ -21,12 +22,19 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
   const { user, logout } = useAuthStore();
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage, t } = useI18n();
+  const { articles: newsArticles, fetchNews } = useNewsStore();
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!rightSidebar) {
+      fetchNews(5); // Fetch 5 latest news for sidebar
+    }
+  }, [rightSidebar, fetchNews]);
 
   useEffect(() => {
     if (!isProfileMenuOpen) return;
@@ -226,20 +234,45 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
           {/* News */}
           <div className="hidden md:block col-span-3">
             {rightSidebar || (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-24">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-24">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-bold text-base text-gray-900 border-l-4 border-red-600 pl-3">Trending News</h3>
-                        <MoreHorizontal size={16} className="text-gray-400 cursor-pointer hover:text-black" />
+                        <h3 className="font-bold text-base text-gray-900 dark:text-white border-l-4 border-red-600 dark:border-red-500 pl-3">
+                          {t('blog.latestNews')}
+                        </h3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate('/blog')}
+                          className="text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                        >
+                          <MoreHorizontal size={16} />
+                        </Button>
                     </div>
-                    <ul className="space-y-5">
-                        <NewsItem title="Tech layoffs: How to survive & thrive" time="2h ago" />
-                        <NewsItem title="The rise of AI in Resume Screening" time="4h ago" />
-                        <NewsItem title="Remote work is here to stay" time="1d ago" />
-                        <NewsItem title="Top 10 skills for 2026" time="2d ago" />
-                    </ul>
-                    <Button variant="link" className="mt-4 w-full text-zinc-900 font-bold hover:text-red-600 p-0 decoration-2">
-                        View all updates
-                    </Button>
+                    {newsArticles.length > 0 ? (
+                      <>
+                        <ul className="space-y-4">
+                          {newsArticles.slice(0, 4).map((article, index) => (
+                            <NewsItem 
+                              key={`${article.link}-${index}`}
+                              title={article.title}
+                              time={new Date(article.pubDate).toLocaleDateString()}
+                              link={article.link}
+                            />
+                          ))}
+                        </ul>
+                        <Button 
+                          variant="link" 
+                          className="mt-4 w-full text-zinc-900 dark:text-zinc-100 font-bold hover:text-red-600 dark:hover:text-red-400 p-0 decoration-2"
+                          onClick={() => navigate('/blog')}
+                        >
+                          {t('dashboard.viewAll')}
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
+                        {t('blog.noNewsAvailable')}
+                      </div>
+                    )}
                 </div>
             )}
           </div>
@@ -268,12 +301,24 @@ const NavItem = ({ icon, label, active, onClick }: { icon: any, label: string, a
   </li>
 );
 
-const NewsItem = ({ title, time }: { title: string, time: string }) => (
-    <li className="cursor-pointer group">
-        <h4 className="font-semibold text-sm text-gray-800 group-hover:text-red-600 transition-colors leading-snug">
+const NewsItem = ({ title, time, link }: { title: string, time: string, link?: string }) => (
+    <li 
+      className="cursor-pointer group"
+      onClick={() => {
+        if (link) {
+          window.open(link, '_blank', 'noopener,noreferrer');
+        }
+      }}
+    >
+        <h4 className="font-semibold text-sm text-gray-800 dark:text-gray-200 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors leading-snug line-clamp-2">
             {title}
         </h4>
-        <p className="text-xs text-gray-400 mt-1">{time}</p>
+        <div className="flex items-center gap-2 mt-1">
+          <p className="text-xs text-gray-400 dark:text-gray-500">{time}</p>
+          {link && (
+            <ExternalLink size={12} className="text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+          )}
+        </div>
     </li>
 );
 

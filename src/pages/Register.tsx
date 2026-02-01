@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { useI18n } from '@/store/i18nStore';
+import { useToastStore } from '@/store/toastStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/utils';
 
 const Register = () => {
+  const { t } = useI18n();
+  const toast = useToastStore();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,7 +24,9 @@ const Register = () => {
     setLoading(true);
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      const errorMsg = t('register.passwordTooShort');
+      setError(errorMsg);
+      toast.error(errorMsg);
       setLoading(false);
       return;
     }
@@ -29,12 +35,17 @@ const Register = () => {
       const data = await api.register(name, email, password);
       if (data.success) {
         setUser(data.data);
+        toast.success(t('toast.registerSuccess'));
         navigate('/dashboard');
       } else {
-        setError(data.message || 'Registration failed');
+        const errorMsg = data.message || t('toast.registerFailed');
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+      const errorMsg = err.message || t('toast.registerFailed');
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -48,8 +59,8 @@ const Register = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-crimson-red rounded-xl text-white font-black text-2xl mb-4">
             CV
           </div>
-          <h1 className="text-4xl font-black text-jet-black mb-2">Create Account</h1>
-          <p className="text-gray-600">Start building your perfect CV today</p>
+          <h1 className="text-4xl font-black text-jet-black mb-2">{t('register.createAccount')}</h1>
+          <p className="text-gray-600">{t('register.startBuilding')}</p>
         </div>
 
         {error && (
@@ -60,35 +71,38 @@ const Register = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-jet-black">Full Name</label>
+            <label className="text-sm font-semibold text-jet-black">{t('auth.name')}</label>
             <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
               placeholder="John Doe"
+              autoComplete="name"
               className="h-12 border-2 border-gray-200 focus:border-crimson-red"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-jet-black">Email</label>
+            <label className="text-sm font-semibold text-jet-black">{t('auth.email')}</label>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="you@example.com"
+              autoComplete="email"
               className="h-12 border-2 border-gray-200 focus:border-crimson-red"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-jet-black">Password</label>
+            <label className="text-sm font-semibold text-jet-black">{t('auth.password')}</label>
             <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="At least 6 characters"
+              placeholder={t('register.passwordTooShort')}
+              autoComplete="new-password"
               className="h-12 border-2 border-gray-200 focus:border-crimson-red"
             />
           </div>
@@ -97,7 +111,7 @@ const Register = () => {
             disabled={loading}
             className="w-full h-12 bg-crimson-red hover:bg-fire-red text-white font-semibold text-lg rounded-lg"
           >
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? t('register.creatingAccount') : t('register.createAccount')}
           </Button>
         </form>
 
@@ -106,7 +120,7 @@ const Register = () => {
             <div className="w-full border-t border-gray-200"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-gray-500">Or continue with</span>
+            <span className="px-4 bg-white text-gray-500">{t('login.orContinueWith')}</span>
           </div>
         </div>
 
@@ -124,13 +138,13 @@ const Register = () => {
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          Sign up with Google
+          {t('register.signUpWithGoogle')}
         </Button>
 
         <div className="text-center text-sm text-gray-600">
-          Already have an account?{' '}
+          {t('register.alreadyHaveAccount')}{' '}
           <Link to="/login" className="font-semibold text-crimson-red hover:underline">
-            Sign in
+            {t('register.signIn')}
           </Link>
         </div>
       </div>

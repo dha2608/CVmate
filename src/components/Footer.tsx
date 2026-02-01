@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useI18n } from '@/store/i18nStore';
 import { FileText, Video, Users, Briefcase, BookOpen, HelpCircle, Mail, Facebook, Twitter, Linkedin, Github } from 'lucide-react';
 
 const Footer = () => {
+  const { t } = useI18n();
+  
   return (
     <footer className="bg-jet-black text-white border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -15,8 +18,7 @@ const Footer = () => {
               <span className="text-xl font-bold">CV Mate</span>
             </div>
             <p className="text-gray-400 text-sm mb-4 leading-relaxed">
-              Nền tảng AI-powered giúp bạn tạo CV chuyên nghiệp, luyện phỏng vấn và phát triển sự nghiệp. 
-              Tất cả trong một nơi.
+              {t('footer.description')}
             </p>
             <div className="flex gap-4">
               <a href="#" className="text-gray-400 hover:text-crimson-red transition-colors" aria-label="Facebook">
@@ -38,37 +40,37 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-white mb-4 flex items-center gap-2">
               <Briefcase size={18} />
-              Quick Links
+              {t('footer.quickLinks')}
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/builder" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
                   <FileText size={14} />
-                  CV Builder
+                  {t('footer.cvBuilder')}
                 </Link>
               </li>
               <li>
                 <Link to="/interview" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
                   <Video size={14} />
-                  Interview Practice
+                  {t('footer.interviewPractice')}
                 </Link>
               </li>
               <li>
                 <Link to="/jobs" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
                   <Briefcase size={14} />
-                  Job Search
+                  {t('footer.jobSearch')}
                 </Link>
               </li>
               <li>
                 <Link to="/blog" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
                   <BookOpen size={14} />
-                  Career Blog
+                  {t('footer.careerBlog')}
                 </Link>
               </li>
               <li>
                 <Link to="/community" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
                   <Users size={14} />
-                  Community
+                  {t('footer.community')}
                 </Link>
               </li>
             </ul>
@@ -76,31 +78,31 @@ const Footer = () => {
 
           {/* Company */}
           <div>
-            <h3 className="font-bold text-white mb-4">Company</h3>
+            <h3 className="font-bold text-white mb-4">{t('footer.company')}</h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
                 <Link to="/about" className="hover:text-crimson-red transition-colors">
-                  About Us
+                  {t('footer.aboutUs')}
                 </Link>
               </li>
               <li>
                 <Link to="/blog" className="hover:text-crimson-red transition-colors">
-                  Blog
+                  {t('footer.blog')}
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="hover:text-crimson-red transition-colors">
-                  Contact
+                  {t('footer.contact')}
                 </Link>
               </li>
               <li>
                 <Link to="/careers" className="hover:text-crimson-red transition-colors">
-                  Careers
+                  {t('footer.careers')}
                 </Link>
               </li>
               <li>
                 <Link to="/partners" className="hover:text-crimson-red transition-colors">
-                  Partners
+                  {t('footer.partners')}
                 </Link>
               </li>
             </ul>
@@ -108,27 +110,27 @@ const Footer = () => {
 
           {/* Legal & Support */}
           <div>
-            <h3 className="font-bold text-white mb-4">Legal & Support</h3>
+            <h3 className="font-bold text-white mb-4">{t('footer.legalSupport')}</h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
                 <Link to="/terms" className="hover:text-crimson-red transition-colors">
-                  Terms of Service
+                  {t('footer.termsOfService')}
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className="hover:text-crimson-red transition-colors">
-                  Privacy Policy
+                  {t('footer.privacyPolicy')}
                 </Link>
               </li>
               <li>
                 <Link to="/cookie-policy" className="hover:text-crimson-red transition-colors">
-                  Cookie Policy
+                  {t('footer.cookiePolicy')}
                 </Link>
               </li>
               <li>
                 <Link to="/help" className="hover:text-crimson-red transition-colors flex items-center gap-2">
                   <HelpCircle size={14} />
-                  Help Center
+                  {t('footer.helpCenter')}
                 </Link>
               </li>
               <li>
@@ -145,14 +147,14 @@ const Footer = () => {
         <div className="pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
             <div>
-              © {new Date().getFullYear()} CV Mate. All rights reserved.
+              © {new Date().getFullYear()} CV Mate. {t('footer.allRightsReserved')}
             </div>
             <div className="flex gap-6">
               <Link to="/sitemap" className="hover:text-crimson-red transition-colors">
-                Sitemap
+                {t('footer.sitemap')}
               </Link>
               <Link to="/accessibility" className="hover:text-crimson-red transition-colors">
-                Accessibility
+                {t('footer.accessibility')}
               </Link>
             </div>
           </div>
