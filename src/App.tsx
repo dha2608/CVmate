@@ -9,6 +9,7 @@ import Interview from "@/pages/Interview";
 import Community from "@/pages/Community";
 import Blog from "@/pages/Blog";
 import BlogDetail from "@/pages/BlogDetail";
+import NewsDetail from "@/pages/NewsDetail";
 import Jobs from "@/pages/Jobs";
 import Messaging from "@/pages/Messaging";
 import Notifications from "@/pages/Notifications";
@@ -92,6 +93,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <BlogDetail />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/news/:link" 
+          element={
+            <ProtectedRoute>
+              <NewsDetail />
             </ProtectedRoute>
           } 
         />

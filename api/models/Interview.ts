@@ -44,7 +44,7 @@ const interviewSchema = new Schema<IInterview>({
   },
   persona: { 
     type: String, 
-    enum: ['friendly-hr', 'strict-manager', 'english-native'], 
+    enum: ['friendly-hr', 'strict-manager', 'english-native', 'tech-lead', 'startup-founder', 'executive', 'academic'], 
     required: true 
   },
   chatHistory: [messageSchema],

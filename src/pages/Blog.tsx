@@ -215,8 +215,9 @@ const Blog = () => {
                         {newsArticles.map((article, index) => (
                             <article
                                 key={`${article.link}-${index}`}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl hover-lift transition-all duration-300 animate-fade-in"
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl hover-lift transition-all duration-300 animate-fade-in cursor-pointer"
                                 style={{ animationDelay: `${index * 0.1}s` }}
+                                onClick={() => navigate(`/news/${encodeURIComponent(article.link)}`)}
                             >
                                 {article.image && (
                                     <div className="h-48 w-full overflow-hidden bg-gray-100 dark:bg-gray-700">
@@ -245,15 +246,9 @@ const Blog = () => {
                                     <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
                                         {article.description}
                                     </p>
-                                    <a
-                                        href={article.link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 text-sm font-semibold text-crimson-red dark:text-red-400 hover:text-fire-red dark:hover:text-red-500 transition-colors"
-                                    >
+                                    <div className="inline-flex items-center gap-2 text-sm font-semibold text-crimson-red dark:text-red-400 hover:text-fire-red dark:hover:text-red-500 transition-colors">
                                         {t('blog.readMore')}
-                                        <ExternalLink size={14} />
-                                    </a>
+                                    </div>
                                 </div>
                             </article>
                         ))}

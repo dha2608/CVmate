@@ -301,12 +301,15 @@ const NavItem = ({ icon, label, active, onClick }: { icon: any, label: string, a
   </li>
 );
 
-const NewsItem = ({ title, time, link }: { title: string, time: string, link?: string }) => (
+const NewsItem = ({ title, time, link }: { title: string, time: string, link?: string }) => {
+  const navigate = useNavigate();
+  
+  return (
     <li 
       className="cursor-pointer group"
       onClick={() => {
         if (link) {
-          window.open(link, '_blank', 'noopener,noreferrer');
+          navigate(`/news/${encodeURIComponent(link)}`);
         }
       }}
     >
@@ -315,11 +318,9 @@ const NewsItem = ({ title, time, link }: { title: string, time: string, link?: s
         </h4>
         <div className="flex items-center gap-2 mt-1">
           <p className="text-xs text-gray-400 dark:text-gray-500">{time}</p>
-          {link && (
-            <ExternalLink size={12} className="text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-          )}
         </div>
     </li>
-);
+  );
+};
 
 export default MainLayout;

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { api } from '@/lib/utils';
 
-export type PersonaType = 'friendly-hr' | 'strict-manager' | 'english-native';
+export type PersonaType = 'friendly-hr' | 'strict-manager' | 'english-native' | 'tech-lead' | 'startup-founder' | 'executive' | 'academic';
 
 export interface InterviewMessage {
   role: 'user' | 'assistant' | 'system';
