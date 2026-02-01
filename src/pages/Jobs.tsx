@@ -131,18 +131,23 @@ const Jobs = () => {
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-crimson-red"></div>
           <p className="mt-2 text-sm text-gray-500">Loading jobs...</p>
         </div>
-      ) : filteredJobs.length === 0 ? (
+      ) : jobs.length === 0 ? (
         <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
           <Briefcase className="mx-auto text-gray-400 mb-4" size={48} />
           <h3 className="text-lg font-bold text-gray-900 mb-2">No jobs available</h3>
           <p className="text-gray-600 mb-4">
-            {jobs.length === 0 
-              ? "There are no job listings at the moment. Check back later!" 
-              : "No jobs match your search criteria. Try different keywords."}
+            {searchTerm || selectedType !== 'All' || locationFilter
+              ? "No jobs match your search criteria. Try different keywords." 
+              : "There are no job listings at the moment. Check back later!"}
           </p>
-          {jobs.length === 0 && searchTerm && (
+          {(searchTerm || selectedType !== 'All' || locationFilter) && (
             <Button 
-              onClick={() => setSearchTerm('')} 
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedType('All');
+                setLocationFilter('');
+                fetchJobs({ page: 1, limit: 20 });
+              }} 
               variant="outline"
               className="mt-2"
             >
@@ -152,7 +157,7 @@ const Jobs = () => {
         </div>
       ) : (
         <div className="space-y-4">
-            {filteredJobs.map((job, index) => (
+            {jobs.map((job, index) => (
                 <div 
                   key={job._id} 
                   className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover-lift transition-all duration-300 animate-fade-in"

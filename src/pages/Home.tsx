@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useI18n } from '@/store/i18nStore';
 import { Button } from '@/components/ui/button';
 import SEOHead from '@/components/SEOHead';
 import { Sparkles, FileText, Video, Users, ArrowRight, Check, BookOpen, ExternalLink } from 'lucide-react';
@@ -7,6 +8,7 @@ import { api } from '@/lib/utils';
 import Footer from '@/components/Footer';
 
 const Home = () => {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [latestArticles, setLatestArticles] = useState<any[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(true);
@@ -45,16 +47,14 @@ const Home = () => {
             
             {/* Main Headline */}
             <h1 className="text-5xl md:text-7xl font-black text-jet-black mb-6 leading-tight tracking-tight animate-fade-in">
-              Create Your Perfect CV
+              {t('home.heroTitle')}
               <br />
-              <span className="text-crimson-red">in Under 5 Minutes</span>
+              <span className="text-crimson-red">{t('home.heroSubtitle')}</span>
             </h1>
             
             {/* Subheadline */}
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
-              AI-powered resume builder that helps you land your dream job. 
-              <br className="hidden md:block" />
-              ATS-friendly templates. Interview practice. All in one place.
+              {t('home.heroDescription')}
             </p>
 
             {/* CTA Buttons */}
@@ -64,7 +64,7 @@ const Home = () => {
                 className="bg-crimson-red hover:bg-fire-red text-white px-8 py-6 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl hover-lift transition-all duration-300"
                 onClick={() => navigate('/register')}
               >
-                Get Started Free
+                {t('home.getStartedFree')}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Button 
@@ -73,7 +73,7 @@ const Home = () => {
                 className="border-2 border-jet-black text-jet-black hover:bg-jet-black hover:text-white px-8 py-6 text-lg font-semibold rounded-lg hover-lift transition-all duration-300"
                 onClick={() => navigate('/login')}
               >
-                Sign In
+                {t('home.signIn')}
               </Button>
             </div>
 
@@ -81,15 +81,15 @@ const Home = () => {
             <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-500">
               <div className="flex items-center gap-2">
                 <Check className="w-5 h-5 text-crimson-red" />
-                <span>No Credit Card Required</span>
+                <span>{t('home.noCreditCard')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="w-5 h-5 text-crimson-red" />
-                <span>ATS-Optimized</span>
+                <span>{t('home.atsOptimized')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="w-5 h-5 text-crimson-red" />
-                <span>AI-Powered</span>
+                <span>{t('home.aiPowered')}</span>
               </div>
             </div>
           </div>
@@ -107,10 +107,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-black text-jet-black mb-4">
-              Everything You Need to Succeed
+              {t('home.everythingYouNeed')}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              All-in-one career platform powered by AI
+              {t('home.allInOnePlatform')}
             </p>
           </div>
 
@@ -119,8 +119,8 @@ const Home = () => {
             <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
               <FeatureCard
                 icon={<FileText className="w-8 h-8" />}
-                title="AI CV Builder"
-                description="Create ATS-friendly resumes in minutes. AI enhances your content to make it professional and impactful."
+                title={t('home.aiCVBuilder')}
+                description={t('home.aiCVBuilderDesc')}
                 color="text-crimson-red"
               />
             </div>
@@ -129,8 +129,8 @@ const Home = () => {
             <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <FeatureCard
                 icon={<Video className="w-8 h-8" />}
-                title="AI Interview Practice"
-                description="Practice with different AI personas - Friendly HR, Strict Manager, or English Native. Get instant feedback."
+                title={t('home.aiInterviewPractice')}
+                description={t('home.aiInterviewPracticeDesc')}
                 color="text-crimson-red"
               />
             </div>
@@ -139,8 +139,8 @@ const Home = () => {
             <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
               <FeatureCard
                 icon={<Users className="w-8 h-8" />}
-                title="Career Community"
-                description="Share your CV, get feedback, and connect with professionals. Learn from others' experiences."
+                title={t('home.careerCommunity')}
+                description={t('home.careerCommunityDesc')}
                 color="text-crimson-red"
               />
             </div>
@@ -153,28 +153,28 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-black text-jet-black mb-4">
-              How It Works
+              {t('home.howItWorks')}
             </h2>
             <p className="text-xl text-gray-600">
-              Simple. Fast. Effective.
+              {t('home.simpleFastEffective')}
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-12 max-w-4xl mx-auto">
             <StepCard
               number="1"
-              title="Sign Up"
-              description="Create your free account in seconds. No credit card required."
+              title={t('home.signUp')}
+              description={t('home.signUpDesc')}
             />
             <StepCard
               number="2"
-              title="Build Your CV"
-              description="Use our AI-powered builder to create a professional, ATS-friendly resume."
+              title={t('home.buildYourCV')}
+              description={t('home.buildYourCVDesc')}
             />
             <StepCard
               number="3"
-              title="Practice & Apply"
-              description="Practice interviews with AI, then export your CV and start applying."
+              title={t('home.practiceApply')}
+              description={t('home.practiceApplyDesc')}
             />
           </div>
         </div>
@@ -187,11 +187,11 @@ const Home = () => {
             <div className="inline-flex items-center gap-2 mb-4">
               <BookOpen className="w-8 h-8 text-crimson-red" />
               <h2 className="text-4xl md:text-5xl font-black text-jet-black">
-                Latest Career Insights
+                {t('home.latestCareerInsights')}
               </h2>
             </div>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Đọc các bài viết mới nhất từ cộng đồng chuyên gia
+              {t('home.readLatestArticles')}
             </p>
           </div>
 
@@ -242,7 +242,7 @@ const Home = () => {
                       <p className="text-sm text-gray-600 line-clamp-3 mb-4">{article.summary}</p>
                     )}
                     <div className="flex items-center gap-2 text-sm font-semibold text-crimson-red hover:text-fire-red transition-colors">
-                      Đọc thêm
+                      {t('home.readMore')}
                       <ExternalLink size={14} />
                     </div>
                   </div>
@@ -252,7 +252,7 @@ const Home = () => {
           ) : (
             <div className="text-center py-12">
               <BookOpen className="mx-auto text-gray-400 mb-4" size={48} />
-              <p className="text-gray-600">Chưa có bài viết nào. Hãy là người đầu tiên viết bài!</p>
+              <p className="text-gray-600">{t('home.noArticlesYet')}</p>
             </div>
           )}
 
@@ -263,7 +263,7 @@ const Home = () => {
                 variant="outline"
                 className="border-2 border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white"
               >
-                Xem tất cả bài viết
+                {t('home.viewAllArticles')}
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </div>
@@ -276,17 +276,17 @@ const Home = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Sparkles className="w-16 h-16 mx-auto mb-6 text-crimson-red" />
           <h2 className="text-4xl md:text-5xl font-black mb-6">
-            Ready to Land Your Dream Job?
+            {t('home.readyToLand')}
           </h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Join thousands of professionals who have already created their perfect CV with CV Mate.
+            {t('home.joinThousands')}
           </p>
           <Button 
             size="lg" 
             className="bg-crimson-red hover:bg-fire-red text-white px-10 py-6 text-lg font-semibold rounded-lg"
             onClick={() => navigate('/register')}
           >
-            Start Building Your CV Now
+            {t('home.startBuildingNow')}
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
         </div>

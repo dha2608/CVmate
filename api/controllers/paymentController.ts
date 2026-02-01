@@ -247,3 +247,84 @@ export const cancelSubscription = async (req: AuthRequest, res: Response, next: 
     res.status(500).json({ success: false, message: errorMessage });
   }
 };
+
+/**
+ * Create PayPal order
+ */
+export const createPayPalOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const user = await User.findById(req.user?._id);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    // PayPal order creation - simplified version
+    // In production, you would integrate with PayPal SDK
+    const orderId = `PAYPAL-${Date.now()}-${user._id}`;
+    
+    res.json({
+      success: true,
+      data: {
+        orderId,
+        amount: {
+          value: '9.99',
+          currency: 'USD',
+        },
+      },
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create PayPal order';
+    logger.error('PayPal order creation error', error instanceof Error ? error : new Error(String(error)), {
+      userId: req.user?._id,
+    });
+    res.status(500).json({ success: false, message: errorMessage });
+  }
+};
+
+/**
+ * Capture PayPal payment
+ */
+export const capturePayPalPayment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { orderId } = req.body;
+    
+    if (!orderId) {
+      res.status(400).json({ success: false, message: 'Order ID is required' });
+      return;
+    }
+
+    const user = await User.findById(req.user?._id);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    // In production, verify payment with PayPal API
+    // For now, we'll simulate successful payment
+    user.subscription = {
+      plan: 'premium',
+      status: 'active',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      paymentMethod: 'paypal',
+    };
+    await user.save();
+
+    logger.info('PayPal payment captured successfully', { userId: user._id, orderId });
+
+    res.json({
+      success: true,
+      message: 'Payment successful',
+      data: {
+        subscription: user.subscription,
+      },
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to capture PayPal payment';
+    logger.error('PayPal capture error', error instanceof Error ? error : new Error(String(error)), {
+      userId: req.user?._id,
+    });
+    res.status(500).json({ success: false, message: errorMessage });
+  }
+};

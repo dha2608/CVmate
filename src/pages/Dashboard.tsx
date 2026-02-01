@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useDashboardStore } from '@/store/dashboardStore';
 import { useCommunityStore } from '@/store/communityStore';
+import { useI18n } from '@/store/i18nStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { 
@@ -19,6 +20,7 @@ const Dashboard = () => {
   const { user } = useAuthStore();
   const { stats, fetchStats } = useDashboardStore();
   const { posts, fetchPosts } = useCommunityStore();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [greeting, setGreeting] = useState('');
 
@@ -29,13 +31,13 @@ const Dashboard = () => {
     }
 
     const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good Morning');
-    else if (hour < 18) setGreeting('Good Afternoon');
-    else setGreeting('Good Evening');
+    if (hour < 12) setGreeting(t('dashboard.goodMorning'));
+    else if (hour < 18) setGreeting(t('dashboard.goodAfternoon'));
+    else setGreeting(t('dashboard.goodEvening'));
 
     fetchStats();
     fetchPosts();
-  }, [user, navigate]);
+  }, [user, navigate, t]);
 
   if (!user) return null;
 
@@ -46,7 +48,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between gap-4 mb-6">
                <div className="flex-1">
                   <h1 className="text-2xl font-bold text-gray-900">{greeting}, {user.name.split(' ')[0]}!</h1>
-                  <p className="text-sm text-gray-500 mt-1">Ready to boost your career today?</p>
+                  <p className="text-sm text-gray-500 mt-1">{t('dashboard.readyToBoost')}</p>
                </div>
                <Button variant="ghost" size="icon" className="rounded-full bg-gray-50 text-gray-500 hover:bg-gray-100">
                   <Search size={20} />
@@ -60,36 +62,36 @@ const Dashboard = () => {
                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-400 shadow-sm border border-gray-100">
                   <PenTool size={18} />
                </div>
-               <span className="text-gray-500 text-sm font-medium flex-1">Start a post, try writing with AI...</span>
+               <span className="text-gray-500 text-sm font-medium flex-1">{t('dashboard.startPost')}</span>
             </div>
          </div>
 
          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <QuickActionCard 
                icon={<FileText className="text-blue-600" size={24} />}
-               title="Create CV"
-               desc="ATS-Friendly"
+               title={t('dashboard.createCV')}
+               desc={t('dashboard.atsFriendly')}
                color="bg-blue-50 hover:bg-blue-100/80 border-blue-100"
                onClick={() => navigate('/builder')}
             />
             <QuickActionCard 
                icon={<Video className="text-green-600" size={24} />}
-               title="Interview"
-               desc="Practice AI"
+               title={t('dashboard.interview')}
+               desc={t('dashboard.practiceAI')}
                color="bg-green-50 hover:bg-green-100/80 border-green-100"
                onClick={() => navigate('/interview')}
             />
             <QuickActionCard 
                icon={<MessageSquare className="text-orange-600" size={24} />}
-               title="Community"
-               desc="Get Advice"
+               title={t('dashboard.community')}
+               desc={t('dashboard.getAdvice')}
                color="bg-orange-50 hover:bg-orange-100/80 border-orange-100"
                onClick={() => navigate('/community')}
             />
             <QuickActionCard 
                icon={<Plus className="text-rose-600" size={24} />}
-               title="Article"
-               desc="Share Knowledge"
+               title={t('dashboard.article')}
+               desc={t('dashboard.shareKnowledge')}
                color="bg-rose-50 hover:bg-rose-100/80 border-rose-100"
                onClick={() => navigate('/blog')}
             />
@@ -98,19 +100,19 @@ const Dashboard = () => {
          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
                <TrendingUp size={18} className="text-rose-500" />
-               Your Activity
+               {t('dashboard.yourActivity')}
             </h2>
             <div className="grid grid-cols-3 gap-6 divide-x divide-gray-100">
-               <StatItem label="CVs Created" value={stats.resumesCount} color="text-blue-600" />
-               <StatItem label="Interviews" value={stats.interviewsCount} color="text-green-600" />
-               <StatItem label="Post Views" value={stats.postsCount} color="text-orange-600" />
+               <StatItem label={t('dashboard.cvsCreated')} value={stats.resumesCount} color="text-blue-600" />
+               <StatItem label={t('dashboard.interviews')} value={stats.interviewsCount} color="text-green-600" />
+               <StatItem label={t('dashboard.postViews')} value={stats.postsCount} color="text-orange-600" />
             </div>
          </div>
 
          <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-               <h2 className="font-bold text-gray-900">Recommended for you</h2>
-               <Button variant="link" className="text-rose-500 text-sm p-0 h-auto font-semibold">View all</Button>
+               <h2 className="font-bold text-gray-900">{t('dashboard.recommendedForYou')}</h2>
+               <Button variant="link" className="text-rose-500 text-sm p-0 h-auto font-semibold">{t('dashboard.viewAll')}</Button>
             </div>
 
             <RecommendationCard 

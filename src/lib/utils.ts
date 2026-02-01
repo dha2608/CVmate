@@ -189,6 +189,17 @@ export const api = {
       method: 'POST',
     }),
 
+  createPayPalOrder: () =>
+    apiRequest<{ success: boolean; data: { orderId: string; amount: { value: string; currency: string } } }>('/payment/paypal/create-order', {
+      method: 'POST',
+    }),
+
+  capturePayPalPayment: (orderId: string) =>
+    apiRequest<{ success: boolean; message: string; data: { subscription: any } }>('/payment/paypal/capture', {
+      method: 'POST',
+      body: JSON.stringify({ orderId }),
+    }),
+
   getJobs: (params?: { page?: number; limit?: number; search?: string; type?: string; location?: string }) => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
