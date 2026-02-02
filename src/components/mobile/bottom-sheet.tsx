@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
+import { useFocusManagement } from '@/hooks/useFocusManagement';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface BottomSheetProps {
   open: boolean;
@@ -21,6 +23,9 @@ export const BottomSheet = ({
   maxHeight = '90vh',
   className
 }: BottomSheetProps) => {
+  const containerRef = useFocusTrap(open);
+  useFocusManagement(open);
+
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -31,6 +36,22 @@ export const BottomSheet = ({
       document.body.style.overflow = '';
     };
   }, [open]);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open) {
+        onOpenChange(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [open, onOpenChange]);
 
   return (
     <AnimatePresence>
@@ -47,6 +68,7 @@ export const BottomSheet = ({
 
           {/* Bottom Sheet */}
           <motion.div
+            ref={containerRef as any}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -58,6 +80,10 @@ export const BottomSheet = ({
               className
             )}
             style={{ maxHeight }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? 'bottom-sheet-title' : undefined}
+            data-modal
           >
             {/* Handle */}
             <div className="flex items-center justify-center pt-3 pb-2">
@@ -68,7 +94,7 @@ export const BottomSheet = ({
             {(title || true) && (
               <div className="flex items-center justify-between px-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                 {title && (
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 id="bottom-sheet-title" className="text-lg font-semibold text-gray-900 dark:text-white">
                     {title}
                   </h3>
                 )}

@@ -6,7 +6,7 @@ const Footer = () => {
   const { t } = useI18n();
   
   return (
-    <footer className="bg-jet-black text-white border-t border-gray-800">
+    <footer id="footer" role="contentinfo" className="bg-jet-black text-white border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           {/* Brand Column */}

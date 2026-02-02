@@ -3,6 +3,8 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./button";
+import { useFocusManagement } from "@/hooks/useFocusManagement";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 interface DialogEnhancedProps {
   open: boolean;
@@ -34,6 +36,9 @@ export const DialogEnhanced = ({
   children,
   closeOnBackdrop = true 
 }: DialogEnhancedProps) => {
+  const containerRef = useFocusTrap(open);
+  useFocusManagement(open);
+
   React.useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -44,6 +49,22 @@ export const DialogEnhanced = ({
       document.body.style.overflow = '';
     };
   }, [open]);
+
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open) {
+        onOpenChange(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [open, onOpenChange]);
 
   const handleBackdropClick = () => {
     if (closeOnBackdrop) {
@@ -69,8 +90,12 @@ export const DialogEnhanced = ({
           
           {/* Dialog Content */}
           <div 
+            ref={containerRef as any}
             className="relative z-50 w-full max-w-lg"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            data-modal
           >
             {children}
           </div>

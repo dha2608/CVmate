@@ -49,6 +49,13 @@ export {
   LoadingIllustration
 } from './illustrations';
 
+// Accessibility & UX
+export { TooltipEnhanced } from './tooltip-enhanced';
+export { ProgressIndicator } from './progress-indicator';
+export { ContextualHelp } from './contextual-help';
+export { Breadcrumbs } from './breadcrumbs';
+export { BackButton } from './back-button';
+
 // Existing components
 export { Button, buttonVariants } from './button';
 export type { ButtonProps } from './button';

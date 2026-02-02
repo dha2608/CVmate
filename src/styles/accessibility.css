@@ -1,0 +1,193 @@
+/* Accessibility Improvements */
+
+/* Skip Links */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary-600);
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 100;
+  border-radius: 4px;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Focus Visible - Better focus indicators */
+*:focus-visible {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+  }
+
+  .dark {
+    --border: 0 0% 80%;
+    --input: 0 0% 80%;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Color Blind Friendly - Use patterns and icons in addition to color */
+.color-blind-friendly {
+  /* Add patterns or icons alongside colors */
+}
+
+/* Better Link Contrast */
+a:not([class]) {
+  color: var(--color-primary-600);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a:not([class]):hover {
+  color: var(--color-primary-700);
+  text-decoration-thickness: 2px;
+}
+
+/* Button Focus States */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 2px;
+}
+
+/* Form Input Focus */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 2px;
+  border-color: var(--color-primary-600);
+}
+
+/* ARIA Live Regions */
+[aria-live] {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+[aria-live].sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+
+/* Keyboard Navigation Indicators */
+.keyboard-nav *:focus {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 2px;
+}
+
+.mouse-nav *:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Loading States for Screen Readers */
+[aria-busy="true"]::before {
+  content: "Loading...";
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Error States for Screen Readers */
+[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+[aria-invalid="true"]::after {
+  content: attr(aria-errormessage);
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Landmark Roles */
+[role="banner"],
+[role="navigation"],
+[role="main"],
+[role="contentinfo"],
+[role="complementary"] {
+  /* Ensure landmarks are properly styled */
+}
+
+/* Better Text Contrast */
+.text-low-contrast {
+  color: var(--color-gray-500);
+}
+
+@media (prefers-contrast: high) {
+  .text-low-contrast {
+    color: var(--color-gray-700);
+  }
+}
+
+/* Touch Target Sizes (already in mobile-utilities.css but ensure here too) */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Exception for icon-only buttons that are part of a group */
+.icon-button-group button {
+  min-width: auto;
+}

@@ -14,6 +14,7 @@ import Footer from '@/components/Footer';
 import SupportChat from '@/components/SupportChat';
 import SearchModal from '@/components/SearchModal';
 import { BottomNav } from './BottomNav';
+import { SkipLinks } from '@/components/accessibility/skip-links';
 import { motion } from 'framer-motion';
 
 interface MainLayoutProps {
@@ -64,8 +65,11 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
 
   return (
     <div className={`min-h-screen font-sans transition-colors duration-300 ease-in-out ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-[#F8F9FA] text-slate-900'}`}>
+      {/* Skip Links */}
+      <SkipLinks />
+      
       {/* Navbar*/}
-      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm transition-all duration-300 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+      <nav id="navigation" className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm transition-all duration-300 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95" role="navigation" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto container-padding">
           <div className="flex justify-between items-center h-16 sm:h-18">
             
@@ -201,7 +205,7 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
       </nav>
 
       {/* Main Content Grid */}
-      <main className="max-w-7xl mx-auto container-padding py-6 sm:py-8 lg:py-10 pb-20 md:pb-6 sm:pb-8 lg:pb-10">
+      <main id="main-content" className="max-w-7xl mx-auto container-padding py-6 sm:py-8 lg:py-10 pb-20 md:pb-6 sm:pb-8 lg:pb-10" role="main" tabIndex={-1}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           
           {/* Left Sidebar (Profile) */}
