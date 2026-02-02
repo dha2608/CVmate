@@ -5,6 +5,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Toast from "@/components/Toast";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PageTransition from "@/components/PageTransition";
+import { OfflineIndicator } from "@/components/mobile";
 import { Loader2 } from "lucide-react";
 
 // Lazy load pages for better performance
@@ -48,6 +49,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <Router>
+        <OfflineIndicator />
         <Toast />
         <Suspense fallback={<PageLoader />}>
           <Routes>

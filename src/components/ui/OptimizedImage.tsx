@@ -8,6 +8,8 @@ interface OptimizedImageProps {
   className?: string;
   loading?: 'lazy' | 'eager';
   quality?: number;
+  sizes?: string;
+  srcSet?: string;
 }
 
 const OptimizedImage = ({ 
@@ -15,7 +17,9 @@ const OptimizedImage = ({
   alt, 
   className = '', 
   loading = 'lazy',
-  quality = 85 
+  quality = 85,
+  sizes,
+  srcSet
 }: OptimizedImageProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -36,6 +40,14 @@ const OptimizedImage = ({
 
   const optimizedSrc = getOptimizedSrc(src);
 
+  // Generate srcSet for responsive images if not provided
+  const generateSrcSet = (src: string) => {
+    if (srcSet) return srcSet;
+    // For local images, you might want to generate different sizes
+    // This is a placeholder - implement based on your image service
+    return undefined;
+  };
+
   return (
     <div className="relative overflow-hidden w-full h-full">
       {isLoading && (
@@ -54,6 +66,8 @@ const OptimizedImage = ({
           alt={alt}
           loading={loading}
           className={className}
+          srcSet={generateSrcSet(optimizedSrc)}
+          sizes={sizes || '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'}
           onLoad={() => setIsLoading(false)}
           onError={() => {
             setIsLoading(false);

@@ -2,6 +2,7 @@
 @import './styles/design-system.css';
 @import './styles/micro-interactions.css';
 @import './styles/color-system.css';
+@import './styles/mobile-utilities.css';
 
 @tailwind base;
 @tailwind components;
