@@ -7,6 +7,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import PageTransition from "@/components/PageTransition";
 import { OfflineIndicator } from "@/components/mobile";
 import { Loader2 } from "lucide-react";
+import ScrollToTop from "@/components/ScrollToTop";
 
 // Lazy load pages for better performance
 const Home = lazy(() => import("@/pages/Home"));
@@ -32,6 +33,13 @@ const Terms = lazy(() => import("@/pages/Terms"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const About = lazy(() => import("@/pages/About"));
 const Pricing = lazy(() => import("@/pages/Pricing"));
+const CookiePolicy = lazy(() => import("@/pages/CookiePolicy"));
+const HelpCenter = lazy(() => import("@/pages/HelpCenter"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const Careers = lazy(() => import("@/pages/Careers"));
+const Partners = lazy(() => import("@/pages/Partners"));
+const Sitemap = lazy(() => import("@/pages/Sitemap"));
+const Accessibility = lazy(() => import("@/pages/Accessibility"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -51,6 +59,7 @@ export default function App() {
       <Router>
         <OfflineIndicator />
         <Toast />
+        <ScrollToTop />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -63,6 +72,13 @@ export default function App() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/about" element={<About />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/help" element={<HelpCenter />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/partners" element={<Partners />} />
+            <Route path="/sitemap" element={<Sitemap />} />
+            <Route path="/accessibility" element={<Accessibility />} />
             <Route 
               path="/onboarding" 
               element={
