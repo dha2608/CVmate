@@ -17,12 +17,23 @@ import { BottomNav } from './BottomNav';
 import { SkipLinks } from '@/components/accessibility/skip-links';
 import { motion } from 'framer-motion';
 
+type LayoutMode = 'default' | 'full-width' | 'centered' | 'narrow';
+
 interface MainLayoutProps {
   children: ReactNode;
   rightSidebar?: ReactNode;
+  layoutMode?: LayoutMode;
+  showLeftSidebar?: boolean;
+  showRightSidebar?: boolean;
 }
 
-const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
+const MainLayout = ({ 
+  children, 
+  rightSidebar, 
+  layoutMode = 'default',
+  showLeftSidebar,
+  showRightSidebar
+}: MainLayoutProps) => {
   const { user, logout } = useAuthStore();
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage, t } = useI18n();
@@ -35,11 +46,35 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
+  // Auto-detect layout mode based on route
+  const getLayoutMode = (): LayoutMode => {
+    const path = location.pathname;
+    const fullWidthRoutes = ['/pricing', '/terms', '/privacy', '/about', '/payment', '/payment/success', '/payment/cancel'];
+    const centeredRoutes = ['/login', '/register', '/onboarding'];
+    const narrowRoutes = ['/builder', '/interview'];
+    
+    if (fullWidthRoutes.includes(path)) return 'full-width';
+    if (centeredRoutes.includes(path)) return 'centered';
+    if (narrowRoutes.includes(path)) return 'narrow';
+    return 'default';
+  };
+
+  // Auto-detect sidebar visibility
+  const shouldShowLeftSidebar = showLeftSidebar !== undefined 
+    ? showLeftSidebar 
+    : !['/pricing', '/terms', '/privacy', '/about', '/payment', '/payment/success', '/payment/cancel', '/login', '/register', '/onboarding'].includes(location.pathname);
+  
+  const shouldShowRightSidebar = showRightSidebar !== undefined 
+    ? showRightSidebar 
+    : !['/pricing', '/terms', '/privacy', '/about', '/payment', '/payment/success', '/payment/cancel', '/login', '/register', '/onboarding', '/builder', '/interview'].includes(location.pathname);
+
+  const finalLayoutMode = layoutMode === 'default' ? getLayoutMode() : layoutMode;
+
   useEffect(() => {
-    if (!rightSidebar) {
+    if (shouldShowRightSidebar && !rightSidebar) {
       fetchNews(5); // Fetch 5 latest news for sidebar
     }
-  }, [rightSidebar, fetchNews]);
+  }, [shouldShowRightSidebar, rightSidebar, fetchNews]);
 
   useEffect(() => {
     if (!isProfileMenuOpen) return;
@@ -62,6 +97,21 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
       document.removeEventListener('keydown', onKeyDown);
     };
   }, [isProfileMenuOpen]);
+
+  // Layout classes based on mode
+  const getMainContentClasses = () => {
+    switch (finalLayoutMode) {
+      case 'full-width':
+        return 'max-w-full';
+      case 'centered':
+        return 'max-w-2xl mx-auto';
+      case 'narrow':
+        return 'max-w-5xl mx-auto';
+      case 'default':
+      default:
+        return 'max-w-7xl mx-auto';
+    }
+  };
 
   return (
     <div className={`min-h-screen font-sans transition-colors duration-300 ease-in-out ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-[#F8F9FA] text-slate-900'}`}>
@@ -204,27 +254,29 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
         </div>
       </nav>
 
-      {/* Main Content Grid */}
-      <main id="main-content" className="max-w-7xl mx-auto container-padding py-6 sm:py-8 lg:py-10 pb-20 md:pb-6 sm:pb-8 lg:pb-10" role="main" tabIndex={-1}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          
-          {/* Left Sidebar (Profile) */}
-          <div className="hidden lg:block lg:col-span-3">
-             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-20 lg:top-24 group">
-                {/* Header Profile */}
-                <div className="h-20 lg:h-24 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-gray-900 dark:to-gray-800 relative">
-                   <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
-                        <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center shadow-lg">
-                           {user?.avatar ? (
-                               <img src={user.avatar} className="w-full h-full object-cover" alt="Avatar" />
-                           ) : (
-                               <span className="text-2xl lg:text-3xl font-black text-zinc-900 dark:text-white">{user?.name?.charAt(0)}</span>
-                           )}
-                        </div>
-                   </div>
-                </div>
-                
-                <div className="pt-10 lg:pt-12 pb-4 lg:pb-6 px-3 lg:px-4 text-center border-b border-gray-100 dark:border-gray-700">
+      {/* Main Content */}
+      <main id="main-content" className={`${getMainContentClasses()} container-padding py-6 sm:py-8 lg:py-10 pb-20 md:pb-6 sm:pb-8 lg:pb-10`} role="main" tabIndex={-1}>
+        {finalLayoutMode === 'default' && (shouldShowLeftSidebar || shouldShowRightSidebar) ? (
+          // 3-column layout (with sidebars)
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            {/* Left Sidebar (Profile) */}
+            {shouldShowLeftSidebar && (
+              <div className="hidden lg:block lg:col-span-3">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-20 lg:top-24 group">
+                  {/* Header Profile */}
+                  <div className="h-20 lg:h-24 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-gray-900 dark:to-gray-800 relative">
+                    <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
+                      <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center shadow-lg">
+                        {user?.avatar ? (
+                          <img src={user.avatar} className="w-full h-full object-cover" alt="Avatar" />
+                        ) : (
+                          <span className="text-2xl lg:text-3xl font-black text-zinc-900 dark:text-white">{user?.name?.charAt(0)}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-10 lg:pt-12 pb-4 lg:pb-6 px-3 lg:px-4 text-center border-b border-gray-100 dark:border-gray-700">
                     <h3 
                       className="font-bold text-base lg:text-lg text-gray-900 dark:text-white hover:text-red-600 dark:hover:text-red-400 cursor-pointer transition-colors"
                       onClick={() => navigate('/profile')}
@@ -238,42 +290,44 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
                         user.careerGoal === 'career-switch' ? 'Career Switcher' : 'Professional'
                       : 'Professional'}
                     </p>
-                </div>
-                
-                <div className="p-3 lg:p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  </div>
+                  
+                  <div className="p-3 lg:p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                     <Button 
                       variant="outline" 
                       className="w-full border-zinc-900 dark:border-gray-600 text-zinc-900 dark:text-white hover:bg-zinc-900 dark:hover:bg-gray-600 hover:text-white transition-all text-sm"
-                      onClick={() => navigate('/profile')}
+                      onClick={() => navigate('/pricing')}
                     >
-                        <Sparkles size={14} className="mr-2" /> 
-                        Go Premium
+                      <Sparkles size={14} className="mr-2" /> 
+                      Go Premium
                     </Button>
+                  </div>
                 </div>
-             </div>
-          </div>
+              </div>
+            )}
 
-          {/* Center Feed */}
-          <div className="col-span-1 lg:col-span-6 min-w-0">
-            {children}
-          </div>
+            {/* Center Content */}
+            <div className={`col-span-1 min-w-0 ${shouldShowLeftSidebar && shouldShowRightSidebar ? 'lg:col-span-6' : shouldShowLeftSidebar ? 'lg:col-span-9' : shouldShowRightSidebar ? 'lg:col-span-9' : 'lg:col-span-12'}`}>
+              {children}
+            </div>
 
-          {/* News */}
-          <div className="hidden lg:block lg:col-span-3">
-            {rightSidebar || (
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6 sticky top-20 lg:top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+            {/* Right Sidebar (News) */}
+            {shouldShowRightSidebar && (
+              <div className="hidden lg:block lg:col-span-3">
+                {rightSidebar || (
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6 sticky top-20 lg:top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
                     <div className="flex justify-between items-center mb-4 lg:mb-6">
-                        <h3 className="font-bold text-sm lg:text-base text-gray-900 dark:text-white border-l-4 border-red-600 dark:border-red-500 pl-2 lg:pl-3">
-                          {t('blog.latestNews')}
-                        </h3>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate('/blog')}
-                          className="text-gray-400 hover:text-gray-900 dark:hover:text-white h-8 w-8 p-0"
-                        >
-                          <MoreHorizontal size={16} />
-                        </Button>
+                      <h3 className="font-bold text-sm lg:text-base text-gray-900 dark:text-white border-l-4 border-red-600 dark:border-red-500 pl-2 lg:pl-3">
+                        {t('blog.latestNews')}
+                      </h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate('/blog')}
+                        className="text-gray-400 hover:text-gray-900 dark:hover:text-white h-8 w-8 p-0"
+                      >
+                        <MoreHorizontal size={16} />
+                      </Button>
                     </div>
                     {newsArticles.length > 0 ? (
                       <>
@@ -300,11 +354,17 @@ const MainLayout = ({ children, rightSidebar }: MainLayoutProps) => {
                         {t('blog.noNewsAvailable')}
                       </div>
                     )}
-                </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
-
-        </div>
+        ) : (
+          // Full-width, centered, or narrow layout (no sidebars)
+          <div>
+            {children}
+          </div>
+        )}
       </main>
 
       {/* Footer */}
@@ -375,12 +435,12 @@ const NewsItem = ({ title, time, link }: { title: string, time: string, link?: s
         }
       }}
     >
-        <h4 className="font-semibold text-xs lg:text-sm text-gray-800 dark:text-gray-200 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors leading-snug line-clamp-2">
-            {title}
-        </h4>
-        <div className="flex items-center gap-2 mt-1.5">
-          <p className="text-[10px] lg:text-xs text-gray-400 dark:text-gray-500">{time}</p>
-        </div>
+      <h4 className="font-semibold text-xs lg:text-sm text-gray-800 dark:text-gray-200 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors leading-snug line-clamp-2">
+          {title}
+      </h4>
+      <div className="flex items-center gap-2 mt-1.5">
+        <p className="text-[10px] lg:text-xs text-gray-400 dark:text-gray-500">{time}</p>
+      </div>
     </li>
   );
 };

@@ -14,6 +14,9 @@ CV Mate is an "All-in-one" career support platform powered by AI, designed to he
 - **AI Enhance** - Transform raw bullet points into professional language
 - **ATS Checker** - Compare CV with Job Description, get keyword suggestions
 - **PDF Export** - Download selectable PDF with jsPDF
+- **Template Selector** - Multiple professional templates
+- **Section Reorder** - Drag & drop sections
+- **AI Suggestions** - Smart content suggestions
 
 ### 🤖 AI Interview Simulator (Killer Feature)
 - **3 AI Personas**:
@@ -32,57 +35,69 @@ CV Mate is an "All-in-one" career support platform powered by AI, designed to he
 - **CMS Admin** - Create and manage articles
 - **AI Summary** - Auto-generate article summaries
 
+### 💼 Job Search
+- **Job Listings** - Browse and search jobs
+- **AI Job Matcher** - Match CV with job descriptions
+- **Bookmarks** - Save favorite jobs
+
 ## 🛠️ Tech Stack
 
-- **Frontend**: React + Vite, TypeScript, Tailwind CSS, Shadcn/UI, Zustand
+- **Frontend**: React + Vite, TypeScript, Tailwind CSS, Shadcn/UI, Zustand, Framer Motion
 - **Backend**: Node.js + Express.js, MongoDB (Mongoose)
 - **AI**: OpenAI API (gpt-3.5-turbo / gpt-4o-mini)
 - **Authentication**: JWT + Google OAuth 2.0 (Passport.js)
 - **PDF Export**: jsPDF + html2canvas
 - **Speech Recognition**: Web Speech API (Browser native)
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
 - Node.js 18+ installed
 - MongoDB instance (local or MongoDB Atlas)
-- OpenAI API Key
-- Google OAuth 2.0 credentials (for Google login)
+- OpenAI API Key (for AI features)
+- Google OAuth 2.0 credentials (for Google login - optional)
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
    git clone <repository-url>
    cd CVmate
    ```
 
-2. Install dependencies:
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. Configure Environment Variables:
+3. **Configure Environment Variables:**
    
-   See [ENV_SETUP.md](./ENV_SETUP.md) for detailed instructions.
+   See [ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md) for detailed instructions.
    
    Create `.env` file in root directory:
    ```env
-   # Backend
+   # Server
    PORT=5001
+   NODE_ENV=development
+   
+   # Database
    MONGODB_URI=mongodb://localhost:27017/cvmate
-   JWT_SECRET=your-super-secret-jwt-key
-   SESSION_SECRET=your-session-secret
-   OPENAI_API_KEY=sk-your-openai-api-key
+   
+   # JWT Secret (required - at least 32 characters)
+   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+   SESSION_SECRET=your-session-secret-key-change-this
+   
+   # OpenAI API (for AI features)
+   OPENAI_API_KEY=sk-your-openai-api-key-here
    OPENAI_MODEL=gpt-3.5-turbo
    
-   # Google OAuth
-   GOOGLE_CLIENT_ID=your-google-client-id
+   # Google OAuth 2.0 (optional - for Google login)
+   GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
    GOOGLE_CLIENT_SECRET=your-google-client-secret
    GOOGLE_CALLBACK_URL=http://localhost:5001/api/auth/google/callback
    
-   # Frontend
+   # Frontend URL
    FRONTEND_URL=http://localhost:5173
    ```
    
@@ -93,13 +108,12 @@ CV Mate is an "All-in-one" career support platform powered by AI, designed to he
 
 ### Running the App
 
-Start both frontend and backend in development mode:
-
+**Start both frontend and backend:**
 ```bash
 npm run dev
 ```
 
-Or run separately:
+**Or run separately:**
 ```bash
 # Frontend only
 npm run client:dev
@@ -111,6 +125,13 @@ npm run server:dev
 - **Frontend**: http://localhost:5173
 - **Backend**: http://localhost:5001
 
+### Verify Setup
+
+Check environment variables:
+```bash
+node api/scripts/check-env.js
+```
+
 ## 📁 Project Structure
 
 ```
@@ -120,25 +141,46 @@ CVmate/
 │   ├── controllers/       # Business logic
 │   ├── models/            # MongoDB schemas
 │   ├── routes/            # API endpoints
-│   └── middleware/        # Auth, Rate limiting
+│   ├── middleware/        # Auth, Rate limiting
+│   ├── services/          # External services
+│   ├── utils/             # Utilities (logger, errors, validators)
+│   └── scripts/           # Utility scripts
 ├── src/                   # Frontend (React + Vite)
 │   ├── components/        # Reusable components
+│   │   ├── ui/            # UI components
+│   │   ├── layout/        # Layout components
+│   │   ├── mobile/        # Mobile-specific components
+│   │   └── accessibility/ # Accessibility components
 │   ├── pages/             # Page components
 │   ├── store/             # Zustand state management
-│   └── lib/               # Utilities & API helpers
+│   ├── hooks/             # Custom React hooks
+│   ├── lib/               # Utilities & API helpers
+│   └── styles/            # CSS files
 └── public/                # Static assets
 ```
 
-See [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for detailed structure.
-
 ## 🎨 Design System
 
+### Colors
 - **Primary Color**: White (#FFFFFF) - 80% of space
 - **Secondary Color**: Jet Black (#121212) - Text, Footer, Navbar
 - **Accent Color**: Crimson Red (#DC143C) - CTA buttons, AI icons
 - **Neutral**: Light Grey (#F5F5F5) - Borders, backgrounds
-- **Typography**: Inter / Roboto (Google Fonts)
+
+### Typography
+- **Fonts**: Inter / Roboto (Google Fonts)
 - **Style**: Minimalist with high contrast
+
+### UI/UX Features
+- ✅ Dark mode support
+- ✅ Responsive design (mobile-first)
+- ✅ Accessibility (WCAG AA compliant)
+- ✅ Keyboard navigation
+- ✅ Screen reader support
+- ✅ Smooth animations (Framer Motion)
+- ✅ Loading states & skeletons
+- ✅ Error handling
+- ✅ Empty states
 
 ## 🔒 Security & Rate Limiting
 
@@ -148,20 +190,86 @@ See [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for detailed structure.
 
 ## 📚 Documentation
 
-- [ENV_SETUP.md](./ENV_SETUP.md) - Environment variables setup guide
-- [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) - Detailed project structure
-- [GETTING_STARTED.md](./GETTING_STARTED.md) - Quick start guide
+### Setup & Configuration
+- **[ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md)** - Complete environment variables setup guide
+- **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - Common issues and solutions
+
+### UI/UX Improvements
+- **[UI_UX_IMPROVEMENT_PLAN.md](./UI_UX_IMPROVEMENT_PLAN.md)** - Full UI/UX improvement roadmap
+- **[UI_UX_IMPLEMENTATION_GUIDE.md](./UI_UX_IMPLEMENTATION_GUIDE.md)** - Code examples and implementation guide
+- **[UI_UX_COMPLETE_SUMMARY.md](./UI_UX_COMPLETE_SUMMARY.md)** - Summary of all UI/UX improvements
 
 ## 🚀 Deployment
 
 ### Frontend (Vercel)
 - Build command: `npm run build`
 - Output directory: `dist`
+- Environment variables: Set `VITE_API_URL` in Vercel dashboard
 
 ### Backend (Render / Railway)
 - Build command: `npm install`
 - Start command: `npm run server:dev` (dev) or `node api/server.js` (prod)
+- Environment variables: Set all required vars in platform dashboard
+
+### Production Checklist
+- [ ] All environment variables set
+- [ ] `NODE_ENV=production`
+- [ ] HTTPS enabled
+- [ ] CORS configured correctly
+- [ ] Database connection secure
+- [ ] Rate limiting enabled
+- [ ] Error logging configured
+
+## 🧪 Development
+
+### Available Scripts
+
+```bash
+# Development
+npm run dev              # Run both frontend and backend
+npm run client:dev      # Frontend only
+npm run server:dev      # Backend only
+
+# Build
+npm run build           # Build frontend for production
+npm run build:api       # Build backend (if needed)
+
+# Utilities
+node api/scripts/check-env.js    # Check environment variables
+node api/scripts/kill-port.js    # Kill process on port 5001
+```
+
+## 🐛 Troubleshooting
+
+See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detailed troubleshooting guide.
+
+### Common Issues
+
+1. **Port already in use (5001)**
+   ```bash
+   node api/scripts/kill-port.js
+   ```
+
+2. **Google OAuth not working**
+   - Check [ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md)
+   - Verify callback URL matches Google Console
+   - Check server logs for errors
+
+3. **AI features not working**
+   - Verify `OPENAI_API_KEY` is set
+   - Check OpenAI account has credits
+   - See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
 
 ## 📝 License
 
 MIT
+
+## 🙏 Acknowledgments
+
+- OpenAI for AI capabilities
+- Google for OAuth integration
+- All open-source libraries used in this project
+
+---
+
+**Last Updated**: 2026-02-02

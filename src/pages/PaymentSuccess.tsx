@@ -57,8 +57,8 @@ const PaymentSuccess = () => {
 
   if (loading) {
     return (
-      <MainLayout>
-        <div className="max-w-2xl mx-auto py-20 text-center">
+      <MainLayout layoutMode="centered" showLeftSidebar={false} showRightSidebar={false}>
+        <div className="py-20 text-center">
           <Loader2 className="mx-auto animate-spin text-crimson-red mb-4" size={48} />
           <p className="text-gray-600">Verifying your payment...</p>
         </div>
@@ -67,8 +67,8 @@ const PaymentSuccess = () => {
   }
 
   return (
-    <MainLayout>
-      <div className="max-w-2xl mx-auto py-20">
+    <MainLayout layoutMode="centered" showLeftSidebar={false} showRightSidebar={false}>
+      <div className="py-20">
         {error ? (
           <div className="bg-white rounded-lg shadow-sm border border-red-200 p-8 text-center">
             <div className="text-red-500 mb-4">

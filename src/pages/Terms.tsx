@@ -9,8 +9,8 @@ const Terms = () => {
         title="Terms of Service - CV Mate" 
         description="Terms of Service for CV Mate platform"
       />
-      <MainLayout>
-        <div className="max-w-4xl mx-auto py-8 px-4">
+      <MainLayout layoutMode="centered" showLeftSidebar={false} showRightSidebar={false}>
+        <div className="py-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-6">
               <FileText className="w-8 h-8 text-crimson-red" />

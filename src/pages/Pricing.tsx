@@ -70,9 +70,9 @@ const Pricing = () => {
         title="Bảng Giá - CV Mate" 
         description="So sánh các gói dịch vụ Free và Premium của CV Mate"
       />
-      <MainLayout>
+      <MainLayout layoutMode="full-width" showLeftSidebar={false} showRightSidebar={false}>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 py-12 lg:py-20">
-          <div className="max-w-7xl mx-auto container-padding">
+          <div className="max-w-7xl mx-auto">
             {/* Header */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
