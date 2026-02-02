@@ -9,6 +9,7 @@ import { useInterviewStore } from '@/store/interviewStore';
 import InterviewDashboard from '@/components/interview/InterviewDashboard';
 import PersonaSelector from '@/components/interview/PersonaSelector';
 import InterviewAnalytics from '@/components/interview/InterviewAnalytics';
+import AIFeatureNotice from '@/components/AIFeatureNotice';
 import MainLayout from '@/components/layout/MainLayout';
 
 // Type definitions for Speech Recognition API
@@ -75,6 +76,29 @@ const Interview = () => {
     endSession,
     reset,
   } = useInterviewStore();
+
+  // Show toast when error occurs with better handling
+  const prevErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) {
+      prevErrorRef.current = error;
+      // Check for specific error types
+      let errorMessage = error;
+      const errorLower = error.toLowerCase();
+      
+      if (errorLower.includes('rate limit') || errorLower.includes('rate limit exceeded') || errorLower.includes('429')) {
+        errorMessage = t('interview.rateLimitExceeded') || 'API rate limit exceeded. Please wait a moment and try again.';
+      } else if (error.includes('503') || errorLower.includes('service temporarily unavailable') || errorLower.includes('service unavailable')) {
+        errorMessage = t('interview.serviceUnavailable') || 'Service temporarily unavailable. Please try again in a few moments.';
+      } else if (errorLower.includes('unauthorized') || errorLower.includes('401')) {
+        errorMessage = 'Session expired. Please login again.';
+      } else if (errorLower.includes('network') || errorLower.includes('fetch')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      }
+      
+      toast.error(errorMessage);
+    }
+  }, [error, toast, t]);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -150,49 +174,49 @@ const Interview = () => {
   if (!persona) {
       return (
         <MainLayout>
-          <div className="max-w-7xl mx-auto py-8 px-4">
-            <div className="mb-8">
+          <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-4 lg:px-6">
+            <div className="mb-6 sm:mb-8">
               <Button 
                 variant="ghost" 
-                className="mb-4"
+                className="mb-4 text-sm sm:text-base"
                 onClick={handleBackToDashboard}
               >
-                <ArrowLeft size={20} className="mr-2" /> {t('interview.backToDashboard')}
+                <ArrowLeft size={18} className="sm:w-5 sm:h-5 mr-2" /> {t('interview.backToDashboard')}
               </Button>
               
-              <div className="text-center mb-8">
-                <h1 className="text-4xl font-black mb-3 bg-gradient-to-r from-crimson-red to-fire-red bg-clip-text text-transparent">
+              <div className="text-center mb-6 sm:mb-8">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-2 sm:mb-3 bg-gradient-to-r from-crimson-red to-fire-red bg-clip-text text-transparent px-2">
                   AI Interview Simulator
                 </h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 px-4">
                   Practice with AI-powered interviewers. Get real-time feedback and improve your skills.
                 </p>
                 
                 {/* Interview Modes */}
-                <div className="flex flex-wrap gap-3 justify-center mb-8">
+                <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-6 sm:mb-8 px-2">
                   <Button
                     variant={interviewMode === 'practice' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setInterviewMode('practice')}
-                    className={interviewMode === 'practice' ? 'bg-green-500 hover:bg-green-600' : ''}
+                    className={`text-xs sm:text-sm ${interviewMode === 'practice' ? 'bg-green-500 hover:bg-green-600' : ''}`}
                   >
-                    <Lightbulb className="w-4 h-4 mr-2" />
+                    <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     Practice Mode
                   </Button>
                   <Button
                     variant={interviewMode === 'stress' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setInterviewMode('stress')}
-                    className={interviewMode === 'stress' ? 'bg-red-500 hover:bg-red-600' : ''}
+                    className={`text-xs sm:text-sm ${interviewMode === 'stress' ? 'bg-red-500 hover:bg-red-600' : ''}`}
                   >
-                    <Timer className="w-4 h-4 mr-2" />
+                    <Timer className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     Stress Test
                   </Button>
                   <Button
                     variant={interviewMode === 'normal' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setInterviewMode('normal')}
-                    className={interviewMode === 'normal' ? 'bg-blue-500 hover:bg-blue-600' : ''}
+                    className={`text-xs sm:text-sm ${interviewMode === 'normal' ? 'bg-blue-500 hover:bg-blue-600' : ''}`}
                   >
                     Normal Mode
                   </Button>
@@ -228,37 +252,50 @@ const Interview = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Check if error is related to AI configuration
+  const isAIConfigError = error && (
+    error.includes('OpenAI API key') || 
+    error.includes('not configured') ||
+    error.includes('503') ||
+    error.includes('Service temporarily unavailable')
+  );
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-        <header className="bg-white dark:bg-gray-800 shadow-lg border-b dark:border-gray-700 p-4 flex justify-between items-center z-10">
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={handleBackToDashboard} className="dark:hover:bg-gray-700">
-                    <ArrowLeft size={20} />
+        {isAIConfigError && (
+          <div className="px-4 pt-4">
+            <AIFeatureNotice feature="AI Interview Practice" />
+          </div>
+        )}
+        <header className="bg-white dark:bg-gray-800 shadow-lg border-b dark:border-gray-700 p-2 sm:p-3 lg:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 z-10">
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto">
+                <Button variant="ghost" size="icon" onClick={handleBackToDashboard} className="dark:hover:bg-gray-700 h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
+                    <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
                 </Button>
-                <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-crimson-red to-fire-red p-0.5">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-crimson-red to-fire-red p-0.5 flex-shrink-0">
                       <div className="w-full h-full rounded-full bg-white dark:bg-gray-700 overflow-hidden">
                         <img src={getPersonaAvatar(persona)} alt="Persona" className="w-full h-full" />
                       </div>
                     </div>
-                    <div>
-                        <h2 className="font-bold text-secondary dark:text-red-400 capitalize text-base">
+                    <div className="min-w-0 flex-1">
+                        <h2 className="font-bold text-secondary dark:text-red-400 capitalize text-xs sm:text-sm lg:text-base truncate">
                           {persona === 'friendly-hr' ? t('interview.friendlyHR') :
                            persona === 'strict-manager' ? t('interview.strictManager') :
-                           persona === 'tech-lead' ? 'Senior Tech Lead' :
-                           persona === 'startup-founder' ? 'Startup Founder' :
-                           persona === 'executive' ? 'C-Level Executive' :
-                           persona === 'academic' ? 'Academic Researcher' :
+                           persona === 'tech-lead' ? t('interview.techLead') :
+                           persona === 'startup-founder' ? t('interview.startupFounder') :
+                           persona === 'executive' ? t('interview.executive') :
+                           persona === 'academic' ? t('interview.academic') :
                            t('interview.englishNative')}
                         </h2>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> 
+                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                          <span className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse"></span> 
                               {status === 'completed' ? t('interview.completed') : t('interview.online')}
                           </span>
                           {interviewMode === 'stress' && (
-                            <span className="text-xs font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">
-                              <Timer className="w-3 h-3" />
+                            <span className="text-[10px] sm:text-xs font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">
+                              <Timer className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                               {formatTime(timeElapsed)}
                             </span>
                           )}
@@ -266,16 +303,17 @@ const Interview = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
               {interviewMode === 'practice' && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowHints(!showHints)}
-                  className="text-green-600 border-green-600 hover:bg-green-50"
+                  className="text-green-600 border-green-600 hover:bg-green-50 text-xs sm:text-sm"
                 >
-                  <Lightbulb className="w-4 h-4 mr-2" />
-                  {showHints ? 'Hide' : 'Show'} Hints
+                  <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">{showHints ? 'Hide' : 'Show'} Hints</span>
+                  <span className="sm:hidden">{showHints ? 'Hide' : 'Show'}</span>
                 </Button>
               )}
               <Button 
@@ -283,19 +321,20 @@ const Interview = () => {
                 size="sm" 
                 onClick={handleEnd}
                 disabled={isEnding || status === 'completed'}
+                className="text-xs sm:text-sm"
               >
                 {isEnding ? t('interview.ending') : status === 'completed' ? t('interview.ended') : t('interview.endSession')}
               </Button>
             </div>
         </header>
         
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
             {/* Real-time Dashboard */}
             {status === 'active' && <InterviewDashboard />}
 
             {/* 3D Avatar with Enhanced Animation */}
-            <div className="flex justify-center mb-6">
-                 <div className="relative w-40 h-40 md:w-56 md:h-56 rounded-full border-4 border-white dark:border-gray-800 shadow-2xl bg-gradient-to-br from-crimson-red to-fire-red flex items-center justify-center overflow-hidden group">
+            <div className="flex justify-center mb-4 sm:mb-6">
+                 <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 rounded-full border-2 sm:border-4 border-white dark:border-gray-800 shadow-2xl bg-gradient-to-br from-crimson-red to-fire-red flex items-center justify-center overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 animate-pulse"></div>
                     <img 
                       src={getPersonaAvatar(persona)} 
@@ -304,14 +343,14 @@ const Interview = () => {
                     />
                     {/* Enhanced Audio Visualizer */}
                     {isRecording && (
-                      <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent flex items-end justify-center gap-1.5 pb-6 z-20">
+                      <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent flex items-end justify-center gap-1 sm:gap-1.5 pb-4 sm:pb-6 z-20">
                         {[...Array(5)].map((_, i) => (
                           <div 
                             key={i}
-                            className="w-1.5 bg-white rounded-full animate-bounce"
+                            className="w-1 sm:w-1.5 bg-white rounded-full animate-bounce"
                             style={{ 
                               animationDelay: `${i * 0.1}s`,
-                              height: `${20 + Math.random() * 30}px`
+                              height: `${15 + Math.random() * 25}px`
                             }}
                           ></div>
                         ))}
@@ -319,7 +358,7 @@ const Interview = () => {
                     )}
                     {/* Speaking indicator */}
                     {messages.length > 0 && messages[messages.length - 1]?.role === 'assistant' && !isRecording && (
-                      <div className="absolute top-4 right-4 w-3 h-3 bg-green-500 rounded-full animate-ping z-20"></div>
+                      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full animate-ping z-20"></div>
                     )}
                  </div>
             </div>
@@ -344,14 +383,14 @@ const Interview = () => {
             {messages
               .filter((msg) => msg.role !== 'system')
               .map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
-                  <div className={`max-w-[80%] md:max-w-[60%] p-4 rounded-2xl shadow-sm relative ${
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300 px-1 sm:px-2`}>
+                  <div className={`max-w-[85%] sm:max-w-[75%] md:max-w-[65%] lg:max-w-[60%] p-2 sm:p-3 lg:p-4 rounded-xl sm:rounded-2xl shadow-sm relative ${
                     msg.role === 'user' 
-                      ? 'bg-accent text-white rounded-tr-none' 
-                      : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
+                      ? 'bg-accent text-white rounded-tr-none dark:bg-red-600' 
+                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none'
                   }`}>
-                    {msg.content}
-                    <span className="text-[10px] opacity-70 absolute bottom-1 right-3">
+                    <p className="text-xs sm:text-sm lg:text-base break-words">{msg.content}</p>
+                    <span className="text-[9px] sm:text-[10px] opacity-70 absolute bottom-1 right-2 sm:right-3">
                       {new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -391,7 +430,7 @@ const Interview = () => {
             {status === 'completed' && <InterviewAnalytics />}
         </div>
         
-        <div className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex gap-3 items-center shadow-lg">
+        <div className="p-2 sm:p-3 lg:p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex gap-2 sm:gap-3 items-center shadow-lg">
             <Button 
                 variant="outline" 
                 size="icon"
@@ -410,42 +449,43 @@ const Interview = () => {
                   }
                 }} 
                 disabled={!recognitionRef.current || status === 'completed'}
-                className={`rounded-full h-14 w-14 flex-shrink-0 transition-all duration-300 ${
+                className={`rounded-full h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14 flex-shrink-0 transition-all duration-300 ${
                     isRecording 
-                    ? 'bg-gradient-to-br from-red-500 to-red-600 border-red-600 text-white scale-110 shadow-xl ring-4 ring-red-200 dark:ring-red-900/50' 
+                    ? 'bg-gradient-to-br from-red-500 to-red-600 border-red-600 text-white scale-110 shadow-xl ring-2 sm:ring-4 ring-red-200 dark:ring-red-900/50' 
                     : 'hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600'
                 }`}
                 title={isRecording ? 'Stop Recording' : 'Start Voice Input'}
             >
                 {isRecording ? (
-                  <Volume2 className="w-6 h-6 animate-pulse" />
+                  <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 animate-pulse" />
                 ) : (
-                  <VolumeX className="w-6 h-6" />
+                  <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
                 )}
             </Button>
-            <div className="flex-1 relative">
+            <div className="flex-1 relative min-w-0">
                 <Input 
                     value={input} 
                     onChange={(e) => setInput(e.target.value)} 
                     placeholder={isRecording ? t('interview.listening') : t('interview.typeAnswer')}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                    className="rounded-full pl-5 pr-12 h-12 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-accent dark:focus:border-red-500 focus:ring-accent dark:focus:ring-red-500"
+                    className="rounded-full pl-3 sm:pl-4 lg:pl-5 pr-10 sm:pr-12 h-10 sm:h-12 text-sm sm:text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-accent dark:focus:border-red-500 focus:ring-accent dark:focus:ring-red-500"
                     disabled={isRecording || isSending || status === 'completed'}
                 />
             </div>
             <Button 
               onClick={handleSend} 
-              className="rounded-full h-12 px-6 bg-secondary dark:bg-red-600 hover:bg-secondary/90 dark:hover:bg-red-700 shadow-md transition-transform active:scale-95 text-white" 
+              className="rounded-full h-10 sm:h-12 px-3 sm:px-4 lg:px-6 bg-secondary dark:bg-red-600 hover:bg-secondary/90 dark:hover:bg-red-700 shadow-md transition-transform active:scale-95 text-white text-xs sm:text-sm lg:text-base flex-shrink-0" 
               disabled={(!input.trim() && !isRecording) || isSending || status === 'completed'}
             >
                 {isSending ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t('interview.sending')}
+                    <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                    <span className="hidden sm:inline">{t('interview.sending')}</span>
                   </>
                 ) : (
-                  t('interview.send')
+                  <span className="hidden sm:inline">{t('interview.send')}</span>
                 )}
+                {!isSending && <span className="sm:hidden">Send</span>}
             </Button>
         </div>
     </div>

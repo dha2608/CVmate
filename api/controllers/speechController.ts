@@ -3,9 +3,13 @@ import OpenAI from 'openai';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new OpenAI({ apiKey });
+};
 
 // Speech-to-Text endpoint using OpenAI Whisper API
 export const speechToText = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -39,6 +43,15 @@ export const speechToText = async (req: AuthRequest, res: Response, next: NextFu
       }
     } catch (error) {
       res.status(400).json({ success: false, message: 'Failed to process audio data' });
+      return;
+    }
+
+    const openai = getOpenAIClient();
+    if (!openai) {
+      res.status(503).json({ 
+        success: false, 
+        message: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in your environment variables.',
+      });
       return;
     }
 

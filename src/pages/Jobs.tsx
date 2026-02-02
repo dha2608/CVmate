@@ -1,26 +1,37 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useJobStore } from '@/store/jobStore';
 import { useAuthStore } from '@/store/authStore';
 import { useI18n } from '@/store/i18nStore';
 import { useToastStore } from '@/store/toastStore';
+import { useBookmarkStore } from '@/store/bookmarkStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Briefcase, MapPin, DollarSign, Clock, Search, Filter, CheckCircle2, Loader2 } from 'lucide-react';
+import BookmarkButton from '@/components/BookmarkButton';
+import AIJobMatcher from '@/components/jobs/AIJobMatcher';
+import { Briefcase, MapPin, DollarSign, Clock, Search, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp, X } from 'lucide-react';
 
 const Jobs = () => {
   const { user } = useAuthStore();
   const { t } = useI18n();
   const toast = useToastStore();
   const { jobs, fetchJobs, applyJob, isLoading, pagination } = useJobStore();
+  const { fetchBookmarks } = useBookmarkStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('All');
   const [locationFilter, setLocationFilter] = useState('');
+  const [salaryMin, setSalaryMin] = useState<number | undefined>();
+  const [salaryMax, setSalaryMax] = useState<number | undefined>();
+  const [experienceLevel, setExperienceLevel] = useState<string>('');
+  const [companySize, setCompanySize] = useState<string>('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchJobs({ page: 1, limit: 20 });
-  }, []);
+    fetchBookmarks();
+  }, [fetchJobs, fetchBookmarks]);
 
   useEffect(() => {
     // Check which jobs user has applied to
@@ -42,7 +53,22 @@ const Jobs = () => {
       search: searchTerm || undefined,
       type: selectedType !== 'All' ? selectedType : undefined,
       location: locationFilter || undefined,
+      salaryMin: salaryMin,
+      salaryMax: salaryMax,
+      experienceLevel: experienceLevel || undefined,
+      companySize: companySize || undefined,
     });
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSelectedType('All');
+    setLocationFilter('');
+    setSalaryMin(undefined);
+    setSalaryMax(undefined);
+    setExperienceLevel('');
+    setCompanySize('');
+    fetchJobs({ page: 1, limit: 20 });
   };
 
   const handleApply = async (jobId: string) => {
@@ -84,8 +110,8 @@ const Jobs = () => {
           </div>
       }
     >
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6 animate-fade-in">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('jobs.findDreamJob')}</h1>
+      <div className="card-base mb-6">
+        <h1 className="text-heading-2 mb-6">{t('jobs.findDreamJob')}</h1>
         <div className="space-y-4">
           <div className="flex gap-2">
             <div className="flex-1 relative">
@@ -103,29 +129,111 @@ const Jobs = () => {
               {t('jobs.search')}
             </Button>
           </div>
-          <div className="flex gap-4 items-center flex-wrap">
-            <div className="flex items-center gap-2">
-              <Filter size={18} className="text-gray-500 dark:text-gray-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('jobs.filters')}</span>
+          <div className="space-y-4">
+            <div className="flex gap-4 items-center flex-wrap">
+              <div className="flex items-center gap-2">
+                <Filter size={18} className="text-gray-500 dark:text-gray-400" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('jobs.filters')}</span>
+              </div>
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                <option>{t('jobs.all')}</option>
+                <option>{t('jobs.fullTime')}</option>
+                <option>{t('jobs.partTime')}</option>
+                <option>{t('jobs.remote')}</option>
+                <option>{t('jobs.contract')}</option>
+                <option>{t('jobs.internship')}</option>
+              </select>
+              <Input
+                placeholder={t('jobs.location')}
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                className="w-48 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <Button
+                variant="outline"
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="flex items-center gap-2"
+              >
+                {showAdvancedFilters ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {t('jobs.advancedFilters')}
+              </Button>
+              {(salaryMin || salaryMax || experienceLevel || companySize) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                >
+                  <X size={14} className="mr-1" />
+                  {t('jobs.clearFilters')}
+                </Button>
+              )}
             </div>
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-            >
-              <option>{t('jobs.all')}</option>
-              <option>{t('jobs.fullTime')}</option>
-              <option>{t('jobs.partTime')}</option>
-              <option>{t('jobs.remote')}</option>
-              <option>{t('jobs.contract')}</option>
-              <option>{t('jobs.internship')}</option>
-            </select>
-            <Input
-              placeholder={t('jobs.location')}
-              value={locationFilter}
-              onChange={(e) => setLocationFilter(e.target.value)}
-              className="w-48 dark:bg-gray-700 dark:border-gray-600"
-            />
+
+            {showAdvancedFilters && (
+              <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-600 space-y-4 animate-fade-in">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('jobs.salaryRange')}
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        placeholder={t('jobs.minSalary')}
+                        value={salaryMin || ''}
+                        onChange={(e) => setSalaryMin(e.target.value ? parseInt(e.target.value) : undefined)}
+                        className="dark:bg-gray-700 dark:border-gray-600"
+                      />
+                      <Input
+                        type="number"
+                        placeholder={t('jobs.maxSalary')}
+                        value={salaryMax || ''}
+                        onChange={(e) => setSalaryMax(e.target.value ? parseInt(e.target.value) : undefined)}
+                        className="dark:bg-gray-700 dark:border-gray-600"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('jobs.experienceLevel')}
+                    </label>
+                    <select
+                      value={experienceLevel}
+                      onChange={(e) => setExperienceLevel(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                    >
+                      <option value="">{t('jobs.all')}</option>
+                      <option value="Entry">{t('jobs.entry')}</option>
+                      <option value="Mid">{t('jobs.mid')}</option>
+                      <option value="Senior">{t('jobs.senior')}</option>
+                      <option value="Executive">{t('jobs.executive')}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('jobs.companySize')}
+                    </label>
+                    <select
+                      value={companySize}
+                      onChange={(e) => setCompanySize(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                    >
+                      <option value="">{t('jobs.all')}</option>
+                      <option value="Startup">{t('jobs.startup')}</option>
+                      <option value="Small">{t('jobs.small')}</option>
+                      <option value="Medium">{t('jobs.medium')}</option>
+                      <option value="Large">{t('jobs.large')}</option>
+                      <option value="Enterprise">{t('jobs.enterprise')}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -162,10 +270,12 @@ const Jobs = () => {
       ) : (
         <div className="space-y-4">
             {jobs.map((job, index) => (
-                <div 
+                <motion.div 
                   key={job._id} 
-                  className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover-lift transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: `${index * 0.05}s` }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  className="card-interactive"
                 >
                     <div className="flex gap-4">
                         <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center font-bold text-gray-400 dark:text-gray-500 flex-shrink-0">
@@ -181,8 +291,18 @@ const Jobs = () => {
                                 <span className="flex items-center gap-1"><Clock size={14} /> {new Date(job.postedAt).toLocaleDateString()}</span>
                             </div>
                             <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{job.description}</p>
+                            {user && (
+                              <div className="mt-3">
+                                <AIJobMatcher
+                                  jobId={job._id}
+                                  jobDescription={job.description || ''}
+                                  jobRequirements={job.requirements || job.skills || []}
+                                />
+                              </div>
+                            )}
                         </div>
-                        <div className="flex-shrink-0">
+                        <div className="flex-shrink-0 flex flex-col items-end gap-2">
+                            <BookmarkButton type="job" itemId={job._id} />
                             {appliedJobs.has(job._id) ? (
                               <Button 
                                 size="sm" 
@@ -205,7 +325,7 @@ const Jobs = () => {
                             )}
                         </div>
                     </div>
-                </div>
+                </motion.div>
             ))}
         </div>
       )}

@@ -150,20 +150,36 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
         userId: req.user?._id,
       });
       
+      // Parse OpenAI error response
+      const errorObj = aiError as any;
       let errorMessage = 'AI interview service is currently unavailable.';
-      const errorObj = aiError as { status?: number; message?: string };
-      if (errorObj.status === 401) {
-        errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
-      } else if (errorObj.status === 429) {
-        errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
-      } else if (errorObj.message?.includes('API key')) {
-        errorMessage = 'OpenAI API key is invalid or missing.';
+      let statusCode = 503;
+      
+      // Check for OpenAI API specific errors
+      if (errorObj.status === 401 || errorObj.statusCode === 401) {
+        errorMessage = 'Invalid OpenAI API key. Please check your API key configuration in .env file.';
+        statusCode = 503; // Keep 503 to indicate service unavailable
+      } else if (errorObj.status === 429 || errorObj.statusCode === 429) {
+        errorMessage = 'OpenAI API rate limit exceeded. This could mean:\n- Your API key has reached its rate limit\n- Your account has insufficient credits\n- Too many requests in a short time\n\nPlease wait a few minutes and try again, or check your OpenAI account billing.';
+        statusCode = 429;
+      } else if (errorObj.status === 402 || errorObj.statusCode === 402) {
+        errorMessage = 'OpenAI API payment required. Your account may have insufficient credits. Please add credits to your OpenAI account.';
+        statusCode = 402;
+      } else if (errorObj.message?.includes('API key') || errorObj.message?.includes('api key')) {
+        errorMessage = 'OpenAI API key is invalid or missing. Please check OPENAI_API_KEY in your .env file.';
+        statusCode = 503;
+      } else if (errorObj.message?.includes('rate_limit') || errorObj.message?.includes('rate limit')) {
+        errorMessage = 'OpenAI API rate limit exceeded. Please wait a few minutes and try again.';
+        statusCode = 429;
+      } else if (errorObj.message) {
+        errorMessage = `OpenAI API error: ${errorObj.message}`;
       }
 
-      res.status(503).json({ 
+      res.status(statusCode).json({ 
         success: false, 
         message: errorMessage,
-        error: error.message || 'OpenAI API error'
+        error: error.message || 'OpenAI API error',
+        errorCode: errorObj.status || errorObj.statusCode || 'UNKNOWN'
       });
     }
 

@@ -92,7 +92,33 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       });
     } catch (error: any) {
       console.error('sendUserMessage error', error);
-      set({ error: error.message || 'Failed to send message', isSending: false });
+      
+      // Handle specific error cases
+      let errorMessage = 'Failed to send message';
+      const status = error.status || 0;
+      const errorText = error.message || '';
+      const errorLower = errorText.toLowerCase();
+      
+      if (status === 402 || errorLower.includes('payment') || errorLower.includes('insufficient credits')) {
+        errorMessage = 'OpenAI account has insufficient credits. Please add credits to your OpenAI account at https://platform.openai.com/account/billing';
+      } else if (status === 429 || errorLower.includes('rate limit') || errorLower.includes('rate_limit')) {
+        errorMessage = 'OpenAI API rate limit exceeded. This could mean:\n• Your API key has reached its rate limit\n• Your account has insufficient credits\n• Too many requests in a short time\n\nPlease wait a few minutes and try again, or check your OpenAI account billing.';
+      } else if (status === 401 || errorLower.includes('unauthorized') || errorLower.includes('api key') || errorLower.includes('invalid')) {
+        errorMessage = 'OpenAI API key is invalid or missing. Please check OPENAI_API_KEY in your .env file and restart the server.';
+      } else if (status === 503 || errorLower.includes('503') || errorLower.includes('service temporarily unavailable') || errorLower.includes('service unavailable')) {
+        errorMessage = errorText || 'Service temporarily unavailable. Please try again in a few moments.';
+      } else if (errorLower.includes('not configured') || errorLower.includes('not configured')) {
+        errorMessage = 'OpenAI API key is not configured. Please set OPENAI_API_KEY in your .env file and restart the server.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Revert optimistic update on error
+      set({ 
+        error: errorMessage, 
+        isSending: false,
+        messages: messages, // Revert to previous messages
+      });
     }
   },
 

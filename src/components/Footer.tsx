@@ -73,6 +73,12 @@ const Footer = () => {
                   {t('footer.community')}
                 </Link>
               </li>
+              <li>
+                <Link to="/pricing" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
+                  <Briefcase size={14} />
+                  Bảng Giá
+                </Link>
+              </li>
             </ul>
           </div>
 

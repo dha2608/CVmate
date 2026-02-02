@@ -97,7 +97,9 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
     const user = req.user as IUser | undefined;
     
     if (!user) {
-      res.status(401).json({ success: false, message: 'Google authentication failed' });
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      // Redirect to frontend with error
+      res.redirect(`${frontendUrl}/login?error=google_auth_failed`);
       return;
     }
 
@@ -106,7 +108,9 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.redirect(`${frontendUrl}/auth/callback?token=${token}&onboarding=${!user.onboardingCompleted}`);
   } catch (error) {
-    next(error);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    // Redirect to frontend with error instead of crashing
+    res.redirect(`${frontendUrl}/login?error=google_auth_error`);
   }
 };
 

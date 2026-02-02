@@ -6,6 +6,10 @@ export interface IJob extends Document {
   location: string;
   type: 'Full-time' | 'Part-time' | 'Remote' | 'Contract' | 'Internship';
   salary?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  experienceLevel?: 'Entry' | 'Mid' | 'Senior' | 'Executive';
+  companySize?: 'Startup' | 'Small' | 'Medium' | 'Large' | 'Enterprise';
   description: string;
   requirements: string[];
   logo?: string;
@@ -40,6 +44,20 @@ const jobSchema = new Schema<IJob>({
   salary: {
     type: String,
     trim: true
+  },
+  salaryMin: {
+    type: Number
+  },
+  salaryMax: {
+    type: Number
+  },
+  experienceLevel: {
+    type: String,
+    enum: ['Entry', 'Mid', 'Senior', 'Executive']
+  },
+  companySize: {
+    type: String,
+    enum: ['Startup', 'Small', 'Medium', 'Large', 'Enterprise']
   },
   description: {
     type: String,

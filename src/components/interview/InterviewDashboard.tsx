@@ -73,15 +73,15 @@ const InterviewDashboard = () => {
   if (status !== 'active') return null;
 
   const MetricCard = ({ icon: Icon, label, value, unit, color }: any) => (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${color}`}>
-          <Icon className="w-5 h-5 text-white" />
+    <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className={`p-1.5 sm:p-2 rounded-lg ${color} flex-shrink-0`}>
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
         </div>
-        <div className="flex-1">
-          <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
-          <p className="text-lg font-bold text-gray-900 dark:text-white">
-            {value}{unit && <span className="text-sm text-gray-500 ml-1">{unit}</span>}
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{label}</p>
+          <p className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+            {value}{unit && <span className="text-xs sm:text-sm text-gray-500 ml-1">{unit}</span>}
           </p>
         </div>
       </div>
@@ -89,7 +89,7 @@ const InterviewDashboard = () => {
   );
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
       <MetricCard
         icon={Clock}
         label="Response Time"

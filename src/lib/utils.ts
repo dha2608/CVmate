@@ -47,8 +47,26 @@ export const apiRequest = async <T = any>(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    let errorMessage = 'Request failed';
+    try {
+      const error = await response.json();
+      errorMessage = error.message || error.error || `HTTP error! status: ${response.status}`;
+    } catch {
+      // If JSON parsing fails, use status-based messages
+      if (response.status === 503) {
+        errorMessage = 'Service temporarily unavailable. Please try again in a few moments.';
+      } else if (response.status === 429) {
+        errorMessage = 'Rate limit exceeded. Please wait a moment and try again.';
+      } else if (response.status === 401) {
+        errorMessage = 'Unauthorized. Please login again.';
+      } else {
+        errorMessage = `HTTP error! status: ${response.status}`;
+      }
+    }
+    
+    const error = new Error(errorMessage);
+    (error as any).status = response.status;
+    throw error;
   }
 
   return response.json();
@@ -200,13 +218,27 @@ export const api = {
       body: JSON.stringify({ orderId }),
     }),
 
-  getJobs: (params?: { page?: number; limit?: number; search?: string; type?: string; location?: string }) => {
+  getJobs: (params?: { 
+    page?: number; 
+    limit?: number; 
+    search?: string; 
+    type?: string; 
+    location?: string;
+    salaryMin?: number;
+    salaryMax?: number;
+    experienceLevel?: string;
+    companySize?: string;
+  }) => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.search) queryParams.append('search', params.search);
     if (params?.type) queryParams.append('type', params.type);
     if (params?.location) queryParams.append('location', params.location);
+    if (params?.salaryMin) queryParams.append('salaryMin', params.salaryMin.toString());
+    if (params?.salaryMax) queryParams.append('salaryMax', params.salaryMax.toString());
+    if (params?.experienceLevel) queryParams.append('experienceLevel', params.experienceLevel);
+    if (params?.companySize) queryParams.append('companySize', params.companySize);
     return apiRequest<{ success: boolean; data: any[]; pagination: any }>(`/jobs?${queryParams.toString()}`);
   },
 

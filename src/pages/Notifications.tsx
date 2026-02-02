@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useNotificationStore, Notification } from '@/store/notificationStore';
+import { useI18n } from '@/store/i18nStore';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { 
   Heart, 
   Briefcase, 
@@ -12,7 +14,10 @@ import {
   CheckCheck, 
   Trash2, 
   Clock,
-  Loader2
+  Loader2,
+  Filter,
+  Search,
+  X
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -42,36 +47,121 @@ const Notifications = () => {
     deleteNotification,
     isLoading 
   } = useNotificationStore();
+  const { t } = useI18n();
+  
+  const [filter, setFilter] = useState<'all' | 'unread' | Notification['type']>('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+    // Auto-refresh every 30 seconds for real-time updates
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  const filteredNotifications = notifications.filter(notif => {
+    if (filter === 'unread' && notif.isRead) return false;
+    if (filter !== 'all' && filter !== 'unread' && notif.type !== filter) return false;
+    if (searchTerm && !notif.message.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    return true;
+  });
 
   return (
     <MainLayout>
       <div className="max-w-3xl mx-auto py-6 px-4">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {/* Header */}
-          <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
-             <div className="flex items-center gap-3">
-               <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
-               {notifications.some(n => !n.isRead) && (
-                 <span className="bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                   {notifications.filter(n => !n.isRead).length} new
-                 </span>
+          <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10">
+             <div className="flex justify-between items-center mb-4">
+               <div className="flex items-center gap-3">
+                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('notifications.title')}</h1>
+                 {notifications.some(n => !n.isRead) && (
+                   <span className="bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                     {notifications.filter(n => !n.isRead).length} {t('notifications.new')}
+                   </span>
+                 )}
+               </div>
+               {notifications.length > 0 && (
+                 <Button 
+                   variant="ghost" 
+                   size="sm" 
+                   onClick={() => markAllAsRead()}
+                   className="text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm"
+                 >
+                   <CheckCheck size={16} className="mr-1.5" />
+                   {t('notifications.markAllRead')}
+                 </Button>
                )}
              </div>
-             {notifications.length > 0 && (
-               <Button 
-                 variant="ghost" 
-                 size="sm" 
-                 onClick={() => markAllAsRead()}
-                 className="text-gray-500 hover:text-indigo-600 text-sm"
-               >
-                 <CheckCheck size={16} className="mr-1.5" />
-                 Mark all as read
-               </Button>
-             )}
+
+             {/* Search and Filters */}
+             <div className="space-y-3">
+               <div className="relative">
+                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                 <Input
+                   placeholder={t('notifications.searchPlaceholder')}
+                   value={searchTerm}
+                   onChange={(e) => setSearchTerm(e.target.value)}
+                   className="pl-10 dark:bg-gray-700 dark:border-gray-600"
+                 />
+                 {searchTerm && (
+                   <button
+                     onClick={() => setSearchTerm('')}
+                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                   >
+                     <X size={16} />
+                   </button>
+                 )}
+               </div>
+               <div className="flex items-center gap-2 flex-wrap">
+                 <Filter size={16} className="text-gray-500 dark:text-gray-400" />
+                 <Button
+                   variant={filter === 'all' ? 'default' : 'outline'}
+                   size="sm"
+                   onClick={() => setFilter('all')}
+                   className="text-xs"
+                 >
+                   {t('notifications.all')}
+                 </Button>
+                 <Button
+                   variant={filter === 'unread' ? 'default' : 'outline'}
+                   size="sm"
+                   onClick={() => setFilter('unread')}
+                   className="text-xs"
+                 >
+                   {t('notifications.unread')}
+                 </Button>
+                 <Button
+                   variant={filter === 'like' ? 'default' : 'outline'}
+                   size="sm"
+                   onClick={() => setFilter('like')}
+                   className="text-xs"
+                 >
+                   <Heart size={12} className="mr-1" />
+                   {t('notifications.likes')}
+                 </Button>
+                 <Button
+                   variant={filter === 'comment' ? 'default' : 'outline'}
+                   size="sm"
+                   onClick={() => setFilter('comment')}
+                   className="text-xs"
+                 >
+                   <MessageCircle size={12} className="mr-1" />
+                   {t('notifications.comments')}
+                 </Button>
+                 <Button
+                   variant={filter === 'job' ? 'default' : 'outline'}
+                   size="sm"
+                   onClick={() => setFilter('job')}
+                   className="text-xs"
+                 >
+                   <Briefcase size={12} className="mr-1" />
+                   {t('notifications.jobs')}
+                 </Button>
+               </div>
+             </div>
           </div>
 
           {/* List */}
@@ -81,23 +171,25 @@ const Notifications = () => {
                 <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-2" />
                 <p className="text-gray-500 text-sm">Loading notifications...</p>
               </div>
-            ) : notifications.length === 0 ? (
+            ) : filteredNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                  <Bell size={32} className="text-gray-300" />
+                <div className="h-16 w-16 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                  <Bell size={32} className="text-gray-300 dark:text-gray-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">No notifications yet</h3>
-                <p className="text-gray-500 max-w-sm mt-1">
-                  We'll let you know when there's an update on your job applications or community activity.
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('notifications.noNotifications')}</h3>
+                <p className="text-gray-500 dark:text-gray-400 max-w-sm mt-1">
+                  {searchTerm || filter !== 'all' 
+                    ? t('notifications.noMatchingNotifications')
+                    : t('notifications.noNotificationsDesc')}
                 </p>
               </div>
             ) : (
-              notifications.map(notif => (
+              filteredNotifications.map(notif => (
                 <div 
                   key={notif._id} 
                   onClick={() => !notif.isRead && markAsRead(notif._id)}
-                  className={`group p-4 flex gap-4 transition-colors duration-200 hover:bg-gray-50 ${
-                    !notif.isRead ? 'bg-indigo-50/40' : 'bg-white'
+                  className={`group p-4 flex gap-4 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 animate-fade-in ${
+                    !notif.isRead ? 'bg-indigo-50/40 dark:bg-indigo-900/20' : 'bg-white dark:bg-gray-800'
                   }`}
                 >
                   <div className="flex-shrink-0 mt-1">

@@ -4,12 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Download, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Save, Download, Sparkles, CheckCircle2, Keyboard } from 'lucide-react';
+import ExportShare from '@/components/ExportShare';
 import PersonalForm from '@/components/builder/PersonalForm';
 import ExperienceForm from '@/components/builder/ExperienceForm';
 import EducationForm from '@/components/builder/EducationForm';
 import SkillsForm from '@/components/builder/SkillsForm';
 import ResumePreview from '@/components/builder/ResumePreview';
+import TemplateSelector from '@/components/builder/TemplateSelector';
+import SectionReorder from '@/components/builder/SectionReorder';
+import AISuggestions from '@/components/builder/AISuggestions';
+import ShortcutsModal from '@/components/builder/ShortcutsModal';
+import AIFeatureNotice from '@/components/AIFeatureNotice';
+import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
 import { api } from '@/lib/utils';
 
 const Builder = () => {
@@ -19,6 +26,16 @@ const Builder = () => {
   const [saving, setSaving] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState('modern-red');
+  const [sections, setSections] = useState([
+    { id: 'personal', label: 'Personal Info', visible: true },
+    { id: 'summary', label: 'Summary', visible: true },
+    { id: 'experience', label: 'Experience', visible: true },
+    { id: 'education', label: 'Education', visible: true },
+    { id: 'skills', label: 'Skills', visible: true },
+  ]);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleSave = async () => {
@@ -134,15 +151,46 @@ const Builder = () => {
     }
 
     setEnhancing(true);
+    setAiError(null);
     try {
       const enhanced = await aiEnhanceText(currentResume.summary, 'summary');
       updateField('summary', enhanced);
-    } catch (error) {
-      alert('Failed to enhance text. Please try again.');
+    } catch (error: any) {
+      const errorMessage = error.message || 'Failed to enhance text. Please try again.';
+      setAiError(errorMessage);
+      if (!errorMessage.includes('OpenAI API key') && !errorMessage.includes('not configured')) {
+        alert(errorMessage);
+      }
     } finally {
       setEnhancing(false);
     }
   };
+
+  // Keyboard shortcuts - must be after function definitions
+  useKeyboardShortcuts([
+    {
+      key: 's',
+      ctrl: true,
+      action: () => {
+        if (!currentResume || !currentResume.personalInfo || !currentResume.personalInfo.fullName || !currentResume.personalInfo.email) {
+          return;
+        }
+        handleSave();
+      },
+      description: 'Save resume'
+    },
+    {
+      key: 'd',
+      ctrl: true,
+      action: handleDownload,
+      description: 'Download PDF'
+    },
+    {
+      key: '?',
+      action: () => setShowShortcuts(!showShortcuts),
+      description: 'Show shortcuts'
+    },
+  ]);
 
   const tabs = [
     { id: 'personal', label: 'Personal', icon: '👤' },
@@ -173,6 +221,29 @@ const Builder = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <TemplateSelector 
+              selectedTemplate={selectedTemplate}
+              onSelect={setSelectedTemplate}
+            />
+            <SectionReorder
+              sections={sections}
+              onReorder={setSections}
+              onToggleVisibility={(id) => {
+                setSections(sections.map(s => 
+                  s.id === id ? { ...s, visible: !s.visible } : s
+                ));
+              }}
+            />
+            <AISuggestions />
+            <Button 
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowShortcuts(!showShortcuts)}
+              className="rounded-lg hover:bg-gray-100"
+              title="Keyboard Shortcuts"
+            >
+              <Keyboard size={18} />
+            </Button>
             <Button 
               variant="outline" 
               size="sm" 
@@ -204,8 +275,13 @@ const Builder = () => {
         </div>
         
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 bg-gray-50 px-4">
-          {tabs.map(tab => (
+        <div className="flex border-b border-gray-200 bg-gray-50 px-4 overflow-x-auto">
+          {tabs
+            .filter(tab => {
+              const section = sections.find(s => s.id === tab.id);
+              return section?.visible !== false;
+            })
+            .map(tab => (
             <button
               key={tab.id}
               className={`px-4 py-3 text-sm font-semibold transition-all border-b-2 ${
@@ -228,8 +304,14 @@ const Builder = () => {
             
             {activeTab === 'summary' && (
               <div className="space-y-4 animate-in fade-in duration-300">
+                {aiError && (aiError.includes('OpenAI API key') || aiError.includes('not configured')) && (
+                  <AIFeatureNotice 
+                    feature="AI CV Enhancement" 
+                    onDismiss={() => setAiError(null)}
+                  />
+                )}
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-bold text-jet-black">Professional Summary</h3>
+                  <h3 className="text-lg font-bold text-jet-black dark:text-white">Professional Summary</h3>
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -262,8 +344,11 @@ const Builder = () => {
 
       {/* Preview Side */}
       <div className="w-1/2 bg-light-grey p-8 overflow-y-auto flex justify-center">
-        <ResumePreview />
+        <ResumePreview template={selectedTemplate} />
       </div>
+
+      {/* Shortcuts Modal */}
+      <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   );
 };

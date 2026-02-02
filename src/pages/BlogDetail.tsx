@@ -4,6 +4,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import SEOHead from '@/components/SEOHead';
+import ExportShare from '@/components/ExportShare';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
@@ -102,13 +103,26 @@ const BlogDetail = () => {
             
             <div className="p-8 max-w-3xl mx-auto">
                 <div className="mb-6 text-center">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex-1"></div>
+                        <div className="flex-1 text-center">
                     <span className="inline-block px-3 py-1 bg-accent/10 text-accent text-xs font-bold rounded-full mb-2 uppercase tracking-wide">
                         {article.category}
                     </span>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2 leading-tight">{article.title}</h1>
-                    <p className="text-gray-500 text-sm">
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">{article.title}</h1>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">
                         Published on {new Date(article.createdAt).toLocaleDateString()}
                     </p>
+                        </div>
+                        <div className="flex-1 flex justify-end">
+                            <ExportShare 
+                                type="article" 
+                                data={article}
+                                fileName={article.title}
+                                shareUrl={window.location.href}
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 {article.summary && (
@@ -117,7 +131,7 @@ const BlogDetail = () => {
                     </div>
                 )}
 
-                <div className="prose prose-red max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
+                <div id="article-content" className="prose prose-red max-w-none text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
                     {article.content}
                 </div>
             </div>

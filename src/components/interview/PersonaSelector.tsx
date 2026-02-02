@@ -51,8 +51,8 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
     },
     {
       id: 'tech-lead',
-      title: 'Senior Tech Lead',
-      desc: 'Deep technical interviews focusing on system design, architecture, and problem-solving. Expect challenging scenarios.',
+      title: t('interview.techLead'),
+      desc: t('interview.techLeadDesc'),
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Tech&clothing=shirtCrewNeck&accessories=glasses&hair=short',
       icon: Code,
       color: 'bg-purple-500',
@@ -61,8 +61,8 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
     },
     {
       id: 'startup-founder',
-      title: 'Startup Founder',
-      desc: 'Fast-paced, entrepreneurial mindset. Tests your ability to think on your feet and adapt to rapid changes.',
+      title: t('interview.startupFounder'),
+      desc: t('interview.startupFounderDesc'),
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Startup&clothing=hoodie&hair=short',
       icon: Sparkles,
       color: 'bg-yellow-500',
@@ -71,8 +71,8 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
     },
     {
       id: 'executive',
-      title: 'C-Level Executive',
-      desc: 'Strategic thinking and leadership questions. Focuses on vision, decision-making, and business impact.',
+      title: t('interview.executive'),
+      desc: t('interview.executiveDesc'),
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Executive&clothing=blazerAndShirt&hair=short',
       icon: Building2,
       color: 'bg-indigo-500',
@@ -81,8 +81,8 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
     },
     {
       id: 'academic',
-      title: 'Academic Researcher',
-      desc: 'Theoretical knowledge and research methodology. Perfect for PhD candidates and research positions.',
+      title: t('interview.academic'),
+      desc: t('interview.academicDesc'),
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Academic&clothing=shirtCrewNeck&accessories=glasses',
       icon: GraduationCap,
       color: 'bg-teal-500',
@@ -116,14 +116,14 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
   return (
     <div className="w-full">
       {/* Category Filter */}
-      <div className="flex flex-wrap gap-2 mb-6 justify-center">
+      <div className="flex flex-wrap gap-2 mb-4 sm:mb-6 justify-center px-2">
         {categories.map(cat => (
           <Button
             key={cat.id}
             variant={selectedCategory === cat.id ? 'default' : 'outline'}
             size="sm"
             onClick={() => setSelectedCategory(cat.id)}
-            className={selectedCategory === cat.id ? 'bg-crimson-red hover:bg-fire-red' : ''}
+            className={`text-xs sm:text-sm ${selectedCategory === cat.id ? 'bg-crimson-red hover:bg-fire-red text-white' : 'dark:bg-gray-700 dark:text-white dark:border-gray-600'}`}
           >
             {cat.label}
           </Button>
@@ -131,62 +131,62 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       </div>
 
       {/* Persona Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {filteredPersonas.map(persona => {
           const Icon = persona.icon;
           return (
             <div
               key={persona.id}
-              className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg hover:scale-105 transition-all group relative overflow-hidden"
+              className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg hover:scale-[1.02] sm:hover:scale-105 transition-all group relative overflow-hidden"
               onClick={() => !isLoading && onSelect(persona.id)}
             >
               {/* Background gradient */}
-              <div className={`absolute top-0 right-0 w-32 h-32 ${persona.color} opacity-10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-150`}></div>
+              <div className={`absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 ${persona.color} opacity-10 rounded-bl-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 transition-transform group-hover:scale-150`}></div>
               
               {/* Difficulty Badge */}
-              <div className="absolute top-4 right-4">
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getDifficultyColor(persona.difficulty)}`}>
+              <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+                <span className={`text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${getDifficultyColor(persona.difficulty)}`}>
                   {persona.difficulty}
                 </span>
               </div>
 
               {/* Avatar */}
-              <div className="flex items-center gap-4 mb-4">
-                <div className={`w-16 h-16 rounded-full ${persona.color} p-1 flex items-center justify-center`}>
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full ${persona.color} p-0.5 sm:p-1 flex items-center justify-center flex-shrink-0`}>
                   <div className="w-full h-full rounded-full bg-white dark:bg-gray-700 overflow-hidden">
                     <img src={persona.avatar} alt={persona.title} className="w-full h-full object-cover" />
                   </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-crimson-red dark:group-hover:text-red-400 transition-colors">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white group-hover:text-crimson-red dark:group-hover:text-red-400 transition-colors truncate">
                     {persona.title}
                   </h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <Icon className={`w-4 h-4 ${persona.color.replace('bg-', 'text-')}`} />
-                    <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">{persona.category}</span>
+                    <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${persona.color.replace('bg-', 'text-')}`} />
+                    <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 capitalize">{persona.category}</span>
                   </div>
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 line-clamp-3">
                 {persona.desc}
               </p>
 
               {/* Start Button */}
               <Button
-                className={`w-full ${persona.color} hover:opacity-90 text-white`}
+                className={`w-full ${persona.color} hover:opacity-90 text-white text-xs sm:text-sm`}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Starting...
+                    <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                    {t('common.loading')}
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Start Interview
+                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    {t('interview.startInterview')}
                   </>
                 )}
               </Button>

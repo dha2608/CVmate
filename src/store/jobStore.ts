@@ -26,7 +26,17 @@ interface JobState {
     total: number;
     pages: number;
   } | null;
-  fetchJobs: (params?: { page?: number; limit?: number; search?: string; type?: string; location?: string }) => Promise<void>;
+  fetchJobs: (params?: { 
+    page?: number; 
+    limit?: number; 
+    search?: string; 
+    type?: string; 
+    location?: string;
+    salaryMin?: number;
+    salaryMax?: number;
+    experienceLevel?: string;
+    companySize?: string;
+  }) => Promise<void>;
   applyJob: (jobId: string) => Promise<void>;
   getJob: (id: string) => Promise<Job | null>;
 }

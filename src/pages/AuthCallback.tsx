@@ -9,7 +9,15 @@ const AuthCallback = () => {
 
   useEffect(() => {
     const token = searchParams.get('token');
+    const error = searchParams.get('error');
     const needsOnboarding = searchParams.get('onboarding') === 'true';
+
+    // Handle error from OAuth callback
+    if (error) {
+      console.error('OAuth error:', error);
+      navigate('/login?error=' + error);
+      return;
+    }
 
     if (token) {
       const fetchUser = async () => {

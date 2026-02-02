@@ -104,9 +104,12 @@ const Login = () => {
 
         <Button 
           variant="outline" 
-          className="w-full h-12 border-2 border-gray-200 hover:bg-gray-50 font-semibold"
+          className="w-full h-12 border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold transition-all"
           onClick={() => {
-            window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/google`;
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            // Remove /api if present
+            const baseUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+            window.location.href = `${baseUrl}/api/auth/google`;
           }}
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">

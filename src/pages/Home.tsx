@@ -4,6 +4,7 @@ import { useI18n } from '@/store/i18nStore';
 import { Button } from '@/components/ui/button';
 import SEOHead from '@/components/SEOHead';
 import { Sparkles, FileText, Video, Users, ArrowRight, Check, BookOpen, ExternalLink } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { api } from '@/lib/utils';
 import Footer from '@/components/Footer';
 
@@ -46,19 +47,41 @@ const Home = () => {
             </div>
             
             {/* Main Headline */}
-            <h1 className="text-5xl md:text-7xl font-black text-jet-black mb-6 leading-tight tracking-tight animate-fade-in">
+            <motion.h1 
+              className="text-5xl md:text-7xl font-black text-jet-black mb-6 leading-tight tracking-tight"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
               {t('home.heroTitle')}
               <br />
-              <span className="text-crimson-red">{t('home.heroSubtitle')}</span>
-            </h1>
+              <motion.span 
+                className="text-crimson-red"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                {t('home.heroSubtitle')}
+              </motion.span>
+            </motion.h1>
             
             {/* Subheadline */}
-            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
+            <motion.p 
+              className="text-xl md:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
               {t('home.heroDescription')}
-            </p>
+            </motion.p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               <Button 
                 size="lg" 
                 className="bg-crimson-red hover:bg-fire-red text-white px-8 py-6 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl hover-lift transition-all duration-300"
@@ -75,7 +98,15 @@ const Home = () => {
               >
                 {t('home.signIn')}
               </Button>
-            </div>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-2 border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white px-8 py-6 text-lg font-semibold rounded-lg hover-lift transition-all duration-300"
+                onClick={() => navigate('/pricing')}
+              >
+                Xem Bảng Giá
+              </Button>
+            </motion.div>
 
             {/* Trust Indicators */}
             <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-500">

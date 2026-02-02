@@ -9,7 +9,7 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction) =
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    const { search, type, location } = req.query;
+    const { search, type, location, salaryMin, salaryMax, experienceLevel, companySize } = req.query;
     const query: any = {};
 
     if (search) {
@@ -26,6 +26,45 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction) =
 
     if (location) {
       query.location = { $regex: location, $options: 'i' };
+    }
+
+    // Salary range filter - jobs where salary range overlaps with requested range
+    if (salaryMin || salaryMax) {
+      const salaryConditions: any[] = [];
+      const min = salaryMin ? parseInt(salaryMin as string) : 0;
+      const max = salaryMax ? parseInt(salaryMax as string) : Number.MAX_SAFE_INTEGER;
+      
+      // Job's salary range overlaps with requested range if:
+      // - job has salaryMin and salaryMax: (job.salaryMin <= max && job.salaryMax >= min)
+      // - job only has salaryMin: (job.salaryMin <= max)
+      // - job only has salaryMax: (job.salaryMax >= min)
+      // - job has neither: include it (no salary filter)
+      salaryConditions.push({
+        $or: [
+          { salaryMin: { $exists: false }, salaryMax: { $exists: false } },
+          {
+            $and: [
+              { salaryMin: { $exists: true, $lte: max } },
+              { salaryMax: { $exists: true, $gte: min } }
+            ]
+          },
+          { salaryMin: { $exists: true }, salaryMax: { $exists: false }, salaryMin: { $lte: max } },
+          { salaryMin: { $exists: false }, salaryMax: { $exists: true }, salaryMax: { $gte: min } }
+        ]
+      });
+      
+      if (!query.$and) {
+        query.$and = [];
+      }
+      query.$and.push(...salaryConditions);
+    }
+
+    if (experienceLevel) {
+      query.experienceLevel = experienceLevel;
+    }
+
+    if (companySize) {
+      query.companySize = companySize;
     }
 
     const [jobs, total] = await Promise.all([

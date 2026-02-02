@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&display=swap');
+@import './styles/design-system.css';
+@import './styles/micro-interactions.css';
+@import './styles/color-system.css';
 
 @tailwind base;
 @tailwind components;
@@ -89,13 +92,33 @@
     @apply border-border;
   }
   body {
-    @apply bg-white text-jet-black font-sans;
+    @apply bg-white dark:bg-gray-900 text-jet-black dark:text-white font-sans;
     font-family: 'Inter', 'Roboto', system-ui, sans-serif;
+    @apply antialiased;
   }
   
   /* Premium feel with generous white space */
-  h1, h2, h3, h4, h5, h6 {
+  h1 {
+    @apply text-4xl md:text-5xl font-black tracking-tight;
+    @apply text-jet-black dark:text-white;
+    line-height: 1.1;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl font-bold tracking-tight;
+    @apply text-jet-black dark:text-white;
+    line-height: 1.2;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl font-bold;
+    @apply text-jet-black dark:text-white;
+    line-height: 1.3;
+  }
+  
+  h4, h5, h6 {
     @apply font-semibold tracking-tight;
+    @apply text-jet-black dark:text-white;
   }
   
   /* Minimalist button styles with smooth transitions */
@@ -118,6 +141,62 @@
   /* Smooth transitions for all interactive elements */
   a, button, input, textarea, select {
     @apply transition-all duration-200 ease-in-out;
+  }
+  
+  /* Consistent link styles */
+  a {
+    @apply text-crimson-red dark:text-red-400;
+    @apply hover:text-fire-red dark:hover:text-red-500;
+    @apply underline-offset-4 hover:underline;
+    @apply transition-colors duration-200;
+  }
+  
+  /* Better button defaults */
+  button {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson-red;
+    @apply focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800;
+  }
+
+  /* Page transition base */
+  .page-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Smooth view transitions */
+  @view-transition {
+    navigation: auto;
+  }
+
+  /* Enhanced hover effects */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .hover-lift:hover {
+    @apply transform -translate-y-1 shadow-lg;
+  }
+
+  /* Smooth fade transitions */
+  .fade-enter {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  .fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+  }
+
+  .fade-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .fade-exit-active {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 200ms ease-in, transform 200ms ease-in;
   }
 }
 
@@ -200,6 +279,70 @@
     }
   }
 
+  /* Smooth page fade */
+  .page-fade-in {
+    animation: pageFadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  @keyframes pageFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Smooth slide up */
+  .slide-up {
+    animation: slideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Smooth scale in */
+  .scale-in {
+    animation: scaleIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Smooth rotate */
+  .rotate-in {
+    animation: rotateIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  @keyframes rotateIn {
+    from {
+      opacity: 0;
+      transform: rotate(-10deg) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+  }
+
   /* Hover lift effect */
   .hover-lift {
     @apply transition-transform duration-300 ease-out;
@@ -233,5 +376,70 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* Smooth skeleton animation */
+  @keyframes skeleton-loading {
+    0% {
+      background-position: -200px 0;
+    }
+    100% {
+      background-position: calc(200px + 100%) 0;
+    }
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.2) 20%,
+      rgba(255, 255, 255, 0.5) 60%,
+      rgba(255, 255, 255, 0)
+    );
+    background-size: 200px 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+  }
+
+  .dark .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.05) 20%,
+      rgba(255, 255, 255, 0.1) 60%,
+      rgba(255, 255, 255, 0)
+    );
+    background-size: 200px 100%;
+  }
+
+  /* Improved focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-crimson-red;
+  }
+
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Prevent layout shift */
+  img {
+    @apply align-middle;
+  }
+
+  /* Better text rendering */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Safe area for mobile bottom navigation */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Container padding utility */
+  .container-padding {
+    @apply px-4 sm:px-6 lg:px-8;
   }
 }
