@@ -3,7 +3,7 @@ import { useResumeStore, IExperience } from '@/store/resumeStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Sparkles, Plus } from 'lucide-react';
+import { Trash2, Brain, Plus } from 'lucide-react';
 
 const ExperienceForm = () => {
   const { currentResume, addExperience, updateExperience, removeExperience, aiEnhanceText } = useResumeStore();
@@ -22,7 +22,9 @@ const ExperienceForm = () => {
   };
 
   const handleEnhance = async (index: number, text: string) => {
-      if (!text) return;
+      if (!text) {
+        return;
+      }
       setLoadingAi(index);
       const enhanced = await aiEnhanceText(text, 'experience');
       updateExperience(index, { ...currentResume.experience[index], description: enhanced });
@@ -98,7 +100,7 @@ const ExperienceForm = () => {
                             onClick={() => handleEnhance(index, exp.description)}
                             disabled={loadingAi === index}
                         >
-                            <Sparkles size={12} />
+                            <Brain size={12} />
                             {loadingAi === index ? 'Enhancing...' : 'AI Enhance'}
                         </Button>
                      </div>

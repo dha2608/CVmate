@@ -6,9 +6,9 @@ const Footer = () => {
   const { t } = useI18n();
   
   return (
-    <footer id="footer" role="contentinfo" className="bg-jet-black text-white border-t border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
+    <footer id="footer" role="contentinfo" className="bg-jet-black text-white border-t border-gray-800 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-12 mb-10">
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
@@ -76,7 +76,7 @@ const Footer = () => {
               <li>
                 <Link to="/pricing" className="text-gray-400 hover:text-crimson-red transition-colors flex items-center gap-2">
                   <Briefcase size={14} />
-                  Bảng Giá
+                  {t('footer.pricing')}
                 </Link>
               </li>
             </ul>
@@ -150,7 +150,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-gray-800">
+        <div className="pt-8 mt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
             <div>
               © {new Date().getFullYear()} CV Mate. {t('footer.allRightsReserved')}

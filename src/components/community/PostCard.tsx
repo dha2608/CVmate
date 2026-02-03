@@ -21,7 +21,9 @@ const PostCard = ({ post }: PostCardProps) => {
 
   const handleComment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim()) return;
+    if (!commentText.trim()) {
+      return;
+    }
     commentPost(post._id, commentText);
     setCommentText('');
   };

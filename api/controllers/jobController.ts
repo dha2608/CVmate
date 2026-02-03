@@ -48,8 +48,20 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction) =
               { salaryMax: { $exists: true, $gte: min } }
             ]
           },
-          { salaryMin: { $exists: true }, salaryMax: { $exists: false }, salaryMin: { $lte: max } },
-          { salaryMin: { $exists: false }, salaryMax: { $exists: true }, salaryMax: { $gte: min } }
+          { 
+            $and: [
+              { salaryMin: { $exists: true } },
+              { salaryMax: { $exists: false } },
+              { salaryMin: { $lte: max } }
+            ]
+          },
+          { 
+            $and: [
+              { salaryMin: { $exists: false } },
+              { salaryMax: { $exists: true } },
+              { salaryMax: { $gte: min } }
+            ]
+          }
         ]
       });
       

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, Code, Briefcase, Globe, Users, Building2, GraduationCap } from 'lucide-react';
+import { Loader2, Zap, Code, Briefcase, Globe, Users, Building2, GraduationCap } from 'lucide-react';
 import { useI18n } from '@/store/i18nStore';
 
 interface Persona {
@@ -64,7 +64,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       title: t('interview.startupFounder'),
       desc: t('interview.startupFounderDesc'),
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Startup&clothing=hoodie&hair=short',
-      icon: Sparkles,
+      icon: Zap,
       color: 'bg-yellow-500',
       difficulty: 'Medium',
       category: 'business'
@@ -185,7 +185,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     {t('interview.startInterview')}
                   </>
                 )}

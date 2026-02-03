@@ -1,4 +1,4 @@
-import { FileText, Users, Briefcase, MessageSquare, Search, Sparkles } from 'lucide-react';
+import { FileText, Users, Briefcase, MessageSquare, Search, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface IllustrationProps {
@@ -76,7 +76,7 @@ export const EmptyAIIllustration = ({ className, size = 120 }: IllustrationProps
   <div className={cn("flex flex-col items-center justify-center", className)}>
     <div className="relative">
       <div className="absolute inset-0 bg-crimson-red/10 rounded-full blur-2xl" />
-      <Sparkles 
+      <Brain 
         size={size} 
         className="relative text-crimson-red/50 dark:text-red-400/50"
         strokeWidth={1.5}

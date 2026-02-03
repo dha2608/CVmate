@@ -296,7 +296,7 @@ const Jobs = () => {
                                 <AIJobMatcher
                                   jobId={job._id}
                                   jobDescription={job.description || ''}
-                                  jobRequirements={job.requirements || job.skills || []}
+                                  jobRequirements={job.requirements || []}
                                 />
                               </div>
                             )}

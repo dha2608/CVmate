@@ -16,7 +16,7 @@ const Profile = () => {
   const toast = useToastStore();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [subscription, setSubscription] = useState<{ plan: string; status: string; endDate?: string } | null>(null);
+  const [subscription, setSubscription] = useState<any>(null);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe');
   

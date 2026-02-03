@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useI18n } from '@/store/i18nStore';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
-import { Check, X, Sparkles, Zap, Crown, ArrowRight } from 'lucide-react';
+import { Check, X, Brain, Zap, Crown, ArrowRight } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import SEOHead from '@/components/SEOHead';
 
@@ -182,7 +182,7 @@ const Pricing = () => {
 
                 <div className="text-center mb-8">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-crimson-red to-fire-red rounded-xl mb-4">
-                    <Sparkles className="w-8 h-8 text-white" />
+                    <Brain className="w-8 h-8 text-white" />
                   </div>
                   <h2 className="text-heading-2 mb-2">Premium</h2>
                   <div className="mb-4">

@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import OpenAI from 'openai';
-import Interview, { IInterview } from '../models/Interview.js';
+import Interview from '../models/Interview.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 
@@ -156,20 +156,32 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       let statusCode = 503;
       
       // Check for OpenAI API specific errors
+      const errorMsg = errorObj.message || '';
+      const errorMsgLower = errorMsg.toLowerCase();
+      
       if (errorObj.status === 401 || errorObj.statusCode === 401) {
         errorMessage = 'Invalid OpenAI API key. Please check your API key configuration in .env file.';
         statusCode = 503; // Keep 503 to indicate service unavailable
       } else if (errorObj.status === 429 || errorObj.statusCode === 429) {
-        errorMessage = 'OpenAI API rate limit exceeded. This could mean:\n- Your API key has reached its rate limit\n- Your account has insufficient credits\n- Too many requests in a short time\n\nPlease wait a few minutes and try again, or check your OpenAI account billing.';
-        statusCode = 429;
+        // Check for quota exceeded vs rate limit
+        if (errorMsgLower.includes('quota') || errorMsgLower.includes('exceeded your current quota') || errorMsgLower.includes('billing')) {
+          errorMessage = 'OpenAI API quota exceeded. Your account has run out of credits or reached its usage limit.\n\nPlease:\n1. Check your billing at https://platform.openai.com/account/billing\n2. Add credits to your account\n3. Or upgrade your OpenAI plan\n\nAfter adding credits, wait a few minutes and try again.';
+          statusCode = 429;
+        } else {
+          errorMessage = 'OpenAI API rate limit exceeded. This could mean:\n- Your API key has reached its rate limit\n- Your account has insufficient credits\n- Too many requests in a short time\n\nPlease wait a few minutes and try again, or check your OpenAI account billing.';
+          statusCode = 429;
+        }
       } else if (errorObj.status === 402 || errorObj.statusCode === 402) {
-        errorMessage = 'OpenAI API payment required. Your account may have insufficient credits. Please add credits to your OpenAI account.';
+        errorMessage = 'OpenAI API payment required. Your account may have insufficient credits. Please add credits to your OpenAI account at https://platform.openai.com/account/billing';
         statusCode = 402;
-      } else if (errorObj.message?.includes('API key') || errorObj.message?.includes('api key')) {
+      } else if (errorMsgLower.includes('api key') || errorMsgLower.includes('invalid api key')) {
         errorMessage = 'OpenAI API key is invalid or missing. Please check OPENAI_API_KEY in your .env file.';
         statusCode = 503;
-      } else if (errorObj.message?.includes('rate_limit') || errorObj.message?.includes('rate limit')) {
+      } else if (errorMsgLower.includes('rate_limit') || errorMsgLower.includes('rate limit')) {
         errorMessage = 'OpenAI API rate limit exceeded. Please wait a few minutes and try again.';
+        statusCode = 429;
+      } else if (errorMsgLower.includes('quota') || errorMsgLower.includes('billing')) {
+        errorMessage = 'OpenAI API quota exceeded. Please add credits to your account at https://platform.openai.com/account/billing';
         statusCode = 429;
       } else if (errorObj.message) {
         errorMessage = `OpenAI API error: ${errorObj.message}`;
@@ -179,7 +191,8 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
         success: false, 
         message: errorMessage,
         error: error.message || 'OpenAI API error',
-        errorCode: errorObj.status || errorObj.statusCode || 'UNKNOWN'
+        errorCode: errorObj.status || errorObj.statusCode || 'UNKNOWN',
+        type: 'openai_api_error' // Distinguish from server rate limit
       });
     }
 
@@ -276,10 +289,11 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
         errorMessage = 'OpenAI API key is invalid or missing.';
       }
 
+      const errorMsg = error instanceof Error ? error.message : String(error);
       res.status(503).json({ 
         success: false, 
         message: errorMessage,
-        error: error.message || 'OpenAI API error'
+        error: errorMsg || 'OpenAI API error'
       });
     }
 

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MoreVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface MenuItem {
+export interface MenuItem {
   label: string;
   icon?: React.ReactNode;
   onClick: () => void;

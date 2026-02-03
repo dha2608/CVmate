@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Brain, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/store/i18nStore';
 import { useResumeStore } from '@/store/resumeStore';
@@ -81,15 +81,25 @@ const AIJobMatcher = ({ jobId, jobDescription, jobRequirements, onClose }: AIJob
   };
 
   const getMatchColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-50 border-green-200';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+    if (score >= 80) {
+      return 'text-green-600 bg-green-50 border-green-200';
+    }
+    if (score >= 60) {
+      return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+    }
     return 'text-red-600 bg-red-50 border-red-200';
   };
 
   const getMatchLabel = (score: number) => {
-    if (score >= 80) return 'Rất phù hợp';
-    if (score >= 60) return 'Khá phù hợp';
-    if (score >= 40) return 'Cần cải thiện';
+    if (score >= 80) {
+      return 'Rất phù hợp';
+    }
+    if (score >= 60) {
+      return 'Khá phù hợp';
+    }
+    if (score >= 40) {
+      return 'Cần cải thiện';
+    }
     return 'Chưa phù hợp';
   };
 
@@ -100,7 +110,7 @@ const AIJobMatcher = ({ jobId, jobDescription, jobRequirements, onClose }: AIJob
         disabled={isAnalyzing}
         className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <Sparkles size={16} />
+        <Brain size={16} />
         <span className="text-sm font-semibold">
           {isAnalyzing ? 'Đang phân tích...' : 'AI Match Score'}
         </span>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Sparkles, Palette } from 'lucide-react';
+import { Check, Wand2, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/store/i18nStore';
 
@@ -86,7 +86,7 @@ const TemplateSelector = ({ selectedTemplate, onSelect }: TemplateSelectorProps)
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                  <Sparkles size={18} className="text-crimson-red" />
+                  <Wand2 size={18} className="text-crimson-red" />
                   Choose Template
                 </h3>
                 <button

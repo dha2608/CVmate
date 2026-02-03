@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import OpenAI from 'openai';
 import Resume from '../models/Resume.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
@@ -156,13 +156,22 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
       });
       
       let errorMessage = 'AI service is currently unavailable.';
-      const errorObj = apiError as { status?: number; message?: string };
-      if (errorObj.status === 401) {
+      const errorObj = apiError as { status?: number; statusCode?: number; message?: string };
+      const errorMsg = errorObj.message || '';
+      const errorMsgLower = errorMsg.toLowerCase();
+      
+      if (errorObj.status === 401 || errorObj.statusCode === 401) {
         errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
-      } else if (errorObj.status === 429) {
-        errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
-      } else if (errorObj.message?.includes('API key')) {
+      } else if (errorObj.status === 429 || errorObj.statusCode === 429) {
+        if (errorMsgLower.includes('quota') || errorMsgLower.includes('exceeded your current quota') || errorMsgLower.includes('billing')) {
+          errorMessage = 'OpenAI API quota exceeded. Your account has run out of credits. Please add credits at https://platform.openai.com/account/billing';
+        } else {
+          errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
+        }
+      } else if (errorMsgLower.includes('api key') || errorMsgLower.includes('invalid api key')) {
         errorMessage = 'OpenAI API key is invalid or missing.';
+      } else if (errorMsgLower.includes('quota') || errorMsgLower.includes('billing')) {
+        errorMessage = 'OpenAI API quota exceeded. Please add credits to your account.';
       }
 
       res.status(503).json({ 
@@ -242,13 +251,22 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
       });
       
       let errorMessage = 'ATS analysis service is currently unavailable.';
-      const errorObj = e as { status?: number; message?: string };
-      if (errorObj.status === 401) {
+      const errorObj = e as { status?: number; statusCode?: number; message?: string };
+      const errorMsg = errorObj.message || '';
+      const errorMsgLower = errorMsg.toLowerCase();
+      
+      if (errorObj.status === 401 || errorObj.statusCode === 401) {
         errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
-      } else if (errorObj.status === 429) {
-        errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
-      } else if (errorObj.message?.includes('API key')) {
+      } else if (errorObj.status === 429 || errorObj.statusCode === 429) {
+        if (errorMsgLower.includes('quota') || errorMsgLower.includes('exceeded your current quota') || errorMsgLower.includes('billing')) {
+          errorMessage = 'OpenAI API quota exceeded. Your account has run out of credits. Please add credits at https://platform.openai.com/account/billing';
+        } else {
+          errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
+        }
+      } else if (errorMsgLower.includes('api key') || errorMsgLower.includes('invalid api key')) {
         errorMessage = 'OpenAI API key is invalid or missing.';
+      } else if (errorMsgLower.includes('quota') || errorMsgLower.includes('billing')) {
+        errorMessage = 'OpenAI API quota exceeded. Please add credits to your account.';
       }
 
       res.status(503).json({ 

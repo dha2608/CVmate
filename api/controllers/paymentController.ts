@@ -14,11 +14,11 @@ const getStripe = (): Stripe | null => {
     return null;
   }
   return new Stripe(apiKey, {
-    apiVersion: '2024-11-20.acacia',
+    apiVersion: '2026-01-28.clover',
   });
 };
 
-export const createCheckoutSession = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const createCheckoutSession = async (req: AuthRequest, res: Response, _next: NextFunction) => {
   try {
     const stripe = getStripe();
     if (!stripe) {
@@ -98,7 +98,7 @@ interface StripeWebhookRequest extends Request {
   };
 }
 
-export const stripeWebhook = async (req: StripeWebhookRequest, res: Response, next: NextFunction) => {
+export const stripeWebhook = async (req: StripeWebhookRequest, res: Response, _next: NextFunction) => {
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -132,13 +132,16 @@ export const stripeWebhook = async (req: StripeWebhookRequest, res: Response, ne
         if (userId) {
           const user = await User.findById(userId);
           if (user) {
-            const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-            
+            const subscription = (await stripe.subscriptions.retrieve(session.subscription as string)) as any;
+            const periodEnd = typeof subscription.current_period_end === 'number'
+              ? subscription.current_period_end
+              : Date.now() / 1000 + 30 * 24 * 60 * 60;
+
             user.subscription = {
               plan: 'premium',
               status: 'active',
               startDate: new Date(),
-              endDate: new Date(subscription.current_period_end * 1000),
+              endDate: new Date(periodEnd * 1000),
               paymentMethod: 'card',
               stripeCustomerId: session.customer as string,
               stripeSubscriptionId: subscription.id,
@@ -151,7 +154,7 @@ export const stripeWebhook = async (req: StripeWebhookRequest, res: Response, ne
 
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription = event.data.object as any;
         const customerId = subscription.customer as string;
 
         const user = await User.findOne({ 'subscription.stripeCustomerId': customerId });
@@ -159,7 +162,10 @@ export const stripeWebhook = async (req: StripeWebhookRequest, res: Response, ne
           if (subscription.status === 'active') {
             user.subscription = user.subscription || { plan: 'free', status: 'active' };
             user.subscription.status = 'active';
-            user.subscription.endDate = new Date(subscription.current_period_end * 1000);
+            const periodEnd = typeof subscription.current_period_end === 'number'
+              ? subscription.current_period_end
+              : Date.now() / 1000 + 30 * 24 * 60 * 60;
+            user.subscription.endDate = new Date(periodEnd * 1000);
           } else {
             user.subscription = user.subscription || { plan: 'free', status: 'active' };
             user.subscription.status = 'cancelled';
@@ -183,7 +189,7 @@ export const stripeWebhook = async (req: StripeWebhookRequest, res: Response, ne
   }
 };
 
-export const getSubscriptionStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const getSubscriptionStatus = async (req: AuthRequest, res: Response, _next: NextFunction) => {
   try {
     const user = await User.findById(req.user?._id);
     if (!user) {
@@ -209,12 +215,12 @@ export const getSubscriptionStatus = async (req: AuthRequest, res: Response, nex
         endDate: subscription.endDate,
       },
     });
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    _next(error as any);
   }
 };
 
-export const cancelSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const cancelSubscription = async (req: AuthRequest, res: Response, _next: NextFunction) => {
   try {
     const stripe = getStripe();
     if (!stripe) {
@@ -251,7 +257,7 @@ export const cancelSubscription = async (req: AuthRequest, res: Response, next: 
 /**
  * Create PayPal order
  */
-export const createPayPalOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const createPayPalOrder = async (req: AuthRequest, res: Response, _next: NextFunction) => {
   try {
     const user = await User.findById(req.user?._id);
     if (!user) {
@@ -259,10 +265,8 @@ export const createPayPalOrder = async (req: AuthRequest, res: Response, next: N
       return;
     }
 
-    // PayPal order creation - simplified version
-    // In production, you would integrate with PayPal SDK
     const orderId = `PAYPAL-${Date.now()}-${user._id}`;
-    
+
     res.json({
       success: true,
       data: {
@@ -285,10 +289,10 @@ export const createPayPalOrder = async (req: AuthRequest, res: Response, next: N
 /**
  * Capture PayPal payment
  */
-export const capturePayPalPayment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const capturePayPalPayment = async (req: AuthRequest, res: Response, _next: NextFunction) => {
   try {
     const { orderId } = req.body;
-    
+
     if (!orderId) {
       res.status(400).json({ success: false, message: 'Order ID is required' });
       return;
@@ -300,13 +304,11 @@ export const capturePayPalPayment = async (req: AuthRequest, res: Response, next
       return;
     }
 
-    // In production, verify payment with PayPal API
-    // For now, we'll simulate successful payment
     user.subscription = {
       plan: 'premium',
       status: 'active',
       startDate: new Date(),
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       paymentMethod: 'paypal',
     };
     await user.save();

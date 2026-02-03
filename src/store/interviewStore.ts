@@ -98,11 +98,21 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       const status = error.status || 0;
       const errorText = error.message || '';
       const errorLower = errorText.toLowerCase();
+      const errorType = (error as any).type || '';
       
       if (status === 402 || errorLower.includes('payment') || errorLower.includes('insufficient credits')) {
         errorMessage = 'OpenAI account has insufficient credits. Please add credits to your OpenAI account at https://platform.openai.com/account/billing';
       } else if (status === 429 || errorLower.includes('rate limit') || errorLower.includes('rate_limit')) {
-        errorMessage = 'OpenAI API rate limit exceeded. This could mean:\n• Your API key has reached its rate limit\n• Your account has insufficient credits\n• Too many requests in a short time\n\nPlease wait a few minutes and try again, or check your OpenAI account billing.';
+        // Check if it's from server rate limiter or OpenAI API
+        if (errorType === 'server_rate_limit' || errorLower.includes('daily limit') || errorLower.includes('ai service rate limit')) {
+          errorMessage = 'You have reached the server rate limit for AI features. In development mode, the limit is 100 requests/hour. Please wait a moment and try again, or upgrade to premium for higher limits.';
+        } else if (errorLower.includes('quota') || errorLower.includes('exceeded your current quota') || errorLower.includes('billing')) {
+          errorMessage = 'OpenAI API quota exceeded. Your account has run out of credits or reached its usage limit.\n\nPlease:\n1. Check your billing at https://platform.openai.com/account/billing\n2. Add credits to your account\n3. Or upgrade your OpenAI plan\n\nAfter adding credits, wait a few minutes and try again.';
+        } else {
+          errorMessage = 'OpenAI API rate limit exceeded. This usually means:\n• Too many requests in a short time\n• Your account has reached its API quota\n• Insufficient credits in your OpenAI account\n\nPlease wait 1-2 minutes before trying again, or check your OpenAI account billing at https://platform.openai.com/account/billing';
+        }
+      } else if (errorLower.includes('quota') || errorLower.includes('exceeded your current quota')) {
+        errorMessage = 'OpenAI API quota exceeded. Your account has run out of credits or reached its usage limit.\n\nPlease:\n1. Check your billing at https://platform.openai.com/account/billing\n2. Add credits to your account\n3. Or upgrade your OpenAI plan\n\nAfter adding credits, wait a few minutes and try again.';
       } else if (status === 401 || errorLower.includes('unauthorized') || errorLower.includes('api key') || errorLower.includes('invalid')) {
         errorMessage = 'OpenAI API key is invalid or missing. Please check OPENAI_API_KEY in your .env file and restart the server.';
       } else if (status === 503 || errorLower.includes('503') || errorLower.includes('service temporarily unavailable') || errorLower.includes('service unavailable')) {

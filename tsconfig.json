@@ -19,9 +19,11 @@
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": false,
+    "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": false,
-    "forceConsistentCasingInFileNames": false,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": false,
+    "noUncheckedIndexedAccess": false,
     "baseUrl": "./",
     "paths": {
       "@/*": [

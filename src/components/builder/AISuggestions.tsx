@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Lightbulb, X, Check, Copy } from 'lucide-react';
+import { Brain, Lightbulb, X, Check, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/store/i18nStore';
 
@@ -56,7 +56,7 @@ const AISuggestions = ({ onApply }: AISuggestionsProps) => {
         onClick={() => setIsOpen(!isOpen)}
         className="relative flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
       >
-        <Sparkles size={16} />
+        <Brain size={16} />
         <span className="text-sm font-semibold">AI Suggestions</span>
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">

@@ -7,6 +7,17 @@ interface User {
   role: string;
   token: string;
   avatar?: string;
+  onboardingCompleted?: boolean;
+  careerGoal?: 'new-job' | 'internship' | 'career-switch';
+  subscription?: {
+    plan: 'free' | 'premium';
+    status: 'active' | 'cancelled' | 'expired';
+    startDate?: Date;
+    endDate?: Date;
+    paymentMethod?: string;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+  };
 }
 
 interface AuthState {

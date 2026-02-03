@@ -3,7 +3,7 @@ import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion';
 import { Trash2, Archive, MoreVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface SwipeAction {
+export interface SwipeAction {
   icon: React.ReactNode;
   label: string;
   color: string;

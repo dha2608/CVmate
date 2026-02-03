@@ -46,13 +46,18 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const data = await res.json();
 
       if (data.success) {
-        const unread = data.data.filter((n: Notification) => !n.read && !n.isRead).length;
+        interface NotificationData {
+          read?: boolean;
+          isRead?: boolean;
+          [key: string]: unknown;
+        }
+        const unread = (data.data as NotificationData[]).filter((n) => !(n.read ?? n.isRead)).length;
         // Map backend field `read` -> `isRead` for frontend convenience
-        const normalized = (data.data as any[]).map((n) => ({
+        const normalized = (data.data as NotificationData[]).map((n) => ({
           ...n,
-          isRead: n.isRead ?? n.read,
+          isRead: n.isRead ?? n.read ?? false,
         }));
-        set({ notifications: normalized, unreadCount: unread, isLoading: false });
+        set({ notifications: normalized as any, unreadCount: unread, isLoading: false });
       } else {
         set({ error: data.message, isLoading: false });
       }

@@ -1,15 +1,15 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../models/User.js';
-import jwt from 'jsonwebtoken';
+
 import logger from '../utils/logger.js';
 
-// Generate JWT Token
-const generateToken = (id: string) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET as string, {
-    expiresIn: '30d',
-  });
-};
+// Generate JWT Token (unused but kept for potential future use)
+// const generateToken = (id: string) => {
+//   return jwt.sign({ id }, process.env.JWT_SECRET as string, {
+//     expiresIn: '30d',
+//   });
+// };
 
 // Chỉ khởi tạo Google Strategy nếu có đủ env vars
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {

@@ -79,7 +79,7 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
       category,
       summary,
       tags,
-      image: image,
+      image,
       coverImage: image,
       isPublished: true,
     });
@@ -103,14 +103,17 @@ export const getArticles = async (req: Request, res: Response, next: NextFunctio
     } = {};
 
     if (search) {
+      const searchStr = Array.isArray(search) ? search[0] : search;
+      const searchValue = typeof searchStr === 'string' ? searchStr : String(searchStr);
       query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { summary: { $regex: search, $options: 'i' } },
+        { title: { $regex: searchValue, $options: 'i' } },
+        { summary: { $regex: searchValue, $options: 'i' } },
       ];
     }
 
     if (category && category !== 'All') {
-      query.category = category;
+      const categoryStr = Array.isArray(category) ? category[0] : category;
+      query.category = typeof categoryStr === 'string' ? categoryStr : String(categoryStr);
     }
 
     const [articles, total] = await Promise.all([

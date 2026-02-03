@@ -3,7 +3,6 @@ import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBookmarkStore } from '@/store/bookmarkStore';
 import { useToastStore } from '@/store/toastStore';
-import { useI18n } from '@/store/i18nStore';
 
 interface BookmarkButtonProps {
   type: 'job' | 'article';
@@ -15,7 +14,6 @@ interface BookmarkButtonProps {
 const BookmarkButton = ({ type, itemId, size = 'sm', variant = 'ghost' }: BookmarkButtonProps) => {
   const { isBookmarked, addBookmark, removeBookmark, getBookmarkId } = useBookmarkStore();
   const toast = useToastStore();
-  const { t } = useI18n();
   const [isLoading, setIsLoading] = useState(false);
   
   const bookmarked = isBookmarked(type, itemId);

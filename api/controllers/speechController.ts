@@ -41,7 +41,7 @@ export const speechToText = async (req: AuthRequest, res: Response, next: NextFu
         res.status(400).json({ success: false, message: 'Invalid audio data format' });
         return;
       }
-    } catch (error) {
+    } catch (_error) {
       res.status(400).json({ success: false, message: 'Failed to process audio data' });
       return;
     }
@@ -55,12 +55,32 @@ export const speechToText = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
-    // Create a File-like object for OpenAI
-    const file = new File([audioBuffer], `audio.${audioFormat}`, {
-      type: `audio/${audioFormat}`,
-    });
-
+    // For Node.js, OpenAI SDK accepts File objects
+    // Use File from 'undici' package (available in Node.js 18+)
+    let FileConstructor: typeof File;
     try {
+      // Try to use File from undici (Node.js 18+)
+      const undici = await import('undici');
+      FileConstructor = undici.File as unknown as typeof File;
+    } catch {
+      // Fallback: Use global File if available (Node.js 20+)
+      if (typeof File !== 'undefined') {
+        FileConstructor = File;
+      } else {
+        res.status(500).json({
+          success: false,
+          message: 'File API not available. Please use Node.js 18+ or ensure undici is installed.',
+        });
+        return;
+      }
+    }
+    
+    try {
+      // Create File object from buffer for OpenAI SDK
+      const file = new FileConstructor([audioBuffer], `audio.${audioFormat}`, {
+        type: `audio/${audioFormat}`,
+      });
+
       const transcription = await openai.audio.transcriptions.create({
         file: file as any,
         model: 'whisper-1',

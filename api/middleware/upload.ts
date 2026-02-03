@@ -28,9 +28,8 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
 
   if (mimetype && extname) {
     return cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed!'));
   }
+  cb(new Error('Only image files are allowed!'));
 };
 
 export const upload = multer({

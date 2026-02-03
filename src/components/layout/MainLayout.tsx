@@ -7,7 +7,7 @@ import { useNewsStore } from '@/store/newsStore';
 import { Button } from '@/components/ui/button';
 import { 
   Home, Users, Briefcase, MessageSquare, Bell, Search, 
-  User as UserIcon, LogOut, FileText, Sparkles, MoreHorizontal, Menu,
+  User as UserIcon, LogOut, FileText, Brain, MoreHorizontal, Menu,
   Sun, Moon, Globe, ExternalLink, Bookmark, Crown
 } from 'lucide-react';
 import Footer from '@/components/Footer';
@@ -53,9 +53,15 @@ const MainLayout = ({
     const centeredRoutes = ['/login', '/register', '/onboarding'];
     const narrowRoutes = ['/builder', '/interview'];
     
-    if (fullWidthRoutes.includes(path)) return 'full-width';
-    if (centeredRoutes.includes(path)) return 'centered';
-    if (narrowRoutes.includes(path)) return 'narrow';
+    if (fullWidthRoutes.includes(path)) {
+      return 'full-width';
+    }
+    if (centeredRoutes.includes(path)) {
+      return 'centered';
+    }
+    if (narrowRoutes.includes(path)) {
+      return 'narrow';
+    }
     return 'default';
   };
 
@@ -77,17 +83,25 @@ const MainLayout = ({
   }, [shouldShowRightSidebar, rightSidebar, fetchNews]);
 
   useEffect(() => {
-    if (!isProfileMenuOpen) return;
+    if (!isProfileMenuOpen) {
+      return;
+    }
 
     const onPointerDown = (e: PointerEvent) => {
       const el = profileMenuRef.current;
-      if (!el) return;
-      if (el.contains(e.target as Node)) return;
+      if (!el) {
+        return;
+      }
+      if (el.contains(e.target as Node)) {
+        return;
+      }
       setIsProfileMenuOpen(false);
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsProfileMenuOpen(false);
+      if (e.key === 'Escape') {
+        setIsProfileMenuOpen(false);
+      }
     };
 
     document.addEventListener('pointerdown', onPointerDown);
@@ -114,13 +128,13 @@ const MainLayout = ({
   };
 
   return (
-    <div className={`min-h-screen font-sans transition-colors duration-300 ease-in-out ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-[#F8F9FA] text-slate-900'}`}>
+    <div className={`min-h-screen font-sans transition-colors duration-300 ease-in-out flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-[#F8F9FA] text-slate-900'}`}>
       {/* Skip Links */}
       <SkipLinks />
       
       {/* Navbar*/}
       <nav id="navigation" className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm transition-all duration-300 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95" role="navigation" aria-label="Main navigation">
-        <div className="max-w-7xl mx-auto container-padding">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-18">
             
             {/* Logo & Search */}
@@ -199,7 +213,7 @@ const MainLayout = ({
                 <div className="relative" ref={profileMenuRef}>
                   <button 
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                    className="rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    className="rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
                     aria-haspopup="true"
                     aria-expanded={isProfileMenuOpen}
                     aria-label="Profile menu"
@@ -208,10 +222,10 @@ const MainLayout = ({
                       <img 
                         src={user.avatar} 
                         alt="Profile" 
-                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover ring-2 ring-transparent hover:ring-red-500 transition-all"
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-transparent hover:border-red-500 transition-all"
                       />
                     ) : (
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black dark:bg-gray-700 text-white flex items-center justify-center">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black dark:bg-gray-700 text-white flex items-center justify-center border-2 border-transparent hover:border-red-500 transition-all">
                         <span className="font-bold text-xs sm:text-sm">{user?.name?.charAt(0)}</span>
                       </div>
                     )}
@@ -255,14 +269,14 @@ const MainLayout = ({
       </nav>
 
       {/* Main Content */}
-      <main id="main-content" className={`${getMainContentClasses()} container-padding py-6 sm:py-8 lg:py-10 pb-20 md:pb-6 sm:pb-8 lg:pb-10`} role="main" tabIndex={-1}>
+      <main id="main-content" className={`${getMainContentClasses()} px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 pb-20 md:pb-8 sm:pb-10 lg:pb-12 min-h-[calc(100vh-200px)]`} role="main" tabIndex={-1}>
         {finalLayoutMode === 'default' && (shouldShowLeftSidebar || shouldShowRightSidebar) ? (
           // 3-column layout (with sidebars)
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
             {/* Left Sidebar (Profile) */}
             {shouldShowLeftSidebar && (
               <div className="hidden lg:block lg:col-span-3">
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-20 lg:top-24 group">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-20 lg:top-24 group mb-6">
                   {/* Header Profile */}
                   <div className="h-20 lg:h-24 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-gray-900 dark:to-gray-800 relative">
                     <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
@@ -298,7 +312,7 @@ const MainLayout = ({
                       className="w-full border-zinc-900 dark:border-gray-600 text-zinc-900 dark:text-white hover:bg-zinc-900 dark:hover:bg-gray-600 hover:text-white transition-all text-sm"
                       onClick={() => navigate('/pricing')}
                     >
-                      <Sparkles size={14} className="mr-2" /> 
+                      <Brain size={14} className="mr-2" /> 
                       Go Premium
                     </Button>
                   </div>
@@ -315,7 +329,7 @@ const MainLayout = ({
             {shouldShowRightSidebar && (
               <div className="hidden lg:block lg:col-span-3">
                 {rightSidebar || (
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6 sticky top-20 lg:top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6 sticky top-20 lg:top-24 max-h-[calc(100vh-7rem)] overflow-y-auto mb-6">
                     <div className="flex justify-between items-center mb-4 lg:mb-6">
                       <h3 className="font-bold text-sm lg:text-base text-gray-900 dark:text-white border-l-4 border-red-600 dark:border-red-500 pl-2 lg:pl-3">
                         {t('blog.latestNews')}
@@ -367,8 +381,10 @@ const MainLayout = ({
         )}
       </main>
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer - Fixed at bottom */}
+      <div className="mt-auto">
+        <Footer />
+      </div>
 
       {/* Support Chat Widget */}
       <SupportChat />

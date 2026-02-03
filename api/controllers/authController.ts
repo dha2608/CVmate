@@ -92,7 +92,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
   }
 };
 
-export const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
+export const googleAuthCallback = async (req: Request, res: Response, _next: NextFunction) => {
   try {
     const user = req.user as IUser | undefined;
     
@@ -107,7 +107,7 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
     
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.redirect(`${frontendUrl}/auth/callback?token=${token}&onboarding=${!user.onboardingCompleted}`);
-  } catch (error) {
+  } catch (_error) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     // Redirect to frontend with error instead of crashing
     res.redirect(`${frontendUrl}/login?error=google_auth_error`);

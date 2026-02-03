@@ -102,7 +102,7 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
     const newComment = {
       _id: new mongoose.Types.ObjectId(), // Tự tạo ID
       user: req.user?._id,
-      text: text,
+      text,
       createdAt: new Date()
     };
 

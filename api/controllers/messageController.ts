@@ -1,5 +1,4 @@
 import { Response, NextFunction } from 'express';
-import { Types } from 'mongoose';
 import Message from '../models/Message.js';
 import User from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';

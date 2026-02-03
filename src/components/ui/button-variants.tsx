@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 // Icon Button - Button chỉ có icon
-export interface IconButtonProps extends Omit<ButtonProps, 'children'> {
+export interface IconButtonProps extends Omit<ButtonProps, 'children' | 'size'> {
   icon: React.ReactNode;
   'aria-label': string;
   size?: 'sm' | 'md' | 'lg';
@@ -51,6 +51,7 @@ export const FAB = React.forwardRef<HTMLButtonElement, FABProps>(
 
     return (
       <motion.button
+        {...(props as any)}
         ref={ref}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}

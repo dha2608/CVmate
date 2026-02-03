@@ -54,7 +54,7 @@ export default function PayPalButton({ onSuccess, onError }: PayPalButtonProps) 
         createOrder={handleCreateOrder}
         onApprove={(data) => handleApprove(data)}
         onError={(err) => {
-          onError?.(err.message || 'PayPal error occurred');
+          onError?.(((err as any)?.message as string) || 'PayPal error occurred');
         }}
         style={{
           layout: 'vertical',

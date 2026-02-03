@@ -125,7 +125,13 @@ const Interview = () => {
         console.error('Speech recognition error:', event.error);
         setIsRecording(false);
         if (event.error === 'not-allowed') {
-          toast.error(t('interview.microphoneDenied'));
+          toast.error(t('interview.microphoneDenied') || 'Microphone permission denied. Please enable microphone access in your browser settings.');
+        } else if (event.error === 'no-speech') {
+          // Silent error - user didn't speak
+        } else if (event.error === 'aborted') {
+          // Silent error - recognition was stopped
+        } else {
+          toast.error(t('interview.speechError') || 'Speech recognition error. Please try again.');
         }
       };
 
@@ -138,10 +144,14 @@ const Interview = () => {
 
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          // Ignore errors when stopping
+        }
       }
     };
-  }, []);
+  }, [toast, t]);
 
   const handleStartInterview = async (personaId: string) => {
     await startSession(personaId as any);
@@ -344,16 +354,20 @@ const Interview = () => {
                     {/* Enhanced Audio Visualizer */}
                     {isRecording && (
                       <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent flex items-end justify-center gap-1 sm:gap-1.5 pb-4 sm:pb-6 z-20">
-                        {[...Array(5)].map((_, i) => (
-                          <div 
-                            key={i}
-                            className="w-1 sm:w-1.5 bg-white rounded-full animate-bounce"
-                            style={{ 
-                              animationDelay: `${i * 0.1}s`,
-                              height: `${15 + Math.random() * 25}px`
-                            }}
-                          ></div>
-                        ))}
+                        {[...Array(5)].map((_, i) => {
+                          // Use a stable height calculation based on index instead of random
+                          const heights = [20, 25, 30, 25, 20];
+                          return (
+                            <div 
+                              key={i}
+                              className="w-1 sm:w-1.5 bg-white rounded-full animate-bounce"
+                              style={{ 
+                                animationDelay: `${i * 0.1}s`,
+                                height: `${heights[i]}px`
+                              }}
+                            />
+                          );
+                        })}
                       </div>
                     )}
                     {/* Speaking indicator */}
@@ -434,18 +448,33 @@ const Interview = () => {
             <Button 
                 variant="outline" 
                 size="icon"
-                onClick={() => {
+                onClick={async () => {
                   if (!recognitionRef.current) {
-                    toast.error(t('interview.speechNotSupported'));
+                    toast.error(t('interview.speechNotSupported') || 'Speech recognition is not supported in your browser.');
                     return;
                   }
                   
                   if (isRecording) {
-                    recognitionRef.current.stop();
-                    setIsRecording(false);
+                    try {
+                      recognitionRef.current.stop();
+                      setIsRecording(false);
+                    } catch (e) {
+                      setIsRecording(false);
+                    }
                   } else {
-                    recognitionRef.current.start();
-                    setIsRecording(true);
+                    // Request microphone permission first
+                    try {
+                      await navigator.mediaDevices.getUserMedia({ audio: true });
+                      recognitionRef.current.start();
+                      setIsRecording(true);
+                    } catch (err: any) {
+                      console.error('Microphone permission error:', err);
+                      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                        toast.error(t('interview.microphoneDenied') || 'Microphone permission denied. Please enable microphone access in your browser settings and try again.');
+                      } else {
+                        toast.error(t('interview.microphoneError') || 'Could not access microphone. Please check your browser settings.');
+                      }
+                    }
                   }
                 }} 
                 disabled={!recognitionRef.current || status === 'completed'}
@@ -454,7 +483,7 @@ const Interview = () => {
                     ? 'bg-gradient-to-br from-red-500 to-red-600 border-red-600 text-white scale-110 shadow-xl ring-2 sm:ring-4 ring-red-200 dark:ring-red-900/50' 
                     : 'hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600'
                 }`}
-                title={isRecording ? 'Stop Recording' : 'Start Voice Input'}
+                aria-label={isRecording ? 'Stop Recording' : 'Start Voice Input'}
             >
                 {isRecording ? (
                   <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 animate-pulse" />

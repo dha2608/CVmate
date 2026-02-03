@@ -44,7 +44,9 @@ export const SkipLinks = ({ links = defaultSkipLinks }: { links?: SkipLink[] }) 
     setIsVisible(false);
   }, [location.pathname]);
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <div className="sr-only focus-within:not-sr-only focus-within:absolute focus-within:z-[100] focus-within:top-4 focus-within:left-4">

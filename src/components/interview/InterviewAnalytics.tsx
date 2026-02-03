@@ -32,7 +32,9 @@ const InterviewAnalytics = () => {
     }
   }, [feedback]);
 
-  if (!analytics) return null;
+  if (!analytics) {
+    return null;
+  }
 
   const StatCard = ({ label, value, trend, icon: Icon }: any) => (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">

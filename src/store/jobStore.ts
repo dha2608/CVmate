@@ -78,13 +78,12 @@ export const useJobStore = create<JobState>((set, get) => ({
     }
   },
 
-  applyJob: async (jobId: string) => {
+  applyJob: async (jobId: string): Promise<void> => {
     try {
       const response = await api.applyJob(jobId);
       if (response.success) {
         // Refresh jobs to update application status
         await get().fetchJobs();
-        return true;
       } else {
         throw new Error(response.message || 'Failed to apply');
       }

@@ -12,7 +12,9 @@ interface AnalyticsChartProps {
 const AnalyticsChart = ({ title, data, color = 'bg-blue-500', previousPeriod, currentPeriod }: AnalyticsChartProps) => {
   const maxValue = useMemo(() => Math.max(...data.map(d => d.value), 1), [data]);
   const trend = useMemo(() => {
-    if (!previousPeriod || !currentPeriod) return null;
+    if (!previousPeriod || !currentPeriod) {
+      return null;
+    }
     const change = ((currentPeriod - previousPeriod) / previousPeriod) * 100;
     return {
       value: Math.abs(change).toFixed(1),

@@ -47,18 +47,26 @@ export const apiRequest = async <T = any>(
   });
 
   if (!response.ok) {
-    let errorMessage = 'Request failed';
+      let errorMessage = 'Request failed';
+      let errorType = 'unknown';
     try {
       const error = await response.json();
       errorMessage = error.message || error.error || `HTTP error! status: ${response.status}`;
+      errorType = error.type || 'unknown'; // 'server_rate_limit' or 'openai_api_error'
     } catch {
       // If JSON parsing fails, use status-based messages
       if (response.status === 503) {
         errorMessage = 'Service temporarily unavailable. Please try again in a few moments.';
       } else if (response.status === 429) {
-        errorMessage = 'Rate limit exceeded. Please wait a moment and try again.';
+        // Check response headers for rate limit info
+        const retryAfter = response.headers.get('Retry-After');
+        const retryMessage = retryAfter ? ` Please try again after ${retryAfter} seconds.` : ' Please wait a moment and try again.';
+        errorMessage = `Rate limit exceeded.${retryMessage}`;
+        errorType = 'server_rate_limit';
       } else if (response.status === 401) {
         errorMessage = 'Unauthorized. Please login again.';
+      } else if (response.status === 404) {
+        errorMessage = 'Resource not found.';
       } else {
         errorMessage = `HTTP error! status: ${response.status}`;
       }
@@ -66,6 +74,7 @@ export const apiRequest = async <T = any>(
     
     const error = new Error(errorMessage);
     (error as any).status = response.status;
+    (error as any).type = errorType;
     throw error;
   }
 
@@ -81,7 +90,7 @@ export const api = {
     }),
 
   register: (name: string, email: string, password: string) =>
-    apiRequest<{ success: boolean; data: any }>('/auth/register', {
+    apiRequest<{ success: boolean; data?: any; message?: string }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ name, email, password }),
       requiresAuth: false,
@@ -230,15 +239,33 @@ export const api = {
     companySize?: string;
   }) => {
     const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.limit) queryParams.append('limit', params.limit.toString());
-    if (params?.search) queryParams.append('search', params.search);
-    if (params?.type) queryParams.append('type', params.type);
-    if (params?.location) queryParams.append('location', params.location);
-    if (params?.salaryMin) queryParams.append('salaryMin', params.salaryMin.toString());
-    if (params?.salaryMax) queryParams.append('salaryMax', params.salaryMax.toString());
-    if (params?.experienceLevel) queryParams.append('experienceLevel', params.experienceLevel);
-    if (params?.companySize) queryParams.append('companySize', params.companySize);
+    if (params?.page) {
+      queryParams.append('page', params.page.toString());
+    }
+    if (params?.limit) {
+      queryParams.append('limit', params.limit.toString());
+    }
+    if (params?.search) {
+      queryParams.append('search', params.search);
+    }
+    if (params?.type) {
+      queryParams.append('type', params.type);
+    }
+    if (params?.location) {
+      queryParams.append('location', params.location);
+    }
+    if (params?.salaryMin) {
+      queryParams.append('salaryMin', params.salaryMin.toString());
+    }
+    if (params?.salaryMax) {
+      queryParams.append('salaryMax', params.salaryMax.toString());
+    }
+    if (params?.experienceLevel) {
+      queryParams.append('experienceLevel', params.experienceLevel);
+    }
+    if (params?.companySize) {
+      queryParams.append('companySize', params.companySize);
+    }
     return apiRequest<{ success: boolean; data: any[]; pagination: any }>(`/jobs?${queryParams.toString()}`);
   },
 

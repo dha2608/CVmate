@@ -128,17 +128,17 @@ app.use((req: Request, res: Response) => {
 /**
  * Error Handler
  */
-app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
   logger.error(`Error ${req.method} ${req.path}`, error instanceof Error ? error : new Error(String(error)), {
     method: req.method,
     path: req.path,
-    statusCode: error.statusCode || 500,
+    statusCode: (error as any).statusCode || 500,
   });
-  const statusCode = error.statusCode || 500;
+  const statusCode = (error as any).statusCode || 500;
   res.status(statusCode).json({
     success: false,
-    error: error.message || 'Server internal error',
-    stack: process.env.NODE_ENV === 'production' ? null : error.stack,
+    error: (error as any).message || 'Server internal error',
+    stack: process.env.NODE_ENV === 'production' ? null : (error as any).stack,
   });
 });
 

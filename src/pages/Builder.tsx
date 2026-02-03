@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Download, Sparkles, CheckCircle2, Keyboard } from 'lucide-react';
+import { ArrowLeft, Save, Download, Brain, CheckCircle2, Keyboard } from 'lucide-react';
 import ExportShare from '@/components/ExportShare';
 import PersonalForm from '@/components/builder/PersonalForm';
 import ExperienceForm from '@/components/builder/ExperienceForm';
@@ -319,7 +319,7 @@ const Builder = () => {
                     disabled={enhancing || !currentResume.summary.trim()}
                     className="border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white"
                   >
-                    <Sparkles size={14} className="mr-1" />
+                    <Brain size={14} className="mr-1" />
                     {enhancing ? 'Enhancing...' : 'AI Enhance'}
                   </Button>
                 </div>

@@ -20,7 +20,7 @@ interface ActivityFeedProps {
 }
 
 const ActivityFeed = ({ limit = 5, showHeader = true }: ActivityFeedProps) => {
-  const { t, language } = useI18n();
+  const { language } = useI18n();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);

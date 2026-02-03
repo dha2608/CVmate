@@ -21,7 +21,9 @@ const InterviewDashboard = () => {
   });
 
   useEffect(() => {
-    if (messages.length === 0) return;
+    if (messages.length === 0) {
+      return;
+    }
 
     const userMessages = messages.filter(m => m.role === 'user');
     const assistantMessages = messages.filter(m => m.role === 'assistant');
@@ -70,7 +72,9 @@ const InterviewDashboard = () => {
     });
   }, [messages]);
 
-  if (status !== 'active') return null;
+  if (status !== 'active') {
+    return null;
+  }
 
   const MetricCard = ({ icon: Icon, label, value, unit, color }: any) => (
     <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">

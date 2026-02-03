@@ -3,6 +3,46 @@ import { create } from 'zustand';
 type Language = 'vi' | 'en';
 
 interface Translations {
+  notifications?: {
+    title: string;
+    new: string;
+    markAllRead: string;
+    searchPlaceholder: string;
+    all: string;
+    unread: string;
+    likes: string;
+    comments: string;
+    jobs: string;
+    noNotifications: string;
+    noNotificationsDesc: string;
+    noMatchingNotifications: string;
+  };
+  export?: {
+    exportShare: string;
+    exportAs: string;
+    pdf: string;
+    html: string;
+    share: string;
+    copyLink: string;
+    copied: string;
+    email: string;
+    pdfExported: string;
+    pdfExportFailed: string;
+    htmlExported: string;
+    linkCopied: string;
+    copyFailed: string;
+    elementNotFound: string;
+  };
+  messaging?: {
+    title: string;
+    online: string;
+    writeMessage: string;
+    selectConversation: string;
+    noConversations: string;
+    noMessages: string;
+    sendFailed: string;
+    typing: string;
+  };
   nav: {
     home: string;
     community: string;
@@ -80,6 +120,14 @@ interface Translations {
     postViews: string;
     recommendedForYou: string;
     viewAll: string;
+    analytics: string;
+    activityOverTime: string;
+    thisWeek: string;
+    lastWeek: string;
+    thisMonth: string;
+    achievements: string;
+    yourProgress?: string;
+    nextMilestone?: string;
   };
   home: {
     heroTitle: string;
@@ -226,7 +274,9 @@ interface Translations {
     sending: string;
     send: string;
     microphoneDenied: string;
+    microphoneError: string;
     speechNotSupported: string;
+    speechError: string;
     rateLimitExceeded: string;
     serviceUnavailable: string;
   };
@@ -258,6 +308,24 @@ interface Translations {
     exploreBuilder: string;
     salaryInsights: string;
     seeWhatWorth: string;
+    salaryRange: string;
+    minSalary?: string;
+    maxSalary?: string;
+    experienceLevel?: string;
+    entry?: string;
+    junior?: string;
+    mid?: string;
+    senior?: string;
+    lead?: string;
+    executive?: string;
+    companySize?: string;
+    startup?: string;
+    small?: string;
+    medium?: string;
+    large?: string;
+    enterprise?: string;
+    advancedFilters?: string;
+    clearFilters?: string;
   };
   footer: {
     description: string;
@@ -269,6 +337,7 @@ interface Translations {
     jobSearch: string;
     careerBlog: string;
     community: string;
+    pricing: string;
     aboutUs: string;
     blog: string;
     contact: string;
@@ -532,7 +601,9 @@ const translations: Record<Language, Translations> = {
       sending: 'Đang gửi...',
       send: 'Gửi',
       microphoneDenied: 'Quyền truy cập microphone bị từ chối. Vui lòng bật trong cài đặt trình duyệt.',
+      microphoneError: 'Không thể truy cập microphone. Vui lòng kiểm tra cài đặt trình duyệt.',
       speechNotSupported: 'Nhận dạng giọng nói không được hỗ trợ trong trình duyệt của bạn. Vui lòng sử dụng Chrome hoặc Edge.',
+      speechError: 'Lỗi nhận dạng giọng nói. Vui lòng thử lại.',
       rateLimitExceeded: 'API đã vượt quá giới hạn. Vui lòng đợi một chút và thử lại.',
       serviceUnavailable: 'Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau vài phút.',
     },
@@ -591,6 +662,7 @@ const translations: Record<Language, Translations> = {
       jobSearch: 'Tìm việc',
       careerBlog: 'Blog sự nghiệp',
       community: 'Cộng đồng',
+      pricing: 'Bảng giá',
       aboutUs: 'Về chúng tôi',
       blog: 'Blog',
       contact: 'Liên hệ',
@@ -833,6 +905,7 @@ const translations: Record<Language, Translations> = {
       loadingFeed: 'Loading feed...',
       noPostsYet: 'No posts yet',
       beFirstToShare: 'Be the first to share something with the community!',
+      sharePlaceholder: 'Share a career update or ask for CV feedback...',
     },
     blog: {
       title: 'Career Blog & News',
@@ -891,7 +964,9 @@ const translations: Record<Language, Translations> = {
       sending: 'Sending...',
       send: 'Send',
       microphoneDenied: 'Microphone permission denied. Please enable it in your browser settings.',
+      microphoneError: 'Could not access microphone. Please check your browser settings.',
       speechNotSupported: 'Speech recognition is not supported in your browser. Please use Chrome or Edge.',
+      speechError: 'Speech recognition error. Please try again.',
       rateLimitExceeded: 'API rate limit exceeded. Please wait a moment and try again.',
       serviceUnavailable: 'Service temporarily unavailable. Please try again in a few moments.',
     },
@@ -950,6 +1025,7 @@ const translations: Record<Language, Translations> = {
       jobSearch: 'Job Search',
       careerBlog: 'Career Blog',
       community: 'Community',
+      pricing: 'Pricing',
       aboutUs: 'About Us',
       blog: 'Blog',
       contact: 'Contact',

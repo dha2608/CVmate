@@ -3,10 +3,14 @@ import User from '../models/User.js';
 import { AuthRequest } from './authMiddleware.js';
 
 const skipPremium = async (req: AuthRequest) => {
-  if (!req.user) return false;
+  if (!req.user) {
+    return false;
+  }
   try {
     const user = await User.findById(req.user._id);
-    if (!user) return false;
+    if (!user) {
+      return false;
+    }
     const subscription = user.subscription || { plan: 'free', status: 'active' };
     if (subscription.plan === 'premium' && subscription.status === 'active') {
       if (subscription.endDate && new Date() > subscription.endDate) {
@@ -21,16 +25,25 @@ const skipPremium = async (req: AuthRequest) => {
 };
 
 export const freeUserLimiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000,
-  max: parseInt(process.env.FREE_USER_DAILY_LIMIT || '10'),
+  windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  max: parseInt(process.env.FREE_USER_DAILY_LIMIT || (process.env.NODE_ENV === 'production' ? '10' : '100')),
   message: {
     success: false,
-    error: 'Rate limit exceeded. You have reached the daily limit of 10 requests. Please upgrade to premium for unlimited access.',
+    error: 'Rate limit exceeded. You have reached the daily limit. Please upgrade to premium for unlimited access.',
+    message: 'Rate limit exceeded. You have reached the daily limit. Please upgrade to premium for unlimited access.',
   },
   standardHeaders: true,
   legacyHeaders: false,
   skip: async (req) => {
     return await skipPremium(req as AuthRequest);
+  },
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: 'Rate limit exceeded. You have reached the daily limit. Please upgrade to premium for unlimited access.',
+      message: 'Rate limit exceeded. You have reached the daily limit. Please upgrade to premium for unlimited access.',
+      type: 'server_rate_limit',
+    });
   },
 });
 
@@ -44,13 +57,24 @@ export const authLimiter = rateLimit({
 });
 
 export const aiLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: parseInt(process.env.AI_RATE_LIMIT || '20'),
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: parseInt(process.env.AI_RATE_LIMIT || (process.env.NODE_ENV === 'production' ? '20' : '100')),
   message: {
     success: false,
     error: 'AI service rate limit exceeded. Please try again later.',
+    message: 'AI service rate limit exceeded. Please try again later.',
   },
+  standardHeaders: true,
+  legacyHeaders: false,
   skip: async (req) => {
     return await skipPremium(req as AuthRequest);
+  },
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: 'AI service rate limit exceeded. Please try again later.',
+      message: 'AI service rate limit exceeded. Please try again later.',
+      type: 'server_rate_limit',
+    });
   },
 });

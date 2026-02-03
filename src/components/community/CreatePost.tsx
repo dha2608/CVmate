@@ -16,7 +16,9 @@ const CreatePost = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim()) {
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -24,7 +26,7 @@ const CreatePost = () => {
       setContent('');
       setImageUrl('');
       toast.success(t('toast.postCreated'));
-    } catch (error: any) {
+    } catch (_error: any) {
       toast.error(t('toast.postFailed'));
     } finally {
       setIsLoading(false);

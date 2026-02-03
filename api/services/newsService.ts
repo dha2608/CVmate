@@ -84,7 +84,9 @@ const RSS_FEEDS = [
 
 // Fallback: Sử dụng NewsAPI nếu có API key
 const fetchFromNewsAPI = async (apiKey?: string): Promise<NewsArticle[]> => {
-  if (!apiKey) return [];
+  if (!apiKey) {
+    return [];
+  }
 
   try {
     const response = await axios.get('https://newsapi.org/v2/everything', {
@@ -107,8 +109,11 @@ const fetchFromNewsAPI = async (apiKey?: string): Promise<NewsArticle[]> => {
         source: article.source.name,
       }));
     }
-  } catch (error) {
-    logger.error('NewsAPI Error', error instanceof Error ? error : new Error(String(error)));
+  } catch (error: any) {
+    // Only log if it's not a 401 (unauthorized) - that's expected if no API key
+    if (error?.response?.status !== 401) {
+      logger.error('NewsAPI Error', error instanceof Error ? error : new Error(String(error)));
+    }
   }
 
   return [];
@@ -163,18 +168,32 @@ export const fetchCareerNews = async (limit: number = 20): Promise<NewsArticle[]
         }
         return [];
       } catch (error) {
-        logger.warn(`Error fetching RSS feed: ${feed.name}`, { feedUrl: feed.url });
+        // Silently skip failed feeds - don't log warnings for each one
+        // We'll log a summary at the end if needed
         return [];
       }
     });
 
     // Wait for all feeds with timeout
     const feedResults = await Promise.allSettled(feedPromises);
+    let successCount = 0;
+    let failCount = 0;
+    
     feedResults.forEach((result) => {
       if (result.status === 'fulfilled') {
-        allArticles.push(...result.value);
+        if (result.value.length > 0) {
+          allArticles.push(...result.value);
+          successCount++;
+        }
+      } else {
+        failCount++;
       }
     });
+    
+    // Log summary only if many feeds failed
+    if (failCount > RSS_FEEDS.length / 2) {
+      logger.warn(`Many RSS feeds failed: ${failCount}/${RSS_FEEDS.length} failed, ${successCount} succeeded`);
+    }
 
     // Nếu có NewsAPI key, thêm articles từ đó
     if (process.env.NEWS_API_KEY) {
@@ -187,11 +206,47 @@ export const fetchCareerNews = async (limit: number = 20): Promise<NewsArticle[]
       .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
       .slice(0, limit);
 
+    // If no articles found, return fallback articles
+    if (sortedArticles.length === 0) {
+      logger.warn('No articles found from RSS feeds or NewsAPI. Returning fallback articles.');
+      return getFallbackArticles(limit);
+    }
+
     return sortedArticles;
   } catch (error) {
     logger.error('Error fetching career news', error instanceof Error ? error : new Error(String(error)));
-    throw new Error('Failed to fetch career news');
+    // Return fallback articles instead of throwing error
+    return getFallbackArticles(limit);
   }
+};
+
+// Fallback articles khi không fetch được từ RSS/NewsAPI
+const getFallbackArticles = (limit: number): NewsArticle[] => {
+  const fallbackArticles: NewsArticle[] = [
+    {
+      title: 'How to Write a Resume That Gets You Hired',
+      link: 'https://www.themuse.com/advice/how-to-write-a-resume',
+      pubDate: new Date().toISOString(),
+      description: 'Learn the essential tips for creating a resume that stands out to employers.',
+      source: 'Career Tips',
+    },
+    {
+      title: '10 Common Interview Questions and How to Answer Them',
+      link: 'https://www.indeed.com/career-advice/interviewing/common-interview-questions',
+      pubDate: new Date(Date.now() - 86400000).toISOString(),
+      description: 'Prepare for your next interview with these common questions and expert answers.',
+      source: 'Interview Prep',
+    },
+    {
+      title: 'Career Development: How to Advance in Your Field',
+      link: 'https://www.glassdoor.com/blog/career-development',
+      pubDate: new Date(Date.now() - 172800000).toISOString(),
+      description: 'Strategies for advancing your career and achieving your professional goals.',
+      source: 'Career Growth',
+    },
+  ];
+  
+  return fallbackArticles.slice(0, limit);
 };
 
 // Cache news articles (refresh every hour)

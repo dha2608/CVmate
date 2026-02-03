@@ -71,40 +71,58 @@ CV Mate is an "All-in-one" career support platform powered by AI, designed to he
    npm install
    ```
 
-3. **Configure Environment Variables:**
-   
-   See [ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md) for detailed instructions.
-   
-   Create `.env` file in root directory:
-   ```env
-   # Server
-   PORT=5001
-   NODE_ENV=development
-   
-   # Database
-   MONGODB_URI=mongodb://localhost:27017/cvmate
-   
-   # JWT Secret (required - at least 32 characters)
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   SESSION_SECRET=your-session-secret-key-change-this
-   
-   # OpenAI API (for AI features)
-   OPENAI_API_KEY=sk-your-openai-api-key-here
-   OPENAI_MODEL=gpt-3.5-turbo
-   
-   # Google OAuth 2.0 (optional - for Google login)
-   GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-   GOOGLE_CLIENT_SECRET=your-google-client-secret
-   GOOGLE_CALLBACK_URL=http://localhost:5001/api/auth/google/callback
-   
-   # Frontend URL
-   FRONTEND_URL=http://localhost:5173
-   ```
-   
-   Create `.env` for frontend (or use Vite env vars):
-   ```env
-   VITE_API_URL=http://localhost:5001/api
-   ```
+3. **Configure Environment Variables**
+
+#### Backend (`.env` in project root or `api/`)
+
+```env
+# Server
+PORT=5001
+NODE_ENV=development
+
+# Database
+MONGODB_URI=mongodb://localhost:27017/cvmate
+# MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/cvmate
+
+# JWT Secret (required - at least 32 characters)
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+
+# Session Secret (for OAuth)
+SESSION_SECRET=your-session-secret-key-change-this
+
+# OpenAI API (AI features)
+OPENAI_API_KEY=sk-your-openai-api-key-here
+OPENAI_MODEL=gpt-3.5-turbo
+# Or gpt-4o-mini for production
+
+# Google OAuth 2.0 (optional)
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:5001/api/auth/google/callback
+# Production: https://yourdomain.com/api/auth/google/callback
+
+# Frontend URL (CORS + OAuth redirect)
+FRONTEND_URL=http://localhost:5173
+# Production: https://yourdomain.com
+
+# Rate Limiting (optional; defaults exist)
+AI_RATE_LIMIT=100
+FREE_USER_DAILY_LIMIT=100
+AUTH_RATE_LIMIT=5
+```
+
+#### Frontend (`.env` in project root)
+
+```env
+VITE_API_URL=http://localhost:5001/api
+# Production: https://api.yourdomain.com/api
+```
+
+#### Notes
+
+- AI features require `OPENAI_API_KEY` and OpenAI account credits.
+- Google OAuth requires HTTPS in production.
 
 ### Running the App
 
@@ -132,6 +150,56 @@ Check environment variables:
 node api/scripts/check-env.js
 ```
 
+## 🚀 Deployment
+
+### Deploy on Vercel
+
+#### Files to check
+
+- `vercel.json` - routing configuration
+- `package.json` - scripts and dependencies
+- `api/index.ts` - serverless entry point
+
+#### Vercel Dashboard settings
+
+- **Framework Preset**: Vite
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Install Command**: `npm install`
+
+#### Environment Variables
+
+**Required**
+```
+MONGO_URI=mongodb+srv://...
+JWT_SECRET=your-super-secret-jwt-key-min-32-chars
+```
+
+**Recommended / Optional**
+```
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-3.5-turbo
+FRONTEND_URL=https://your-domain.vercel.app
+SESSION_SECRET=your-session-secret
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_CALLBACK_URL=https://your-domain.vercel.app/api/auth/google/callback
+STRIPE_SECRET_KEY=sk_...
+NEWS_API_KEY=...
+```
+
+### Other platforms
+
+- **Railway**: Deploy from GitHub, add environment variables.
+- **Render**: Web Service, build `npm run build`, start with appropriate server command.
+- **Heroku**: Connect repo, deploy branch, set Config Vars.
+
+### Post-deploy checks
+
+1. Health: `https://your-domain.com/api/health`
+2. Frontend: `https://your-domain.com`
+3. API: `https://your-domain.com/api/*`
+
 ## 📁 Project Structure
 
 ```
@@ -147,10 +215,6 @@ CVmate/
 │   └── scripts/           # Utility scripts
 ├── src/                   # Frontend (React + Vite)
 │   ├── components/        # Reusable components
-│   │   ├── ui/            # UI components
-│   │   ├── layout/        # Layout components
-│   │   ├── mobile/        # Mobile-specific components
-│   │   └── accessibility/ # Accessibility components
 │   ├── pages/             # Page components
 │   ├── store/             # Zustand state management
 │   ├── hooks/             # Custom React hooks
@@ -159,66 +223,11 @@ CVmate/
 └── public/                # Static assets
 ```
 
-## 🎨 Design System
-
-### Colors
-- **Primary Color**: White (#FFFFFF) - 80% of space
-- **Secondary Color**: Jet Black (#121212) - Text, Footer, Navbar
-- **Accent Color**: Crimson Red (#DC143C) - CTA buttons, AI icons
-- **Neutral**: Light Grey (#F5F5F5) - Borders, backgrounds
-
-### Typography
-- **Fonts**: Inter / Roboto (Google Fonts)
-- **Style**: Minimalist with high contrast
-
-### UI/UX Features
-- ✅ Dark mode support
-- ✅ Responsive design (mobile-first)
-- ✅ Accessibility (WCAG AA compliant)
-- ✅ Keyboard navigation
-- ✅ Screen reader support
-- ✅ Smooth animations (Framer Motion)
-- ✅ Loading states & skeletons
-- ✅ Error handling
-- ✅ Empty states
-
 ## 🔒 Security & Rate Limiting
 
 - **Free Users**: 10 requests/day for ATS Checker & Interview sessions
 - **AI Endpoints**: 20 requests/hour for AI Enhance & Interview chat
 - **Auth Endpoints**: 5 requests/15 minutes for login/register
-
-## 📚 Documentation
-
-### Setup & Configuration
-- **[ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md)** - Complete environment variables setup guide
-- **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - Common issues and solutions
-
-### UI/UX Improvements
-- **[UI_UX_IMPROVEMENT_PLAN.md](./UI_UX_IMPROVEMENT_PLAN.md)** - Full UI/UX improvement roadmap
-- **[UI_UX_IMPLEMENTATION_GUIDE.md](./UI_UX_IMPLEMENTATION_GUIDE.md)** - Code examples and implementation guide
-- **[UI_UX_COMPLETE_SUMMARY.md](./UI_UX_COMPLETE_SUMMARY.md)** - Summary of all UI/UX improvements
-
-## 🚀 Deployment
-
-### Frontend (Vercel)
-- Build command: `npm run build`
-- Output directory: `dist`
-- Environment variables: Set `VITE_API_URL` in Vercel dashboard
-
-### Backend (Render / Railway)
-- Build command: `npm install`
-- Start command: `npm run server:dev` (dev) or `node api/server.js` (prod)
-- Environment variables: Set all required vars in platform dashboard
-
-### Production Checklist
-- [ ] All environment variables set
-- [ ] `NODE_ENV=production`
-- [ ] HTTPS enabled
-- [ ] CORS configured correctly
-- [ ] Database connection secure
-- [ ] Rate limiting enabled
-- [ ] Error logging configured
 
 ## 🧪 Development
 
@@ -227,49 +236,21 @@ CVmate/
 ```bash
 # Development
 npm run dev              # Run both frontend and backend
-npm run client:dev      # Frontend only
-npm run server:dev      # Backend only
+npm run client:dev       # Frontend only
+npm run server:dev       # Backend only
 
 # Build
-npm run build           # Build frontend for production
-npm run build:api       # Build backend (if needed)
+npm run build            # Build frontend for production
 
 # Utilities
 node api/scripts/check-env.js    # Check environment variables
 node api/scripts/kill-port.js    # Kill process on port 5001
 ```
 
-## 🐛 Troubleshooting
-
-See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detailed troubleshooting guide.
-
-### Common Issues
-
-1. **Port already in use (5001)**
-   ```bash
-   node api/scripts/kill-port.js
-   ```
-
-2. **Google OAuth not working**
-   - Check [ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md)
-   - Verify callback URL matches Google Console
-   - Check server logs for errors
-
-3. **AI features not working**
-   - Verify `OPENAI_API_KEY` is set
-   - Check OpenAI account has credits
-   - See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
-
 ## 📝 License
 
 MIT
 
-## 🙏 Acknowledgments
-
-- OpenAI for AI capabilities
-- Google for OAuth integration
-- All open-source libraries used in this project
-
 ---
 
-**Last Updated**: 2026-02-02
+**Last Updated**: 2026-02-03

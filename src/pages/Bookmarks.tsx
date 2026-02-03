@@ -41,19 +41,29 @@ const Bookmarks = () => {
         
         for (const bookmark of bookmarks) {
           try {
+            // Validate itemId - skip if it's a URL or invalid
+            const itemId = bookmark.itemId;
+            if (!itemId || itemId.startsWith('http://') || itemId.startsWith('https://')) {
+              console.warn(`Skipping invalid bookmark itemId: ${itemId}`);
+              continue;
+            }
+
             if (bookmark.type === 'job') {
-              const response = await api.getJob(bookmark.itemId);
+              const response = await api.getJob(itemId);
               if (response.success) {
                 items.push({ ...response.data, bookmarkId: bookmark._id, bookmarkType: 'job' });
               }
             } else if (bookmark.type === 'article') {
-              const response = await api.getArticle(bookmark.itemId);
+              const response = await api.getArticle(itemId);
               if (response.success) {
                 items.push({ ...response.data, bookmarkId: bookmark._id, bookmarkType: 'article' });
               }
             }
-          } catch (error) {
-            console.error(`Failed to load ${bookmark.type} ${bookmark.itemId}:`, error);
+          } catch (error: any) {
+            // Only log if it's not a 404 (item might have been deleted)
+            if (error?.status !== 404) {
+              console.error(`Failed to load ${bookmark.type} ${bookmark.itemId}:`, error);
+            }
           }
         }
         

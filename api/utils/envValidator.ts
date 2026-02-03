@@ -3,6 +3,7 @@
  * Kiểm tra và validate các biến môi trường cần thiết
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface EnvConfig {
   // Database
   MONGO_URI?: string;
@@ -109,7 +110,9 @@ export const getEnv = (key: string, defaultValue?: string): string => {
  */
 export const getEnvNumber = (key: string, defaultValue: number): number => {
   const value = process.env[key];
-  if (!value) return defaultValue;
+  if (!value) {
+    return defaultValue;
+  }
   const parsed = parseInt(value, 10);
   return isNaN(parsed) ? defaultValue : parsed;
 };
@@ -119,6 +122,8 @@ export const getEnvNumber = (key: string, defaultValue: number): number => {
  */
 export const getEnvBoolean = (key: string, defaultValue: boolean): boolean => {
   const value = process.env[key];
-  if (!value) return defaultValue;
+  if (!value) {
+    return defaultValue;
+  }
   return value.toLowerCase() === 'true';
 };

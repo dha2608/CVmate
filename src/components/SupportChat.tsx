@@ -22,7 +22,9 @@ const SupportChat = () => {
   }, [messages, isOpen]);
 
   const handleSend = () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim()) {
+      return;
+    }
 
     const userMessage = {
       type: 'user' as const,

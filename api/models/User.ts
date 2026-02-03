@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Model } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 
@@ -42,7 +42,7 @@ const userSchema = new Schema<IUser>({
   },
   password: { 
     type: String, 
-    required: function(this: IUser) {
+    required(this: IUser) {
       return !this.googleId;
     }
   },

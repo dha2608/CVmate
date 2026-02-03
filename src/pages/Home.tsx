@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/store/i18nStore';
 import { Button } from '@/components/ui/button';
 import SEOHead from '@/components/SEOHead';
-import { Sparkles, FileText, Video, Users, ArrowRight, Check, BookOpen, ExternalLink } from 'lucide-react';
+import { Brain, FileText, Video, Users, ArrowRight, Check, BookOpen, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/utils';
 import Footer from '@/components/Footer';
@@ -305,7 +305,7 @@ const Home = () => {
       {/* CTA Section */}
       <section className="py-24 bg-jet-black text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Sparkles className="w-16 h-16 mx-auto mb-6 text-crimson-red" />
+          <Brain className="w-16 h-16 mx-auto mb-6 text-crimson-red" />
           <h2 className="text-4xl md:text-5xl font-black mb-6">
             {t('home.readyToLand')}
           </h2>
@@ -323,8 +323,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <Footer />
       </div>
     </>
   );
