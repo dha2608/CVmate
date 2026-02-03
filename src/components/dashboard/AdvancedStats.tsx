@@ -51,14 +51,6 @@ interface AdvancedStatsProps {
 const AdvancedStats = ({ stats }: AdvancedStatsProps) => {
   const { t } = useI18n();
 
-  // Calculate trends (mock data - replace with actual)
-  const trends = {
-    resumes: 12,
-    interviews: 8,
-    posts: -5,
-    applications: 15,
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
@@ -70,7 +62,6 @@ const AdvancedStats = ({ stats }: AdvancedStatsProps) => {
         <StatCard
           title={t('dashboard.cvsCreated')}
           value={stats.resumesCount || 0}
-          change={trends.resumes}
           icon={<Target size={20} className="text-blue-600" />}
           color="bg-blue-50 dark:bg-blue-900/20"
           trend="up"
@@ -78,7 +69,6 @@ const AdvancedStats = ({ stats }: AdvancedStatsProps) => {
         <StatCard
           title={t('dashboard.interviews')}
           value={stats.interviewsCount || 0}
-          change={trends.interviews}
           icon={<Video size={20} className="text-green-600" />}
           color="bg-green-50 dark:bg-green-900/20"
           trend="up"
@@ -86,22 +76,13 @@ const AdvancedStats = ({ stats }: AdvancedStatsProps) => {
         <StatCard
           title={t('dashboard.postViews')}
           value={stats.postsCount || 0}
-          change={trends.posts}
           icon={<Award size={20} className="text-orange-600" />}
           color="bg-orange-50 dark:bg-orange-900/20"
-          trend="down"
-        />
-        <StatCard
-          title="Applications"
-          value={stats.applicationsCount || 0}
-          change={trends.applications}
-          icon={<Calendar size={20} className="text-purple-600" />}
-          color="bg-purple-50 dark:bg-purple-900/20"
           trend="up"
         />
       </div>
 
-      {/* Success Rate Card */}
+      {/* Success Rate Card - chỉ hiển thị nếu backend cung cấp thật */}
       {stats.successRate !== undefined && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}

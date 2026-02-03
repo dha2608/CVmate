@@ -49,7 +49,7 @@ const ResumePreview = ({ template = 'modern-red' }: ResumePreviewProps) => {
   return (
     <motion.div 
       id="resume-preview" 
-      className="bg-white shadow-xl w-[210mm] min-h-[297mm] p-[20mm] text-sm leading-relaxed text-gray-800 mx-auto print:shadow-none print:w-full print:h-auto print:p-0 print:m-0"
+      className="bg-white shadow-xl w-full max-w-[210mm] min-h-[297mm] p-[20mm] text-sm leading-relaxed text-gray-800 mx-auto print:shadow-none print:w-full print:h-auto print:p-0 print:m-0"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}

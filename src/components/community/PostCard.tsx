@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCommunityStore } from '@/store/communityStore';
 import { useAuthStore } from '@/store/authStore';
+import { useMessageStore } from '@/store/messageStore';
 import { Button } from '@/components/ui/button';
 
 interface PostCardProps {
@@ -12,6 +14,8 @@ const PostCard = ({ post }: PostCardProps) => {
   const { likePost, commentPost } = useCommunityStore();
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const navigate = useNavigate();
+  const { setActiveConversation } = useMessageStore();
 
   const isLiked = post.likes.includes(user?._id);
 
@@ -28,16 +32,55 @@ const PostCard = ({ post }: PostCardProps) => {
     setCommentText('');
   };
 
+  const handleMessage = () => {
+    if (!user) {
+      alert('Vui lòng đăng nhập để nhắn tin.');
+      return;
+    }
+    if (!post.user?._id) return;
+    setActiveConversation({
+      _id: post.user._id,
+      name: post.user.name,
+      avatar: post.user.avatar,
+    });
+    navigate('/messaging');
+  };
+
   return (
     <div className="bg-white p-4 rounded-lg shadow border border-gray-200 mb-4">
       {/* Header */}
       <div className="flex items-center mb-3">
-        <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
-          {post.user.avatar ? <img src={post.user.avatar} className="h-full w-full rounded-full" /> : post.user.name.charAt(0)}
-        </div>
+        <button
+          className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold overflow-hidden focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-crimson-red"
+          onClick={() => post.user?._id && navigate(`/u/${post.user._id}`)}
+          aria-label={post.user.name}
+        >
+          {post.user.avatar ? (
+            <img src={post.user.avatar} className="h-full w-full rounded-full" alt={post.user.name} />
+          ) : (
+            post.user.name.charAt(0)
+          )}
+        </button>
         <div className="ml-3">
-          <p className="font-semibold text-gray-900">{post.user.name}</p>
-          <p className="text-xs text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</p>
+          <button
+            onClick={() => post.user?._id && navigate(`/u/${post.user._id}`)}
+            className="font-semibold text-gray-900 hover:text-crimson-red transition-colors text-left"
+          >
+            {post.user.name}
+          </button>
+          <p className="text-[11px] text-gray-500">
+            {post.user.careerGoal === 'new-job'
+              ? 'Job Seeker'
+              : post.user.careerGoal === 'internship'
+              ? 'Intern'
+              : post.user.careerGoal === 'career-switch'
+              ? 'Career Switcher'
+              : 'Professional'}
+            {post.user.location && ` • ${post.user.location}`}
+          </p>
+          <p className="text-[11px] text-gray-400">
+            {new Date(post.createdAt).toLocaleDateString()}
+          </p>
         </div>
       </div>
 
@@ -65,6 +108,16 @@ const PostCard = ({ post }: PostCardProps) => {
                 <span>{post.comments.length} Comments</span>
             </button>
         </div>
+        {post.user?._id !== user?._id && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleMessage}
+            className="text-xs text-gray-600 hover:text-accent border-gray-200 hover:border-accent"
+          >
+            Nhắn tin
+          </Button>
+        )}
       </div>
 
       {/* Comments Section */}

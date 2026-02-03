@@ -281,3 +281,122 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
     next(error);
   }
 };
+
+export const aiGenerateFullResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { prompt, jobDescription } = req.body as { prompt?: string; jobDescription?: string };
+
+    if (!prompt && !jobDescription) {
+      res.status(400).json({
+        success: false,
+        message: 'Prompt or job description is required',
+      });
+      return;
+    }
+
+    const hf = getHFClient();
+    if (!hf) {
+      res.status(503).json({
+        success: false,
+        message: 'AI provider API key is not configured. Please set HF_API_KEY in your environment variables.',
+      });
+      return;
+    }
+
+    const basePrompt = `
+      You are an expert resume writer.
+      Generate a JSON object for a professional resume based on the information below.
+      
+      The JSON MUST have exactly this structure:
+      {
+        "summary": "string, 2-4 sentences professional summary",
+        "experience": [
+          {
+            "company": "string",
+            "position": "string",
+            "startDate": "YYYY-MM",
+            "endDate": "YYYY-MM or Present",
+            "description": "multi-line bullet-style description"
+          }
+        ],
+        "education": [
+          {
+            "institution": "string",
+            "degree": "string",
+            "startDate": "YYYY-MM",
+            "endDate": "YYYY-MM or Present",
+            "description": "short description of achievements"
+          }
+        ],
+        "skills": ["string", "string", "..."]
+      }
+
+      User prompt (career background / profile):
+      ${prompt || 'N/A'}
+      
+      Job description (if provided, align resume to this role):
+      ${jobDescription || 'N/A'}
+    `;
+
+    try {
+      const completion = await hf.chatCompletion({
+        model: process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are an AI assistant that only responds with a valid JSON object and no other text.',
+          },
+          { role: 'user', content: basePrompt },
+        ],
+        max_tokens: 768,
+        temperature: 0.4,
+      });
+
+      const responseContent = completion.choices?.[0]?.message?.content;
+      if (!responseContent) {
+        throw new Error('No response from AI provider');
+      }
+
+      const data = JSON.parse(responseContent);
+
+      // Normalize to frontend structure; IDs sẽ được tạo ở client
+      const result = {
+        summary: typeof data.summary === 'string' ? data.summary : '',
+        experience: Array.isArray(data.experience) ? data.experience : [],
+        education: Array.isArray(data.education) ? data.education : [],
+        skills: Array.isArray(data.skills) ? data.skills : [],
+      };
+
+      res.json({ success: true, data: result });
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      logger.error('AI Generate Full Resume Error', error, {
+        userId: req.user?._id,
+      });
+
+      let errorMessage = 'AI resume generation service is currently unavailable.';
+      const errorObj = e as { status?: number; statusCode?: number; message?: string };
+      const errorMsg = errorObj.message || '';
+      const errorMsgLower = errorMsg.toLowerCase();
+
+      if (errorObj.status === 401 || errorObj.statusCode === 401) {
+        errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
+      } else if (errorObj.status === 429 || errorObj.statusCode === 429) {
+        errorMessage = 'AI API rate limit exceeded. Please try again later.';
+      } else if (errorMsgLower.includes('api key') || errorMsgLower.includes('invalid api key')) {
+        errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
+      } else if (errorMsgLower.includes('quota') || errorMsgLower.includes('billing')) {
+        errorMessage = 'AI API quota exceeded. Please check your provider account limits.';
+      }
+
+      res.status(503).json({
+        success: false,
+        message: errorMessage,
+        error: error.message || 'AI API error',
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
