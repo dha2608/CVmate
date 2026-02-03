@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import Job from '../models/Job.js';
+import Notification from '../models/Notification.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
 export const getJobs = async (req: Request, res: Response, next: NextFunction) => {
@@ -166,6 +167,17 @@ export const applyJob = async (req: AuthRequest, res: Response, next: NextFuncti
 
     job.applicants.push(req.user?._id);
     await job.save();
+
+    // Tạo notification cho người đăng tuyển (nếu khác người apply)
+    if (job.postedBy.toString() !== userId) {
+      await Notification.create({
+        recipient: job.postedBy,
+        sender: req.user?._id,
+        type: 'job',
+        message: `đã ứng tuyển vào vị trí "${job.title}".`,
+        link: `/jobs`,
+      });
+    }
 
     res.json({ success: true, message: 'Application successful' });
   } catch (error) {

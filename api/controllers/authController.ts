@@ -137,6 +137,25 @@ export const updateUserProfile = async (req: AuthRequest, res: Response, next: N
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       user.bio = req.body.bio !== undefined ? req.body.bio : user.bio;
+      user.headline = req.body.headline !== undefined ? req.body.headline : user.headline;
+      user.location = req.body.location !== undefined ? req.body.location : user.location;
+      user.yearsOfExperience = req.body.yearsOfExperience ?? user.yearsOfExperience;
+      user.currentRole = req.body.currentRole !== undefined ? req.body.currentRole : user.currentRole;
+      if (Array.isArray(req.body.industries)) {
+        user.industries = req.body.industries;
+      }
+      if (Array.isArray(req.body.skills)) {
+        user.skills = req.body.skills;
+      }
+      if (req.body.socialLinks) {
+        user.socialLinks = {
+          ...user.socialLinks,
+          ...req.body.socialLinks,
+        };
+      }
+      if (typeof req.body.isPublicProfile === 'boolean') {
+        user.isPublicProfile = req.body.isPublicProfile;
+      }
       user.avatar = req.body.avatar || user.avatar;
 
       if (req.body.password) {
@@ -154,6 +173,14 @@ export const updateUserProfile = async (req: AuthRequest, res: Response, next: N
           email: updatedUser.email,
           avatar: updatedUser.avatar,
           bio: updatedUser.bio,
+          headline: updatedUser.headline,
+          location: updatedUser.location,
+          yearsOfExperience: updatedUser.yearsOfExperience,
+          currentRole: updatedUser.currentRole,
+          industries: updatedUser.industries,
+          skills: updatedUser.skills,
+          socialLinks: updatedUser.socialLinks,
+          isPublicProfile: updatedUser.isPublicProfile,
           role: updatedUser.role,
           onboardingCompleted: updatedUser.onboardingCompleted,
           careerGoal: updatedUser.careerGoal,
@@ -201,6 +228,40 @@ export const completeOnboarding = async (req: AuthRequest, res: Response, next: 
         role: user.role,
         onboardingCompleted: user.onboardingCompleted,
         careerGoal: user.careerGoal,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPublicProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id).select('name avatar bio headline location yearsOfExperience currentRole industries skills socialLinks isPublicProfile careerGoal createdAt');
+
+    if (!user || user.isPublicProfile === false) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        _id: user._id,
+        name: user.name,
+        avatar: user.avatar,
+        bio: user.bio,
+        headline: user.headline,
+        location: user.location,
+        yearsOfExperience: user.yearsOfExperience,
+        currentRole: user.currentRole,
+        industries: user.industries || [],
+        skills: user.skills || [],
+        socialLinks: user.socialLinks || {},
+        careerGoal: user.careerGoal,
+        createdAt: user.createdAt,
       },
     });
   } catch (error) {
