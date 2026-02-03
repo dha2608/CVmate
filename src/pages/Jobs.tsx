@@ -27,6 +27,17 @@ const Jobs = () => {
   const [companySize, setCompanySize] = useState<string>('');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
+  const [showPostJob, setShowPostJob] = useState(false);
+  const [isPostingJob, setIsPostingJob] = useState(false);
+  const [jobForm, setJobForm] = useState({
+    title: '',
+    company: '',
+    location: '',
+    type: 'Full-time',
+    description: '',
+    salary: '',
+    requirements: '',
+  });
 
   useEffect(() => {
     fetchJobs({ page: 1, limit: 20 });
@@ -82,6 +93,55 @@ const Jobs = () => {
       toast.success(t('toast.jobApplied'));
     } catch (error: any) {
       toast.error(error.message || t('toast.jobApplyFailed'));
+    }
+  };
+
+  const handleCreateJob = async () => {
+    if (!user) {
+      toast.error(t('jobs.pleaseLogin'));
+      return;
+    }
+    if (!jobForm.title.trim() || !jobForm.company.trim() || !jobForm.description.trim()) {
+      toast.error('Vui lòng điền ít nhất tiêu đề, công ty và mô tả.');
+      return;
+    }
+    setIsPostingJob(true);
+    try {
+      const payload = {
+        title: jobForm.title.trim(),
+        company: jobForm.company.trim(),
+        location: jobForm.location.trim() || 'Remote',
+        type: jobForm.type as any,
+        description: jobForm.description.trim(),
+        salary: jobForm.salary.trim() || undefined,
+        requirements: jobForm.requirements
+          ? jobForm.requirements
+              .split('\n')
+              .map((r) => r.trim())
+              .filter(Boolean)
+          : [],
+      };
+      const response = await api.createJob(payload);
+      if (response.success) {
+        toast.success('Đăng job thành công!');
+        setShowPostJob(false);
+        setJobForm({
+          title: '',
+          company: '',
+          location: '',
+          type: 'Full-time',
+          description: '',
+          salary: '',
+          requirements: '',
+        });
+        fetchJobs({ page: 1, limit: 20 });
+      } else {
+        toast.error(response.message || 'Đăng job thất bại.');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Đăng job thất bại.');
+    } finally {
+      setIsPostingJob(false);
     }
   };
 
@@ -235,6 +295,96 @@ const Jobs = () => {
               </div>
             )}
           </div>
+
+          {/* Post a Job (simple employer form) */}
+          {user && (
+            <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+                  Đăng job (Beta)
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowPostJob((v) => !v)}
+                  className="text-xs"
+                >
+                  {showPostJob ? 'Ẩn form' : 'Mở form đăng tuyển'}
+                </Button>
+              </div>
+              {showPostJob && (
+                <div className="mt-2 space-y-3 bg-gray-50 dark:bg-gray-700/40 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Input
+                      placeholder="Chức danh (VD: Frontend Engineer)"
+                      value={jobForm.title}
+                      onChange={(e) => setJobForm((f) => ({ ...f, title: e.target.value }))}
+                      className="dark:bg-gray-700 dark:border-gray-600 text-xs sm:text-sm"
+                    />
+                    <Input
+                      placeholder="Công ty"
+                      value={jobForm.company}
+                      onChange={(e) => setJobForm((f) => ({ ...f, company: e.target.value }))}
+                      className="dark:bg-gray-700 dark:border-gray-600 text-xs sm:text-sm"
+                    />
+                    <Input
+                      placeholder="Địa điểm (hoặc Remote)"
+                      value={jobForm.location}
+                      onChange={(e) => setJobForm((f) => ({ ...f, location: e.target.value }))}
+                      className="dark:bg-gray-700 dark:border-gray-600 text-xs sm:text-sm"
+                    />
+                    <select
+                      value={jobForm.type}
+                      onChange={(e) => setJobForm((f) => ({ ...f, type: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                    >
+                      <option value="Full-time">Full-time</option>
+                      <option value="Part-time">Part-time</option>
+                      <option value="Remote">Remote</option>
+                      <option value="Contract">Contract</option>
+                      <option value="Internship">Internship</option>
+                    </select>
+                  </div>
+                  <Input
+                    placeholder="Mức lương (tuỳ chọn, VD: 30-40M hoặc $2000-$3000)"
+                    value={jobForm.salary}
+                    onChange={(e) => setJobForm((f) => ({ ...f, salary: e.target.value }))}
+                    className="dark:bg-gray-700 dark:border-gray-600 text-xs sm:text-sm"
+                  />
+                  <textarea
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-xs sm:text-sm p-2"
+                    rows={3}
+                    placeholder="Mô tả công việc"
+                    value={jobForm.description}
+                    onChange={(e) => setJobForm((f) => ({ ...f, description: e.target.value }))}
+                  />
+                  <textarea
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-xs sm:text-sm p-2"
+                    rows={3}
+                    placeholder="Yêu cầu (mỗi dòng một ý)"
+                    value={jobForm.requirements}
+                    onChange={(e) => setJobForm((f) => ({ ...f, requirements: e.target.value }))}
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      onClick={handleCreateJob}
+                      disabled={isPostingJob}
+                      className="bg-crimson-red hover:bg-fire-red text-white text-xs sm:text-sm"
+                    >
+                      {isPostingJob ? (
+                        <>
+                          <Loader2 size={14} className="mr-1 animate-spin" /> Đang đăng...
+                        </>
+                      ) : (
+                        'Đăng job'
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
