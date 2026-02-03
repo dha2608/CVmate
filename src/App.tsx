@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminRoute from "@/components/AdminRoute";
 import Toast from "@/components/Toast";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { OfflineIndicator } from "@/components/mobile";
@@ -39,6 +40,8 @@ const Careers = lazy(() => import("@/pages/Careers"));
 const Partners = lazy(() => import("@/pages/Partners"));
 const Sitemap = lazy(() => import("@/pages/Sitemap"));
 const Accessibility = lazy(() => import("@/pages/Accessibility"));
+const Admin = lazy(() => import("@/pages/Admin"));
+const UserProfile = lazy(() => import("@/pages/UserProfile"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -181,6 +184,22 @@ export default function App() {
                   <Bookmarks />
                 </ProtectedRoute>
               } 
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
+              }
+            />
+            <Route 
+              path="/u/:id"
+              element={
+                <ProtectedRoute>
+                  <UserProfile />
+                </ProtectedRoute>
+              }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

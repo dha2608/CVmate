@@ -6,7 +6,8 @@ import {
   getMe, 
   updateUserProfile,
   completeOnboarding,
-  googleAuthCallback 
+  googleAuthCallback,
+  getPublicProfile,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
@@ -39,5 +40,8 @@ router.post('/onboarding', protect, completeOnboarding);
 // Current user profile
 router.get('/me', protect, getMe);
 router.put('/me', protect, updateUserProfile);
+
+// Public profile
+router.get('/users/:id/public', getPublicProfile);
 
 export default router;

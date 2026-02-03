@@ -213,7 +213,7 @@ const MainLayout = ({
                 <div className="relative" ref={profileMenuRef}>
                   <button 
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                    className="rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
+                    className="rounded-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-400 focus-visible:ring-offset-0 transition-all"
                     aria-haspopup="true"
                     aria-expanded={isProfileMenuOpen}
                     aria-label="Profile menu"
@@ -222,10 +222,10 @@ const MainLayout = ({
                       <img 
                         src={user.avatar} 
                         alt="Profile" 
-                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-transparent hover:border-red-500 transition-all"
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black dark:bg-gray-700 text-white flex items-center justify-center border-2 border-transparent hover:border-red-500 transition-all">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black dark:bg-gray-700 text-white flex items-center justify-center">
                         <span className="font-bold text-xs sm:text-sm">{user?.name?.charAt(0)}</span>
                       </div>
                     )}
