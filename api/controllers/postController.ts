@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import mongoose, { Types } from 'mongoose';
 import Post from '../models/Post.js';
+import Notification from '../models/Notification.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
 export const createPost = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -18,7 +19,7 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
       image
     });
 
-    const populatedPost = await Post.findById(post._id).populate('user', 'name avatar');
+    const populatedPost = await Post.findById(post._id).populate('user', 'name avatar careerGoal location');
 
     res.status(201).json({ success: true, data: populatedPost });
   } catch (error) {
@@ -37,8 +38,8 @@ export const getPosts = async (req: AuthRequest, res: Response, next: NextFuncti
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate('user', 'name avatar')
-        .populate('comments.user', 'name avatar'),
+        .populate('user', 'name avatar careerGoal location')
+        .populate('comments.user', 'name avatar careerGoal location'),
       Post.countDocuments()
     ]);
     
@@ -71,6 +72,17 @@ export const likePost = async (req: AuthRequest, res: Response, next: NextFuncti
 
     if (index === -1) {
       post.likes.push(req.user?._id);
+
+      // Tạo notification khi được like (không gửi cho chính mình)
+      if (post.user.toString() !== userId) {
+        await Notification.create({
+          recipient: post.user,
+          sender: req.user?._id,
+          type: 'like',
+          message: 'đã thích bài viết của bạn.',
+          link: `/community`,
+        });
+      }
     } else {
       post.likes.splice(index, 1);
     }
@@ -110,6 +122,17 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
     post.comments.push(newComment as any); 
     
     await post.save();
+
+    // Tạo notification khi có bình luận (không gửi cho chính mình)
+    if (post.user.toString() !== (req.user?._id as Types.ObjectId).toString()) {
+      await Notification.create({
+        recipient: post.user,
+        sender: req.user?._id,
+        type: 'comment',
+        message: 'đã bình luận trên bài viết của bạn.',
+        link: `/community`,
+      });
+    }
 
     const updatedPost = await Post.findById(req.params.id)
         .populate('user', 'name avatar')

@@ -9,6 +9,18 @@ export interface IUser extends Document {
   avatar?: string;
   role: 'user' | 'admin';
   bio?: string;
+  headline?: string;
+  location?: string;
+  yearsOfExperience?: number;
+  currentRole?: string;
+  industries?: string[];
+  skills?: string[];
+  socialLinks?: {
+    linkedin?: string;
+    github?: string;
+    portfolio?: string;
+  };
+  isPublicProfile?: boolean;
   cv_list: mongoose.Types.ObjectId[];
   onboardingCompleted: boolean;
   careerGoal?: 'new-job' | 'internship' | 'career-switch';
@@ -63,6 +75,42 @@ const userSchema = new Schema<IUser>({
   bio: { 
     type: String, 
     default: '' 
+  },
+  headline: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  location: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  yearsOfExperience: {
+    type: Number,
+    min: 0,
+  },
+  currentRole: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  industries: [{
+    type: String,
+    trim: true,
+  }],
+  skills: [{
+    type: String,
+    trim: true,
+  }],
+  socialLinks: {
+    linkedin: { type: String, trim: true },
+    github: { type: String, trim: true },
+    portfolio: { type: String, trim: true },
+  },
+  isPublicProfile: {
+    type: Boolean,
+    default: true,
   },
   cv_list: [{ 
     type: Schema.Types.ObjectId, 
