@@ -17,7 +17,7 @@ const Bookmarks = () => {
   const { bookmarks, fetchBookmarks, removeBookmark, isLoading } = useBookmarkStore();
   const [bookmarkItems, setBookmarkItems] = useState<any[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'jobs' | 'articles'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'job' | 'article'>('all');
 
   useEffect(() => {
     if (!user) {
@@ -104,7 +104,7 @@ const Bookmarks = () => {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 flex-wrap">
-          {(['all', 'jobs', 'articles'] as const).map((tab) => (
+          {(['all', 'job', 'article'] as const).map((tab) => (
             <Button
               key={tab}
               variant={activeTab === tab ? 'default' : 'outline'}
@@ -117,7 +117,7 @@ const Bookmarks = () => {
               }`}
             >
               {tab === 'all' ? t('common.all') : 
-               tab === 'jobs' ? t('nav.jobs') : t('nav.blog')}
+               tab === 'job' ? t('nav.jobs') : t('nav.blog')}
               {tab !== 'all' && (
                 <span className="ml-2 bg-white/20 dark:bg-gray-600 px-1.5 py-0.5 rounded text-xs">
                   {bookmarkItems.filter(item => item.bookmarkType === tab).length}
@@ -152,15 +152,15 @@ const Bookmarks = () => {
             <p className="text-gray-500 dark:text-gray-400 mb-6">
               {activeTab === 'all' 
                 ? 'Bắt đầu lưu các công việc và bài viết bạn quan tâm'
-                : activeTab === 'jobs'
+                : activeTab === 'job'
                 ? 'Lưu các công việc bạn muốn xem lại sau'
                 : 'Lưu các bài viết hữu ích để đọc sau'}
             </p>
             <Button
-              onClick={() => navigate(activeTab === 'jobs' ? '/jobs' : '/blog')}
+              onClick={() => navigate(activeTab === 'job' ? '/jobs' : '/blog')}
               className="bg-crimson-red hover:bg-fire-red text-white"
             >
-              {activeTab === 'jobs' ? 'Khám phá Jobs' : 'Khám phá Blog'}
+              {activeTab === 'job' ? 'Khám phá Jobs' : 'Khám phá Blog'}
             </Button>
           </div>
         ) : (

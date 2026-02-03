@@ -131,6 +131,12 @@ export const api = {
       body: JSON.stringify({ text, type }),
     }),
 
+  aiGenerateFullResume: (payload: { prompt?: string; jobDescription?: string }) =>
+    apiRequest<{ success: boolean; data: { summary: string; experience: any[]; education: any[]; skills: string[] } }>('/resumes/ai-generate-full', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
   analyzeResume: (id: string, jobDescription?: string) =>
     apiRequest<{ success: boolean; data: any }>(`/resumes/${id}/analyze`, {
       method: 'POST',
