@@ -18,6 +18,7 @@ import ShortcutsModal from '@/components/builder/ShortcutsModal';
 import AIFeatureNotice from '@/components/AIFeatureNotice';
 import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
 import { api } from '@/lib/utils';
+import { trackEvent } from '@/lib/analytics';
 
 const Builder = () => {
   const { currentResume, updateField, aiEnhanceText, setResume } = useResumeStore();
@@ -36,6 +37,9 @@ const Builder = () => {
   ]);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [isGeneratingFull, setIsGeneratingFull] = useState(false);
+  const [generatePrompt, setGeneratePrompt] = useState('');
+  const [generateJD, setGenerateJD] = useState('');
   const navigate = useNavigate();
 
   const handleSave = async () => {
@@ -68,6 +72,13 @@ const Builder = () => {
       if (response.success) {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
+        trackEvent('cv_saved', {
+          hasId: !!currentResume._id,
+          hasSummary: !!currentResume.summary?.trim(),
+          experienceCount: currentResume.experience.length,
+          educationCount: currentResume.education.length,
+          skillsCount: currentResume.skills.length,
+        });
       }
     } catch (error: any) {
       alert('Failed to save: ' + (error.message || 'Unknown error'));
@@ -155,6 +166,11 @@ const Builder = () => {
     try {
       const enhanced = await aiEnhanceText(currentResume.summary, 'summary');
       updateField('summary', enhanced);
+      trackEvent('cv_ai_enhance', {
+        field: 'summary',
+        originalLength: currentResume.summary.length,
+        enhancedLength: enhanced.length,
+      });
     } catch (error: any) {
       const errorMessage = error.message || 'Failed to enhance text. Please try again.';
       setAiError(errorMessage);
@@ -164,6 +180,49 @@ const Builder = () => {
       }
     } finally {
       setEnhancing(false);
+    }
+  };
+
+  const handleAIGenerateFull = async () => {
+    if (!generatePrompt.trim() && !generateJD.trim()) {
+      alert('Please provide at least a short prompt or job description for AI to work with.');
+      return;
+    }
+
+    setIsGeneratingFull(true);
+    setAiError(null);
+    try {
+      const { aiGenerateFull } = useResumeStore.getState();
+      const data = await aiGenerateFull({
+        prompt: generatePrompt,
+        jobDescription: generateJD,
+      });
+
+      // Map dữ liệu AI vào resume hiện tại, giữ nguyên title & personalInfo
+      setResume({
+        ...currentResume,
+        summary: data.summary || currentResume.summary,
+        experience: data.experience?.map((exp, idx) => ({
+          id: exp.id || `exp-${Date.now()}-${idx}`,
+          ...exp,
+        })) || currentResume.experience,
+        education: data.education?.map((edu, idx) => ({
+          id: edu.id || `edu-${Date.now()}-${idx}`,
+          ...edu,
+        })) || currentResume.education,
+        skills: Array.isArray(data.skills) && data.skills.length > 0 ? data.skills : currentResume.skills,
+      });
+
+      trackEvent('cv_ai_enhance', {
+        field: 'full_resume',
+        hasJD: !!generateJD.trim(),
+      });
+    } catch (error: any) {
+      const errorMessage = error.message || 'Failed to generate resume. Please try again.';
+      setAiError(errorMessage);
+      alert(errorMessage);
+    } finally {
+      setIsGeneratingFull(false);
     }
   };
 
@@ -202,11 +261,11 @@ const Builder = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white overflow-hidden">
       {/* Editor Side */}
-      <div className="w-1/2 flex flex-col border-r border-gray-200 bg-white">
+      <div className="w-full lg:w-1/2 flex flex-col border-b lg:border-b-0 lg:border-r border-gray-200 bg-white">
         {/* Header */}
-        <div className="p-4 border-b-2 border-gray-200 flex justify-between items-center bg-white z-10">
+        <div className="p-4 border-b-2 border-gray-200 flex justify-between items-center bg-white z-10 sticky top-0">
           <div className="flex items-center gap-3">
             <Button 
               variant="ghost" 
@@ -299,7 +358,7 @@ const Builder = () => {
         </div>
         
         {/* Form Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="max-w-2xl mx-auto space-y-6">
             {activeTab === 'personal' && <PersonalForm />}
             
@@ -333,6 +392,50 @@ const Builder = () => {
                 <p className="text-xs text-gray-500">
                   💡 Tip: Write bullet points or simple sentences. AI will transform them into professional language.
                 </p>
+
+                {/* AI Generate Full Resume */}
+                <div className="mt-6 space-y-3 border-t border-gray-200 pt-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-jet-black dark:text-white">
+                      AI CV Builder Pro (Beta)
+                    </h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isGeneratingFull}
+                      onClick={handleAIGenerateFull}
+                      className="border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white"
+                    >
+                      {isGeneratingFull ? (
+                        <>
+                          <Brain size={14} className="mr-1 animate-pulse" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Brain size={14} className="mr-1" />
+                          Generate full CV
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Mô tả nhanh về kinh nghiệm, mục tiêu nghề nghiệp và (tuỳ chọn) dán Job Description. AI sẽ gợi ý
+                    Summary, Experience, Education và Skills phù hợp.
+                  </p>
+                  <Textarea
+                    className="w-full min-h-[80px] p-3 border border-gray-200 focus:border-crimson-red rounded-lg text-xs"
+                    value={generatePrompt}
+                    onChange={(e) => setGeneratePrompt(e.target.value)}
+                    placeholder="Ví dụ: 3 năm kinh nghiệm Frontend (React), từng làm ở startup, muốn apply vị trí Frontend Engineer cho sản phẩm B2C..."
+                  />
+                  <Textarea
+                    className="w-full min-h-[80px] p-3 border border-gray-200 focus:border-crimson-red rounded-lg text-xs"
+                    value={generateJD}
+                    onChange={(e) => setGenerateJD(e.target.value)}
+                    placeholder="(Tuỳ chọn) Dán mô tả công việc mà bạn muốn apply để AI align CV sát với JD..."
+                  />
+                </div>
               </div>
             )}
             
@@ -344,8 +447,10 @@ const Builder = () => {
       </div>
 
       {/* Preview Side */}
-      <div className="w-1/2 bg-light-grey p-8 overflow-y-auto flex justify-center">
-        <ResumePreview template={selectedTemplate} />
+      <div className="w-full lg:w-1/2 bg-light-grey px-3 sm:px-6 lg:px-8 py-6 overflow-y-auto flex justify-center">
+        <div className="w-full max-w-[210mm]">
+          <ResumePreview template={selectedTemplate} />
+        </div>
       </div>
 
       {/* Shortcuts Modal */}

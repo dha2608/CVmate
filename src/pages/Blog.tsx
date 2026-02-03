@@ -90,20 +90,22 @@ const Blog = () => {
       <MainLayout
         rightSidebar={
             <div className="space-y-4 sticky top-20 animate-fade-in">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow duration-300">
-                    <h3 className="font-semibold text-gray-900 mb-2">Writing a good article</h3>
-                    <ul className="text-sm text-gray-600 list-disc pl-4 space-y-1">
-                        <li>Focus on a specific topic</li>
-                        <li>Use clear headings</li>
-                        <li>Add a cover image</li>
-                        <li>Keep it concise</li>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow duration-300">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      {t('blog.writingGoodArticle')}
+                    </h3>
+                    <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc pl-4 space-y-1">
+                        <li>{t('blog.focusTopic')}</li>
+                        <li>{t('blog.useHeadings')}</li>
+                        <li>{t('blog.addCoverImage')}</li>
+                        <li>{t('blog.keepConcise')}</li>
                     </ul>
                     <Button 
                         onClick={() => setShowCreate(!showCreate)} 
-                        className="w-full mt-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-crimson-red hover:text-crimson-red transition-all duration-300"
+                        className="w-full mt-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-crimson-red hover:text-crimson-red dark:hover:text-crimson-red transition-all duration-300"
                         variant="outline"
                     >
-                        {showCreate ? 'Cancel' : 'Write an Article'}
+                        {showCreate ? t('blog.cancel') : t('blog.writeArticle')}
                     </Button>
                 </div>
             </div>

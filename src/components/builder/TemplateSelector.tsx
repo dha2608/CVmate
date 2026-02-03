@@ -45,6 +45,22 @@ const templates: Template[] = [
     category: 'creative',
     color: 'bg-purple-500'
   },
+  {
+    id: 'ats-minimal',
+    name: 'ATS Minimal',
+    description: 'Tối ưu cho ATS, ít màu, bố cục rõ ràng',
+    preview: 'bg-gradient-to-br from-gray-50 to-gray-100',
+    category: 'minimal',
+    color: 'bg-green-600'
+  },
+  {
+    id: 'sidebar-accent',
+    name: 'Sidebar Accent',
+    description: 'Thông tin cá nhân bên trái, nội dung chính bên phải',
+    preview: 'bg-gradient-to-r from-gray-800 to-gray-600',
+    category: 'modern',
+    color: 'bg-gray-900'
+  },
 ];
 
 interface TemplateSelectorProps {
