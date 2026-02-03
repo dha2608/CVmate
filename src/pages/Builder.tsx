@@ -158,7 +158,8 @@ const Builder = () => {
     } catch (error: any) {
       const errorMessage = error.message || 'Failed to enhance text. Please try again.';
       setAiError(errorMessage);
-      if (!errorMessage.includes('OpenAI API key') && !errorMessage.includes('not configured')) {
+      // Only show alert if it's not a simple configuration error
+      if (!errorMessage.toLowerCase().includes('api key') && !errorMessage.toLowerCase().includes('not configured')) {
         alert(errorMessage);
       }
     } finally {
@@ -304,7 +305,7 @@ const Builder = () => {
             
             {activeTab === 'summary' && (
               <div className="space-y-4 animate-in fade-in duration-300">
-                {aiError && (aiError.includes('OpenAI API key') || aiError.includes('not configured')) && (
+                {aiError && (aiError.toLowerCase().includes('api key') || aiError.toLowerCase().includes('not configured')) && (
                   <AIFeatureNotice 
                     feature="AI CV Enhancement" 
                     onDismiss={() => setAiError(null)}

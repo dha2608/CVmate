@@ -1,15 +1,15 @@
 import { Response, NextFunction } from 'express';
-import OpenAI from 'openai';
+import { HfInference } from '@huggingface/inference';
 import Resume from '../models/Resume.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 
-const getOpenAIClient = () => {
-  const apiKey = process.env.OPENAI_API_KEY;
+const getHFClient = () => {
+  const apiKey = process.env.HF_API_KEY;
   if (!apiKey) {
     return null;
   }
-  return new OpenAI({ apiKey });
+  return new HfInference(apiKey);
 };
 
 export const createResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -113,11 +113,11 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
       return;
     }
 
-    const openai = getOpenAIClient();
-    if (!openai) {
+    const hf = getHFClient();
+    if (!hf) {
       res.status(503).json({ 
         success: false, 
-        message: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in your environment variables.',
+        message: 'AI provider API key is not configured. Please set HF_API_KEY in your environment variables.',
       });
       return;
     }
@@ -135,13 +135,14 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
     `;
 
     try {
-      const completion = await openai.chat.completions.create({
-        messages: [{ role: "user", content: prompt }],
-        model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
+      const completion = await hf.chatCompletion({
+        model: process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 256,
         temperature: 0.7,
       });
 
-      const enhancedText = completion.choices[0].message.content;
+      const enhancedText = completion.choices?.[0]?.message?.content;
       if (!enhancedText) {
         throw new Error('No response from OpenAI');
       }
@@ -150,7 +151,7 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
 
     } catch (apiError: unknown) {
       const error = apiError instanceof Error ? apiError : new Error(String(apiError));
-      logger.error('OpenAI Error in AI Enhance', error, {
+      logger.error('AI Error in AI Enhance', error, {
         userId: req.user?._id,
         type,
       });
@@ -161,23 +162,19 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
       const errorMsgLower = errorMsg.toLowerCase();
       
       if (errorObj.status === 401 || errorObj.statusCode === 401) {
-        errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
+        errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
       } else if (errorObj.status === 429 || errorObj.statusCode === 429) {
-        if (errorMsgLower.includes('quota') || errorMsgLower.includes('exceeded your current quota') || errorMsgLower.includes('billing')) {
-          errorMessage = 'OpenAI API quota exceeded. Your account has run out of credits. Please add credits at https://platform.openai.com/account/billing';
-        } else {
-          errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
-        }
+        errorMessage = 'AI API rate limit exceeded. Please try again later.';
       } else if (errorMsgLower.includes('api key') || errorMsgLower.includes('invalid api key')) {
-        errorMessage = 'OpenAI API key is invalid or missing.';
+        errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
       } else if (errorMsgLower.includes('quota') || errorMsgLower.includes('billing')) {
-        errorMessage = 'OpenAI API quota exceeded. Please add credits to your account.';
+        errorMessage = 'AI API quota exceeded. Please check your provider account limits.';
       }
 
       res.status(503).json({ 
         success: false, 
         message: errorMessage,
-        error: error.message || 'OpenAI API error'
+        error: error.message || 'AI API error'
       });
     }
   } catch (error) {
@@ -215,23 +212,31 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
       prompt += `\n\nJob Description:\n${jobDescription.substring(0, 2000)}\n\nCompare the resume with the job description. Identify missing keywords and calculate match score.`;
     }
 
-    const openai = getOpenAIClient();
-    if (!openai) {
+    const hf = getHFClient();
+    if (!hf) {
       res.status(503).json({ 
         success: false, 
-        message: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in your environment variables.',
+        message: 'AI provider API key is not configured. Please set HF_API_KEY in your environment variables.',
       });
       return;
     }
 
     try {
-      const completion = await openai.chat.completions.create({
-        messages: [{ role: "user", content: prompt }],
-        model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
-        response_format: { type: "json_object" }
+      const completion = await hf.chatCompletion({
+        model: process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are an AI assistant that only responds with a valid JSON object and no other text.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        max_tokens: 512,
+        temperature: 0.2,
       });
 
-      const responseContent = completion.choices[0].message.content;
+      const responseContent = completion.choices?.[0]?.message?.content;
       if (!responseContent) {
         throw new Error('No response from OpenAI');
       }
@@ -245,7 +250,7 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
 
     } catch (e: unknown) {
       const error = e instanceof Error ? e : new Error(String(e));
-      logger.error('OpenAI Analysis Error', error, {
+      logger.error('AI Analysis Error', error, {
         resumeId: req.params.id,
         userId: req.user?._id,
       });
@@ -256,23 +261,19 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
       const errorMsgLower = errorMsg.toLowerCase();
       
       if (errorObj.status === 401 || errorObj.statusCode === 401) {
-        errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
+        errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
       } else if (errorObj.status === 429 || errorObj.statusCode === 429) {
-        if (errorMsgLower.includes('quota') || errorMsgLower.includes('exceeded your current quota') || errorMsgLower.includes('billing')) {
-          errorMessage = 'OpenAI API quota exceeded. Your account has run out of credits. Please add credits at https://platform.openai.com/account/billing';
-        } else {
-          errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
-        }
+        errorMessage = 'AI API rate limit exceeded. Please try again later.';
       } else if (errorMsgLower.includes('api key') || errorMsgLower.includes('invalid api key')) {
-        errorMessage = 'OpenAI API key is invalid or missing.';
+        errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
       } else if (errorMsgLower.includes('quota') || errorMsgLower.includes('billing')) {
-        errorMessage = 'OpenAI API quota exceeded. Please add credits to your account.';
+        errorMessage = 'AI API quota exceeded. Please check your provider account limits.';
       }
 
       res.status(503).json({ 
         success: false, 
         message: errorMessage,
-        error: error.message || 'OpenAI API error'
+        error: error.message || 'AI API error'
       });
     }
 

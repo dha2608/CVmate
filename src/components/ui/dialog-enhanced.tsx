@@ -1,38 +1,58 @@
-import { ReactNode } from 'react';
+import * as React from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { cn } from '@/lib/utils';
 
 interface DialogEnhancedProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export const DialogEnhanced = ({ open, onOpenChange, children }: DialogEnhancedProps) => {
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50">
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={() => onOpenChange(false)}
-      />
-      <div className="absolute inset-0 m-auto max-w-lg bg-white p-6 rounded-md shadow-lg h-fit w-[90vw] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        {children}
-      </div>
-    </div>
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      {children}
+    </DialogPrimitive.Root>
   );
 };
 
-export const DialogContentEnhanced = ({ children }: { children: ReactNode }) => <>{children}</>;
-export const DialogHeaderEnhanced = ({ children }: { children: ReactNode }) => (
-  <header className="mb-4 text-lg font-semibold">{children}</header>
-);
-export const DialogTitleEnhanced = ({ children }: { children: ReactNode }) => (
-  <h2 className="text-xl font-bold mb-2">{children}</h2>
-);
-export const DialogDescriptionEnhanced = ({ children }: { children: ReactNode }) => (
-  <p className="text-sm text-gray-600 mb-4">{children}</p>
-);
-export const DialogFooterEnhanced = ({ children }: { children: ReactNode }) => (
-  <footer className="mt-4 flex justify-end gap-2">{children}</footer>
-);
-export const DialogClose = () => null;
+export const DialogClose = DialogPrimitive.Close;
+
+export const DialogHeaderEnhanced = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => {
+  return <div className={cn('flex flex-col space-y-1.5', className)} {...props} />;
+};
+
+export const DialogFooterEnhanced = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => {
+  return <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)} {...props} />;
+};
+
+export const DialogTitleEnhanced = DialogPrimitive.Title;
+export const DialogDescriptionEnhanced = DialogPrimitive.Description;
+
+export const DialogContentEnhanced = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => {
+  return (
+    <DialogPrimitive.Portal>
+      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50" />
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          'fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-md bg-white p-6 shadow-lg',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </DialogPrimitive.Content>
+    </DialogPrimitive.Portal>
+  );
+});
+DialogContentEnhanced.displayName = 'DialogContentEnhanced';

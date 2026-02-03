@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import OpenAI from 'openai';
+import { HfInference } from '@huggingface/inference';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 
-const getOpenAIClient = () => {
-  const apiKey = process.env.OPENAI_API_KEY;
+const getHFClient = () => {
+  const apiKey = process.env.HF_API_KEY;
   if (!apiKey) {
     return null;
   }
-  return new OpenAI({ apiKey });
+  return new HfInference(apiKey);
 };
 
 // Speech-to-Text endpoint using OpenAI Whisper API
@@ -46,56 +46,30 @@ export const speechToText = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
-    const openai = getOpenAIClient();
-    if (!openai) {
+    const hf = getHFClient();
+    if (!hf) {
       res.status(503).json({ 
         success: false, 
-        message: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in your environment variables.',
+        message: 'AI provider API key is not configured. Please set HF_API_KEY in your environment variables.',
       });
       return;
     }
 
-    // For Node.js, OpenAI SDK accepts File objects
-    // Use File from 'undici' package (available in Node.js 18+)
-    let FileConstructor: typeof File;
     try {
-      // Try to use File from undici (Node.js 18+)
-      const undici = await import('undici');
-      FileConstructor = undici.File as unknown as typeof File;
-    } catch {
-      // Fallback: Use global File if available (Node.js 20+)
-      if (typeof File !== 'undefined') {
-        FileConstructor = File;
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'File API not available. Please use Node.js 18+ or ensure undici is installed.',
-        });
-        return;
-      }
-    }
-    
-    try {
-      // Create File object from buffer for OpenAI SDK
-      const file = new FileConstructor([audioBuffer], `audio.${audioFormat}`, {
-        type: `audio/${audioFormat}`,
-      });
-
-      const transcription = await openai.audio.transcriptions.create({
-        file: file as any,
-        model: 'whisper-1',
-        language: 'en', // Can be made dynamic
+      const transcription = await hf.automaticSpeechRecognition({
+        model: process.env.HF_STT_MODEL || 'openai/whisper-small',
+        data: audioBuffer,
       });
 
       res.json({
         success: true,
         data: {
-          text: transcription.text,
+          text: (transcription as any).text || '',
         },
       });
     } catch (apiError: unknown) {
       const errorMessage = apiError instanceof Error ? apiError.message : 'Unknown error';
-      logger.error('OpenAI Whisper Error', apiError instanceof Error ? apiError : new Error(String(apiError)), {
+      logger.error('AI Speech-to-Text Error', apiError instanceof Error ? apiError : new Error(String(apiError)), {
         userId: req.user?._id,
       });
       res.status(503).json({

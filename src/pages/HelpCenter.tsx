@@ -97,30 +97,21 @@ const HelpCenter = () => {
                 <ul className="space-y-2 text-gray-700 text-sm">
                   <li>
                     <strong>Lỗi 401 / API key invalid:</strong> Kiểm tra lại giá trị{' '}
-                    <code>OPENAI_API_KEY</code> trong file <code>.env</code> backend, đảm bảo không có khoảng trắng
+                    <code>HF_API_KEY</code> trong file <code>.env</code> backend, đảm bảo không có khoảng trắng
                     thừa và khởi động lại server.
                   </li>
                   <li>
-                    <strong>Lỗi 429 / Rate limit exceeded:</strong> Điều này thường xảy ra khi tài khoản OpenAI
-                    chưa nạp tiền hoặc vượt giới hạn. Vào{' '}
+                    <strong>Lỗi 429 / Rate limit exceeded:</strong> Điều này thường xảy ra khi tài khoản Hugging Face
+                    chưa được cấp đủ quota hoặc vượt giới hạn. Vào{' '}
                     <a
-                      href="https://platform.openai.com/account/usage"
+                      href="https://huggingface.co/settings/tokens"
                       target="_blank"
                       rel="noreferrer"
                       className="text-crimson-red hover:underline"
                     >
-                      trang Usage
+                      trang Tokens / Billing
                     </a>{' '}
-                    và{' '}
-                    <a
-                      href="https://platform.openai.com/account/billing"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-crimson-red hover:underline"
-                    >
-                      Billing
-                    </a>{' '}
-                    để kiểm tra credits. Nếu dùng gói free, hãy chờ vài phút rồi thử lại hoặc nâng cấp tài khoản.
+                    để kiểm tra credits & quota. Nếu dùng gói free, hãy chờ vài phút rồi thử lại hoặc nâng cấp tài khoản.
                   </li>
                   <li>
                     <strong>Gợi ý:</strong> Hạn chế spam nhiều câu hỏi liên tiếp, mỗi phiên nên gửi từng câu một để

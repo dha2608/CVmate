@@ -44,7 +44,7 @@ CV Mate is an "All-in-one" career support platform powered by AI, designed to he
 
 - **Frontend**: React + Vite, TypeScript, Tailwind CSS, Shadcn/UI, Zustand, Framer Motion
 - **Backend**: Node.js + Express.js, MongoDB (Mongoose)
-- **AI**: OpenAI API (gpt-3.5-turbo / gpt-4o-mini)
+- **AI**: Hugging Face Inference API (e.g. Llama 3 / open-source LLMs)
 - **Authentication**: JWT + Google OAuth 2.0 (Passport.js)
 - **PDF Export**: jsPDF + html2canvas
 - **Speech Recognition**: Web Speech API (Browser native)
@@ -55,7 +55,7 @@ CV Mate is an "All-in-one" career support platform powered by AI, designed to he
 
 - Node.js 18+ installed
 - MongoDB instance (local or MongoDB Atlas)
-- OpenAI API Key (for AI features)
+- Hugging Face API Token (HF_API_KEY) cho các tính năng AI
 - Google OAuth 2.0 credentials (for Google login - optional)
 
 ### Installation
@@ -91,10 +91,12 @@ JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 # Session Secret (for OAuth)
 SESSION_SECRET=your-session-secret-key-change-this
 
-# OpenAI API (AI features)
-OPENAI_API_KEY=sk-your-openai-api-key-here
-OPENAI_MODEL=gpt-3.5-turbo
-# Or gpt-4o-mini for production
+# AI Provider (Hugging Face Inference API)
+HF_API_KEY=your-huggingface-api-token-here
+# Chat / text model cho Interview, Resume AI, Article summary
+HF_CHAT_MODEL=meta-llama/Meta-Llama-3-8B-Instruct
+# Speech-to-text model (tuỳ chọn, nếu dùng server-side)
+HF_STT_MODEL=openai/whisper-small
 
 # Google OAuth 2.0 (optional)
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
@@ -121,7 +123,7 @@ VITE_API_URL=http://localhost:5001/api
 
 #### Notes
 
-- AI features require `OPENAI_API_KEY` and OpenAI account credits.
+- AI features require `HF_API_KEY` với đủ quota / credits trên Hugging Face.
 - Google OAuth requires HTTPS in production.
 
 ### Running the App
@@ -177,8 +179,8 @@ JWT_SECRET=your-super-secret-jwt-key-min-32-chars
 
 **Recommended / Optional**
 ```
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-3.5-turbo
+HF_API_KEY=your-huggingface-api-token
+HF_CHAT_MODEL=meta-llama/Meta-Llama-3-8B-Instruct
 FRONTEND_URL=https://your-domain.vercel.app
 SESSION_SECRET=your-session-secret
 GOOGLE_CLIENT_ID=...

@@ -1,15 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import OpenAI from 'openai';
+import { HfInference } from '@huggingface/inference';
 import Article from '../models/Article.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 
-const getOpenAIClient = () => {
-  const apiKey = process.env.OPENAI_API_KEY;
+const getHFClient = () => {
+  const apiKey = process.env.HF_API_KEY;
   if (!apiKey) {
     return null;
   }
-  return new OpenAI({ apiKey });
+  return new HfInference(apiKey);
 };
 
 export const createArticle = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -31,25 +31,27 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
     let summary = '';
     let tags: string[] = [];
 
-    const openai = getOpenAIClient();
-    if (openai) {
+    const hf = getHFClient();
+    if (hf) {
       try {
-        const completion = await openai.chat.completions.create({
+        const completion = await hf.chatCompletion({
+          model: process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct',
           messages: [
             {
               role: 'system',
-              content: 'You are an SEO expert. Analyze the article content provided.',
+              content:
+                'You are an SEO expert. Only respond with a valid JSON object and no other text.',
             },
             {
               role: 'user',
               content: `Analyze the following article content. Return a JSON object with two keys: "summary" (a professional 3-sentence summary) and "tags" (an array of 5 relevant keywords). Content: ${content.substring(0, 2000)}`,
             },
           ],
-          model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
-          response_format: { type: 'json_object' },
+          max_tokens: 512,
+          temperature: 0.3,
         });
 
-        const responseContent = completion.choices[0].message.content;
+        const responseContent = completion.choices?.[0]?.message?.content;
         if (responseContent) {
           const aiResponse = JSON.parse(responseContent);
           summary = aiResponse.summary || content.substring(0, 150) + '...';
@@ -59,7 +61,7 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
           tags = ['general'];
         }
       } catch (error) {
-        logger.error('OpenAI summary generation error', error instanceof Error ? error : new Error(String(error)), {
+        logger.error('AI summary generation error', error instanceof Error ? error : new Error(String(error)), {
           articleTitle: title,
           userId: req.user?._id,
         });

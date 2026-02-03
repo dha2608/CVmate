@@ -25,8 +25,8 @@ const required = {
 
 // Optional but important
 const optional = {
-  'OPENAI_API_KEY': process.env.OPENAI_API_KEY,
-  'OPENAI_MODEL': process.env.OPENAI_MODEL || 'gpt-3.5-turbo (default)',
+  'HF_API_KEY': process.env.HF_API_KEY,
+  'HF_CHAT_MODEL': process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct (default)',
   'GOOGLE_CLIENT_ID': process.env.GOOGLE_CLIENT_ID,
   'GOOGLE_CLIENT_SECRET': process.env.GOOGLE_CLIENT_SECRET,
   'GOOGLE_CALLBACK_URL': process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5001/api/auth/google/callback (default)',
@@ -55,13 +55,13 @@ console.log('\n📋 BIẾN TÙY CHỌN (Optional - Quan trọng cho tính năng)
 console.log('-'.repeat(60));
 let hasOptionalWarnings = false;
 
-// Check OpenAI
-if (optional.OPENAI_API_KEY) {
-  const masked = optional.OPENAI_API_KEY.substring(0, 7) + '...' + optional.OPENAI_API_KEY.slice(-4);
-  console.log(`✅ OPENAI_API_KEY: ${masked}`);
-  console.log(`✅ OPENAI_MODEL: ${optional.OPENAI_MODEL}`);
+// Check Hugging Face / AI provider
+if (optional.HF_API_KEY) {
+  const masked = optional.HF_API_KEY.substring(0, 7) + '...' + optional.HF_API_KEY.slice(-4);
+  console.log(`✅ HF_API_KEY: ${masked}`);
+  console.log(`✅ HF_CHAT_MODEL: ${optional.HF_CHAT_MODEL}`);
 } else {
-  console.log(`⚠️  OPENAI_API_KEY: CHƯA ĐƯỢC CẤU HÌNH - Các tính năng AI sẽ không hoạt động`);
+  console.log(`⚠️  HF_API_KEY: CHƯA ĐƯỢC CẤU HÌNH - Các tính năng AI sẽ không hoạt động`);
   hasOptionalWarnings = true;
 }
 

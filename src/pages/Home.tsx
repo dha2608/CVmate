@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/store/i18nStore';
+import { useAuthStore } from '@/store/authStore';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import SEOHead from '@/components/SEOHead';
-import { Brain, FileText, Video, Users, ArrowRight, Check, BookOpen, ExternalLink } from 'lucide-react';
+import { Brain, FileText, Video, Users, ArrowRight, Check, BookOpen, ExternalLink, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/utils';
 import Footer from '@/components/Footer';
 
 const Home = () => {
   const { t } = useI18n();
+  const { user } = useAuthStore();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [latestArticles, setLatestArticles] = useState<any[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(true);
@@ -36,9 +40,64 @@ const Home = () => {
         title="CV Mate - Tạo CV chuẩn ATS và Luyện Phỏng Vấn với AI"
         description="Nền tảng All-in-one hỗ trợ sự nghiệp. Tạo CV chuẩn ATS trong 5 phút, luyện phỏng vấn với AI, và kết nối cộng đồng."
       />
-      <div className="min-h-screen bg-white page-transition">
+      <div className="min-h-screen bg-white dark:bg-gray-900 text-slate-900 dark:text-white page-transition flex flex-col">
+      {/* Top Marketing Navbar */}
+      <header className="sticky top-0 z-40 border-b border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+          <button
+            onClick={() => navigate('/')}
+            className="inline-flex items-center gap-2 group"
+          >
+            <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 bg-crimson-red rounded-lg text-white font-black text-base sm:text-lg shadow-sm group-hover:shadow-md transition-shadow">
+              CV
+            </div>
+            <span className="hidden sm:inline text-sm sm:text-base font-semibold tracking-tight">
+              CV Mate
+            </span>
+          </button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              className="rounded-full"
+              onClick={toggleTheme}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
+            {user ? (
+              <Button
+                size="sm"
+                className="bg-crimson-red hover:bg-fire-red text-white rounded-full px-4 sm:px-5"
+                onClick={() => navigate('/dashboard')}
+              >
+                {t('home.goToDashboard') || 'Vào Dashboard'}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full px-3 sm:px-4"
+                  onClick={() => navigate('/login')}
+                >
+                  {t('home.signIn')}
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-crimson-red hover:bg-fire-red text-white rounded-full px-4 sm:px-5"
+                  onClick={() => navigate('/register')}
+                >
+                  {t('home.getStartedFree')}
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
           <div className="text-center max-w-4xl mx-auto">
             {/* Logo/Brand */}

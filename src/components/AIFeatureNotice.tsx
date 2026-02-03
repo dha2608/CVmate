@@ -24,14 +24,14 @@ const AIFeatureNotice = ({ feature, onDismiss }: AIFeatureNoticeProps) => {
             Tính năng AI tạm thời không khả dụng
           </h3>
           <p className="text-sm text-yellow-800 dark:text-yellow-300 mb-3">
-            {feature} hiện không thể sử dụng vì chưa được cấu hình OpenAI API Key. 
+            {feature} hiện không thể sử dụng vì chưa được cấu hình Hugging Face API Key (HF_API_KEY). 
             Vui lòng liên hệ admin để được hỗ trợ.
           </p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open('https://platform.openai.com/api-keys', '_blank')}
+              onClick={() => window.open('https://huggingface.co/settings/tokens', '_blank')}
               className="border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
             >
               Tìm hiểu thêm

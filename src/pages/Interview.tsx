@@ -264,10 +264,10 @@ const Interview = () => {
 
   // Check if error is related to AI configuration
   const isAIConfigError = error && (
-    error.includes('OpenAI API key') || 
-    error.includes('not configured') ||
+    error.toLowerCase().includes('api key') || 
+    error.toLowerCase().includes('not configured') ||
     error.includes('503') ||
-    error.includes('Service temporarily unavailable')
+    error.toLowerCase().includes('service temporarily unavailable')
   );
 
   return (

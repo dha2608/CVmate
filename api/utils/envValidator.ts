@@ -22,9 +22,10 @@ interface EnvConfig {
   GOOGLE_CLIENT_SECRET?: string;
   GOOGLE_CALLBACK_URL?: string;
   
-  // OpenAI
-  OPENAI_API_KEY?: string;
-  OPENAI_MODEL?: string;
+  // Hugging Face / AI Provider
+  HF_API_KEY?: string;
+  HF_CHAT_MODEL?: string;
+  HF_STT_MODEL?: string;
   
   // Stripe
   STRIPE_SECRET_KEY?: string;
@@ -61,7 +62,7 @@ export const validateEnv = (): ValidationResult => {
   ];
 
   const optionalButRecommended: string[] = [
-    'OPENAI_API_KEY',
+    'HF_API_KEY',
     'STRIPE_SECRET_KEY',
     'GOOGLE_CLIENT_ID',
     'GOOGLE_CLIENT_SECRET',
