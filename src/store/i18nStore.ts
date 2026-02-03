@@ -243,6 +243,11 @@ interface Translations {
     writeFirstArticle: string;
     views: string;
     new: string;
+    searchPlaceholder?: string;
+    filters?: string;
+    category?: string;
+    allCategories?: string;
+    loadMore?: string;
   };
   interview: {
     simulator: string;
@@ -455,6 +460,20 @@ const translations: Record<Language, Translations> = {
       achievements: 'Thành tựu',
       yourProgress: 'Tiến độ của bạn',
       nextMilestone: 'Cột mốc tiếp theo',
+      // Next best action & profile completion
+      nextBestAction: 'Gợi ý bước tiếp theo',
+      profileCompletion: 'Mức độ hoàn thiện hồ sơ',
+      nextActionOnboarding: 'Hoàn thành onboarding để cá nhân hoá trải nghiệm',
+      nextActionOnboardingDesc: 'Chọn mục tiêu nghề nghiệp để chúng tôi gợi ý CV, interview và jobs phù hợp.',
+      nextActionCreateCV: 'Tạo CV đầu tiên của bạn',
+      nextActionCreateCVDesc: 'Bắt đầu với template ATS-friendly và để AI tối ưu nội dung giúp bạn.',
+      nextActionInterview: 'Luyện phỏng vấn với AI',
+      nextActionInterviewDesc: 'Chọn một persona phù hợp và luyện trả lời các câu hỏi phỏng vấn thực tế.',
+      nextActionJobs: 'Khám phá các cơ hội việc làm phù hợp',
+      nextActionJobsDesc: 'Dùng CV đã tối ưu để apply vào các job đang tuyển dụng.',
+      completeOnboarding: 'Hoàn thành onboarding',
+      startInterview: 'Bắt đầu interview',
+      viewJobs: 'Xem jobs',
     },
     home: {
       heroTitle: 'Tạo CV Hoàn Hảo',
@@ -570,6 +589,11 @@ const translations: Record<Language, Translations> = {
       writeFirstArticle: 'Viết bài viết đầu tiên',
       views: 'lượt xem',
       new: 'Mới',
+      searchPlaceholder: 'Tìm kiếm bài viết hoặc tin tức...',
+      filters: 'Bộ lọc',
+      category: 'Danh mục',
+      allCategories: 'Tất cả',
+      loadMore: 'Tải thêm',
     },
     interview: {
       simulator: 'Mô phỏng phỏng vấn',
@@ -818,6 +842,20 @@ const translations: Record<Language, Translations> = {
       achievements: 'Achievements',
       yourProgress: 'Your Progress',
       nextMilestone: 'Next Milestone',
+      // Next best action & profile completion
+      nextBestAction: 'Next best action',
+      profileCompletion: 'Profile completion',
+      nextActionOnboarding: 'Complete onboarding to personalize your experience',
+      nextActionOnboardingDesc: 'Choose your career goal so we can suggest the right CV, interviews, and jobs.',
+      nextActionCreateCV: 'Create your first CV',
+      nextActionCreateCVDesc: 'Start with an ATS-friendly template and let AI optimize your content.',
+      nextActionInterview: 'Practice interviews with AI',
+      nextActionInterviewDesc: 'Pick a persona and practice realistic interview questions.',
+      nextActionJobs: 'Explore matching job opportunities',
+      nextActionJobsDesc: 'Use your optimized CV to apply for open roles.',
+      completeOnboarding: 'Complete onboarding',
+      startInterview: 'Start interview',
+      viewJobs: 'View jobs',
     },
     home: {
       heroTitle: 'Create Your Perfect CV',
@@ -933,6 +971,11 @@ const translations: Record<Language, Translations> = {
       writeFirstArticle: 'Write First Article',
       views: 'views',
       new: 'New',
+      searchPlaceholder: 'Search articles or news...',
+      filters: 'Filters',
+      category: 'Category',
+      allCategories: 'All categories',
+      loadMore: 'Load more',
     },
     interview: {
       simulator: 'Interview Simulator',

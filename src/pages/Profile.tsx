@@ -5,7 +5,7 @@ import { useToastStore } from '@/store/toastStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Mail, Camera, Save, X, Loader2, Shield, Crown, CreditCard } from 'lucide-react';
+import { User, Mail, Camera, Save, X, Loader2, Shield, Crown, CreditCard, MapPin, Briefcase, Link2, Globe2 } from 'lucide-react';
 import { api } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import PayPalButton from '@/components/PayPalButton';
@@ -24,19 +24,41 @@ const Profile = () => {
     name: '',
     avatar: '',
     email: '',
-    role: ''
+    role: '',
+    bio: '',
+    headline: '',
+    location: '',
+    yearsOfExperience: '' as string | '',
+    currentRole: '',
+    industries: '',
+    skills: '',
+    linkedin: '',
+    github: '',
+    portfolio: '',
+    isPublicProfile: true,
   });
   const [originalData, setOriginalData] = useState({
     name: '',
     avatar: '',
     email: '',
-    role: ''
+    role: '',
+    bio: '',
+    headline: '',
+    location: '',
+    yearsOfExperience: '' as string | '',
+    currentRole: '',
+    industries: '',
+    skills: '',
+    linkedin: '',
+    github: '',
+    portfolio: '',
+    isPublicProfile: true,
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
   // Check if form has changes
-  const hasChanges = formData.name !== originalData.name || formData.avatar !== originalData.avatar;
+  const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
 
   // Get current avatar for display
   const currentAvatar = formData.avatar || user?.avatar || '';
@@ -47,7 +69,18 @@ const Profile = () => {
         name: user.name || '',
         avatar: user.avatar || '',
         email: user.email || '',
-        role: user.role || 'user'
+        role: user.role || 'user',
+        bio: user.bio || '',
+        headline: user.headline || '',
+        location: user.location || '',
+        yearsOfExperience: user.yearsOfExperience != null ? String(user.yearsOfExperience) : '',
+        currentRole: user.currentRole || '',
+        industries: (user.industries || []).join(', '),
+        skills: (user.skills || []).join(', '),
+        linkedin: user.socialLinks?.linkedin || '',
+        github: user.socialLinks?.github || '',
+        portfolio: user.socialLinks?.portfolio || '',
+        isPublicProfile: user.isPublicProfile !== false,
       };
       setFormData(initialData);
       setOriginalData(initialData);
@@ -152,12 +185,7 @@ const Profile = () => {
 
   const handleCancel = () => {
     if (user) {
-      setFormData({
-        name: originalData.name,
-        avatar: originalData.avatar,
-        email: originalData.email,
-        role: originalData.role
-      });
+      setFormData(originalData);
     }
   };
 
@@ -167,9 +195,29 @@ const Profile = () => {
     setIsLoading(true);
 
     try {
+      const industriesArray = formData.industries
+        ? formData.industries.split(',').map((s) => s.trim()).filter(Boolean)
+        : [];
+      const skillsArray = formData.skills
+        ? formData.skills.split(',').map((s) => s.trim()).filter(Boolean)
+        : [];
+
       const response = await api.updateProfile({
         name: formData.name,
         avatar: formData.avatar,
+        bio: formData.bio,
+        headline: formData.headline,
+        location: formData.location,
+        yearsOfExperience: formData.yearsOfExperience ? Number(formData.yearsOfExperience) : undefined,
+        currentRole: formData.currentRole,
+        industries: industriesArray,
+        skills: skillsArray,
+        socialLinks: {
+          linkedin: formData.linkedin || undefined,
+          github: formData.github || undefined,
+          portfolio: formData.portfolio || undefined,
+        },
+        isPublicProfile: formData.isPublicProfile,
       });
 
       if (!response.success) {
@@ -177,12 +225,7 @@ const Profile = () => {
       }
 
       setUser(response.data);
-      setOriginalData({
-        name: formData.name,
-        avatar: formData.avatar,
-        email: formData.email,
-        role: formData.role
-      });
+      setOriginalData(formData);
       toast.success(t('toast.profileUpdated'));
     } catch (error: any) {
       toast.error(error.message || t('toast.profileUpdateFailed'));
@@ -378,6 +421,161 @@ const Profile = () => {
                 <div className="h-10 sm:h-11 w-full px-3 flex items-center bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md text-sm sm:text-base text-gray-500 dark:text-gray-400 capitalize">
                       {formData.role}
                 </div>
+              </div>
+
+              {/* Headline */}
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <Briefcase size={14} className="sm:w-4 sm:h-4" /> Headline
+                </label>
+                <Input
+                  value={formData.headline}
+                  onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
+                  className="h-10 sm:h-11 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600"
+                  placeholder="Ví dụ: Senior Frontend Engineer • React | TypeScript | UX"
+                />
+              </div>
+
+              {/* Location & years */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <MapPin size={14} className="sm:w-4 sm:h-4" /> Location
+                  </label>
+                  <Input
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    className="h-10 sm:h-11 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600"
+                    placeholder="Thành phố, Quốc gia"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <Briefcase size={14} className="sm:w-4 sm:h-4" /> Years of Experience
+                  </label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={formData.yearsOfExperience}
+                    onChange={(e) => setFormData({ ...formData, yearsOfExperience: e.target.value })}
+                    className="h-10 sm:h-11 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600"
+                    placeholder="Ví dụ: 3"
+                  />
+                </div>
+              </div>
+
+              {/* Current role */}
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <Briefcase size={14} className="sm:w-4 sm:h-4" /> Current Role
+                </label>
+                <Input
+                  value={formData.currentRole}
+                  onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
+                  className="h-10 sm:h-11 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600"
+                  placeholder="Ví dụ: Frontend Engineer tại Công ty X"
+                />
+              </div>
+
+              {/* Bio */}
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <User size={14} className="sm:w-4 sm:h-4" /> Bio
+                </label>
+                <textarea
+                  className="w-full min-h-[96px] border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-sm p-3"
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  placeholder="Giới thiệu ngắn gọn về bản thân, mục tiêu nghề nghiệp, thế mạnh..."
+                />
+              </div>
+
+              {/* Industries & skills */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Industries (phân tách bằng dấu phẩy)
+                  </label>
+                  <textarea
+                    className="w-full min-h-[64px] border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-sm p-2"
+                    value={formData.industries}
+                    onChange={(e) => setFormData({ ...formData, industries: e.target.value })}
+                    placeholder="VD: Software, Fintech, E-commerce"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Skills (phân tách bằng dấu phẩy)
+                  </label>
+                  <textarea
+                    className="w-full min-h-[64px] border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-sm p-2"
+                    value={formData.skills}
+                    onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                    placeholder="VD: React, TypeScript, Node.js, UI/UX"
+                  />
+                </div>
+              </div>
+
+              {/* Social links */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <Linkedin className="w-4 h-4" /> LinkedIn
+                  </label>
+                  <Input
+                    value={formData.linkedin}
+                    onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
+                    className="h-9 text-xs sm:text-sm dark:bg-gray-700 dark:border-gray-600"
+                    placeholder="https://www.linkedin.com/in/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <Github className="w-4 h-4" /> GitHub
+                  </label>
+                  <Input
+                    value={formData.github}
+                    onChange={(e) => setFormData({ ...formData, github: e.target.value })}
+                    className="h-9 text-xs sm:text-sm dark:bg-gray-700 dark:border-gray-600"
+                    placeholder="https://github.com/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <Globe2 className="w-4 h-4" /> Portfolio
+                  </label>
+                  <Input
+                    value={formData.portfolio}
+                    onChange={(e) => setFormData({ ...formData, portfolio: e.target.value })}
+                    className="h-9 text-xs sm:text-sm dark:bg-gray-700 dark:border-gray-600"
+                    placeholder="https://your-portfolio.com"
+                  />
+                </div>
+              </div>
+
+              {/* Public profile toggle */}
+              <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 mt-2">
+                <div>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">
+                    Public profile
+                  </p>
+                  <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+                    Cho phép người khác xem trang hồ sơ của bạn tại đường dẫn /u/&lt;id&gt;.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormData((f) => ({ ...f, isPublicProfile: !f.isPublicProfile }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    formData.isPublicProfile ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                      formData.isPublicProfile ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
               </div>
             </div>
           </div>

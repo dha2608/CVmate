@@ -5,6 +5,8 @@ interface User {
   _id: string;
   name: string;
   avatar?: string;
+  careerGoal?: 'new-job' | 'internship' | 'career-switch';
+  location?: string;
 }
 
 interface Comment {

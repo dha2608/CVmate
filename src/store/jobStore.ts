@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api } from '@/lib/utils';
+import { trackEvent } from '@/lib/analytics';
 
 interface Job {
   _id: string;
@@ -84,6 +85,7 @@ export const useJobStore = create<JobState>((set, get) => ({
       if (response.success) {
         // Refresh jobs to update application status
         await get().fetchJobs();
+        trackEvent('job_applied', { jobId });
       } else {
         throw new Error(response.message || 'Failed to apply');
       }

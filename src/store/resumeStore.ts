@@ -64,6 +64,14 @@ interface ResumeState {
   // AI Enhance
   aiEnhanceText: (text: string, type?: string) => Promise<string>;
 
+  // AI Generate full resume
+  aiGenerateFull: (payload: { prompt?: string; jobDescription?: string }) => Promise<{
+    summary: string;
+    experience: IExperience[];
+    education: IEducation[];
+    skills: string[];
+  }>;
+
   resetResume: () => void;
 }
 
@@ -155,6 +163,22 @@ export const useResumeStore = create<ResumeState>()(
         } catch (error) {
           console.error('AI Enhance failed:', error);
           return text; // Return original text on error
+        }
+      },
+
+      aiGenerateFull: async (payload) => {
+        try {
+          const { api } = await import('@/lib/utils');
+          const response = await api.aiGenerateFullResume(payload);
+          return response.data as {
+            summary: string;
+            experience: IExperience[];
+            education: IEducation[];
+            skills: string[];
+          };
+        } catch (error) {
+          console.error('AI Generate full resume failed:', error);
+          throw error;
         }
       },
 

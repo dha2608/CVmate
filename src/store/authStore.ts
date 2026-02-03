@@ -7,6 +7,19 @@ interface User {
   role: string;
   token: string;
   avatar?: string;
+  bio?: string;
+  headline?: string;
+  location?: string;
+  yearsOfExperience?: number;
+  currentRole?: string;
+  industries?: string[];
+  skills?: string[];
+  socialLinks?: {
+    linkedin?: string;
+    github?: string;
+    portfolio?: string;
+  };
+  isPublicProfile?: boolean;
   onboardingCompleted?: boolean;
   careerGoal?: 'new-job' | 'internship' | 'career-switch';
   subscription?: {
