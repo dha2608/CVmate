@@ -71,6 +71,59 @@ const Dashboard = () => {
 
   const isLoading = isInitialLoading || statsLoading || articlesLoading;
 
+  // Simple profile completion heuristic
+  const profileSegments = [
+    user.onboardingCompleted ? 1 : 0,
+    stats.resumesCount > 0 ? 1 : 0,
+    stats.interviewsCount > 0 ? 1 : 0,
+    stats.postsCount > 0 ? 1 : 0,
+  ];
+  const profileProgress =
+    (profileSegments.reduce((sum, v) => sum + v, 0) / profileSegments.length) * 100;
+
+  const getNextAction = () => {
+    if (!user.onboardingCompleted) {
+      return {
+        title: t('dashboard.nextActionOnboarding') || 'Hoàn thành onboarding để cá nhân hoá trải nghiệm',
+        desc:
+          t('dashboard.nextActionOnboardingDesc') ||
+          'Chọn mục tiêu nghề nghiệp để chúng tôi gợi ý CV, interview và jobs phù hợp.',
+        cta: t('dashboard.completeOnboarding') || 'Hoàn thành onboarding',
+        href: '/onboarding',
+      };
+    }
+    if (stats.resumesCount === 0) {
+      return {
+        title: t('dashboard.nextActionCreateCV') || 'Tạo CV đầu tiên của bạn',
+        desc:
+          t('dashboard.nextActionCreateCVDesc') ||
+          'Bắt đầu với template ATS-friendly và để AI tối ưu nội dung giúp bạn.',
+        cta: t('dashboard.createCV') || 'Tạo CV',
+        href: '/builder',
+      };
+    }
+    if (stats.interviewsCount === 0) {
+      return {
+        title: t('dashboard.nextActionInterview') || 'Luyện phỏng vấn với AI',
+        desc:
+          t('dashboard.nextActionInterviewDesc') ||
+          'Chọn một persona phù hợp và luyện trả lời các câu hỏi phỏng vấn thực tế.',
+        cta: t('dashboard.startInterview') || 'Bắt đầu interview',
+        href: '/interview',
+      };
+    }
+    return {
+      title: t('dashboard.nextActionJobs') || 'Khám phá các cơ hội việc làm phù hợp',
+      desc:
+        t('dashboard.nextActionJobsDesc') ||
+        'Dùng CV đã tối ưu để apply vào các job đang tuyển dụng.',
+      cta: t('dashboard.viewJobs') || 'Xem jobs',
+      href: '/jobs',
+    };
+  };
+
+  const nextAction = getNextAction();
+
   return (
     <MainLayout>
       <motion.div 
@@ -110,6 +163,47 @@ const Dashboard = () => {
                </div>
                <span className="text-gray-500 dark:text-gray-400 text-sm font-medium flex-1">{t('dashboard.startPost')}</span>
             </div>
+         </div>
+
+         {/* Next Best Action + Profile Progress */}
+         <div className="card-base">
+           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+             <div className="space-y-1">
+               <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide flex items-center gap-1">
+                 <Target size={14} className="text-crimson-red dark:text-red-400" />
+                 {t('dashboard.nextBestAction') || 'Next best action'}
+               </p>
+               <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                 {nextAction.title}
+               </h2>
+               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 max-w-xl">
+                 {nextAction.desc}
+               </p>
+             </div>
+             <div className="flex items-center gap-4 w-full md:w-auto">
+               <div className="flex flex-col items-start">
+                 <span className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">
+                   {t('dashboard.profileCompletion') || 'Profile completion'}
+                 </span>
+                 <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                   <div
+                     className="h-2 bg-crimson-red dark:bg-red-500 rounded-full transition-all duration-500"
+                     style={{ width: `${Math.min(100, Math.round(profileProgress))}%` }}
+                   />
+                 </div>
+                 <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mt-1">
+                   {Math.round(profileProgress)}%
+                 </span>
+               </div>
+               <Button
+                 size="sm"
+                 className="whitespace-nowrap bg-crimson-red hover:bg-fire-red text-white"
+                 onClick={() => navigate(nextAction.href)}
+               >
+                 {nextAction.cta}
+               </Button>
+             </div>
+           </div>
          </div>
 
          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">

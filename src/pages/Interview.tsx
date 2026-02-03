@@ -11,6 +11,7 @@ import PersonaSelector from '@/components/interview/PersonaSelector';
 import InterviewAnalytics from '@/components/interview/InterviewAnalytics';
 import AIFeatureNotice from '@/components/AIFeatureNotice';
 import MainLayout from '@/components/layout/MainLayout';
+import { trackEvent } from '@/lib/analytics';
 
 // Type definitions for Speech Recognition API
 declare global {
@@ -156,6 +157,7 @@ const Interview = () => {
   const handleStartInterview = async (personaId: string) => {
     await startSession(personaId as any);
     setTimeElapsed(0);
+    trackEvent('interview_started', { persona: personaId });
     // Start timer
     timerRef.current = setInterval(() => {
       setTimeElapsed(prev => prev + 1);
@@ -167,6 +169,10 @@ const Interview = () => {
     const text = input;
     setInput('');
     await sendUserMessage(text);
+    trackEvent('interview_message_sent', {
+      length: text.length,
+      persona,
+    });
   };
 
   const handleEnd = async () => {
@@ -174,6 +180,11 @@ const Interview = () => {
       clearInterval(timerRef.current);
     }
     await endSession();
+    trackEvent('interview_ended', {
+      persona,
+      durationSeconds: timeElapsed,
+      messageCount: messages.length,
+    });
   };
 
   const handleBackToDashboard = () => {
