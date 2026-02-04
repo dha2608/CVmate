@@ -32,7 +32,7 @@ const Login = () => {
         toast.success(t('toast.loginSuccess'));
         navigate('/dashboard');
       } else {
-        const errorMsg = data.message || t('login.invalidCredentials');
+        const errorMsg = (data as any).message || t('login.invalidCredentials');
         setError(errorMsg);
         toast.error(errorMsg);
       }
