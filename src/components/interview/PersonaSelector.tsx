@@ -17,6 +17,7 @@ interface Persona {
 const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => void; isLoading: boolean }) => {
   const { t } = useI18n();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [imgOk, setImgOk] = useState<Record<string, boolean>>({});
 
   const personas: Persona[] = [
     {
@@ -134,10 +135,11 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {filteredPersonas.map(persona => {
           const Icon = persona.icon;
+          const ok = imgOk[persona.id] !== false;
           return (
             <div
               key={persona.id}
-              className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg hover:scale-[1.02] sm:hover:scale-105 transition-all group relative overflow-hidden"
+              className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col min-h-[248px]"
               onClick={() => !isLoading && onSelect(persona.id)}
             >
               {/* Background gradient */}
@@ -153,8 +155,17 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
               {/* Avatar */}
               <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                 <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full ${persona.color} p-0.5 sm:p-1 flex items-center justify-center flex-shrink-0`}>
-                  <div className="w-full h-full rounded-full bg-white dark:bg-gray-700 overflow-hidden">
-                    <img src={persona.avatar} alt={persona.title} className="w-full h-full object-cover" />
+                  <div className="w-full h-full rounded-full bg-white dark:bg-gray-700 overflow-hidden flex items-center justify-center">
+                    {ok ? (
+                      <img
+                        src={persona.avatar}
+                        alt={persona.title}
+                        className="w-full h-full object-cover"
+                        onError={() => setImgOk((m) => ({ ...m, [persona.id]: false }))}
+                      />
+                    ) : (
+                      <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                    )}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -175,7 +186,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
 
               {/* Start Button */}
               <Button
-                className={`w-full ${persona.color} hover:opacity-90 text-white text-xs sm:text-sm`}
+                className={`w-full ${persona.color} hover:opacity-90 text-white text-xs sm:text-sm mt-auto`}
                 disabled={isLoading}
               >
                 {isLoading ? (
