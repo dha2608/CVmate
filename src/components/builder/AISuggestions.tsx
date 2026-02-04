@@ -51,15 +51,15 @@ const AISuggestions = ({ onApply }: AISuggestionsProps) => {
   const unreadCount = suggestions.filter(s => !applied.has(s.id)).length;
 
   return (
-    <div className="relative">
+    <div className="relative z-50">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+        className="relative flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 lg:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl flex-shrink-0 whitespace-nowrap"
       >
-        <Brain size={16} />
-        <span className="text-sm font-semibold">AI Suggestions</span>
+        <Brain size={14} className="sm:w-4 sm:h-4" />
+        <span className="text-xs sm:text-sm font-semibold hidden md:inline">AI Suggestions</span>
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
+          <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold">
             {unreadCount}
           </span>
         )}
@@ -69,14 +69,14 @@ const AISuggestions = ({ onApply }: AISuggestionsProps) => {
         {isOpen && (
           <>
             <div 
-              className="fixed inset-0 z-40" 
+              className="fixed inset-0 z-[45]" 
               onClick={() => setIsOpen(false)}
             />
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="absolute top-full right-0 mt-2 w-80 bg-white border-2 border-gray-200 rounded-xl shadow-2xl z-50 p-4 max-h-96 overflow-y-auto"
+              className="absolute top-full right-0 mt-2 w-80 bg-white border-2 border-gray-200 rounded-xl shadow-2xl z-[50] p-4 max-h-96 overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
