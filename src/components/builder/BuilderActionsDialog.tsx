@@ -53,12 +53,28 @@ const BuilderActionsDialog = ({
           </button>
         </div>
 
-        <div className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-4 sm:p-5 space-y-4">
+          {/* Template Selection - Most Important */}
+          <div className="rounded-xl border-2 border-gray-200 p-4 bg-gray-50">
+            <div className="flex items-center gap-2 mb-3">
+              <LayoutTemplate size={18} className="text-crimson-red" />
+              <div>
+                <div className="text-sm font-bold text-gray-900">CV Template</div>
+                <div className="text-xs text-gray-500">Choose a design for your CV</div>
+              </div>
+            </div>
+            <TemplateSelector selectedTemplate={selectedTemplate} onSelect={onSelectTemplate} />
+          </div>
+
+          {/* Quick Start - Only if available */}
           {quickPresets.length > 0 && (
-            <div className="rounded-xl border border-gray-200 p-4 sm:col-span-2">
+            <div className="rounded-xl border border-gray-200 p-4 bg-white">
               <div className="flex items-center gap-2 mb-3">
-                <Zap size={16} className="text-yellow-500" />
-                <div className="text-sm font-bold text-gray-900">Quick Start</div>
+                <Zap size={18} className="text-yellow-500" />
+                <div>
+                  <div className="text-sm font-bold text-gray-900">Quick Start</div>
+                  <div className="text-xs text-gray-500">Pre-fill with example data</div>
+                </div>
               </div>
               <div className="flex flex-wrap gap-2">
                 {quickPresets.map((preset) => (
@@ -69,7 +85,7 @@ const BuilderActionsDialog = ({
                       preset.apply();
                       onOpenChange(false);
                     }}
-                    className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-crimson-red hover:text-crimson-red transition-all text-sm"
+                    className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:border-crimson-red hover:text-crimson-red hover:bg-red-50 transition-all text-sm font-medium"
                   >
                     {preset.label}
                   </button>
@@ -78,48 +94,55 @@ const BuilderActionsDialog = ({
             </div>
           )}
 
-          <div className="rounded-xl border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <LayoutTemplate size={16} className="text-crimson-red" />
-              <div className="text-sm font-bold text-gray-900">Template</div>
+          {/* Sections Management - Collapsible */}
+          <details className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+            <summary className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ListTree size={18} className="text-gray-600" />
+                <div>
+                  <div className="text-sm font-bold text-gray-900">Manage Sections</div>
+                  <div className="text-xs text-gray-500">Reorder or hide sections</div>
+                </div>
+              </div>
+            </summary>
+            <div className="px-4 pb-4">
+              <SectionReorder
+                sections={sections}
+                onReorder={onReorderSections}
+                onToggleVisibility={onToggleSectionVisibility}
+              />
             </div>
-            <TemplateSelector selectedTemplate={selectedTemplate} onSelect={onSelectTemplate} />
-          </div>
+          </details>
 
-          <div className="rounded-xl border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <ListTree size={16} className="text-crimson-red" />
-              <div className="text-sm font-bold text-gray-900">Sections</div>
+          {/* AI Suggestions - Collapsible */}
+          <details className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+            <summary className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles size={18} className="text-purple-600" />
+                <div>
+                  <div className="text-sm font-bold text-gray-900">AI Suggestions</div>
+                  <div className="text-xs text-gray-500">Get AI-powered recommendations</div>
+                </div>
+              </div>
+            </summary>
+            <div className="px-4 pb-4">
+              <AISuggestions />
             </div>
-            <SectionReorder
-              sections={sections}
-              onReorder={onReorderSections}
-              onToggleVisibility={onToggleSectionVisibility}
-            />
-          </div>
-
-          <div className="rounded-xl border border-gray-200 p-4 sm:col-span-2">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles size={16} className="text-purple-600" />
-              <div className="text-sm font-bold text-gray-900">AI Suggestions</div>
-            </div>
-            <AISuggestions />
-          </div>
+          </details>
         </div>
 
-        <div className="p-4 sm:p-5 border-t border-gray-200 flex items-center justify-between gap-3">
+        <div className="p-4 sm:p-5 border-t border-gray-200 flex items-center justify-end gap-3">
           <Button
             variant="outline"
             onClick={() => {
               onOpenShortcuts();
               onOpenChange(false);
             }}
-            className="border-2 border-gray-200 hover:border-crimson-red hover:text-crimson-red"
+            className="border-gray-200 hover:border-gray-300"
           >
             <Keyboard size={16} className="mr-2" />
-            Keyboard shortcuts
+            Shortcuts
           </Button>
-
           <Button
             onClick={() => onOpenChange(false)}
             className="bg-crimson-red hover:bg-fire-red text-white"

@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '@/store/i18nStore';
 import { useToastStore } from '@/store/toastStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Lightbulb, Timer, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Loader2, Lightbulb, RotateCcw, Timer, Volume2, VolumeX } from 'lucide-react';
 import { useInterviewStore } from '@/store/interviewStore';
 import InterviewDashboard from '@/components/interview/InterviewDashboard';
 import PersonaSelector from '@/components/interview/PersonaSelector';
 import InterviewAnalytics from '@/components/interview/InterviewAnalytics';
+import InterviewResult from '@/components/interview/InterviewResult';
 import AIFeatureNotice from '@/components/AIFeatureNotice';
 import MainLayout from '@/components/layout/MainLayout';
 import { trackEvent } from '@/lib/analytics';
@@ -61,6 +62,7 @@ const Interview = () => {
   const [showHints, setShowHints] = useState(false);
   const [interviewMode, setInterviewMode] = useState<'practice' | 'stress' | 'normal'>('normal');
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [avatarOk, setAvatarOk] = useState(true);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const {
@@ -77,6 +79,10 @@ const Interview = () => {
     endSession,
     reset,
   } = useInterviewStore();
+
+  useEffect(() => {
+    setAvatarOk(true);
+  }, [persona]);
 
   // Show toast when error occurs with better handling
   const prevErrorRef = useRef<string | null>(null);
@@ -192,6 +198,20 @@ const Interview = () => {
     navigate('/dashboard');
   };
 
+  const handleStartNew = () => {
+    reset();
+  };
+
+  const personaTitle = useMemo(() => {
+    return persona === 'friendly-hr' ? t('interview.friendlyHR') :
+      persona === 'strict-manager' ? t('interview.strictManager') :
+      persona === 'tech-lead' ? t('interview.techLead') :
+      persona === 'startup-founder' ? t('interview.startupFounder') :
+      persona === 'executive' ? t('interview.executive') :
+      persona === 'academic' ? t('interview.academic') :
+      t('interview.englishNative');
+  }, [persona, t]);
+
   if (!persona) {
       return (
         <MainLayout layoutMode="narrow" showLeftSidebar={false} showRightSidebar={false}>
@@ -295,19 +315,24 @@ const Interview = () => {
                 </Button>
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-crimson-red to-fire-red p-0.5 flex-shrink-0">
-                      <div className="w-full h-full rounded-full bg-white dark:bg-gray-700 overflow-hidden">
-                        <img src={getPersonaAvatar(persona)} alt="Persona" className="w-full h-full" />
+                      <div className="w-full h-full rounded-full bg-white dark:bg-gray-700 overflow-hidden flex items-center justify-center">
+                        {avatarOk ? (
+                          <img
+                            src={getPersonaAvatar(persona)}
+                            alt={personaTitle}
+                            className="w-full h-full object-cover"
+                            onError={() => setAvatarOk(false)}
+                          />
+                        ) : (
+                          <span className="text-[10px] sm:text-xs font-semibold text-gray-700 dark:text-gray-200 px-2 text-center">
+                            {personaTitle}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
                         <h2 className="font-bold text-secondary dark:text-red-400 capitalize text-xs sm:text-sm lg:text-base truncate">
-                          {persona === 'friendly-hr' ? t('interview.friendlyHR') :
-                           persona === 'strict-manager' ? t('interview.strictManager') :
-                           persona === 'tech-lead' ? t('interview.techLead') :
-                           persona === 'startup-founder' ? t('interview.startupFounder') :
-                           persona === 'executive' ? t('interview.executive') :
-                           persona === 'academic' ? t('interview.academic') :
-                           t('interview.englishNative')}
+                          {personaTitle}
                         </h2>
                         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                           <span className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
@@ -337,6 +362,12 @@ const Interview = () => {
                   <span className="sm:hidden">{showHints ? 'Hide' : 'Show'}</span>
                 </Button>
               )}
+              {status === 'completed' && (
+                <Button variant="outline" size="sm" onClick={handleStartNew} className="text-xs sm:text-sm">
+                  <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  {t('interview.startNew') || 'Start new'}
+                </Button>
+              )}
               <Button 
                 variant="destructive" 
                 size="sm" 
@@ -353,40 +384,42 @@ const Interview = () => {
             {/* Real-time Dashboard */}
             {status === 'active' && <InterviewDashboard />}
 
-            {/* 3D Avatar with Enhanced Animation */}
-            <div className="flex justify-center mb-4 sm:mb-6">
-                 <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 rounded-full border-2 sm:border-4 border-white dark:border-gray-800 shadow-2xl bg-gradient-to-br from-crimson-red to-fire-red flex items-center justify-center overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 animate-pulse"></div>
-                    <img 
-                      src={getPersonaAvatar(persona)} 
-                      alt="AI Interviewer" 
-                      className="w-full h-full object-cover transform scale-110 relative z-10 group-hover:scale-125 transition-transform duration-300" 
+            {/* Avatar (only while active, reduced size) */}
+            {status === 'active' && (
+              <div className="flex justify-center mb-2 sm:mb-4">
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-2 border-white dark:border-gray-800 shadow-xl bg-gradient-to-br from-crimson-red to-fire-red flex items-center justify-center overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-400/10 to-purple-400/10"></div>
+                  {avatarOk ? (
+                    <img
+                      src={getPersonaAvatar(persona)}
+                      alt={personaTitle}
+                      className="w-full h-full object-cover relative z-10"
+                      onError={() => setAvatarOk(false)}
                     />
-                    {/* Enhanced Audio Visualizer */}
-                    {isRecording && (
-                      <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent flex items-end justify-center gap-1 sm:gap-1.5 pb-4 sm:pb-6 z-20">
-                        {[...Array(5)].map((_, i) => {
-                          // Use a stable height calculation based on index instead of random
-                          const heights = [20, 25, 30, 25, 20];
-                          return (
-                            <div 
-                              key={i}
-                              className="w-1 sm:w-1.5 bg-white rounded-full animate-bounce"
-                              style={{ 
-                                animationDelay: `${i * 0.1}s`,
-                                height: `${heights[i]}px`
-                              }}
-                            />
-                          );
-                        })}
-                      </div>
-                    )}
-                    {/* Speaking indicator */}
-                    {messages.length > 0 && messages[messages.length - 1]?.role === 'assistant' && !isRecording && (
-                      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full animate-ping z-20"></div>
-                    )}
-                 </div>
-            </div>
+                  ) : (
+                    <div className="w-full h-full bg-white dark:bg-gray-800 flex items-center justify-center px-2 relative z-10">
+                      <span className="text-[10px] sm:text-xs font-semibold text-gray-700 dark:text-gray-200 text-center">
+                        {personaTitle}
+                      </span>
+                    </div>
+                  )}
+                  {isRecording && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/25 to-transparent flex items-end justify-center gap-1 pb-3 z-20">
+                      {[...Array(5)].map((_, i) => {
+                        const heights = [16, 20, 24, 20, 16];
+                        return (
+                          <div
+                            key={i}
+                            className="w-1 bg-white rounded-full animate-bounce"
+                            style={{ animationDelay: `${i * 0.1}s`, height: `${heights[i]}px` }}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Practice Mode Hints */}
             {showHints && interviewMode === 'practice' && messages.length > 0 && (
@@ -424,38 +457,15 @@ const Interview = () => {
 
             <div ref={messagesEndRef} />
 
-            {feedback && (
-              <div className="mt-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-crimson-red/20 dark:border-red-500/20 rounded-xl p-6 shadow-lg">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-crimson-red to-fire-red flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">AI</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('interview.aiFeedbackSummary')}</h3>
-                </div>
-                
-                {/* Score Cards */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Confidence Score</p>
-                    <p className="text-2xl font-bold text-crimson-red">{feedback.confidenceScore || 0}%</p>
-                  </div>
-                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Content Score</p>
-                    <p className="text-2xl font-bold text-blue-600">{feedback.contentScore || 0}%</p>
-                  </div>
-                </div>
-                
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{feedback.suggestions}</p>
-                </div>
-              </div>
-            )}
+            {/* Review should only appear after interview ends */}
+            {status === 'completed' && feedback && <InterviewResult />}
 
-            {/* Interview Analytics */}
-            {status === 'completed' && <InterviewAnalytics />}
+            {/* Interview Analytics (simple overview, no mock data) */}
+            {status === 'completed' && feedback && <InterviewAnalytics />}
         </div>
         
-        <div className="p-2 sm:p-3 lg:p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex gap-2 sm:gap-3 items-center shadow-lg">
+        {status !== 'completed' && (
+          <div className="p-2 sm:p-3 lg:p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex gap-2 sm:gap-3 items-center shadow-lg">
             <Button 
                 variant="outline" 
                 size="icon"
@@ -527,7 +537,8 @@ const Interview = () => {
                 )}
                 {!isSending && <span className="sm:hidden">Send</span>}
             </Button>
-        </div>
+          </div>
+        )}
     </div>
   );
 };

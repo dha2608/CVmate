@@ -128,12 +128,6 @@ const InterviewDashboard = () => {
         unit="%"
         color="bg-red-500"
       />
-      <MetricCard
-        icon={Zap}
-        label="Status"
-        value={status === 'active' ? 'Active' : 'Completed'}
-        color="bg-indigo-500"
-      />
     </div>
   );
 };
