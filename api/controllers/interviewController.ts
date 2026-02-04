@@ -224,15 +224,32 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
       .join('\n');
 
     const feedbackPrompt = `
-      Analyze the following interview conversation based on the persona "${interview.persona}".
-      Provide a JSON response with:
-      1. "score" (number 0-100)
-      2. "strengths" (array of strings)
-      3. "improvements" (array of strings)
-      4. "summary" (short paragraph)
-      
-      Conversation:
-      ${conversationText}
+You are an expert interview coach.
+Analyze the following interview conversation based on the persona "${interview.persona}".
+
+Return ONLY a valid JSON object with this exact structure and no other text:
+{
+  "scores": {
+    "communication": number,   // 0-100
+    "content": number,         // 0-100
+    "confidence": number,      // 0-100
+    "structure": number        // 0-100
+  },
+  "strengths": string[],        // list of strengths
+  "improvements": string[],     // list of concrete, actionable improvements
+  "summary": string,            // short paragraph (3-5 sentences) summarizing overall performance
+  "perQuestionFeedback": [
+    {
+      "question": string,       // interviewer question
+      "answer": string,         // candidate answer (short summary)
+      "score": number,          // 0-100 for this question
+      "feedback": string        // 1-3 sentences of targeted feedback
+    }
+  ]
+}
+
+Conversation:
+${conversationText}
     `;
 
     const hf = getHFClient();
@@ -266,10 +283,49 @@ export const endInterview = async (req: AuthRequest, res: Response, next: NextFu
 
       const aiData = JSON.parse(responseContent);
 
+      const scores = aiData.scores || {};
+      const overallScore =
+        typeof scores.communication === 'number' ||
+        typeof scores.content === 'number' ||
+        typeof scores.confidence === 'number' ||
+        typeof scores.structure === 'number'
+          ? Math.round(
+              ([
+                scores.communication ?? 0,
+                scores.content ?? 0,
+                scores.confidence ?? 0,
+                scores.structure ?? 0,
+              ].reduce((sum: number, v: number) => sum + v, 0)) /
+                4,
+            )
+          : aiData.score || 0;
+
+      const strengths: string[] = Array.isArray(aiData.strengths) ? aiData.strengths : [];
+      const improvements: string[] = Array.isArray(aiData.improvements) ? aiData.improvements : [];
+      const perQuestionFeedback = Array.isArray(aiData.perQuestionFeedback)
+        ? aiData.perQuestionFeedback
+        : [];
+
       interview.feedback = {
-        confidenceScore: aiData.score || 0,
-        contentScore: aiData.score || 0,
-        suggestions: `SUMMARY: ${aiData.summary || 'No summary available'}\n\nSTRENGTHS:\n- ${(aiData.strengths || []).join('\n- ') || 'None identified'}\n\nIMPROVEMENTS:\n- ${(aiData.improvements || []).join('\n- ') || 'None identified'}`
+        // Backwards-compatible fields for existing UI
+        confidenceScore: scores.confidence ?? overallScore ?? 0,
+        contentScore: scores.content ?? overallScore ?? 0,
+        suggestions: `SUMMARY: ${aiData.summary || 'No summary available'}\n\nSTRENGTHS:\n- ${
+          strengths.length ? strengths.join('\n- ') : 'None identified'
+        }\n\nIMPROVEMENTS:\n- ${
+          improvements.length ? improvements.join('\n- ') : 'None identified'
+        }`,
+        // New structured data for radar & rich UI
+        strengths,
+        improvements,
+        overallScore: overallScore ?? 0,
+        scoresByDimension: {
+          communication: scores.communication ?? null,
+          content: scores.content ?? null,
+          confidence: scores.confidence ?? null,
+          structure: scores.structure ?? null,
+        },
+        perQuestionFeedback,
       };
       
       interview.status = 'completed';
