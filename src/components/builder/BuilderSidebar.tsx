@@ -11,7 +11,8 @@ import {
   Zap,
   ChevronLeft,
   ChevronRight,
-  Settings2
+  Settings2,
+  ArrowLeft
 } from 'lucide-react';
 
 export type BuilderSectionId = 'personal' | 'summary' | 'experience' | 'education' | 'skills';
@@ -20,6 +21,32 @@ export interface BuilderSection {
   id: BuilderSectionId;
   label: string;
   visible: boolean;
+}
+
+interface ResumeData {
+  personalInfo: {
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    linkedin?: string;
+    website?: string;
+  };
+  summary?: string;
+  experience?: Array<{
+    company?: string;
+    position?: string;
+    startDate?: string;
+    endDate?: string;
+    description?: string;
+  }>;
+  education?: Array<{
+    institution?: string;
+    degree?: string;
+    startDate?: string;
+    endDate?: string;
+  }>;
+  skills?: string[];
 }
 
 interface BuilderSidebarProps {
@@ -34,6 +61,8 @@ interface BuilderSidebarProps {
   isCollapsed: boolean;
   onToggleCollapsed: () => void;
   onOpenActions?: () => void;
+  onBack?: () => void;
+  currentResume?: ResumeData;
 }
 
 const sectionIcons: Record<BuilderSectionId, typeof User> = {
@@ -56,10 +85,53 @@ const BuilderSidebar = ({
   isCollapsed,
   onToggleCollapsed,
   onOpenActions,
+  onBack,
+  currentResume,
 }: BuilderSidebarProps) => {
   const visibleSections = sections.filter((s) => s.visible !== false);
-  const currentIndex = visibleSections.findIndex((s) => s.id === activeTab);
-  const progress = ((currentIndex + 1) / visibleSections.length) * 100;
+  
+  // Calculate real progress based on actual data
+  const calculateProgress = () => {
+    if (!currentResume) return 0;
+    
+    let completed = 0;
+    const total = visibleSections.length;
+    
+    // Personal Info: at least name and email
+    if (currentResume.personalInfo?.fullName?.trim() && currentResume.personalInfo?.email?.trim()) {
+      completed++;
+    }
+    
+    // Summary: has content
+    if (currentResume.summary?.trim()) {
+      completed++;
+    }
+    
+    // Experience: has at least one complete entry
+    if (currentResume.experience && currentResume.experience.length > 0) {
+      const hasComplete = currentResume.experience.some(
+        exp => exp.company?.trim() && exp.position?.trim()
+      );
+      if (hasComplete) completed++;
+    }
+    
+    // Education: has at least one complete entry
+    if (currentResume.education && currentResume.education.length > 0) {
+      const hasComplete = currentResume.education.some(
+        edu => edu.institution?.trim() && edu.degree?.trim()
+      );
+      if (hasComplete) completed++;
+    }
+    
+    // Skills: has at least one skill
+    if (currentResume.skills && currentResume.skills.length > 0 && currentResume.skills.some(s => s.trim())) {
+      completed++;
+    }
+    
+    return Math.round((completed / total) * 100);
+  };
+  
+  const progress = calculateProgress();
 
   return (
     <aside
@@ -70,25 +142,47 @@ const BuilderSidebar = ({
       {/* Header */}
       <div className="h-16 px-4 flex items-center justify-between border-b border-gray-200 bg-white">
         {!isCollapsed && (
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-crimson-red to-fire-red text-white flex items-center justify-center font-black text-lg shadow-lg shadow-red-500/20">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="h-8 w-8 rounded-lg hover:bg-gray-100 text-gray-600 flex items-center justify-center transition-colors flex-shrink-0"
+                title="Back to Dashboard"
+              >
+                <ArrowLeft size={18} />
+              </button>
+            )}
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-crimson-red to-fire-red text-white flex items-center justify-center font-black text-lg shadow-lg shadow-red-500/20 flex-shrink-0">
               C
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="text-sm font-bold text-jet-black truncate">CV Builder</div>
               <div className="text-[10px] text-gray-500 truncate">Professional Resume</div>
             </div>
           </div>
         )}
         {isCollapsed && (
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-crimson-red to-fire-red text-white flex items-center justify-center font-black text-lg shadow-lg shadow-red-500/20 mx-auto">
-            C
-          </div>
+          <>
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="h-8 w-8 rounded-lg hover:bg-gray-100 text-gray-600 flex items-center justify-center transition-colors mx-auto mb-2"
+                title="Back to Dashboard"
+              >
+                <ArrowLeft size={18} />
+              </button>
+            )}
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-crimson-red to-fire-red text-white flex items-center justify-center font-black text-lg shadow-lg shadow-red-500/20 mx-auto">
+              C
+            </div>
+          </>
         )}
         <button
           type="button"
           onClick={onToggleCollapsed}
-          className="h-8 w-8 rounded-lg hover:bg-gray-100 text-gray-600 flex items-center justify-center transition-colors"
+          className="h-8 w-8 rounded-lg hover:bg-gray-100 text-gray-600 flex items-center justify-center transition-colors flex-shrink-0"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
@@ -169,15 +263,23 @@ const BuilderSidebar = ({
 
       {/* Actions */}
       <div className="border-t border-gray-200 bg-white p-3 space-y-2">
+        {!isCollapsed && (
+          <div className="px-2 pb-2">
+            <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">
+              Quick Actions
+            </div>
+          </div>
+        )}
         {onOpenActions && (
           <Button
             variant="outline"
             size="sm"
             onClick={onOpenActions}
             className="w-full border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+            title="Templates, sections, and AI tools"
           >
             <Settings2 size={14} className="mr-2" />
-            {!isCollapsed && 'Settings'}
+            {!isCollapsed && 'Settings & More'}
           </Button>
         )}
         <Button
@@ -186,18 +288,25 @@ const BuilderSidebar = ({
           onClick={onSave}
           disabled={saving}
           className="w-full border-2 border-gray-200 hover:border-crimson-red hover:text-crimson-red hover:bg-red-50 transition-all"
+          title="Save your CV (Ctrl+S)"
         >
           <Save size={14} className="mr-2" />
-          {!isCollapsed && (saved ? '✓ Saved' : saving ? 'Saving…' : 'Save')}
+          {!isCollapsed && (saved ? '✓ Saved' : saving ? 'Saving…' : 'Save CV')}
         </Button>
         <Button
           size="sm"
           onClick={onDownload}
           className="w-full bg-gradient-to-r from-crimson-red to-fire-red hover:from-fire-red hover:to-crimson-red text-white shadow-md hover:shadow-lg transition-all"
+          title="Download as PDF (Ctrl+D)"
         >
           <Download size={14} className="mr-2" />
           {!isCollapsed && 'Download PDF'}
         </Button>
+        {!isCollapsed && (
+          <p className="text-[10px] text-gray-400 px-2 pt-1 text-center">
+            💡 Tip: Use floating buttons for quick access
+          </p>
+        )}
       </div>
     </aside>
   );
