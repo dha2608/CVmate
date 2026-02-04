@@ -211,7 +211,7 @@ const Jobs = () => {
                 placeholder={t('jobs.location')}
                 value={locationFilter}
                 onChange={(e) => setLocationFilter(e.target.value)}
-                className="w-48 dark:bg-gray-700 dark:border-gray-600"
+                className="w-full sm:w-48 dark:bg-gray-700 dark:border-gray-600"
               />
               <Button
                 variant="outline"

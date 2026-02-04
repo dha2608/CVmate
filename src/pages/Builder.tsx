@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Download, Brain, CheckCircle2, Keyboard } from 'lucide-react';
+import { ArrowLeft, Save, Download, Brain, CheckCircle2, Keyboard, ListTree, Settings2 } from 'lucide-react';
 import ExportShare from '@/components/ExportShare';
 import PersonalForm from '@/components/builder/PersonalForm';
 import ExperienceForm from '@/components/builder/ExperienceForm';
@@ -13,6 +13,8 @@ import SkillsForm from '@/components/builder/SkillsForm';
 import ResumePreview from '@/components/builder/ResumePreview';
 import TemplateSelector from '@/components/builder/TemplateSelector';
 import SectionReorder from '@/components/builder/SectionReorder';
+import BuilderSidebar from '@/components/builder/BuilderSidebar';
+import BuilderActionsDialog from '@/components/builder/BuilderActionsDialog';
 import AISuggestions from '@/components/builder/AISuggestions';
 import ShortcutsModal from '@/components/builder/ShortcutsModal';
 import AIFeatureNotice from '@/components/AIFeatureNotice';
@@ -21,7 +23,7 @@ import { api } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 
 const Builder = () => {
-  const { currentResume, updateField, aiEnhanceText, setResume } = useResumeStore();
+  const { currentResume, resumes, updateField, aiEnhanceText, setResume, setResumes } = useResumeStore();
   const [activeTab, setActiveTab] = useState('personal');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -36,6 +38,7 @@ const Builder = () => {
     { id: 'skills', label: 'Skills', visible: true },
   ]);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showActions, setShowActions] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [isGeneratingFull, setIsGeneratingFull] = useState(false);
   const [generatePrompt, setGeneratePrompt] = useState('');
@@ -50,13 +53,64 @@ const Builder = () => {
 
     setSaving(true);
     try {
+      // Filter out fully empty items and block save on partially-filled items that would fail backend validation
+      const cleanedExperience = (currentResume.experience || [])
+        .filter((exp) => {
+          const hasAny =
+            !!exp.company?.trim() ||
+            !!exp.position?.trim() ||
+            !!exp.startDate?.trim() ||
+            !!exp.endDate?.trim() ||
+            !!exp.description?.trim();
+          return hasAny;
+        })
+        .map((exp) => ({
+          ...exp,
+          company: (exp.company || '').trim(),
+          position: (exp.position || '').trim(),
+          startDate: (exp.startDate || '').trim(),
+          endDate: (exp.endDate || '').trim(),
+          description: (exp.description || '').trim(),
+        }));
+
+      const cleanedEducation = (currentResume.education || [])
+        .filter((edu) => {
+          const hasAny =
+            !!edu.institution?.trim() ||
+            !!edu.degree?.trim() ||
+            !!edu.startDate?.trim() ||
+            !!edu.endDate?.trim() ||
+            !!edu.description?.trim();
+          return hasAny;
+        })
+        .map((edu) => ({
+          ...edu,
+          institution: (edu.institution || '').trim(),
+          degree: (edu.degree || '').trim(),
+          startDate: (edu.startDate || '').trim(),
+          endDate: (edu.endDate || '').trim(),
+          description: (edu.description || '').trim(),
+        }));
+
+      const missingExp = cleanedExperience.findIndex((e) => !e.company || !e.position);
+      if (missingExp >= 0) {
+        alert(`Experience #${missingExp + 1} is missing required fields (Company and Position). Please complete or delete it before saving.`);
+        return;
+      }
+
+      const missingEdu = cleanedEducation.findIndex((e) => !e.institution || !e.degree);
+      if (missingEdu >= 0) {
+        alert(`Education #${missingEdu + 1} is missing required fields (Institution and Degree). Please complete or delete it before saving.`);
+        return;
+      }
+
       const resumeData = {
         title: currentResume.title || 'My Resume',
         personalInfo: currentResume.personalInfo,
         summary: currentResume.summary,
-        experience: currentResume.experience,
-        education: currentResume.education,
-        skills: currentResume.skills,
+        experience: cleanedExperience,
+        education: cleanedEducation,
+        skills: (currentResume.skills || []).map((s) => String(s).trim()).filter(Boolean),
       };
 
       let response;
@@ -81,7 +135,10 @@ const Builder = () => {
         });
       }
     } catch (error: any) {
-      alert('Failed to save: ' + (error.message || 'Unknown error'));
+      const details = error?.details;
+      const errors = Array.isArray(details?.errors) ? details.errors : [];
+      const extra = errors.length ? `\n\nDetails:\n- ${errors.join('\n- ')}` : '';
+      alert('Failed to save: ' + (error.message || 'Unknown error') + extra);
     } finally {
       setSaving(false);
     }
@@ -260,108 +317,97 @@ const Builder = () => {
     { id: 'skills', label: 'Skills', icon: '⚡' },
   ];
 
+  const quickPresets = [
+    {
+      id: 'fresh-grad-it',
+      label: 'Fresher IT',
+      description: 'Sinh viên mới ra trường ngành CNTT',
+      apply: () =>
+        setResume({
+          ...currentResume,
+          title: 'Junior Frontend Developer',
+          summary:
+            'Fresh graduate in Computer Science with a strong foundation in JavaScript, React, and modern frontend tooling. Passionate about building clean, accessible user interfaces and eager to learn best practices in production environments.',
+          skills: ['JavaScript', 'TypeScript', 'React', 'HTML/CSS', 'Git', 'REST API'],
+        }),
+    },
+    {
+      id: 'mid-fe',
+      label: 'Mid Frontend',
+      description: '2–4 năm kinh nghiệm Frontend',
+      apply: () =>
+        setResume({
+          ...currentResume,
+          title: 'Frontend Engineer',
+          summary:
+            'Frontend Engineer with 3+ years of experience building scalable web applications using React and TypeScript. Experienced in collaborating with product and design to ship user-centric features with attention to performance and DX.',
+          skills: [
+            'React',
+            'TypeScript',
+            'Next.js',
+            'Node.js',
+            'Tailwind CSS',
+            'Unit Testing',
+          ],
+        }),
+    },
+  ];
+
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-white overflow-hidden">
-      {/* Editor Side */}
-      <div className="w-full lg:w-1/2 flex flex-col border-b lg:border-b-0 lg:border-r border-gray-200 bg-white">
-        {/* Header */}
-        <div className="p-4 border-b-2 border-gray-200 flex justify-between items-center bg-white z-10 sticky top-0">
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => navigate('/dashboard')} 
-              className="rounded-lg hover:bg-gray-100"
-            >
-              <ArrowLeft size={20} />
-            </Button>
-            <div>
-              <h2 className="text-xl font-black text-jet-black">CV Builder</h2>
-              <p className="text-xs text-gray-500">Create your perfect resume</p>
+    <div className="flex min-h-screen bg-white overflow-hidden">
+      {/* Sidebar */}
+      <BuilderSidebar
+        sections={sections as any}
+        activeTab={activeTab as any}
+        setActiveTab={setActiveTab as any}
+        mode="power"
+        saved={saved}
+        saving={saving}
+        onSave={handleSave}
+        onDownload={handleDownload}
+        isCollapsed={false}
+        onToggleCollapsed={() => {}}
+        onOpenActions={() => setShowActions(true)}
+      />
+
+      {/* Main */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-gray-50">
+        {/* Editor Side */}
+        <div className="w-full lg:w-[45%] xl:w-[42%] flex flex-col border-r border-gray-200 bg-white shadow-sm">
+          {/* Section Header */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-white to-gray-50/50">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => navigate('/dashboard')} 
+                  className="rounded-lg hover:bg-gray-100 h-9 w-9"
+                >
+                  <ArrowLeft size={18} />
+                </Button>
+                <div>
+                  <h2 className="text-lg font-bold text-jet-black">
+                    {sections.find(s => s.id === activeTab)?.label || 'CV Builder'}
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {activeTab === 'personal' && 'Your contact information and basic details'}
+                    {activeTab === 'summary' && 'Professional summary and career objectives'}
+                    {activeTab === 'experience' && 'Work history and professional experience'}
+                    {activeTab === 'education' && 'Academic background and qualifications'}
+                    {activeTab === 'skills' && 'Technical and soft skills'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <TemplateSelector 
-              selectedTemplate={selectedTemplate}
-              onSelect={setSelectedTemplate}
-            />
-            <SectionReorder
-              sections={sections}
-              onReorder={setSections}
-              onToggleVisibility={(id) => {
-                setSections(sections.map(s => 
-                  s.id === id ? { ...s, visible: !s.visible } : s
-                ));
-              }}
-            />
-            <AISuggestions />
-            <Button 
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowShortcuts(!showShortcuts)}
-              className="rounded-lg hover:bg-gray-100"
-              title="Keyboard Shortcuts"
-            >
-              <Keyboard size={18} />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleSave}
-              disabled={saving}
-              className="border-2 border-gray-200 hover:border-crimson-red hover:text-crimson-red"
-            >
-              {saved ? (
-                <>
-                  <CheckCircle2 size={16} className="mr-1 text-green-500" />
-                  Saved
-                </>
-              ) : (
-                <>
-                  <Save size={16} className="mr-1" />
-                  {saving ? 'Saving...' : 'Save'}
-                </>
-              )}
-            </Button>
-            <Button 
-              size="sm" 
-              onClick={handleDownload}
-              className="bg-crimson-red hover:bg-fire-red text-white"
-            >
-              <Download size={16} className="mr-1" />
-              PDF
-            </Button>
-          </div>
-        </div>
-        
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 bg-gray-50 px-4 overflow-x-auto">
-          {tabs
-            .filter(tab => {
-              const section = sections.find(s => s.id === tab.id);
-              return section?.visible !== false;
-            })
-            .map(tab => (
-            <button
-              key={tab.id}
-              className={`px-4 py-3 text-sm font-semibold transition-all border-b-2 ${
-                activeTab === tab.id
-                  ? 'border-crimson-red text-crimson-red bg-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              <span className="mr-2">{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
-        </div>
         
         {/* Form Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          <div className="max-w-2xl mx-auto space-y-6">
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-2xl mx-auto p-6 space-y-6">
+            {/* Forms */}
             {activeTab === 'personal' && <PersonalForm />}
-            
+
             {activeTab === 'summary' && (
               <div className="space-y-4 animate-in fade-in duration-300">
                 {aiError && (aiError.toLowerCase().includes('api key') || aiError.toLowerCase().includes('not configured')) && (
@@ -383,43 +429,51 @@ const Builder = () => {
                     {enhancing ? 'Enhancing...' : 'AI Enhance'}
                   </Button>
                 </div>
-                <Textarea
-                  className="w-full min-h-[200px] p-4 border-2 border-gray-200 focus:border-crimson-red rounded-lg text-sm"
-                  value={currentResume.summary}
-                  onChange={(e) => updateField('summary', e.target.value)}
-                  placeholder="Write a compelling summary of your professional background, key achievements, and career goals. This will be enhanced by AI to make it more impactful..."
-                />
-                <p className="text-xs text-gray-500">
-                  💡 Tip: Write bullet points or simple sentences. AI will transform them into professional language.
-                </p>
+                  <Textarea
+                    className="w-full min-h-[180px] p-4 border-2 border-gray-200 focus:border-crimson-red rounded-lg text-sm transition-colors"
+                    value={currentResume.summary}
+                    onChange={(e) => updateField('summary', e.target.value)}
+                    placeholder="Write a compelling summary of your professional background, key achievements, and career goals. This will be enhanced by AI to make it more impactful..."
+                  />
+                  <p className="text-xs text-gray-500 mt-3 flex items-center gap-1.5">
+                    <span>💡</span>
+                    <span>Tip: Write bullet points or simple sentences. AI will transform them into professional language.</span>
+                  </p>
+                </div>
 
                 {/* AI Generate Full Resume */}
-                <div className="mt-6 space-y-3 border-t border-gray-200 pt-4">
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100 p-5 space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold text-jet-black dark:text-white">
-                      AI CV Builder Pro (Beta)
-                    </h4>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                        <Brain size={16} className="text-purple-600" />
+                        AI CV Builder Pro (Beta)
+                      </h4>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Generate your entire CV with AI assistance
+                      </p>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={isGeneratingFull}
                       onClick={handleAIGenerateFull}
-                      className="border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white"
+                      className="border-purple-200 text-purple-700 hover:bg-purple-100 hover:border-purple-300 shadow-sm"
                     >
                       {isGeneratingFull ? (
                         <>
-                          <Brain size={14} className="mr-1 animate-pulse" />
+                          <Brain size={14} className="mr-1.5 animate-pulse" />
                           Generating...
                         </>
                       ) : (
                         <>
-                          <Brain size={14} className="mr-1" />
-                          Generate full CV
+                          <Brain size={14} className="mr-1.5" />
+                          Generate
                         </>
                       )}
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-600 leading-relaxed">
                     Mô tả nhanh về kinh nghiệm, mục tiêu nghề nghiệp và (tuỳ chọn) dán Job Description. AI sẽ gợi ý
                     Summary, Experience, Education và Skills phù hợp.
                   </p>
@@ -444,16 +498,54 @@ const Builder = () => {
             {activeTab === 'skills' && <SkillsForm />}
           </div>
         </div>
-      </div>
+        </div>
 
       {/* Preview Side */}
-      <div className="w-full lg:w-1/2 bg-light-grey px-3 sm:px-6 lg:px-8 py-6 overflow-y-auto flex justify-center">
-        <div className="w-full max-w-[210mm]">
-          <ResumePreview template={selectedTemplate} />
+      <div className="w-full lg:w-[55%] xl:w-[58%] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden flex flex-col">
+        {/* Preview Header */}
+        <div className="px-6 py-4 border-b border-gray-200 bg-white/80 backdrop-blur-sm flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-800">Live Preview</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Real-time CV preview</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowActions(true)}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <Settings2 size={16} className="mr-1.5" />
+              <span className="text-xs">Template</span>
+            </Button>
+          </div>
+        </div>
+        
+        {/* Preview Content */}
+        <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+          <div className="w-full max-w-[210mm] mx-auto bg-white shadow-2xl rounded-lg overflow-hidden">
+            <ResumePreview template={selectedTemplate} sections={sections} />
+          </div>
         </div>
       </div>
+      </div>
 
-      {/* Shortcuts Modal */}
+      {/* Dialogs */}
+      <BuilderActionsDialog
+        open={showActions}
+        onOpenChange={setShowActions}
+        selectedTemplate={selectedTemplate}
+        onSelectTemplate={setSelectedTemplate}
+        sections={sections}
+        onReorderSections={setSections}
+        onToggleSectionVisibility={(id) => {
+          setSections((prev) =>
+            prev.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s))
+          );
+        }}
+        onOpenShortcuts={() => setShowShortcuts(true)}
+        quickPresets={quickPresets}
+      />
       <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   );

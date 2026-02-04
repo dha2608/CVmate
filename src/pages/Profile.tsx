@@ -5,7 +5,7 @@ import { useToastStore } from '@/store/toastStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Mail, Camera, Save, X, Loader2, Shield, Crown, CreditCard, MapPin, Briefcase, Link2, Globe2 } from 'lucide-react';
+import { User, Mail, Camera, Save, X, Loader2, Shield, Crown, CreditCard, MapPin, Briefcase, Linkedin, Github, Globe2 } from 'lucide-react';
 import { api } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import PayPalButton from '@/components/PayPalButton';
@@ -238,7 +238,7 @@ const Profile = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-3xl mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-4 lg:px-6">
+      <div className="max-w-5xl mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-4 lg:px-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Cover / Header Background */}
           <div className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative">
@@ -554,7 +554,7 @@ const Profile = () => {
               </div>
 
               {/* Public profile toggle */}
-              <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 mt-2">
+              <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 mt-2">
                 <div>
                   <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">
                     Public profile
@@ -566,13 +566,13 @@ const Profile = () => {
                 <button
                   type="button"
                   onClick={() => setFormData((f) => ({ ...f, isPublicProfile: !f.isPublicProfile }))}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  className={`relative inline-flex h-6 w-11 items-center rounded-md transition-colors ${
                     formData.isPublicProfile ? 'bg-green-500' : 'bg-gray-300'
                   }`}
                 >
                   <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                      formData.isPublicProfile ? 'translate-x-5' : 'translate-x-1'
+                    className={`inline-block h-4 w-4 transform rounded-sm bg-white transition-transform ${
+                      formData.isPublicProfile ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
