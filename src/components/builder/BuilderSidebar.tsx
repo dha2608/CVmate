@@ -216,7 +216,28 @@ const BuilderSidebar = ({
           {visibleSections.map((s, index) => {
             const isActive = activeTab === s.id;
             const Icon = sectionIcons[s.id];
-            const isCompleted = currentIndex > index;
+            
+            // Check if section is actually completed
+            const isCompleted = (() => {
+              if (!currentResume) return false;
+              switch (s.id) {
+                case 'personal':
+                  return !!(currentResume.personalInfo?.fullName?.trim() && currentResume.personalInfo?.email?.trim());
+                case 'summary':
+                  return !!currentResume.summary?.trim();
+                case 'experience':
+                  return !!(currentResume.experience && currentResume.experience.length > 0 && 
+                    currentResume.experience.some(exp => exp.company?.trim() && exp.position?.trim()));
+                case 'education':
+                  return !!(currentResume.education && currentResume.education.length > 0 && 
+                    currentResume.education.some(edu => edu.institution?.trim() && edu.degree?.trim()));
+                case 'skills':
+                  return !!(currentResume.skills && currentResume.skills.length > 0 && 
+                    currentResume.skills.some(skill => skill.trim()));
+                default:
+                  return false;
+              }
+            })();
 
             return (
               <button
