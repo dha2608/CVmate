@@ -9,10 +9,27 @@ export interface InterviewMessage {
   timestamp?: string;
 }
 
+export interface InterviewPerQuestionFeedback {
+  question: string;
+  answer: string;
+  score: number;
+  feedback: string;
+}
+
 export interface InterviewFeedback {
   confidenceScore?: number;
   contentScore?: number;
   suggestions?: string;
+  strengths?: string[];
+  improvements?: string[];
+  overallScore?: number;
+  scoresByDimension?: {
+    communication?: number;
+    content?: number;
+    confidence?: number;
+    structure?: number;
+  };
+  perQuestionFeedback?: InterviewPerQuestionFeedback[];
 }
 
 interface InterviewState {
