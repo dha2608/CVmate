@@ -128,6 +128,19 @@ interface Translations {
     achievements: string;
     yourProgress?: string;
     nextMilestone?: string;
+    nextBestAction?: string;
+    profileCompletion?: string;
+    nextActionOnboarding?: string;
+    nextActionOnboardingDesc?: string;
+    nextActionCreateCV?: string;
+    nextActionCreateCVDesc?: string;
+    nextActionInterview?: string;
+    nextActionInterviewDesc?: string;
+    nextActionJobs?: string;
+    nextActionJobsDesc?: string;
+    completeOnboarding?: string;
+    startInterview?: string;
+    viewJobs?: string;
   };
   home: {
     heroTitle: string;
@@ -284,6 +297,23 @@ interface Translations {
     speechError: string;
     rateLimitExceeded: string;
     serviceUnavailable: string;
+    resultTitle?: string;
+    resultSubtitle?: string;
+    overallScore?: string;
+    radarHint?: string;
+    strengths?: string;
+    noStrengths?: string;
+    improvements?: string;
+    noImprovements?: string;
+    detailedSummary?: string;
+    perQuestionFeedback?: string;
+    yourAnswer?: string;
+    sessionAnalytics?: string;
+    questionsAnalyzed?: string;
+    averageScore?: string;
+    confidenceScore?: string;
+    overallPerformance?: string;
+    startNew?: string;
   };
   jobs: {
     findDreamJob: string;

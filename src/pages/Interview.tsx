@@ -498,7 +498,7 @@ const Interview = () => {
                     }
                   }
                 }} 
-                disabled={!recognitionRef.current || status === 'completed'}
+                disabled={!recognitionRef.current}
                 className={`rounded-full h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14 flex-shrink-0 transition-all duration-300 ${
                     isRecording 
                     ? 'bg-gradient-to-br from-red-500 to-red-600 border-red-600 text-white scale-110 shadow-xl ring-2 sm:ring-4 ring-red-200 dark:ring-red-900/50' 
@@ -519,13 +519,13 @@ const Interview = () => {
                     placeholder={isRecording ? t('interview.listening') : t('interview.typeAnswer')}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                     className="rounded-full pl-3 sm:pl-4 lg:pl-5 pr-10 sm:pr-12 h-10 sm:h-12 text-sm sm:text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-accent dark:focus:border-red-500 focus:ring-accent dark:focus:ring-red-500"
-                    disabled={isRecording || isSending || status === 'completed'}
+                    disabled={isRecording || isSending}
                 />
             </div>
             <Button 
               onClick={handleSend} 
               className="rounded-full h-10 sm:h-12 px-3 sm:px-4 lg:px-6 bg-secondary dark:bg-red-600 hover:bg-secondary/90 dark:hover:bg-red-700 shadow-md transition-transform active:scale-95 text-white text-xs sm:text-sm lg:text-base flex-shrink-0" 
-              disabled={(!input.trim() && !isRecording) || isSending || status === 'completed'}
+              disabled={(!input.trim() && !isRecording) || isSending}
             >
                 {isSending ? (
                   <>

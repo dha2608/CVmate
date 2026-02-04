@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useI18n } from '@/store/i18nStore';
 import { useToastStore } from '@/store/toastStore';
 import { useBookmarkStore } from '@/store/bookmarkStore';
+import { api } from '@/lib/utils';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -135,8 +136,6 @@ const Jobs = () => {
           requirements: '',
         });
         fetchJobs({ page: 1, limit: 20 });
-      } else {
-        toast.error(response.message || 'Đăng job thất bại.');
       }
     } catch (error: any) {
       toast.error(error.message || 'Đăng job thất bại.');

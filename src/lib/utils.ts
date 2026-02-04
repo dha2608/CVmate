@@ -101,7 +101,25 @@ export const api = {
 
   getMe: () => apiRequest<{ success: boolean; data: any }>('/auth/me'),
 
-  updateProfile: (payload: { name?: string; avatar?: string; email?: string; password?: string }) =>
+  updateProfile: (payload: { 
+    name?: string; 
+    avatar?: string; 
+    email?: string; 
+    password?: string;
+    bio?: string;
+    headline?: string;
+    location?: string;
+    yearsOfExperience?: number;
+    currentRole?: string;
+    industries?: string[];
+    skills?: string[];
+    socialLinks?: {
+      linkedin?: string;
+      github?: string;
+      portfolio?: string;
+    };
+    isPublicProfile?: boolean;
+  }) =>
     apiRequest<{ success: boolean; data: any }>('/auth/me', {
       method: 'PUT',
       body: JSON.stringify(payload),
