@@ -14,10 +14,45 @@ const getHFClient = () => {
 
 export const createResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    // Sanitize arrays to avoid failing required field validation on empty placeholder items
+    const body = req.body || {};
+    const experience = Array.isArray(body.experience) ? body.experience : [];
+    const education = Array.isArray(body.education) ? body.education : [];
+    const skills = Array.isArray(body.skills) ? body.skills : [];
+
+    const cleanedExperience = experience
+      .filter((e: any) => e && (String(e.company || '').trim() || String(e.position || '').trim() || String(e.description || '').trim() || String(e.startDate || '').trim() || String(e.endDate || '').trim()))
+      .filter((e: any) => String(e.company || '').trim() && String(e.position || '').trim())
+      .map((e: any) => ({
+        ...e,
+        company: String(e.company || '').trim(),
+        position: String(e.position || '').trim(),
+        startDate: String(e.startDate || '').trim(),
+        endDate: String(e.endDate || '').trim(),
+        description: String(e.description || ''),
+      }));
+
+    const cleanedEducation = education
+      .filter((e: any) => e && (String(e.institution || '').trim() || String(e.degree || '').trim() || String(e.description || '').trim() || String(e.startDate || '').trim() || String(e.endDate || '').trim()))
+      .filter((e: any) => String(e.institution || '').trim() && String(e.degree || '').trim())
+      .map((e: any) => ({
+        ...e,
+        institution: String(e.institution || '').trim(),
+        degree: String(e.degree || '').trim(),
+        startDate: String(e.startDate || '').trim(),
+        endDate: String(e.endDate || '').trim(),
+        description: String(e.description || ''),
+      }));
+
+    const cleanedSkills = skills.map((s: any) => String(s).trim()).filter(Boolean);
+
     const resume = await Resume.create({
       user: req.user?._id,
       title: req.body.title || 'Untitled Resume',
-      ...req.body
+      ...req.body,
+      experience: cleanedExperience,
+      education: cleanedEducation,
+      skills: cleanedSkills,
     });
     res.status(201).json({ success: true, data: resume });
   } catch (error: unknown) {
@@ -72,7 +107,7 @@ export const updateResume = async (req: AuthRequest, res: Response, next: NextFu
     const updatedResume = await Resume.findOneAndUpdate(
       { _id: req.params.id, user: req.user?._id },
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!updatedResume) {
