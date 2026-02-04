@@ -23,17 +23,21 @@ const Login = () => {
     setLoading(true);
 
     try {
+      console.log('🔐 Attempting login...', { email });
       const data = await api.login(email, password);
+      console.log('✅ Login response:', data);
+      
       if (data.success) {
         setUser(data.data);
         toast.success(t('toast.loginSuccess'));
         navigate('/dashboard');
       } else {
-        const errorMsg = t('login.invalidCredentials');
+        const errorMsg = data.message || t('login.invalidCredentials');
         setError(errorMsg);
         toast.error(errorMsg);
       }
     } catch (err: any) {
+      console.error('❌ Login error:', err);
       const errorMsg = err.message || t('toast.loginFailed');
       setError(errorMsg);
       toast.error(errorMsg);

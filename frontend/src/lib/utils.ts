@@ -7,6 +7,11 @@ export function cn(...inputs: ClassValue[]) {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
+// Debug: Log API URL in development
+if (import.meta.env.DEV) {
+  console.log('🔗 API Base URL:', API_BASE_URL);
+}
+
 const getAuthToken = (): string | null => {
   const user = localStorage.getItem('user');
   if (user) {
@@ -41,7 +46,14 @@ export const apiRequest = async <T = any>(
     }
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = `${API_BASE_URL}${endpoint}`;
+  
+  // Debug logging
+  if (import.meta.env.DEV) {
+    console.log('📤 API Request:', url, { method: fetchOptions.method || 'GET', headers });
+  }
+
+  const response = await fetch(url, {
     ...fetchOptions,
     headers,
   });
