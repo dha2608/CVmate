@@ -78,27 +78,27 @@ const TemplateSelector = ({ selectedTemplate, onSelect }: TemplateSelectorProps)
     : templates.filter(t => t.category === filter);
 
   return (
-    <div className="relative">
+    <div className="relative z-50">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-crimson-red hover:text-crimson-red transition-all duration-200"
+        className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 lg:px-3 py-1.5 sm:py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-crimson-red hover:text-crimson-red transition-all duration-200 flex-shrink-0 whitespace-nowrap"
       >
-        <Palette size={16} />
-        <span className="text-sm font-semibold">Template</span>
+        <Palette size={14} className="sm:w-4 sm:h-4" />
+        <span className="text-xs sm:text-sm font-semibold hidden sm:inline">Template</span>
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <>
             <div 
-              className="fixed inset-0 z-40" 
+              className="fixed inset-0 z-[45]" 
               onClick={() => setIsOpen(false)}
             />
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute top-full left-0 mt-2 w-96 bg-white border-2 border-gray-200 rounded-xl shadow-2xl z-50 p-4"
+              className="absolute top-full left-0 mt-2 w-96 bg-white border-2 border-gray-200 rounded-xl shadow-2xl z-[50] p-4"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
