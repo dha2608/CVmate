@@ -31,6 +31,7 @@ export interface IThemeConfig {
 export interface IResume extends Document {
   user: mongoose.Types.ObjectId;
   title: string;
+  variantType?: 'general' | 'job-a' | 'job-b';
   personalInfo: {
     fullName: string;
     email: string;
@@ -79,6 +80,11 @@ const resumeSchema = new Schema<IResume>({
     required: true,
     trim: true,
     default: 'My Resume' 
+  },
+  variantType: {
+    type: String,
+    enum: ['general', 'job-a', 'job-b'],
+    default: 'general',
   },
   personalInfo: {
     fullName: { type: String, required: true, trim: true },
