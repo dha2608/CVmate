@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Download, Brain, CheckCircle2, Keyboard, ListTree, Settings2 } from 'lucide-react';
+import { ArrowLeft, Save, Download, Brain, CheckCircle2, Keyboard, ListTree, Settings2, X, Lightbulb } from 'lucide-react';
 import ExportShare from '@/components/ExportShare';
 import PersonalForm from '@/components/builder/PersonalForm';
 import ExperienceForm from '@/components/builder/ExperienceForm';
@@ -43,6 +43,7 @@ const Builder = () => {
   const [isGeneratingFull, setIsGeneratingFull] = useState(false);
   const [generatePrompt, setGeneratePrompt] = useState('');
   const [generateJD, setGenerateJD] = useState('');
+  const [dismissedHints, setDismissedHints] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const handleSave = async () => {
@@ -368,6 +369,8 @@ const Builder = () => {
         isCollapsed={false}
         onToggleCollapsed={() => {}}
         onOpenActions={() => setShowActions(true)}
+        onBack={() => navigate('/dashboard')}
+        currentResume={currentResume}
       />
 
       {/* Main */}
@@ -375,60 +378,93 @@ const Builder = () => {
         {/* Editor Side */}
         <div className="w-full lg:w-[45%] xl:w-[42%] flex flex-col border-r border-gray-200 bg-white shadow-sm">
           {/* Section Header */}
-          <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-white to-gray-50/50">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => navigate('/dashboard')} 
-                  className="rounded-lg hover:bg-gray-100 h-9 w-9"
-                >
-                  <ArrowLeft size={18} />
-                </Button>
-                <div>
+          <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-white to-gray-50/50 sticky top-0 z-10 backdrop-blur-sm bg-white/95">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
                   <h2 className="text-lg font-bold text-jet-black">
                     {sections.find(s => s.id === activeTab)?.label || 'CV Builder'}
                   </h2>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {activeTab === 'personal' && 'Your contact information and basic details'}
-                    {activeTab === 'summary' && 'Professional summary and career objectives'}
-                    {activeTab === 'experience' && 'Work history and professional experience'}
-                    {activeTab === 'education' && 'Academic background and qualifications'}
-                    {activeTab === 'skills' && 'Technical and soft skills'}
-                  </p>
                 </div>
+                <p className="text-xs text-gray-500">
+                  {activeTab === 'personal' && 'Add your contact information and basic details'}
+                  {activeTab === 'summary' && 'Write a compelling professional summary (AI can help enhance it)'}
+                  {activeTab === 'experience' && 'Add your work history and professional experience'}
+                  {activeTab === 'education' && 'Include your academic background and qualifications'}
+                  {activeTab === 'skills' && 'List your technical and soft skills'}
+                </p>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowShortcuts(true)}
+                className="text-gray-500 hover:text-gray-700"
+                title="Keyboard shortcuts (?)"
+              >
+                <Keyboard size={16} className="mr-1.5" />
+                <span className="text-xs">?</span>
+              </Button>
             </div>
           </div>
         
         {/* Form Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto p-6 space-y-6">
+            {/* Onboarding Hint */}
+            {!dismissedHints.includes('welcome') && (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 relative">
+                <button
+                  onClick={() => setDismissedHints([...dismissedHints, 'welcome'])}
+                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+                >
+                  <X size={16} />
+                </button>
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-blue-500 text-white flex items-center justify-center flex-shrink-0">
+                    <Lightbulb size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-bold text-gray-900 mb-1">Welcome to CV Builder!</h4>
+                    <p className="text-xs text-gray-700 leading-relaxed">
+                      Start by filling in your <strong>Personal Information</strong> on the left. 
+                      Your changes will appear instantly in the <strong>Live Preview</strong> on the right. 
+                      Use the sidebar to navigate between sections, and don't forget to <strong>Save</strong> your work!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Forms */}
             {activeTab === 'personal' && <PersonalForm />}
 
             {activeTab === 'summary' && (
-              <div className="space-y-4 animate-in fade-in duration-300">
+              <div className="space-y-5 animate-in fade-in duration-300">
                 {aiError && (aiError.toLowerCase().includes('api key') || aiError.toLowerCase().includes('not configured')) && (
                   <AIFeatureNotice 
                     feature="AI CV Enhancement" 
                     onDismiss={() => setAiError(null)}
                   />
                 )}
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-bold text-jet-black dark:text-white">Professional Summary</h3>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleAIEnhanceSummary}
-                    disabled={enhancing || !currentResume.summary.trim()}
-                    className="border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white"
-                  >
-                    <Brain size={14} className="mr-1" />
-                    {enhancing ? 'Enhancing...' : 'AI Enhance'}
-                  </Button>
-                </div>
+                
+                {/* Section Card */}
+                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-base font-bold text-jet-black">Professional Summary</h3>
+                      <p className="text-xs text-gray-500 mt-1">A brief overview of your professional background</p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleAIEnhanceSummary}
+                      disabled={enhancing || !currentResume.summary.trim()}
+                      className="border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white shadow-sm"
+                    >
+                      <Brain size={14} className="mr-1.5" />
+                      {enhancing ? 'Enhancing...' : 'AI Enhance'}
+                    </Button>
+                  </div>
                   <Textarea
                     className="w-full min-h-[180px] p-4 border-2 border-gray-200 focus:border-crimson-red rounded-lg text-sm transition-colors"
                     value={currentResume.summary}

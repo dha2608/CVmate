@@ -35,6 +35,7 @@ export interface IPersonalInfo {
 export interface IResume {
   _id?: string;
   title: string;
+  variantType?: 'general' | 'job-a' | 'job-b';
   personalInfo: IPersonalInfo;
   summary: string;
   experience: IExperience[];
@@ -44,9 +45,11 @@ export interface IResume {
 
 interface ResumeState {
   currentResume: IResume;
+  resumes: IResume[];
   
   // Actions
   setResume: (resume: IResume) => void;
+  setResumes: (resumes: IResume[]) => void;
   updatePersonalInfo: (field: keyof IPersonalInfo, value: string) => void;
   updateField: (field: keyof IResume, value: any) => void;
   setSkills: (skills: string[]) => void;
@@ -90,8 +93,10 @@ export const useResumeStore = create<ResumeState>()(
   persist(
     (set) => ({
       currentResume: initialResume,
+      resumes: [],
 
       setResume: (resume) => set({ currentResume: resume }),
+      setResumes: (resumes) => set({ resumes }),
 
       updatePersonalInfo: (field, value) =>
         set((state) => ({

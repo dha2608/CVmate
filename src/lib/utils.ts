@@ -49,10 +49,12 @@ export const apiRequest = async <T = any>(
   if (!response.ok) {
       let errorMessage = 'Request failed';
       let errorType = 'unknown';
+      let errorDetails: any = undefined;
     try {
       const error = await response.json();
       errorMessage = error.message || error.error || `HTTP error! status: ${response.status}`;
       errorType = error.type || 'unknown'; // 'server_rate_limit' or 'openai_api_error'
+      errorDetails = error;
     } catch {
       // If JSON parsing fails, use status-based messages
       if (response.status === 503) {
@@ -75,6 +77,7 @@ export const apiRequest = async <T = any>(
     const error = new Error(errorMessage);
     (error as any).status = response.status;
     (error as any).type = errorType;
+    (error as any).details = errorDetails;
     throw error;
   }
 
