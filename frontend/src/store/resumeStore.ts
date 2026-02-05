@@ -170,7 +170,9 @@ export const useResumeStore = create<ResumeState>()(
           const response = await api.aiEnhance(text, type);
           
           if (!response.success || !response.data) {
-            throw new Error(response.message || 'Failed to enhance text');
+            // Type assertion for error message
+            const errorMsg = (response as any).message || 'Failed to enhance text';
+            throw new Error(errorMsg);
           }
           
           return response.data;
