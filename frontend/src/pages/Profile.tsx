@@ -60,8 +60,8 @@ const Profile = () => {
   // Check if form has changes
   const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
 
-  // Get current avatar for display
-  const currentAvatar = formData.avatar || user?.avatar || '';
+  // Get current avatar for display - prioritize formData (latest upload) then user data
+  const currentAvatar = (formData.avatar?.trim() || user?.avatar?.trim() || '').trim();
 
   useEffect(() => {
     if (user) {
@@ -166,8 +166,26 @@ const Profile = () => {
 
       if (data.success && data.data?.url) {
         // Construct full URL - data.data.url is like "/uploads/avatar-xxx.jpg"
-        const avatarUrl = `${apiBaseUrl}${data.data.url}`;
-        setFormData({ ...formData, avatar: avatarUrl });
+        let avatarUrl = data.data.url;
+        
+        // If URL doesn't start with http, prepend API base URL
+        if (!avatarUrl.startsWith('http')) {
+          // Remove trailing slash from apiBaseUrl if present
+          const baseUrl = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
+          // Ensure url starts with /
+          const urlPath = avatarUrl.startsWith('/') ? avatarUrl : `/${avatarUrl}`;
+          avatarUrl = `${baseUrl}${urlPath}`;
+        }
+        
+        // Update form data immediately
+        const updatedFormData = { ...formData, avatar: avatarUrl };
+        setFormData(updatedFormData);
+        
+        // Also update user in store immediately for instant display
+        if (user) {
+          setUser({ ...user, avatar: avatarUrl });
+        }
+        
         toast.success(t('profile.avatarUploaded'));
       } else {
         throw new Error(data.message || data.error || t('profile.uploadFailed'));
@@ -204,7 +222,7 @@ const Profile = () => {
 
       const response = await api.updateProfile({
         name: formData.name,
-        avatar: formData.avatar,
+        avatar: formData.avatar?.trim() || undefined,
         bio: formData.bio,
         headline: formData.headline,
         location: formData.location,
@@ -224,8 +242,13 @@ const Profile = () => {
         throw new Error((response as any).message || t('profile.updateFailed'));
       }
 
-      setUser(response.data);
-      setOriginalData(formData);
+      // Update user in store with new data including avatar
+      const updatedUser = response.data;
+      setUser(updatedUser);
+      
+      // Update originalData to include new avatar
+      setOriginalData({ ...formData, avatar: updatedUser.avatar || formData.avatar });
+      
       toast.success(t('toast.profileUpdated'));
     } catch (error: any) {
       toast.error(error.message || t('toast.profileUpdateFailed'));
@@ -244,25 +267,36 @@ const Profile = () => {
           <div className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative">
             <div className="absolute -bottom-12 sm:-bottom-14 lg:-bottom-16 left-4 sm:left-6 lg:left-8">
               <div className="relative group">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full border-2 sm:border-3 lg:border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 shadow-lg overflow-hidden flex items-center justify-center">
-                  {currentAvatar ? (
-                      <img 
+                <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full border-2 sm:border-3 lg:border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 shadow-lg overflow-hidden flex items-center justify-center relative">
+                  {currentAvatar && currentAvatar.trim() ? (
+                    <img 
                       src={currentAvatar} 
-                        alt="Profile" 
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                        const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
-                        if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
+                      alt="Profile" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Hide image and show fallback
+                        const img = e.target as HTMLImageElement;
+                        img.style.display = 'none';
+                        const fallback = img.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                        if (fallback) {
+                          fallback.style.display = 'flex';
+                        }
+                      }}
+                      onLoad={() => {
+                        // Hide fallback when image loads successfully
+                        const img = document.querySelector('.avatar-fallback') as HTMLElement;
+                        if (img) {
+                          img.style.display = 'none';
+                        }
+                      }}
+                    />
                   ) : null}
                   <div 
-                    className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 text-2xl sm:text-3xl lg:text-4xl font-bold text-indigo-600 dark:text-indigo-300 ${currentAvatar ? 'hidden' : ''}`}
+                    className={`avatar-fallback w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 text-2xl sm:text-3xl lg:text-4xl font-bold text-indigo-600 dark:text-indigo-300 ${currentAvatar && currentAvatar.trim() ? 'hidden' : ''}`}
                   >
-                        {formData.name.charAt(0).toUpperCase()}
+                    {formData.name.charAt(0).toUpperCase()}
                   </div>
-                    </div>
+                </div>
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
@@ -565,13 +599,15 @@ const Profile = () => {
                 </div>
                 <button
                   type="button"
+                  role="switch"
+                  aria-checked={formData.isPublicProfile}
                   onClick={() => setFormData((f) => ({ ...f, isPublicProfile: !f.isPublicProfile }))}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-md transition-colors ${
-                    formData.isPublicProfile ? 'bg-green-500' : 'bg-gray-300'
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+                    formData.isPublicProfile ? 'bg-green-500 dark:bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-sm bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${
                       formData.isPublicProfile ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />

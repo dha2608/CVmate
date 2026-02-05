@@ -19,12 +19,26 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [imgOk, setImgOk] = useState<Record<string, boolean>>({});
 
+  // Generate consistent avatars using initials-based approach
+  const getPersonaInitials = (id: string) => {
+    const initials: Record<string, string> = {
+      'friendly-hr': 'HR',
+      'strict-manager': 'SM',
+      'english-native': 'EN',
+      'tech-lead': 'TL',
+      'startup-founder': 'SF',
+      'executive': 'EX',
+      'academic': 'AC',
+    };
+    return initials[id] || 'AI';
+  };
+
   const personas: Persona[] = [
     {
       id: 'friendly-hr',
       title: t('interview.friendlyHR'),
       desc: t('interview.friendlyHRDesc'),
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Annie&clothing=blazerAndShirt&eyes=happy',
+      avatar: '', // Will use icon fallback
       icon: Users,
       color: 'bg-blue-500',
       difficulty: 'Easy',
@@ -34,7 +48,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       id: 'strict-manager',
       title: t('interview.strictManager'),
       desc: t('interview.strictManagerDesc'),
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&clothing=collarAndSweater&eyebrows=angry&mouth=serious',
+      avatar: '', // Will use icon fallback
       icon: Briefcase,
       color: 'bg-red-500',
       difficulty: 'Hard',
@@ -44,7 +58,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       id: 'english-native',
       title: t('interview.englishNative'),
       desc: t('interview.englishNativeDesc'),
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack&clothing=shirtCrewNeck&accessories=glasses',
+      avatar: '', // Will use icon fallback
       icon: Globe,
       color: 'bg-green-500',
       difficulty: 'Medium',
@@ -54,7 +68,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       id: 'tech-lead',
       title: t('interview.techLead'),
       desc: t('interview.techLeadDesc'),
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Tech&clothing=shirtCrewNeck&accessories=glasses&hair=short',
+      avatar: '', // Will use icon fallback
       icon: Code,
       color: 'bg-purple-500',
       difficulty: 'Hard',
@@ -64,7 +78,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       id: 'startup-founder',
       title: t('interview.startupFounder'),
       desc: t('interview.startupFounderDesc'),
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Startup&clothing=hoodie&hair=short',
+      avatar: '', // Will use icon fallback
       icon: Zap,
       color: 'bg-yellow-500',
       difficulty: 'Medium',
@@ -74,7 +88,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       id: 'executive',
       title: t('interview.executive'),
       desc: t('interview.executiveDesc'),
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Executive&clothing=blazerAndShirt&hair=short',
+      avatar: '', // Will use icon fallback
       icon: Building2,
       color: 'bg-indigo-500',
       difficulty: 'Hard',
@@ -84,7 +98,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       id: 'academic',
       title: t('interview.academic'),
       desc: t('interview.academicDesc'),
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Academic&clothing=shirtCrewNeck&accessories=glasses',
+      avatar: '', // Will use icon fallback
       icon: GraduationCap,
       color: 'bg-teal-500',
       difficulty: 'Medium',
@@ -154,9 +168,9 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
 
               {/* Avatar */}
               <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full ${persona.color} p-0.5 sm:p-1 flex items-center justify-center flex-shrink-0`}>
+                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full ${persona.color} p-0.5 sm:p-1 flex items-center justify-center flex-shrink-0 shadow-md`}>
                   <div className="w-full h-full rounded-full bg-white dark:bg-gray-700 overflow-hidden flex items-center justify-center">
-                    {ok ? (
+                    {persona.avatar && ok ? (
                       <img
                         src={persona.avatar}
                         alt={persona.title}
@@ -164,7 +178,9 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
                         onError={() => setImgOk((m) => ({ ...m, [persona.id]: false }))}
                       />
                     ) : (
-                      <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${persona.color.replace('bg-', 'text-')}`} />
+                      </div>
                     )}
                   </div>
                 </div>

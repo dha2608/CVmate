@@ -132,8 +132,8 @@ const MainLayout = ({
       {/* Skip Links */}
       <SkipLinks />
       
-      {/* Navbar*/}
-      <nav id="navigation" className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm transition-all duration-300 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95" role="navigation" aria-label="Main navigation">
+      {/* Navbar - Hidden on mobile (md and up only) */}
+      <nav id="navigation" className="hidden md:block bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm transition-all duration-300 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95" role="navigation" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-18">
             
@@ -218,17 +218,22 @@ const MainLayout = ({
                     aria-expanded={isProfileMenuOpen}
                     aria-label="Profile menu"
                   >
-                    {user?.avatar ? (
+                    {user?.avatar?.trim() ? (
                       <img 
                         src={user.avatar} 
                         alt="Profile" 
                         className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement;
+                          img.style.display = 'none';
+                          const fallback = img.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
                       />
-                    ) : (
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black dark:bg-gray-700 text-white flex items-center justify-center">
-                        <span className="font-bold text-xs sm:text-sm">{user?.name?.charAt(0)}</span>
-                      </div>
-                    )}
+                    ) : null}
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black dark:bg-gray-700 text-white flex items-center justify-center ${user?.avatar?.trim() ? 'hidden' : ''}`}>
+                      <span className="font-bold text-xs sm:text-sm">{user?.name?.charAt(0)?.toUpperCase()}</span>
+                    </div>
                   </button>
                   
                   {/* Dropdown Menu */}
@@ -280,12 +285,23 @@ const MainLayout = ({
                   {/* Header Profile */}
                   <div className="h-20 lg:h-24 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-gray-900 dark:to-gray-800 relative">
                     <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
-                      <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center shadow-lg">
-                        {user?.avatar ? (
-                          <img src={user.avatar} className="w-full h-full object-cover" alt="Avatar" />
-                        ) : (
-                          <span className="text-2xl lg:text-3xl font-black text-zinc-900 dark:text-white">{user?.name?.charAt(0)}</span>
-                        )}
+                      <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center shadow-lg relative">
+                        {user?.avatar?.trim() ? (
+                          <img 
+                            src={user.avatar} 
+                            className="w-full h-full object-cover" 
+                            alt="Avatar"
+                            onError={(e) => {
+                              const img = e.target as HTMLImageElement;
+                              img.style.display = 'none';
+                              const fallback = img.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <span className={`text-2xl lg:text-3xl font-black text-zinc-900 dark:text-white ${user?.avatar?.trim() ? 'hidden' : 'flex'}`}>
+                          {user?.name?.charAt(0)?.toUpperCase()}
+                        </span>
                       </div>
                     </div>
                   </div>
