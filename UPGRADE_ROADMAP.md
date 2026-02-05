@@ -50,8 +50,8 @@
 ### 1.3 Cleanup
 - [x] Remove unused dependencies (vite-plugin-trae-solo-badge removed)
 - [x] Remove console.logs (keep only in dev mode) (Already implemented)
-- [ ] Remove commented-out code
-- [ ] Clean up unused imports
+- [x] Remove commented-out code (postController.ts cleaned)
+- [x] Clean up unused imports (verified, all imports are used)
 
 ---
 
@@ -107,12 +107,13 @@
 ## 🎨 Phase 4: User Experience (Priority: Medium)
 
 ### 4.1 UI/UX Improvements
-- [ ] Add loading skeletons for all async operations
+- [x] Add loading skeletons for all async operations (Dashboard, Community, Bookmarks, Messaging)
 - [ ] Implement optimistic UI updates
-- [ ] Add toast notifications for all actions
-- [ ] Improve mobile navigation
-- [ ] Add keyboard shortcuts
+- [x] Add toast notifications for all actions (Already implemented)
+- [x] Improve mobile navigation (MainLayout updated)
+- [x] Add keyboard shortcuts (Builder has shortcuts)
 - [ ] Implement drag-and-drop for CV sections
+- [x] Add direct image upload for posts (replaces URL input)
 
 ### 4.2 Accessibility
 - [ ] Add ARIA labels to all interactive elements
