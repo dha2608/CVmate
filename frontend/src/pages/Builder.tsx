@@ -13,7 +13,7 @@ import SkillsForm from '@/components/builder/SkillsForm';
 import ResumePreview from '@/components/builder/ResumePreview';
 import TemplateSelector from '@/components/builder/TemplateSelector';
 import SectionReorder from '@/components/builder/SectionReorder';
-import BuilderSidebar from '@/components/builder/BuilderSidebar';
+import BuilderSidebar, { type BuilderSection, type BuilderSectionId } from '@/components/builder/BuilderSidebar';
 import BuilderActionsDialog from '@/components/builder/BuilderActionsDialog';
 import AISuggestions from '@/components/builder/AISuggestions';
 import ShortcutsModal from '@/components/builder/ShortcutsModal';
@@ -24,7 +24,7 @@ import { trackEvent } from '@/lib/analytics';
 
 const Builder = () => {
   const { currentResume, resumes, updateField, aiEnhanceText, setResume, setResumes } = useResumeStore();
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState<BuilderSectionId>('personal');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
@@ -135,18 +135,28 @@ const Builder = () => {
           skillsCount: currentResume.skills.length,
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       // Better error handling
       let errorMessage = 'Failed to save resume';
       const errors: string[] = [];
       
       // Check for validation errors
-      if (error?.errors && Array.isArray(error.errors)) {
-        errors.push(...error.errors);
-      } else if (error?.errors && typeof error.errors === 'object') {
-        // Mongoose validation errors
-        errors.push(...Object.values(error.errors).map((e: any) => e.message || String(e)));
-      } else if (error?.message) {
+      if (error && typeof error === 'object' && 'errors' in error) {
+        const errorObj = error as { errors?: unknown };
+        if (Array.isArray(errorObj.errors)) {
+          errors.push(...errorObj.errors.map(e => String(e)));
+        } else if (errorObj.errors && typeof errorObj.errors === 'object') {
+          // Mongoose validation errors
+          errors.push(...Object.values(errorObj.errors).map(e => {
+            if (e && typeof e === 'object' && 'message' in e) {
+              return String((e as { message: unknown }).message);
+            }
+            return String(e);
+          }));
+        }
+      }
+      
+      if (error instanceof Error) {
         errorMessage = error.message;
       }
       
@@ -262,8 +272,8 @@ const Builder = () => {
           enhancedLength: enhanced.length,
         });
       }
-    } catch (error: any) {
-      const errorMessage = error.message || 'Failed to enhance text. Please try again.';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to enhance text. Please try again.';
       
       // Check if it's a configuration error
       const isConfigError = errorMessage.toLowerCase().includes('unavailable') || 
@@ -321,8 +331,8 @@ const Builder = () => {
         field: 'full_resume',
         hasJD: !!generateJD.trim(),
       });
-    } catch (error: any) {
-      const errorMessage = error.message || 'Failed to generate resume. Please try again.';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate resume. Please try again.';
       
       // Check if it's a configuration error (API key missing)
       const isConfigError = errorMessage.toLowerCase().includes('unavailable') || 
@@ -416,9 +426,9 @@ const Builder = () => {
     <div className="flex min-h-screen bg-white overflow-hidden">
       {/* Sidebar */}
       <BuilderSidebar
-        sections={sections as any}
-        activeTab={activeTab as any}
-        setActiveTab={setActiveTab as any}
+        sections={sections}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         mode="power"
         saved={saved}
         saving={saving}

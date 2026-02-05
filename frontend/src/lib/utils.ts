@@ -65,9 +65,9 @@ export const apiRequest = async <T = any>(
 ): Promise<T> => {
   const { requiresAuth = true, ...fetchOptions } = options;
   
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...fetchOptions.headers,
+    ...(fetchOptions.headers as Record<string, string> || {}),
   };
 
   if (requiresAuth) {
@@ -191,13 +191,13 @@ export const api = {
     }),
 
   aiEnhance: (text: string, type?: string) =>
-    apiRequest<{ success: boolean; data: string }>('/resumes/ai-enhance', {
+    apiRequest<ApiResponse<string>>('/resumes/ai-enhance', {
       method: 'POST',
       body: JSON.stringify({ text, type }),
     }),
 
   aiGenerateFullResume: (payload: { prompt?: string; jobDescription?: string }) =>
-    apiRequest<{ success: boolean; data: { summary: string; experience: any[]; education: any[]; skills: string[] } }>('/resumes/ai-generate-full', {
+    apiRequest<ApiResponse<{ summary: string; experience: IExperience[]; education: IEducation[]; skills: string[] }>>('/resumes/ai-generate-full', {
       method: 'POST',
       body: JSON.stringify(payload),
     }),

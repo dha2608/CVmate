@@ -1,47 +1,17 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import type { 
+  IResume, 
+  IExperience, 
+  IEducation, 
+  IPersonalInfo, 
+  ResumeField, 
+  UpdateFieldValue,
+  ApiResponse 
+} from '@/types/shared';
 
-// --- Interfaces ---
-export interface IExperience {
-  id: string;
-  _id?: string;
-  company: string;
-  position: string;
-  startDate: string;
-  endDate: string;
-  description: string;
-}
-
-// QUAN TRỌNG: Phải export cái này
-export interface IEducation {
-  id: string;
-  _id?: string;
-  institution: string;
-  degree: string;
-  startDate: string;
-  endDate: string;
-  description: string;
-}
-
-export interface IPersonalInfo {
-  fullName: string;
-  email: string;
-  phone: string;
-  address: string;
-  linkedin: string;
-  website: string;
-}
-
-export interface IResume {
-  _id?: string;
-  title: string;
-  variantType?: 'general' | 'job-a' | 'job-b';
-  personalInfo: IPersonalInfo;
-  summary: string;
-  experience: IExperience[];
-  education: IEducation[];
-  skills: string[];
-}
+// Re-export types for backward compatibility
+export type { IResume, IExperience, IEducation, IPersonalInfo };
 
 interface ResumeState {
   currentResume: IResume;
@@ -51,7 +21,7 @@ interface ResumeState {
   setResume: (resume: IResume) => void;
   setResumes: (resumes: IResume[]) => void;
   updatePersonalInfo: (field: keyof IPersonalInfo, value: string) => void;
-  updateField: (field: keyof IResume, value: any) => void;
+  updateField: (field: ResumeField, value: UpdateFieldValue) => void;
   setSkills: (skills: string[]) => void;
   
   // Experience
@@ -170,15 +140,14 @@ export const useResumeStore = create<ResumeState>()(
           const response = await api.aiEnhance(text, type);
           
           if (!response.success || !response.data) {
-            // Type assertion for error message
-            const errorMsg = (response as any).message || 'Failed to enhance text';
+            const errorMsg = response.message || response.error || 'Failed to enhance text';
             throw new Error(errorMsg);
           }
           
           return response.data;
-        } catch (error: any) {
+        } catch (error) {
           // Re-throw error so caller can handle it (show toast, etc.)
-          const errorMessage = error?.message || 'AI enhancement failed';
+          const errorMessage = error instanceof Error ? error.message : 'AI enhancement failed';
           throw new Error(errorMessage);
         }
       },
