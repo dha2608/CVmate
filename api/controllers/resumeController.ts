@@ -46,13 +46,40 @@ export const createResume = async (req: AuthRequest, res: Response, next: NextFu
 
     const cleanedSkills = skills.map((s: any) => String(s).trim()).filter(Boolean);
 
+    // Ensure personalInfo is properly formatted
+    const personalInfo = req.body.personalInfo ? {
+      fullName: String(req.body.personalInfo.fullName || '').trim(),
+      email: String(req.body.personalInfo.email || '').trim(),
+      phone: String(req.body.personalInfo.phone || '').trim(),
+      address: String(req.body.personalInfo.address || '').trim(),
+      linkedin: String(req.body.personalInfo.linkedin || '').trim(),
+      website: String(req.body.personalInfo.website || '').trim(),
+    } : undefined;
+
+    // Validate required fields
+    if (!personalInfo?.fullName || !personalInfo?.email) {
+      res.status(400).json({ 
+        success: false, 
+        message: 'Validation error',
+        errors: ['Full name and email are required']
+      });
+      return;
+    }
+
     const resume = await Resume.create({
       user: req.user?._id,
-      title: req.body.title || 'Untitled Resume',
-      ...req.body,
+      title: String(req.body.title || 'Untitled Resume').trim(),
+      personalInfo,
+      summary: String(req.body.summary || '').trim(),
       experience: cleanedExperience,
       education: cleanedEducation,
       skills: cleanedSkills,
+      variantType: req.body.variantType || 'general',
+      themeConfig: req.body.themeConfig || {
+        color: '#000000',
+        font: 'Inter',
+        layout: 'standard',
+      },
     });
     res.status(201).json({ success: true, data: resume });
   } catch (error: unknown) {

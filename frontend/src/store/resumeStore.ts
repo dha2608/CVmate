@@ -162,12 +162,22 @@ export const useResumeStore = create<ResumeState>()(
 
       aiEnhanceText: async (text: string, type?: string) => {
         try {
+          if (!text?.trim()) {
+            throw new Error('Please enter some text to enhance');
+          }
+          
           const { api } = await import('@/lib/utils');
           const response = await api.aiEnhance(text, type);
-          return response.data || text;
-        } catch (error) {
-          console.error('AI Enhance failed:', error);
-          return text; // Return original text on error
+          
+          if (!response.success || !response.data) {
+            throw new Error(response.message || 'Failed to enhance text');
+          }
+          
+          return response.data;
+        } catch (error: any) {
+          // Re-throw error so caller can handle it (show toast, etc.)
+          const errorMessage = error?.message || 'AI enhancement failed';
+          throw new Error(errorMessage);
         }
       },
 

@@ -57,25 +57,36 @@ const EducationForm = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2 col-span-2 md:col-span-1">
-                <Label>School / University</Label>
+                <Label>
+                  School / University <span className="text-red-500">*</span>
+                </Label>
                 <div className="relative">
                     <GraduationCap className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <Input
                         value={edu.institution}
                         onChange={(e) => updateEducation(index, { ...edu, institution: e.target.value })}
                         placeholder="Harvard University"
-                        className="pl-9"
+                        className={`pl-9 ${!edu.institution?.trim() ? 'border-amber-300' : ''}`}
                     />
                 </div>
+                {!edu.institution?.trim() && (
+                  <p className="text-xs text-amber-600">Required field</p>
+                )}
               </div>
 
               <div className="space-y-2 col-span-2 md:col-span-1">
-                <Label>Degree / Major</Label>
+                <Label>
+                  Degree / Major <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   value={edu.degree}
                   onChange={(e) => updateEducation(index, { ...edu, degree: e.target.value })}
                   placeholder="Bachelor of Computer Science"
+                  className={!edu.degree?.trim() ? 'border-amber-300' : ''}
                 />
+                {!edu.degree?.trim() && (
+                  <p className="text-xs text-amber-600">Required field</p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4 col-span-2">

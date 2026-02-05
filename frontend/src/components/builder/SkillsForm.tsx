@@ -17,10 +17,27 @@ const SkillsForm = () => {
 
   const addSkill = () => {
     const trimmed = inputValue.trim();
-    if (trimmed && !currentResume.skills.includes(trimmed)) {
-      setSkills([...currentResume.skills, trimmed]);
-      setInputValue('');
+    if (!trimmed) {
+      return;
     }
+    
+    // Validation: Check for duplicates (case-insensitive)
+    const isDuplicate = currentResume.skills.some(
+      skill => skill.toLowerCase() === trimmed.toLowerCase()
+    );
+    
+    if (isDuplicate) {
+      // Show warning but don't add
+      return;
+    }
+    
+    // Limit skill length
+    if (trimmed.length > 50) {
+      return;
+    }
+    
+    setSkills([...currentResume.skills, trimmed]);
+    setInputValue('');
   };
 
   const removeSkill = (skillToRemove: string) => {
@@ -31,14 +48,33 @@ const SkillsForm = () => {
     <div className="space-y-6 animate-in fade-in duration-300">
         <h3 className="text-lg font-medium">Skills</h3>
         
-        <div className="flex gap-2">
-            <Input 
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type a skill and press Enter (e.g. React, Node.js)"
-            />
-            <Button onClick={addSkill} variant="secondary">Add</Button>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+              <Input 
+                  value={inputValue}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    // Limit length
+                    if (val.length <= 50) {
+                      setInputValue(val);
+                    }
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type a skill and press Enter (e.g. React, Node.js)"
+                  maxLength={50}
+              />
+              <Button onClick={addSkill} variant="secondary" disabled={!inputValue.trim()}>
+                Add
+              </Button>
+          </div>
+          {inputValue.length > 0 && currentResume.skills.some(
+            skill => skill.toLowerCase() === inputValue.trim().toLowerCase()
+          ) && (
+            <p className="text-xs text-amber-600">This skill is already added</p>
+          )}
+          {inputValue.length > 40 && (
+            <p className="text-xs text-amber-600">Skill name is getting long ({inputValue.length}/50)</p>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2 mt-4">

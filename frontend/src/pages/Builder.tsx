@@ -243,7 +243,8 @@ const Builder = () => {
 
   const handleAIEnhanceSummary = async () => {
     if (!currentResume.summary.trim()) {
-      alert('Please enter some text to enhance');
+      const { useToastStore } = await import('@/store/toastStore');
+      useToastStore.getState().error('Please enter some text to enhance');
       return;
     }
 
@@ -251,18 +252,31 @@ const Builder = () => {
     setAiError(null);
     try {
       const enhanced = await aiEnhanceText(currentResume.summary, 'summary');
-      updateField('summary', enhanced);
-      trackEvent('cv_ai_enhance', {
-        field: 'summary',
-        originalLength: currentResume.summary.length,
-        enhancedLength: enhanced.length,
-      });
+      if (enhanced && enhanced !== currentResume.summary) {
+        updateField('summary', enhanced);
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().success('Summary enhanced successfully!');
+        trackEvent('cv_ai_enhance', {
+          field: 'summary',
+          originalLength: currentResume.summary.length,
+          enhancedLength: enhanced.length,
+        });
+      }
     } catch (error: any) {
       const errorMessage = error.message || 'Failed to enhance text. Please try again.';
-      setAiError(errorMessage);
-      // Only show alert if it's not a simple configuration error
-      if (!errorMessage.toLowerCase().includes('api key') && !errorMessage.toLowerCase().includes('not configured')) {
-        alert(errorMessage);
+      
+      // Check if it's a configuration error
+      const isConfigError = errorMessage.toLowerCase().includes('unavailable') || 
+                           errorMessage.toLowerCase().includes('api key') || 
+                           errorMessage.toLowerCase().includes('not configured');
+      
+      if (isConfigError) {
+        // Show notice banner for config errors
+        setAiError(errorMessage);
+      } else {
+        // Use toast for other errors
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().error(errorMessage);
       }
     } finally {
       setEnhancing(false);
