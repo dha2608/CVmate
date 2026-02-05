@@ -147,9 +147,8 @@ const userSchema = new Schema<IUser>({
 });
 
 // Indexes for performance
-userSchema.index({ email: 1 }, { unique: true });
+// Note: email and googleId already have unique: true in schema definition above
 userSchema.index({ 'subscription.plan': 1, 'subscription.status': 1 });
-userSchema.index({ googleId: 1 }, { sparse: true, unique: true });
 userSchema.index({ isPublicProfile: 1 });
 
 

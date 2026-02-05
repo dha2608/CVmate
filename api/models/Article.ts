@@ -69,9 +69,9 @@ const articleSchema = new Schema<IArticle>({
 // Text search index
 articleSchema.index({ title: 'text', content: 'text' });
 // Performance indexes
+// Note: slug already has unique: true, sparse: true in schema definition above
 articleSchema.index({ category: 1 });
 articleSchema.index({ author: 1, createdAt: -1 });
 articleSchema.index({ isPublished: 1, createdAt: -1 });
-articleSchema.index({ slug: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model<IArticle>('Article', articleSchema);
