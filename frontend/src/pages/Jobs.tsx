@@ -353,7 +353,7 @@ const Jobs = () => {
             <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
-                  Đăng job (Beta)
+                  {t('jobs.postJob') || 'Post a Job (Beta)'}
                 </h2>
                 <Button
                   variant="outline"
@@ -361,26 +361,33 @@ const Jobs = () => {
                   onClick={() => setShowPostJob((v) => !v)}
                   className="text-xs"
                 >
-                  {showPostJob ? 'Ẩn form' : 'Mở form đăng tuyển'}
+                  {showPostJob ? (t('jobs.hideForm') || 'Hide Form') : (t('jobs.showPostForm') || 'Show Post Form')}
                 </Button>
               </div>
               {showPostJob && (
                 <div className="mt-2 space-y-3 bg-gray-50 dark:bg-gray-700/40 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Input
-                      placeholder="Chức danh (VD: Frontend Engineer)"
+                      placeholder={t('jobs.jobTitlePlaceholder') || 'Job Title (e.g., Frontend Engineer)'}
                       value={jobForm.title}
-                      onChange={(e) => setJobForm((f) => ({ ...f, title: e.target.value }))}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (!/^\d+$/.test(value) || value === '') {
+                          setJobForm((f) => ({ ...f, title: value }));
+                        }
+                      }}
                       className="dark:bg-gray-700 dark:border-gray-600 text-xs sm:text-sm"
+                      required
                     />
                     <Input
-                      placeholder="Công ty"
+                      placeholder={t('jobs.companyPlaceholder') || 'Company Name'}
                       value={jobForm.company}
                       onChange={(e) => setJobForm((f) => ({ ...f, company: e.target.value }))}
                       className="dark:bg-gray-700 dark:border-gray-600 text-xs sm:text-sm"
+                      required
                     />
                     <Input
-                      placeholder="Địa điểm (hoặc Remote)"
+                      placeholder={t('jobs.locationPlaceholder') || 'Location (or Remote)'}
                       value={jobForm.location}
                       onChange={(e) => setJobForm((f) => ({ ...f, location: e.target.value }))}
                       className="dark:bg-gray-700 dark:border-gray-600 text-xs sm:text-sm"
