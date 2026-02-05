@@ -1,17 +1,12 @@
 import { useState } from 'react';
 import { GripVertical, Eye, EyeOff } from 'lucide-react';
 import { motion, Reorder } from 'framer-motion';
-
-interface Section {
-  id: string;
-  label: string;
-  visible: boolean;
-}
+import type { BuilderSection, BuilderSectionId } from './BuilderSidebar';
 
 interface SectionReorderProps {
-  sections: Section[];
-  onReorder: (sections: Section[]) => void;
-  onToggleVisibility: (id: string) => void;
+  sections: BuilderSection[];
+  onReorder: (sections: BuilderSection[]) => void;
+  onToggleVisibility: (id: BuilderSectionId) => void;
 }
 
 const SectionReorder = ({ sections, onReorder, onToggleVisibility }: SectionReorderProps) => {
