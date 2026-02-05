@@ -133,7 +133,7 @@ const MainLayout = ({
       <SkipLinks />
       
       {/* Navbar - Hidden on mobile (md and up only) */}
-      <nav id="navigation" className="hidden md:block bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm transition-all duration-300 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95" role="navigation" aria-label="Main navigation">
+      <nav id="navigation" className="hidden md:block glass-navbar sticky top-0 z-50 shadow-sm transition-all duration-300" role="navigation" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-18">
             
@@ -281,7 +281,7 @@ const MainLayout = ({
             {/* Left Sidebar (Profile) */}
             {shouldShowLeftSidebar && (
               <div className="hidden lg:block lg:col-span-3">
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-20 lg:top-24 group mb-6">
+                <div className="glass-card bg-white/90 dark:bg-gray-800/90 overflow-hidden sticky top-20 lg:top-24 group mb-6">
                   {/* Header Profile */}
                   <div 
                     className="h-20 lg:h-24 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-gray-900 dark:to-gray-800 relative"

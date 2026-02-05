@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useBlogStore } from '@/store/blogStore';
 import { useNewsStore } from '@/store/newsStore';
@@ -48,23 +48,23 @@ const Blog = () => {
     fetchBookmarks();
   }, [user, navigate, fetchArticles, fetchNews, fetchBookmarks]);
 
-  // Filter articles
-  const filteredArticles = articles.filter(article => {
+  // Memoize filtered articles for performance
+  const filteredArticles = useMemo(() => articles.filter(article => {
     const matchesSearch = !searchTerm || 
       article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       article.content.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
     return matchesSearch && matchesCategory;
-  });
+  }), [articles, searchTerm, selectedCategory]);
 
-  // Filter news
-  const filteredNews = newsArticles.filter(article => {
+  // Memoize filtered news for performance
+  const filteredNews = useMemo(() => newsArticles.filter(article => {
     return !searchTerm || 
       article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (article.description && article.description.toLowerCase().includes(searchTerm.toLowerCase()));
-  });
+  }), [newsArticles, searchTerm]);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await createArticle({ title, category, content, image });
@@ -77,7 +77,7 @@ const Blog = () => {
     } catch (error: any) {
       toast.error(error.message || t('toast.articlePublishFailed'));
     }
-  };
+  }, [title, category, content, image, createArticle, toast, t, fetchArticles]);
 
   if (!user) return null;
 
@@ -305,14 +305,14 @@ const Blog = () => {
                     </div>
                 ) : (
                     <>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             {filteredNews.slice(0, displayedNewsCount).map((article, index) => (
                                 <motion.article
                                     key={`${article.link}-${index}`}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.4, delay: index * 0.05 }}
-                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                                    className="glass-card bg-white/90 dark:bg-gray-800/90 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
                                     onClick={() => navigate(`/news/${encodeURIComponent(article.link)}`)}
                                 >
                                     {article.image && (
