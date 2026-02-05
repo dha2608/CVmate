@@ -6,8 +6,7 @@ import type {
   IEducation, 
   IPersonalInfo, 
   ResumeField, 
-  UpdateFieldValue,
-  ApiResponse 
+  UpdateFieldValue
 } from '@/types/shared';
 
 // Re-export types for backward compatibility
