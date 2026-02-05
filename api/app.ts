@@ -112,25 +112,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   app.use(passport.session());
 }
 
-/**
- * API Routes
- */
-app.use('/api/auth', authRoutes);
-app.use('/api/resumes', resumeRoutes);
-app.use('/api/interviews', interviewRoutes);
-app.use('/api/posts', postRoutes);
-app.use('/api/articles', articleRoutes);
-app.use('/api/jobs', jobRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/speech', speechRoutes);
-app.use('/api/news', newsRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/payment', paymentRoutes);
-
 // Serve uploaded files statically with CORS headers
-// IMPORTANT: This must be before API routes to handle static file requests
+// IMPORTANT: This must be BEFORE API routes to handle static file requests
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use('/uploads', (req, res, next) => {
