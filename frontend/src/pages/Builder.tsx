@@ -30,7 +30,7 @@ const Builder = () => {
   const [enhancing, setEnhancing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState('modern-red');
-  const [sections, setSections] = useState([
+  const [sections, setSections] = useState<BuilderSection[]>([
     { id: 'personal', label: 'Personal Info', visible: true },
     { id: 'summary', label: 'Summary', visible: true },
     { id: 'experience', label: 'Experience', visible: true },
@@ -314,12 +314,12 @@ const Builder = () => {
         ...currentResume,
         summary: data.summary || currentResume.summary,
         experience: data.experience?.map((exp, idx) => ({
-          id: exp.id || `exp-${Date.now()}-${idx}`,
           ...exp,
+          id: exp.id || `exp-${Date.now()}-${idx}`,
         })) || currentResume.experience,
         education: data.education?.map((edu, idx) => ({
-          id: edu.id || `edu-${Date.now()}-${idx}`,
           ...edu,
+          id: edu.id || `edu-${Date.now()}-${idx}`,
         })) || currentResume.education,
         skills: Array.isArray(data.skills) && data.skills.length > 0 ? data.skills : currentResume.skills,
       });

@@ -123,8 +123,11 @@ const Interview = () => {
       recognition.lang = 'en-US';
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
-        const transcript = event.results[0][0].transcript;
-        setInput(prev => prev + (prev ? ' ' : '') + transcript);
+        const firstResult = event.results[0];
+        if (firstResult && firstResult[0]) {
+          const transcript = firstResult[0].transcript;
+          setInput(prev => prev + (prev ? ' ' : '') + transcript);
+        }
         setIsRecording(false);
       };
 

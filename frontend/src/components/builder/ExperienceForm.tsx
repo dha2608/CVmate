@@ -31,7 +31,17 @@ const ExperienceForm = () => {
       try {
         const enhanced = await aiEnhanceText(text, 'experience');
         if (enhanced && enhanced !== text) {
-          updateExperience(index, { ...currentResume.experience[index], description: enhanced });
+          const currentExp = currentResume.experience[index];
+          if (currentExp) {
+            updateExperience(index, {
+              id: currentExp.id || `exp-${Date.now()}`,
+              company: currentExp.company || '',
+              position: currentExp.position || '',
+              startDate: currentExp.startDate || '',
+              endDate: currentExp.endDate || '',
+              description: enhanced,
+            });
+          }
           const { useToastStore } = await import('@/store/toastStore');
           useToastStore.getState().success('Description enhanced successfully!');
         }
