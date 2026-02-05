@@ -1,9 +1,11 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import passport from './config/passport.js';
@@ -31,6 +33,21 @@ dotenv.config();
 connectDB();
 
 const app: express.Application = express();
+
+// Security Headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      connectSrc: ["'self'", "https:"],
+      fontSrc: ["'self'", "data:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Allow embedding for PDF generation
+}));
 
 // Middleware
 const allowedOrigins = process.env.FRONTEND_URL 
@@ -64,12 +81,29 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Request timeout middleware
+import { requestTimeout } from './middleware/timeout.js';
+app.use(requestTimeout(30000)); // 30 seconds
+
 // Session for OAuth (only if Google OAuth is configured)
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+  
   app.use(session({
     secret: process.env.SESSION_SECRET || 'cvmate-secret-key',
     resave: false,
     saveUninitialized: false,
+    store: mongoUri ? MongoStore.create({
+      mongoUrl: mongoUri,
+      ttl: 14 * 24 * 60 * 60, // 14 days
+      autoRemove: 'native',
+    }) : undefined, // Fallback to MemoryStore if no MongoDB URI
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+      sameSite: 'lax',
+    },
   }));
 
   // Initialize Passport
@@ -104,40 +138,61 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
  * Returns server status, database connection, and system information
  */
 app.get('/api/health', async (req: Request, res: Response) => {
-  const health: {
-    status: string;
-    timestamp: string;
-    uptime: number;
-    database: string;
-    memory: NodeJS.MemoryUsage;
-    environment: string;
-  } = {
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    database: 'unknown',
-    memory: process.memoryUsage(),
-    environment: process.env.NODE_ENV || 'development',
-  };
+  const checks: Record<string, { status: string; message?: string }> = {};
+  let allHealthy = true;
 
+  // Check database connection
   try {
-    // Check database connection
     if (mongoose.connection.readyState === 1) {
       await mongoose.connection.db.admin().ping();
-      health.database = 'connected';
+      checks.database = { status: 'ok' };
     } else {
-      health.database = 'disconnected';
-      health.status = 'degraded';
+      checks.database = { status: 'error', message: 'Not connected' };
+      allHealthy = false;
     }
   } catch (error) {
-    health.database = 'disconnected';
-    health.status = 'degraded';
+    checks.database = { status: 'error', message: error instanceof Error ? error.message : 'Unknown error' };
+    allHealthy = false;
     logger.warn('Health check: Database connection failed', { error });
   }
 
-  const statusCode = health.status === 'ok' ? 200 : 503;
+  // Check AI service (if configured)
+  if (process.env.HF_API_KEY) {
+    checks.aiService = { status: 'ok', message: 'Configured' };
+  } else {
+    checks.aiService = { status: 'warning', message: 'Not configured' };
+  }
+
+  // Check storage (uploads directory)
+  try {
+    const fs = await import('fs');
+    const path = await import('path');
+    const { fileURLToPath } = await import('url');
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const uploadsDir = path.join(__dirname, '../uploads');
+    
+    if (fs.existsSync(uploadsDir)) {
+      checks.storage = { status: 'ok' };
+    } else {
+      checks.storage = { status: 'warning', message: 'Uploads directory not found' };
+    }
+  } catch (error) {
+    checks.storage = { status: 'error', message: 'Cannot check storage' };
+  }
+
+  const health = {
+    status: allHealthy ? 'ok' : 'degraded',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    environment: process.env.NODE_ENV || 'development',
+    checks,
+  };
+
+  const statusCode = allHealthy ? 200 : 503;
   res.status(statusCode).json({
-    success: health.status === 'ok',
+    success: allHealthy,
     ...health,
   });
 });
@@ -153,16 +208,35 @@ app.use((req: Request, res: Response) => {
  * Error Handler
  */
 app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
+  const isDev = process.env.NODE_ENV !== 'production';
+  
+  // Log error
   logger.error(`Error ${req.method} ${req.path}`, error instanceof Error ? error : new Error(String(error)), {
     method: req.method,
     path: req.path,
     statusCode: (error as any).statusCode || 500,
+    code: (error as any).code,
   });
+  
+  // Handle AppError instances
+  if (error instanceof Error && 'statusCode' in error && (error as any).isOperational) {
+    const appError = error as any;
+    return res.status(appError.statusCode).json({
+      success: false,
+      error: appError.message || 'An error occurred',
+      code: appError.code,
+      ...(isDev && appError.details && { details: appError.details }),
+    });
+  }
+  
+  // Handle unknown errors
   const statusCode = (error as any).statusCode || 500;
   res.status(statusCode).json({
     success: false,
-    error: (error as any).message || 'Server internal error',
-    stack: process.env.NODE_ENV === 'production' ? null : (error as any).stack,
+    error: isDev 
+      ? ((error as any).message || 'Server internal error')
+      : 'Server internal error',
+    ...(isDev && { stack: (error as any).stack }),
   });
 });
 

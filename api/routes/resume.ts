@@ -2,11 +2,12 @@ import { Router } from 'express';
 import { createResume, getResumes, getResumeById, updateResume, deleteResume, aiEnhance, analyzeResume, aiGenerateFullResume } from '../controllers/resumeController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { aiLimiter, freeUserLimiter } from '../middleware/rateLimiter.js';
+import { validate, createResumeSchema } from '../utils/validators.js';
 
 const router = Router();
 
 router.route('/')
-  .post(protect, createResume)
+  .post(protect, validate(createResumeSchema), createResume)
   .get(protect, getResumes);
 
 router.route('/:id')

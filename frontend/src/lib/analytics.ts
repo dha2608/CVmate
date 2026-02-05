@@ -15,10 +15,13 @@ export interface AnalyticsPayload {
 
 export const trackEvent = (name: AnalyticsEventName, payload?: AnalyticsPayload) => {
   try {
-    // Tạm thời: log ra console để dễ debug
-    // Có thể thay thế bằng gửi request tới backend / bên thứ ba
-    // eslint-disable-next-line no-console
-    console.log('[analytics]', name, payload || {});
+    const isDev = import.meta.env.DEV;
+    // Log in development only
+    if (isDev) {
+      console.log('[analytics]', name, payload || {});
+    }
+    // TODO: Send to backend analytics endpoint or third-party service
+    // await fetch('/api/analytics', { method: 'POST', body: JSON.stringify({ name, payload }) });
   } catch {
     // Silent fail
   }

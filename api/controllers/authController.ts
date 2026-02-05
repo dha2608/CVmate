@@ -16,6 +16,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
   try {
     const { name, email, password } = req.body;
 
+    // Validation is now handled by middleware, but keep as fallback
     if (!name || !email || !password) {
       res.status(400).json({ success: false, message: 'Please provide all required fields' });
       return;
@@ -24,7 +25,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      res.status(400).json({ success: false, message: 'User already exists' });
+      res.status(409).json({ success: false, message: 'User already exists' });
       return;
     }
 
@@ -63,6 +64,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
   try {
     const { email, password } = req.body;
 
+    // Validation is now handled by middleware, but keep as fallback
     if (!email || !password) {
       res.status(400).json({ success: false, message: 'Please provide email and password' });
       return;

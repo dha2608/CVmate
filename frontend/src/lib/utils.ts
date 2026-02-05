@@ -7,9 +7,17 @@ export function cn(...inputs: ClassValue[]) {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
-// Debug: Log API URL in development
-if (import.meta.env.DEV) {
-  console.log('🔗 API Base URL:', API_BASE_URL);
+// Logger utility - only logs in development
+const isDev = import.meta.env.DEV;
+export const logger = {
+  log: (...args: any[]) => isDev && console.log(...args),
+  error: (...args: any[]) => console.error(...args),
+  warn: (...args: any[]) => isDev && console.warn(...args),
+  info: (...args: any[]) => isDev && console.info(...args),
+};
+
+if (isDev) {
+  logger.log('🔗 API Base URL:', API_BASE_URL);
 }
 
 const getAuthToken = (): string | null => {
@@ -48,9 +56,9 @@ export const apiRequest = async <T = any>(
 
   const url = `${API_BASE_URL}${endpoint}`;
   
-  // Debug logging
-  if (import.meta.env.DEV) {
-    console.log('📤 API Request:', url, { method: fetchOptions.method || 'GET', headers });
+  // Debug logging (development only)
+  if (isDev) {
+    logger.log('📤 API Request:', url, { method: fetchOptions.method || 'GET' });
   }
 
   const response = await fetch(url, {

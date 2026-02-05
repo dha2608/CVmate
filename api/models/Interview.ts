@@ -96,4 +96,9 @@ const interviewSchema = new Schema<IInterview>({
   },
 }, { timestamps: true });
 
+// Performance indexes
+interviewSchema.index({ user: 1, createdAt: -1 });
+interviewSchema.index({ status: 1, createdAt: -1 });
+interviewSchema.index({ persona: 1 });
+
 export default mongoose.model<IInterview>('Interview', interviewSchema);

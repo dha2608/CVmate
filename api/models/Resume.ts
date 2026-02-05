@@ -117,4 +117,9 @@ const resumeSchema = new Schema<IResume>({
   timestamps: true 
 });
 
+// Performance indexes
+resumeSchema.index({ user: 1, createdAt: -1 });
+resumeSchema.index({ 'personalInfo.email': 1 });
+resumeSchema.index({ variantType: 1 });
+
 export default mongoose.model<IResume>('Resume', resumeSchema);

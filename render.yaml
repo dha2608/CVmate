@@ -1,0 +1,20 @@
+# Render Blueprint Configuration
+# This file helps configure Render services
+# Reference: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: cvmate-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npx tsx -r dotenv/config api/server.ts
+    rootDir: api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5001
+      # Add other environment variables in Render Dashboard
+      # Required: MONGO_URI, JWT_SECRET, FRONTEND_URL

@@ -44,7 +44,7 @@ const Bookmarks = () => {
             // Validate itemId - skip if it's a URL or invalid
             const itemId = bookmark.itemId;
             if (!itemId || itemId.startsWith('http://') || itemId.startsWith('https://')) {
-              console.warn(`Skipping invalid bookmark itemId: ${itemId}`);
+              // Skip invalid bookmarks silently
               continue;
             }
 

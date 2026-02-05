@@ -80,6 +80,13 @@ export const validateEnv = (): ValidationResult => {
       if (!process.env.MONGO_URI && !process.env.MONGODB_URI) {
         missing.push('MONGO_URI hoặc MONGODB_URI');
       }
+    } else if (key === 'JWT_SECRET') {
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        missing.push('JWT_SECRET');
+      } else if (jwtSecret.length < 32) {
+        warnings.push('JWT_SECRET should be at least 32 characters long for security');
+      }
     } else if (!process.env[key]) {
       missing.push(key);
     }

@@ -86,7 +86,13 @@ const jobSchema = new Schema<IJob>({
   timestamps: true
 });
 
+// Text search index
 jobSchema.index({ title: 'text', company: 'text', description: 'text', location: 'text' });
+// Performance indexes
 jobSchema.index({ postedAt: -1 });
+jobSchema.index({ type: 1, location: 1 });
+jobSchema.index({ postedBy: 1 });
+jobSchema.index({ 'applicants': 1 });
+jobSchema.index({ experienceLevel: 1, companySize: 1 });
 
 export default mongoose.model<IJob>('Job', jobSchema);

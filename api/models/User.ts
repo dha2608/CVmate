@@ -146,6 +146,12 @@ const userSchema = new Schema<IUser>({
   timestamps: true 
 });
 
+// Indexes for performance
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ 'subscription.plan': 1, 'subscription.status': 1 });
+userSchema.index({ googleId: 1 }, { sparse: true, unique: true });
+userSchema.index({ isPublicProfile: 1 });
+
 
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password') || !this.password) {
