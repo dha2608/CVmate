@@ -90,7 +90,7 @@ const Blog = () => {
       <MainLayout
         rightSidebar={
             <div className="space-y-4 sticky top-20 animate-fade-in">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow duration-300">
+                <div className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 hover:shadow-md transition-shadow duration-300">
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                       {t('blog.writingGoodArticle')}
                     </h3>
@@ -111,7 +111,7 @@ const Blog = () => {
             </div>
         }
     >
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6 animate-fade-in">
+            <div className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 sm:p-6 mb-6 animate-fade-in">
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h1 className="text-3xl font-black text-jet-black dark:text-white mb-2">{t('blog.title')}</h1>
@@ -121,7 +121,7 @@ const Blog = () => {
             
             {/* Search and Filter */}
             <div className="mb-4 space-y-3">
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                     <div className="flex-1 relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
                         <Input 
@@ -134,10 +134,10 @@ const Blog = () => {
                     <Button
                         variant="outline"
                         onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 w-full sm:w-auto"
                     >
                         <Filter size={16} />
-                        {t('blog.filters') || 'Lọc'}
+                        <span className="hidden sm:inline">{t('blog.filters') || 'Lọc'}</span>
                         {selectedCategory !== 'all' && (
                             <span className="bg-crimson-red text-white rounded-full px-2 py-0.5 text-xs">
                                 1
@@ -401,7 +401,7 @@ const Blog = () => {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.4, delay: index * 0.05 }}
-                                        className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                                        className="glass-card bg-white/90 dark:bg-gray-800/90 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           navigate(`/blog/${article._id}`);

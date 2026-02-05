@@ -71,17 +71,20 @@ const Dashboard = () => {
 
   const isLoading = isInitialLoading || statsLoading || articlesLoading;
 
-  // Simple profile completion heuristic
-  const profileSegments = [
-    user.onboardingCompleted ? 1 : 0,
-    stats.resumesCount > 0 ? 1 : 0,
-    stats.interviewsCount > 0 ? 1 : 0,
-    stats.postsCount > 0 ? 1 : 0,
-  ];
-  const profileProgress =
-    (profileSegments.reduce((sum, v) => sum + v, 0) / profileSegments.length) * 100;
+  // Memoize profile progress calculation
+  const profileProgress = useMemo(() => {
+    const profileSegments = [
+      user.onboardingCompleted ? 1 : 0,
+      stats.resumesCount > 0 ? 1 : 0,
+      stats.interviewsCount > 0 ? 1 : 0,
+      stats.postsCount > 0 ? 1 : 0,
+    ];
+    return (profileSegments.reduce((sum, v) => sum + v, 0) / profileSegments.length) * 100;
+  }, [user.onboardingCompleted, stats.resumesCount, stats.interviewsCount, stats.postsCount]);
 
-  const getNextAction = () => {
+  // Memoize next action
+  const nextAction = useMemo(() => {
+    const getNextAction = () => {
     if (!user.onboardingCompleted) {
       return {
         title: t('dashboard.nextActionOnboarding') || 'Hoàn thành onboarding để cá nhân hoá trải nghiệm',
@@ -120,9 +123,9 @@ const Dashboard = () => {
       cta: t('dashboard.viewJobs') || 'Xem jobs',
       href: '/jobs',
     };
-  };
-
-  const nextAction = getNextAction();
+    };
+    return getNextAction();
+  }, [user.onboardingCompleted, stats.resumesCount, stats.interviewsCount, t]);
 
   return (
     <MainLayout>
@@ -132,7 +135,7 @@ const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-         <div className="card-base">
+         <div className="glass-card bg-white/90 dark:bg-gray-800/90">
             <div className="flex items-center justify-between gap-4 mb-4 sm:mb-6">
                <div className="flex-1 min-w-0">
                   {isLoading ? (
@@ -166,7 +169,7 @@ const Dashboard = () => {
          </div>
 
          {/* Next Best Action + Profile Progress */}
-         <div className="card-base">
+         <div className="glass-card bg-white/90 dark:bg-gray-800/90">
            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
              <div className="space-y-1">
                <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide flex items-center gap-1">
@@ -237,7 +240,7 @@ const Dashboard = () => {
             />
          </div>
 
-         <div className="card-base">
+         <div className="glass-card bg-white/90 dark:bg-gray-800/90">
             <h2 className="text-heading-3 mb-6 flex items-center gap-2">
                <TrendingUp size={20} className="text-crimson-red dark:text-red-400" />
                {t('dashboard.yourActivity')}
@@ -267,7 +270,7 @@ const Dashboard = () => {
          <AdvancedStats stats={stats} />
 
          {/* Advanced Analytics */}
-         <div className="card-base">
+         <div className="glass-card bg-white/90 dark:bg-gray-800/90">
             <div className="flex items-center justify-between mb-4">
                <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <BarChart3 size={18} className="text-rose-500 dark:text-rose-400" />

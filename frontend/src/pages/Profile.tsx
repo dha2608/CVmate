@@ -376,7 +376,7 @@ const Profile = () => {
   return (
     <MainLayout>
       <div className="max-w-5xl mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-4 lg:px-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="glass-card bg-white/90 dark:bg-gray-800/90 rounded-xl sm:rounded-2xl overflow-hidden">
           {/* Cover / Header Background */}
           <div 
             className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative group/cover overflow-visible"
