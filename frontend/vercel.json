@@ -9,5 +9,10 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "installCommand": "npm install",
-  "devCommand": "npm run client:dev"
+  "devCommand": "npm run client:dev",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  }
 }
