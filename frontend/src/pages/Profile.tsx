@@ -469,7 +469,7 @@ const Profile = () => {
              </div>
           </div>
 
-          <div className="pt-16 sm:pt-18 lg:pt-20 pb-6 sm:pb-8 px-4 sm:px-6 lg:px-8">
+          <div className="pt-12 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-4 sm:px-6 lg:px-8">
             {/* Header with Save/Cancel */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
               <div className="min-w-0 flex-1">
