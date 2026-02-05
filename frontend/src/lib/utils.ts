@@ -144,9 +144,10 @@ export const api = {
 
   getMe: () => apiRequest<{ success: boolean; data: any }>('/auth/me'),
 
-  updateProfile: (payload: { 
+  updateProfile: (payload: {
     name?: string; 
-    avatar?: string; 
+    avatar?: string;
+    coverPhoto?: string; 
     email?: string; 
     password?: string;
     bio?: string;

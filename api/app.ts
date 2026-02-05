@@ -35,18 +35,34 @@ connectDB();
 const app: express.Application = express();
 
 // Security Headers
+const renderUrl = process.env.RENDER_URL || 'https://cvmate-kf5p.onrender.com';
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: ["'self'", "https:"],
+      imgSrc: [
+        "'self'", 
+        "data:", 
+        "https:", 
+        "http:",
+        renderUrl, // Allow images from Render
+        "*.onrender.com", // Allow all Render subdomains
+        "*.vercel.app", // Allow Vercel previews
+      ],
+      connectSrc: [
+        "'self'", 
+        "https:",
+        renderUrl,
+        "*.onrender.com",
+        "*.vercel.app",
+      ],
       fontSrc: ["'self'", "data:"],
     },
   },
   crossOriginEmbedderPolicy: false, // Allow embedding for PDF generation
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow images to be loaded cross-origin
 }));
 
 // Middleware
@@ -128,10 +144,24 @@ app.use('/api/news', newsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/payment', paymentRoutes);
 
-// Serve uploaded files statically
+// Serve uploaded files statically with CORS headers
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', (req, res, next) => {
+  // Set CORS headers for static files
+  const origin = req.headers.origin;
+  if (origin && (origin.includes('.vercel.app') || origin.includes('localhost'))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  next();
+}, express.static(path.join(__dirname, '../uploads'), {
+  setHeaders: (res, path) => {
+    // Allow images to be loaded cross-origin
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+}));
 
 /**
  * Root Endpoint

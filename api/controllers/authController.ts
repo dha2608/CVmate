@@ -167,7 +167,8 @@ export const updateUserProfile = async (req: AuthRequest, res: Response, next: N
       if (typeof req.body.isPublicProfile === 'boolean') {
         user.isPublicProfile = req.body.isPublicProfile;
       }
-      user.avatar = req.body.avatar || user.avatar;
+      user.avatar = req.body.avatar !== undefined ? req.body.avatar : user.avatar;
+      user.coverPhoto = req.body.coverPhoto !== undefined ? req.body.coverPhoto : user.coverPhoto;
 
       if (req.body.password) {
         const salt = await bcrypt.genSalt(10);
@@ -183,6 +184,7 @@ export const updateUserProfile = async (req: AuthRequest, res: Response, next: N
           name: updatedUser.name,
           email: updatedUser.email,
           avatar: updatedUser.avatar,
+          coverPhoto: updatedUser.coverPhoto,
           bio: updatedUser.bio,
           headline: updatedUser.headline,
           location: updatedUser.location,

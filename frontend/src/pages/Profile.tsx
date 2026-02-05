@@ -23,6 +23,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     name: '',
     avatar: '',
+    coverPhoto: '',
     email: '',
     role: '',
     bio: '',
@@ -40,6 +41,7 @@ const Profile = () => {
   const [originalData, setOriginalData] = useState({
     name: '',
     avatar: '',
+    coverPhoto: '',
     email: '',
     role: '',
     bio: '',
@@ -55,7 +57,9 @@ const Profile = () => {
     isPublicProfile: true,
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverPhotoInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   // Check if form has changes
   const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
@@ -68,6 +72,7 @@ const Profile = () => {
       const initialData = {
         name: user.name || '',
         avatar: user.avatar || '',
+        coverPhoto: (user as any).coverPhoto || '',
         email: user.email || '',
         role: user.role || 'user',
         bio: user.bio || '',
@@ -180,10 +185,17 @@ const Profile = () => {
         // Update form data immediately
         const updatedFormData = { ...formData, avatar: avatarUrl };
         setFormData(updatedFormData);
+        setOriginalData(updatedFormData); // Also update originalData so changes are tracked
         
         // Also update user in store immediately for instant display
         if (user) {
           setUser({ ...user, avatar: avatarUrl });
+        }
+        
+        // Force image reload by adding timestamp
+        const img = document.querySelector('img[alt="Profile"]') as HTMLImageElement;
+        if (img) {
+          img.src = avatarUrl + (avatarUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
         }
         
         toast.success(t('profile.avatarUploaded'));
@@ -197,6 +209,88 @@ const Profile = () => {
       setUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleCoverPhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('profile.selectImageFile'));
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t('profile.imageTooLarge'));
+      return;
+    }
+
+    setUploadingCover(true);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('coverPhoto', file);
+
+      const userData = localStorage.getItem('user');
+      const token = userData ? JSON.parse(userData).token : null;
+
+      // Get API base URL - handle both cases: with and without /api
+      let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      // Remove trailing /api if present to avoid duplication
+      if (apiBaseUrl.endsWith('/api')) {
+        apiBaseUrl = apiBaseUrl.slice(0, -4);
+      }
+      
+      const response = await fetch(`${apiBaseUrl}/api/upload/cover-photo`, {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formDataToSend,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Upload failed' }));
+        throw new Error(errorData.message || errorData.error || t('profile.uploadFailed'));
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.data?.url) {
+        // Construct full URL
+        let coverPhotoUrl = data.data.url;
+        
+        if (!coverPhotoUrl.startsWith('http')) {
+          const baseUrl = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
+          const urlPath = coverPhotoUrl.startsWith('/') ? coverPhotoUrl : `/${coverPhotoUrl}`;
+          coverPhotoUrl = `${baseUrl}${urlPath}`;
+        }
+        
+        // Update form data immediately
+        const updatedFormData = { ...formData, coverPhoto: coverPhotoUrl };
+        setFormData(updatedFormData);
+        setOriginalData(updatedFormData);
+        
+        // Also update user in store
+        if (user) {
+          setUser({ ...user, coverPhoto: coverPhotoUrl } as any);
+        }
+        
+        toast.success('Ảnh bìa đã được tải lên');
+      } else {
+        throw new Error(data.message || data.error || t('profile.uploadFailed'));
+      }
+    } catch (error: any) {
+      console.error('Cover photo upload error:', error);
+      toast.error(error.message || t('profile.uploadFailed'));
+    } finally {
+      setUploadingCover(false);
+      if (coverPhotoInputRef.current) {
+        coverPhotoInputRef.current.value = '';
       }
     }
   };
@@ -223,6 +317,7 @@ const Profile = () => {
       const response = await api.updateProfile({
         name: formData.name,
         avatar: formData.avatar?.trim() || undefined,
+        coverPhoto: formData.coverPhoto?.trim() || undefined,
         bio: formData.bio,
         headline: formData.headline,
         location: formData.location,
@@ -264,7 +359,37 @@ const Profile = () => {
       <div className="max-w-5xl mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-4 lg:px-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Cover / Header Background */}
-          <div className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative">
+          <div 
+            className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative group/cover overflow-hidden"
+            style={{
+              backgroundImage: formData.coverPhoto ? `url(${formData.coverPhoto}?t=${Date.now()})` : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {formData.coverPhoto && (
+              <div className="absolute inset-0 bg-black/20" />
+            )}
+            <button
+              onClick={() => coverPhotoInputRef.current?.click()}
+              disabled={uploadingCover}
+              className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/90 rounded-full p-2 shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all opacity-0 group-hover/cover:opacity-100 disabled:opacity-50"
+              title="Đổi ảnh bìa"
+            >
+              {uploadingCover ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Camera size={16} />
+              )}
+            </button>
+            <input
+              ref={coverPhotoInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleCoverPhotoSelect}
+              className="hidden"
+              id="cover-photo-upload"
+            />
             <div className="absolute -bottom-12 sm:-bottom-14 lg:-bottom-16 left-4 sm:left-6 lg:left-8">
               <div className="relative group">
                 <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full border-2 sm:border-3 lg:border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 shadow-lg overflow-hidden flex items-center justify-center relative">
