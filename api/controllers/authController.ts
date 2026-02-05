@@ -62,7 +62,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
 export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, twoFactorToken } = req.body as {
+      email?: string;
+      password?: string;
+      twoFactorToken?: string;
+    };
 
     // Validation is now handled by middleware, but keep as fallback
     if (!email || !password) {
@@ -78,23 +82,47 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       // Use the model's matchPassword method for consistency
       const isPasswordValid = await user.matchPassword(password);
       
-      if (isPasswordValid) {
-        res.json({
-          success: true,
-          data: {
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-            role: user.role,
-            onboardingCompleted: user.onboardingCompleted,
-            careerGoal: user.careerGoal,
-            token: generateToken((user._id as Types.ObjectId).toString()),
-          },
-        });
-      } else {
+      if (!isPasswordValid) {
         res.status(401).json({ success: false, message: 'Invalid email or password' });
+        return;
       }
+
+      // If 2FA is enabled, require a valid token to complete login
+      if (user.twoFactorEnabled) {
+        if (!twoFactorToken) {
+          res.status(401).json({
+            success: false,
+            requiresTwoFactor: true,
+            message: 'Two-factor authentication token is required',
+          });
+          return;
+        }
+
+        // Import lazily to avoid loading otplib unless needed
+        const { authenticator } = await import('otplib');
+        if (!user.twoFactorSecret || !authenticator.verify({ token: twoFactorToken, secret: user.twoFactorSecret })) {
+          res.status(401).json({
+            success: false,
+            requiresTwoFactor: true,
+            message: 'Invalid two-factor authentication token',
+          });
+          return;
+        }
+      }
+
+      res.json({
+        success: true,
+        data: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+          role: user.role,
+          onboardingCompleted: user.onboardingCompleted,
+          careerGoal: user.careerGoal,
+          token: generateToken((user._id as Types.ObjectId).toString()),
+        },
+      });
     } else {
       res.status(401).json({ success: false, message: 'Invalid email or password' });
     }

@@ -4,11 +4,31 @@ import { AuthRequest } from '../middleware/authMiddleware.js';
 
 export const getNotifications = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const notifications = await Notification.find({ recipient: req.user?._id })
-      .sort({ createdAt: -1 })
-      .populate('sender', 'name avatar');
+    const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string, 10) || 20));
+    const skip = (page - 1) * limit;
+
+    const [notifications, total, unread] = await Promise.all([
+      Notification.find({ recipient: req.user?._id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('sender', 'name avatar'),
+      Notification.countDocuments({ recipient: req.user?._id }),
+      Notification.countDocuments({ recipient: req.user?._id, read: false }),
+    ]);
       
-    res.json({ success: true, data: notifications });
+    res.json({ 
+      success: true, 
+      data: notifications,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        unread,
+      },
+    });
   } catch (error) {
     next(error);
   }

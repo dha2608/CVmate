@@ -35,6 +35,8 @@ export interface IUser extends Document {
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
   };
+  twoFactorEnabled?: boolean;
+  twoFactorSecret?: string;
   createdAt: Date;
   updatedAt: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
@@ -146,6 +148,14 @@ const userSchema = new Schema<IUser>({
     paymentMethod: String,
     stripeCustomerId: String,
     stripeSubscriptionId: String
+  },
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false,
+  },
+  twoFactorSecret: {
+    type: String,
+    default: null,
   }
 }, { 
   timestamps: true 

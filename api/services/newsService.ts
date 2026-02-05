@@ -17,6 +17,11 @@ interface NewsArticle {
   source: string;
 }
 
+interface PagedNews {
+  items: NewsArticle[];
+  total: number;
+}
+
 // RSS Feeds từ các nguồn đáng tin cậy về career/job market
 // Sử dụng các nguồn RSS công khai và đáng tin cậy
 const RSS_FEEDS = [
@@ -253,23 +258,30 @@ const getFallbackArticles = (limit: number): NewsArticle[] => {
 let cachedNews: NewsArticle[] = [];
 let cacheTimestamp = 0;
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
+const MAX_CACHE_SIZE = 200;
 
-export const getCachedNews = async (limit: number = 20): Promise<NewsArticle[]> => {
+export const getCachedNews = async (limit: number = 20, offset: number = 0): Promise<PagedNews> => {
   const now = Date.now();
+  const needsRefresh = cachedNews.length === 0 || (now - cacheTimestamp) >= CACHE_DURATION;
   
-  if (cachedNews.length > 0 && (now - cacheTimestamp) < CACHE_DURATION) {
-    return cachedNews.slice(0, limit);
+  if (needsRefresh) {
+    try {
+      cachedNews = await fetchCareerNews(MAX_CACHE_SIZE);
+      cacheTimestamp = now;
+    } catch (error) {
+      // Return cached data even if stale if fetch fails
+      if (cachedNews.length === 0) {
+        cachedNews = getFallbackArticles(MAX_CACHE_SIZE);
+      }
+    }
   }
 
-  try {
-    cachedNews = await fetchCareerNews(limit);
-    cacheTimestamp = now;
-    return cachedNews;
-  } catch (error) {
-    // Return cached data even if stale if fetch fails
-    if (cachedNews.length > 0) {
-      return cachedNews.slice(0, limit);
-    }
-    throw error;
-  }
+  const safeLimit = Math.min(MAX_CACHE_SIZE, Math.max(1, limit));
+  const safeOffset = Math.max(0, offset);
+  const items = cachedNews.slice(safeOffset, safeOffset + safeLimit);
+
+  return {
+    items,
+    total: cachedNews.length,
+  };
 };

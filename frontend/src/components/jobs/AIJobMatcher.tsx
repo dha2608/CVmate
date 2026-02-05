@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Brain, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/store/i18nStore';
@@ -18,7 +18,7 @@ interface AIJobMatcherProps {
   onClose?: () => void;
 }
 
-const AIJobMatcher = ({ jobId, jobDescription, jobRequirements, onClose }: AIJobMatcherProps) => {
+const AIJobMatcherComponent = ({ jobId, jobDescription, jobRequirements, onClose }: AIJobMatcherProps) => {
   const { t } = useI18n();
   const { currentResume } = useResumeStore();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -226,5 +226,7 @@ const AIJobMatcher = ({ jobId, jobDescription, jobRequirements, onClose }: AIJob
     </div>
   );
 };
+
+const AIJobMatcher = memo(AIJobMatcherComponent);
 
 export default AIJobMatcher;

@@ -94,5 +94,6 @@ jobSchema.index({ type: 1, location: 1 });
 jobSchema.index({ postedBy: 1 });
 jobSchema.index({ 'applicants': 1 });
 jobSchema.index({ experienceLevel: 1, companySize: 1 });
+jobSchema.index({ salaryMin: 1, salaryMax: 1 });
 
 export default mongoose.model<IJob>('Job', jobSchema);

@@ -27,14 +27,38 @@ export const getMessages = async (req: AuthRequest, res: Response, next: NextFun
     const { userId } = req.params;
     const currentUserId = req.user?._id;
 
-    const messages = await Message.find({
+    const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string, 10) || 50));
+    const skip = (page - 1) * limit;
+
+    const filter = {
       $or: [
         { sender: currentUserId, receiver: userId },
         { sender: userId, receiver: currentUserId }
       ]
-    }).sort({ createdAt: 1 });
+    };
 
-    res.json({ success: true, data: messages });
+    const [messages, total] = await Promise.all([
+      Message.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Message.countDocuments(filter)
+    ]);
+
+    // Trả về theo thứ tự cũ (tăng dần) để UI không phải đảo
+    const orderedMessages = [...messages].reverse();
+
+    res.json({ 
+      success: true, 
+      data: orderedMessages,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      }
+    });
   } catch (error) {
     next(error);
   }

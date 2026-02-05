@@ -24,6 +24,9 @@ const connectDB = async (): Promise<void> => {
     await mongoose.connect(mongoURI, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
+      maxPoolSize: parseInt(process.env.DB_MAX_POOL_SIZE || '20', 10),
+      minPoolSize: parseInt(process.env.DB_MIN_POOL_SIZE || '5', 10),
+      maxIdleTimeMS: 30000,
     });
 
     const handleShutdown = async () => {

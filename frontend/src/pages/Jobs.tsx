@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useJobStore } from '@/store/jobStore';
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import BookmarkButton from '@/components/BookmarkButton';
 import AIJobMatcher from '@/components/jobs/AIJobMatcher';
+import VirtualList from '@/components/VirtualList';
 import { Briefcase, MapPin, DollarSign, Clock, Search, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp, X, Video, MessageSquare } from 'lucide-react';
 import { validateJobPosting, validateRequired, validateNotOnlyNumbers, validateSalary } from '@/utils/validation';
 
@@ -483,64 +484,69 @@ const Jobs = () => {
         </div>
       ) : (
         <div className="space-y-4">
-            {jobs.map((job, index) => (
-                <motion.div 
-                  key={job._id} 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className="glass-card bg-white/90 dark:bg-gray-800/90 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                >
-                    <div className="flex gap-4">
-                        <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center font-bold text-gray-400 dark:text-gray-500 flex-shrink-0">
-                            {job.logo ? <img src={job.logo} className="w-full h-full object-cover rounded" alt={job.company} /> : job.company.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-bold text-accent dark:text-red-400">{job.title}</h3>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{job.company}</p>
-                            <div className="flex flex-wrap gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                <span className="flex items-center gap-1"><MapPin size={14} /> {job.location}</span>
-                                <span className="flex items-center gap-1"><Briefcase size={14} /> {job.type}</span>
-                                {job.salary && <span className="flex items-center gap-1"><DollarSign size={14} /> {job.salary}</span>}
-                                <span className="flex items-center gap-1"><Clock size={14} /> {new Date(job.postedAt).toLocaleDateString()}</span>
+          <VirtualList
+            items={jobs}
+            itemHeight={140}
+            height={600}
+            renderItem={(job, index) => (
+              <motion.div 
+                key={job._id} 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: index * 0.02 }}
+                className="glass-card bg-white/90 dark:bg-gray-800/90 hover:shadow-xl transition-all duration-300 cursor-pointer mb-4"
+              >
+                  <div className="flex gap-4">
+                      <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center font-bold text-gray-400 dark:text-gray-500 flex-shrink-0">
+                          {job.logo ? <img src={job.logo} className="w-full h-full object-cover rounded" alt={job.company} loading="lazy" /> : job.company.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-bold text-accent dark:text-red-400">{job.title}</h3>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{job.company}</p>
+                          <div className="flex flex-wrap gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                              <span className="flex items-center gap-1"><MapPin size={14} /> {job.location}</span>
+                              <span className="flex items-center gap-1"><Briefcase size={14} /> {job.type}</span>
+                              {job.salary && <span className="flex items-center gap-1"><DollarSign size={14} /> {job.salary}</span>}
+                              <span className="flex items-center gap-1"><Clock size={14} /> {new Date(job.postedAt).toLocaleDateString()}</span>
+                          </div>
+                          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{job.description}</p>
+                          {user && (
+                            <div className="mt-3">
+                              <AIJobMatcher
+                                jobId={job._id}
+                                jobDescription={job.description || ''}
+                                jobRequirements={job.requirements || []}
+                              />
                             </div>
-                            <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{job.description}</p>
-                            {user && (
-                              <div className="mt-3">
-                                <AIJobMatcher
-                                  jobId={job._id}
-                                  jobDescription={job.description || ''}
-                                  jobRequirements={job.requirements || []}
-                                />
-                              </div>
-                            )}
-                        </div>
-                        <div className="flex-shrink-0 flex flex-col items-end gap-2">
-                            <BookmarkButton type="job" itemId={job._id} />
-                            {appliedJobs.has(job._id) ? (
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                disabled
-                                className="text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 cursor-not-allowed"
-                              >
-                                <CheckCircle2 size={14} className="mr-1" />
-                                {t('jobs.applied')}
-                              </Button>
-                            ) : (
-                              <Button 
-                                size="sm" 
-                                onClick={() => handleApply(job._id)} 
-                                variant="outline" 
-                                className="text-crimson-red dark:text-red-400 border-crimson-red dark:border-red-400 hover:bg-crimson-red hover:text-white dark:hover:bg-red-500 transition-all duration-300"
-                              >
-                                {t('jobs.apply')}
-                              </Button>
-                            )}
-                        </div>
-                    </div>
-                </motion.div>
-            ))}
+                          )}
+                      </div>
+                      <div className="flex-shrink-0 flex flex-col items-end gap-2">
+                          <BookmarkButton type="job" itemId={job._id} />
+                          {appliedJobs.has(job._id) ? (
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              disabled
+                              className="text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 cursor-not-allowed"
+                            >
+                              <CheckCircle2 size={14} className="mr-1" />
+                              {t('jobs.applied')}
+                            </Button>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleApply(job._id)} 
+                              variant="outline" 
+                              className="text-crimson-red dark:text-red-400 border-crimson-red dark:border-red-400 hover:bg-crimson-red hover:text-white dark:hover:bg-red-500 transition-all duration-300"
+                            >
+                              {t('jobs.apply')}
+                            </Button>
+                          )}
+                      </div>
+                  </div>
+              </motion.div>
+            )}
+          />
         </div>
       )}
     </MainLayout>

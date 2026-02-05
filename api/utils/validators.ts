@@ -29,7 +29,13 @@ export const registerSchema = z.object({
 export const updateProfileSchema = z.object({
   name: z.string().min(2).max(100).trim().optional(),
   email: z.string().email().trim().toLowerCase().max(255).optional(),
-  password: z.string().min(8).max(128).optional(),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be less than 128 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .optional(),
   avatar: z.string().url().optional().or(z.literal('')),
   bio: z.string().max(1000).trim().optional(),
   headline: z.string().max(200).trim().optional(),

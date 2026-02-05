@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCommunityStore } from '@/store/communityStore';
 import { useAuthStore } from '@/store/authStore';
@@ -9,7 +9,7 @@ interface PostCardProps {
   post: any;
 }
 
-const PostCard = ({ post }: PostCardProps) => {
+const PostCardComponent = ({ post }: PostCardProps) => {
   const { user } = useAuthStore();
   const { likePost, commentPost } = useCommunityStore();
   const [commentText, setCommentText] = useState('');
@@ -56,7 +56,7 @@ const PostCard = ({ post }: PostCardProps) => {
           aria-label={post.user.name}
         >
           {post.user.avatar ? (
-            <img src={post.user.avatar} className="h-full w-full rounded-full" alt={post.user.name} />
+            <img src={post.user.avatar} className="h-full w-full rounded-full" alt={post.user.name} loading="lazy" />
           ) : (
             post.user.name.charAt(0)
           )}
@@ -87,7 +87,7 @@ const PostCard = ({ post }: PostCardProps) => {
       {/* Content */}
       <p className="text-gray-800 mb-3 whitespace-pre-wrap">{post.content}</p>
       {post.image && (
-        <img src={post.image} alt="Post content" className="w-full h-auto rounded-lg mb-3 object-cover max-h-96" />
+        <img src={post.image} alt="Post content" className="w-full h-auto rounded-lg mb-3 object-cover max-h-96" loading="lazy" />
       )}
 
       {/* Actions */}
@@ -152,5 +152,7 @@ const PostCard = ({ post }: PostCardProps) => {
     </div>
   );
 };
+
+const PostCard = memo(PostCardComponent);
 
 export default PostCard;

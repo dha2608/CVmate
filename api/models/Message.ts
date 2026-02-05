@@ -37,5 +37,8 @@ const messageSchema = new Schema<IMessage>({
 
 messageSchema.index({ sender: 1, receiver: 1, createdAt: 1 });
 messageSchema.index({ receiver: 1, sender: 1, createdAt: 1 });
+// Optimize “latest messages” queries used by pagination (sort desc then reverse in controller)
+messageSchema.index({ sender: 1, receiver: 1, createdAt: -1 });
+messageSchema.index({ receiver: 1, sender: 1, createdAt: -1 });
 
 export default mongoose.model<IMessage>('Message', messageSchema);

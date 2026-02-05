@@ -24,6 +24,20 @@ const skipPremium = async (req: AuthRequest) => {
   }
 };
 
+/**
+ * Generate a stable key for rate limiting:
+ * - If user is authenticated, use user id
+ * - Otherwise, fall back to IP address
+ */
+const userOrIpKeyGenerator = (req: AuthRequest): string => {
+  if (req.user?._id) {
+    return String(req.user._id);
+  }
+
+  // Express will respect X-Forwarded-For when `trust proxy` is enabled
+  return req.ip || req.headers['x-forwarded-for']?.toString() || 'unknown';
+};
+
 export const freeUserLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000, // 24 hours
   max: parseInt(process.env.FREE_USER_DAILY_LIMIT || (process.env.NODE_ENV === 'production' ? '10' : '100')),
@@ -34,6 +48,7 @@ export const freeUserLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: userOrIpKeyGenerator,
   skip: async (req) => {
     return await skipPremium(req as AuthRequest);
   },
@@ -66,6 +81,7 @@ export const aiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: userOrIpKeyGenerator,
   skip: async (req) => {
     return await skipPremium(req as AuthRequest);
   },

@@ -1,15 +1,20 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
 import passport from './config/passport.js';
 import logger from './utils/logger.js';
+import { requestLogger } from './middleware/requestLogger.js';
+import { sanitizeRequest } from './middleware/sanitize.js';
+import { csrfProtection } from './middleware/csrf.js';
 
 // Import Routes
 import authRoutes from './routes/auth.js';
@@ -26,6 +31,7 @@ import newsRoutes from './routes/news.js';
 import uploadRoutes from './routes/upload.js';
 import paymentRoutes from './routes/payment.js';
 import chatRoutes from './routes/chat.js';
+import twoFactorRoutes from './routes/twofactor.js';
 
 // Load env
 dotenv.config();
@@ -35,7 +41,10 @@ connectDB();
 
 const app: express.Application = express();
 
-// Security Headers - Disable CSP for images to allow cross-origin
+// Hide tech stack header
+app.disable('x-powered-by');
+
+// Security Headers - Disable CSP for images to allow cross-origin, but keep strong defaults
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -49,6 +58,19 @@ app.use(helmet({
   },
   crossOriginEmbedderPolicy: false, // Allow embedding for PDF generation
   crossOriginResourcePolicy: false, // Disable CORP to allow cross-origin images
+  referrerPolicy: {
+    policy: 'same-origin',
+  },
+  frameguard: {
+    action: 'deny',
+  },
+  hsts: process.env.NODE_ENV === 'production'
+    ? {
+        maxAge: 15552000, // 180 days
+        includeSubDomains: true,
+        preload: false,
+      }
+    : false,
 }));
 
 // Middleware
@@ -80,8 +102,12 @@ app.use(cors({
   },
   credentials: true
 }));
+app.use(requestLogger);
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser(process.env.COOKIE_SECRET || process.env.SESSION_SECRET || 'cvmate-cookie-secret'));
+app.use(sanitizeRequest);
 
 // Request timeout middleware
 import { requestTimeout } from './middleware/timeout.js';
@@ -112,6 +138,18 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   app.use(passport.initialize());
   app.use(passport.session());
 }
+
+// CSRF protection: enable after sessions/cookies are configured, before API routes
+// Note: frontend must read token from `/api/csrf-token` and send it back in `x-csrf-token` header for mutating requests.
+app.use(csrfProtection);
+
+// Expose CSRF token for frontend to fetch and cache
+app.get('/api/csrf-token', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    csrfToken: (req as any).csrfToken(),
+  });
+});
 
 // Serve uploaded files statically with CORS headers
 // IMPORTANT: This must be BEFORE API routes to handle static file requests
@@ -160,6 +198,7 @@ app.use('/api/news', newsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/2fa', twoFactorRoutes);
 
 /**
  * Root Endpoint

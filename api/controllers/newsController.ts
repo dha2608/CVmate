@@ -4,13 +4,20 @@ import logger from '../utils/logger.js';
 
 export const getNews = async (req: Request, res: Response, _next: NextFunction) => {
   try {
-    const limit = parseInt(req.query.limit as string) || 20;
-    const news = await getCachedNews(limit);
+    const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string, 10) || 20));
+    const offset = (page - 1) * limit;
+    const { items, total } = await getCachedNews(limit, offset);
 
     res.json({
       success: true,
-      data: news,
-      count: news.length,
+      data: items,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
     });
   } catch (error: unknown) {
     // getCachedNews should return fallback articles, but if it still throws, return empty array
@@ -18,7 +25,12 @@ export const getNews = async (req: Request, res: Response, _next: NextFunction) 
     res.json({
       success: true,
       data: [],
-      count: 0,
+      pagination: {
+        page: 1,
+        limit: 0,
+        total: 0,
+        pages: 0,
+      },
       message: 'Using fallback news articles',
     });
   }
@@ -26,16 +38,23 @@ export const getNews = async (req: Request, res: Response, _next: NextFunction) 
 
 export const refreshNews = async (req: Request, res: Response, _next: NextFunction) => {
   try {
-    const limit = parseInt(req.query.limit as string) || 20;
+    const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string, 10) || 20));
+    const offset = (page - 1) * limit;
     // Force refresh by clearing cache
     const { getCachedNews } = await import('../services/newsService.js');
-    const news = await getCachedNews(limit);
+    const { items, total } = await getCachedNews(limit, offset);
 
     res.json({
       success: true,
       message: 'News cache refreshed',
-      data: news,
-      count: news.length,
+      data: items,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

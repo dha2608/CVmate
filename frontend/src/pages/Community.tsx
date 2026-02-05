@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import CreatePost from '@/components/community/CreatePost';
 import PostCard from '@/components/community/PostCard';
+import VirtualList from '@/components/VirtualList';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, MessageSquare } from 'lucide-react';
 
@@ -62,9 +63,14 @@ const Community = () => {
             </div>
         ) : (
             <div className="space-y-4 animate-fade-in">
-                {posts.map((post) => (
+                <VirtualList
+                  items={posts}
+                  itemHeight={220}
+                  height={600}
+                  renderItem={(post) => (
                     <PostCard key={post._id} post={post} />
-                ))}
+                  )}
+                />
                 {posts.length === 0 && (
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 text-center animate-fade-in">
                         <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto opacity-50 mb-4 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg">

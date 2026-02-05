@@ -100,7 +100,7 @@ const Messaging = () => {
                     >
                         <div className="relative w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400 overflow-hidden flex-shrink-0">
                             {conv.avatar ? (
-                              <img src={conv.avatar} className="w-full h-full object-cover" alt={conv.name}/>
+                              <img src={conv.avatar} className="w-full h-full object-cover" alt={conv.name} loading="lazy" />
                             ) : (
                               conv.name.charAt(0).toUpperCase()
                             )}
@@ -135,7 +135,7 @@ const Messaging = () => {
                     <div className="p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm">
                         <div className="relative w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400 overflow-hidden flex-shrink-0">
                              {activeConversation.avatar ? (
-                               <img src={activeConversation.avatar} className="w-full h-full object-cover" alt={activeConversation.name}/>
+                               <img src={activeConversation.avatar} className="w-full h-full object-cover" alt={activeConversation.name} loading="lazy" />
                              ) : (
                                activeConversation.name.charAt(0).toUpperCase()
                              )}

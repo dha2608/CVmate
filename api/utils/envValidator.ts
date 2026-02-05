@@ -3,8 +3,7 @@
  * Kiểm tra và validate các biến môi trường cần thiết
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface EnvConfig {
+export interface EnvConfig {
   // Database
   MONGO_URI?: string;
   MONGODB_URI?: string;
@@ -61,7 +60,9 @@ export const validateEnv = (): ValidationResult => {
     'JWT_SECRET',
   ];
 
-  const optionalButRecommended: string[] = [
+const env = process.env as NodeJS.ProcessEnv & Partial<EnvConfig>;
+
+const optionalButRecommended: string[] = [
     'HF_API_KEY',
     'STRIPE_SECRET_KEY',
     'GOOGLE_CLIENT_ID',
@@ -77,24 +78,24 @@ export const validateEnv = (): ValidationResult => {
   required.forEach((key) => {
     // Check both MONGO_URI and MONGODB_URI for database
     if (key === 'MONGO_URI') {
-      if (!process.env.MONGO_URI && !process.env.MONGODB_URI) {
+      if (!env.MONGO_URI && !env.MONGODB_URI) {
         missing.push('MONGO_URI hoặc MONGODB_URI');
       }
     } else if (key === 'JWT_SECRET') {
-      const jwtSecret = process.env.JWT_SECRET;
+      const jwtSecret = env.JWT_SECRET;
       if (!jwtSecret) {
         missing.push('JWT_SECRET');
       } else if (jwtSecret.length < 32) {
         warnings.push('JWT_SECRET should be at least 32 characters long for security');
       }
-    } else if (!process.env[key]) {
+    } else if (!env[key as keyof EnvConfig]) {
       missing.push(key);
     }
   });
 
   // Check optional but recommended
   optionalButRecommended.forEach((key) => {
-    if (!process.env[key]) {
+    if (!env[key as keyof EnvConfig]) {
       warnings.push(key);
     }
   });
@@ -110,14 +111,14 @@ export const validateEnv = (): ValidationResult => {
  * Get environment variable with fallback
  */
 export const getEnv = (key: string, defaultValue?: string): string => {
-  return process.env[key] || defaultValue || '';
+  return env[key as keyof EnvConfig] || defaultValue || '';
 };
 
 /**
  * Get environment variable as number
  */
 export const getEnvNumber = (key: string, defaultValue: number): number => {
-  const value = process.env[key];
+  const value = env[key as keyof EnvConfig];
   if (!value) {
     return defaultValue;
   }
@@ -129,7 +130,7 @@ export const getEnvNumber = (key: string, defaultValue: number): number => {
  * Get environment variable as boolean
  */
 export const getEnvBoolean = (key: string, defaultValue: boolean): boolean => {
-  const value = process.env[key];
+  const value = env[key as keyof EnvConfig];
   if (!value) {
     return defaultValue;
   }
