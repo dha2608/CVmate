@@ -22,20 +22,20 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    const userExists = await User.findOne({ email });
+    // Normalize email to lowercase for consistent lookup
+    const normalizedEmail = email.toLowerCase().trim();
+    const userExists = await User.findOne({ email: normalizedEmail });
 
     if (userExists) {
       res.status(409).json({ success: false, message: 'User already exists' });
       return;
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
+    // Password will be hashed automatically by User model's pre('save') hook
     const user = await User.create({
       name,
-      email,
-      password: hashedPassword,
+      email: normalizedEmail,
+      password, // Pass plain password, pre('save') hook will hash it
     });
 
     if (user) {
@@ -70,22 +70,31 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       return;
     }
 
-    const user = await User.findOne({ email });
+    // Normalize email to lowercase for consistent lookup
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail });
 
-    if (user && user.password && (await bcrypt.compare(password, user.password))) {
-      res.json({
-        success: true,
-        data: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-          role: user.role,
-          onboardingCompleted: user.onboardingCompleted,
-          careerGoal: user.careerGoal,
-          token: generateToken((user._id as Types.ObjectId).toString()),
-        },
-      });
+    if (user && user.password) {
+      // Use the model's matchPassword method for consistency
+      const isPasswordValid = await user.matchPassword(password);
+      
+      if (isPasswordValid) {
+        res.json({
+          success: true,
+          data: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            role: user.role,
+            onboardingCompleted: user.onboardingCompleted,
+            careerGoal: user.careerGoal,
+            token: generateToken((user._id as Types.ObjectId).toString()),
+          },
+        });
+      } else {
+        res.status(401).json({ success: false, message: 'Invalid email or password' });
+      }
     } else {
       res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
