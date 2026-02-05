@@ -392,8 +392,9 @@ const Profile = () => {
             <button
               onClick={() => coverPhotoInputRef.current?.click()}
               disabled={uploadingCover}
-              className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/90 rounded-full p-2 shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all disabled:opacity-50 z-10"
-              title="Đổi ảnh bìa"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full p-2.5 sm:p-3 shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-gray-800 transition-all disabled:opacity-50 z-10"
+              title="Change cover photo"
+              aria-label="Change cover photo"
             >
               {uploadingCover ? (
                 <Loader2 size={16} className="animate-spin" />

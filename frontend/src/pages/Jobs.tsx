@@ -102,9 +102,26 @@ const Jobs = () => {
       toast.error(t('jobs.pleaseLogin'));
       return;
     }
+    
+    // Validation
     if (!jobForm.title.trim() || !jobForm.company.trim() || !jobForm.description.trim()) {
-      toast.error('Vui lòng điền ít nhất tiêu đề, công ty và mô tả.');
+      toast.error(t('jobs.fillRequiredFields') || 'Please fill in at least title, company, and description.');
       return;
+    }
+    
+    // Validate title - should not be only numbers
+    if (/^\d+$/.test(jobForm.title.trim())) {
+      toast.error(t('jobs.titleCannotBeNumbers') || 'Job title cannot be only numbers.');
+      return;
+    }
+    
+    // Validate salary format if provided
+    if (jobForm.salary.trim()) {
+      const salaryPattern = /^[\d,.\s-]+$/;
+      if (!salaryPattern.test(jobForm.salary.trim())) {
+        toast.error(t('jobs.invalidSalaryFormat') || 'Invalid salary format. Use numbers, commas, dots, or dashes.');
+        return;
+      }
     }
     setIsPostingJob(true);
     try {
@@ -138,7 +155,7 @@ const Jobs = () => {
         fetchJobs({ page: 1, limit: 20 });
       }
     } catch (error: any) {
-      toast.error(error.message || 'Đăng job thất bại.');
+      toast.error(error.message || (t('jobs.postFailed') || 'Failed to post job.'));
     } finally {
       setIsPostingJob(false);
     }
@@ -147,24 +164,60 @@ const Jobs = () => {
   return (
     <MainLayout
       rightSidebar={
-          <div className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 sticky top-20">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{t('jobs.jobSeekerGuidance')}</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{t('jobs.recommendedBasedOn')}</p>
+          <div className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 sm:p-5 sticky top-20 space-y-4">
+              <div>
+                <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white mb-1">{t('jobs.jobSeekerGuidance') || 'Job Seeker Guidance'}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('jobs.recommendedBasedOn') || 'Personalized recommendations for you'}</p>
+              </div>
               <div className="space-y-3">
-                 <div className="flex items-start gap-2">
-                    <div className="bg-blue-100 dark:bg-blue-900/30 p-1 rounded"><Briefcase size={14} className="text-blue-600 dark:text-blue-400"/></div>
-                    <div>
-                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{t('jobs.improveResume')}</p>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400">{t('jobs.exploreBuilder')}</p>
+                 <button 
+                   onClick={() => navigate('/builder')}
+                   className="w-full flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all group border border-blue-100 dark:border-blue-800"
+                 >
+                    <div className="bg-blue-500 dark:bg-blue-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <Briefcase size={16} className="text-white"/>
                     </div>
-                 </div>
-                 <div className="flex items-start gap-2">
-                    <div className="bg-green-100 dark:bg-green-900/30 p-1 rounded"><DollarSign size={14} className="text-green-600 dark:text-green-400"/></div>
-                    <div>
-                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{t('jobs.salaryInsights')}</p>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400">{t('jobs.seeWhatWorth')}</p>
+                    <div className="flex-1 text-left">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('jobs.improveResume') || 'Optimize Your Resume'}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{t('jobs.exploreBuilder') || 'Use our ATS-friendly builder with AI enhancement'}</p>
                     </div>
-                 </div>
+                 </button>
+                 <button 
+                   onClick={() => navigate('/interview')}
+                   className="w-full flex items-start gap-3 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all group border border-purple-100 dark:border-purple-800"
+                 >
+                    <div className="bg-purple-500 dark:bg-purple-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <Video size={16} className="text-white"/>
+                    </div>
+                    <div className="flex-1 text-left">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('jobs.practiceInterview') || 'Practice Interview'}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{t('jobs.aiInterview') || 'Prepare with AI-powered interview simulator'}</p>
+                    </div>
+                 </button>
+                 <button 
+                   onClick={() => navigate('/blog')}
+                   className="w-full flex items-start gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-all group border border-green-100 dark:border-green-800"
+                 >
+                    <div className="bg-green-500 dark:bg-green-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <DollarSign size={16} className="text-white"/>
+                    </div>
+                    <div className="flex-1 text-left">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('jobs.salaryInsights') || 'Salary Insights'}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{t('jobs.seeWhatWorth') || 'Research market rates and negotiate better'}</p>
+                    </div>
+                 </button>
+                 <button 
+                   onClick={() => navigate('/community')}
+                   className="w-full flex items-start gap-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-all group border border-orange-100 dark:border-orange-800"
+                 >
+                    <div className="bg-orange-500 dark:bg-orange-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <MessageSquare size={16} className="text-white"/>
+                    </div>
+                    <div className="flex-1 text-left">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('jobs.getAdvice') || 'Get Career Advice'}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{t('jobs.connectCommunity') || 'Connect with professionals and get tips'}</p>
+                    </div>
+                 </button>
               </div>
           </div>
       }
@@ -345,22 +398,30 @@ const Jobs = () => {
                     </select>
                   </div>
                   <Input
-                    placeholder="Mức lương (tuỳ chọn, VD: 30-40M hoặc $2000-$3000)"
+                    placeholder={t('jobs.salaryPlaceholder') || 'Salary (optional, e.g., 30-40M or $2000-$3000)'}
                     value={jobForm.salary}
-                    onChange={(e) => setJobForm((f) => ({ ...f, salary: e.target.value }))}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow numbers, commas, dots, dashes, spaces, and currency symbols
+                      if (/^[\d,.\s-$€£¥]*$/.test(value)) {
+                        setJobForm((f) => ({ ...f, salary: value }));
+                      }
+                    }}
                     className="dark:bg-gray-700 dark:border-gray-600 text-xs sm:text-sm"
+                    type="text"
                   />
                   <textarea
                     className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-xs sm:text-sm p-2"
                     rows={3}
-                    placeholder="Mô tả công việc"
+                    placeholder={t('jobs.descriptionPlaceholder') || 'Job Description'}
                     value={jobForm.description}
                     onChange={(e) => setJobForm((f) => ({ ...f, description: e.target.value }))}
+                    required
                   />
                   <textarea
                     className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-xs sm:text-sm p-2"
                     rows={3}
-                    placeholder="Yêu cầu (mỗi dòng một ý)"
+                    placeholder={t('jobs.requirementsPlaceholder') || 'Requirements (one per line)'}
                     value={jobForm.requirements}
                     onChange={(e) => setJobForm((f) => ({ ...f, requirements: e.target.value }))}
                   />
@@ -373,10 +434,10 @@ const Jobs = () => {
                     >
                       {isPostingJob ? (
                         <>
-                          <Loader2 size={14} className="mr-1 animate-spin" /> Đang đăng...
+                          <Loader2 size={14} className="mr-1 animate-spin" /> {t('jobs.posting') || 'Posting...'}
                         </>
                       ) : (
-                        'Đăng job'
+                        t('jobs.postJob') || 'Post Job'
                       )}
                     </Button>
                   </div>

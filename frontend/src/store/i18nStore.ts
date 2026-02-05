@@ -1219,7 +1219,8 @@ interface I18nState {
 export const useI18n = create<I18nState>((set, get) => {
   const getLanguage = (): Language => {
     const saved = localStorage.getItem('language') as Language;
-    return saved || 'vi';
+    // Default to English as primary language
+    return saved || 'en';
   };
 
   const language = getLanguage();

@@ -312,11 +312,11 @@ const Blog = () => {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.4, delay: index * 0.05 }}
-                                    className="glass-card bg-white/90 dark:bg-gray-800/90 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                                    className="glass-card bg-white/90 dark:bg-gray-800/90 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col"
                                     onClick={() => navigate(`/news/${encodeURIComponent(article.link)}`)}
                                 >
                                     {article.image && (
-                                        <div className="h-56 w-full overflow-hidden bg-gray-100 dark:bg-gray-700 relative">
+                                        <div className="h-40 sm:h-48 w-full overflow-hidden bg-gray-100 dark:bg-gray-700 relative flex-shrink-0">
                                             <OptimizedImage
                                                 src={article.image}
                                                 alt={article.title}
@@ -334,8 +334,8 @@ const Blog = () => {
                                             )}
                                         </div>
                                     )}
-                                    <div className="p-5">
-                                        <div className="flex items-center justify-between mb-3">
+                                    <div className="p-4 sm:p-5 flex-1 flex flex-col">
+                                        <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-semibold text-crimson-red dark:text-red-400 uppercase tracking-wider">
                                                 {article.source}
                                             </span>
@@ -343,10 +343,10 @@ const Blog = () => {
                                                 {new Date(article.pubDate).toLocaleDateString()}
                                             </span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-jet-black dark:text-white mb-3 leading-tight line-clamp-2 group-hover:text-crimson-red dark:group-hover:text-red-400 transition-colors">
+                                        <h3 className="text-base sm:text-lg font-bold text-jet-black dark:text-white mb-2 leading-tight line-clamp-2 group-hover:text-crimson-red dark:group-hover:text-red-400 transition-colors flex-shrink-0">
                                             {article.title}
                                         </h3>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3 flex-1">
                                             {article.description}
                                         </p>
                                         <div className="inline-flex items-center gap-2 text-sm font-semibold text-crimson-red dark:text-red-400 hover:text-fire-red dark:hover:text-red-500 transition-colors">
