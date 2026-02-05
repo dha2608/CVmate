@@ -46,6 +46,7 @@ export interface IResume extends Document {
   skills: string[];
   themeConfig: IThemeConfig;
   atsScore: number;
+  collaborators?: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -103,6 +104,10 @@ const resumeSchema = new Schema<IResume>({
   skills: [{ 
     type: String,
     trim: true 
+  }],
+  collaborators: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
   }],
   themeConfig: {
     color: { type: String, default: '#000000' },

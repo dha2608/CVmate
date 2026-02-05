@@ -1,15 +1,7 @@
 import { Response, NextFunction } from 'express';
-import { HfInference } from '@huggingface/inference';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
-
-const getHFClient = () => {
-  const apiKey = process.env.HF_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-  return new HfInference(apiKey);
-};
+import { getHFOrThrow, resolveModel, logAIUsage } from '../utils/aiClient.js';
 
 export const chatWithAI = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -19,14 +11,6 @@ export const chatWithAI = async (req: AuthRequest, res: Response, next: NextFunc
       return res.status(400).json({
         success: false,
         message: 'Message is required',
-      });
-    }
-
-    const hf = getHFClient();
-    if (!hf) {
-      return res.status(503).json({
-        success: false,
-        message: 'AI service is not available. Please configure HF_API_KEY.',
       });
     }
 
@@ -50,12 +34,12 @@ Hãy trả lời bằng tiếng Việt, ngắn gọn và hữu ích.`;
       )
       .join('\n');
 
-    const fullPrompt = `${systemPrompt}\n\n${conversationContext ? `Lịch sử hội thoại:\n${conversationContext}\n\n` : ''}Người dùng: ${message}\nTrợ lý:`;
+    const model = resolveModel(req, 'chat');
+    const startedAt = Date.now();
 
     try {
-      // Use chat completion model for better responses
-      const model = process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct';
-      
+      const hf = getHFOrThrow();
+
       // Build messages array for chat completion
       const messages = [
         { role: 'system', content: systemPrompt },
@@ -95,6 +79,16 @@ Hãy trả lời bằng tiếng Việt, ngắn gọn và hữu ích.`;
         aiResponse = 'Xin lỗi, tôi chưa hiểu rõ câu hỏi của bạn. Bạn có thể mô tả chi tiết hơn không? Hoặc liên hệ support@cvmate.com để được hỗ trợ.';
       }
 
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/chat',
+        type: 'chat',
+        model,
+        durationMs,
+        success: true,
+      });
+
       res.json({
         success: true,
         data: {
@@ -109,13 +103,27 @@ Hãy trả lời bằng tiếng Việt, ngắn gọn và hữu ích.`;
 
       let errorMessage = 'Xin lỗi, tôi gặp sự cố khi xử lý câu hỏi của bạn. Vui lòng thử lại sau.';
       
-      if (error.message?.includes('401') || error.message?.includes('403')) {
+      const msg = String(error.message || '');
+      const lower = msg.toLowerCase();
+
+      if (lower.includes('401') || lower.includes('403') || lower.includes('api key')) {
         errorMessage = 'AI service authentication failed. Please check API configuration.';
-      } else if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+      } else if (lower.includes('429') || lower.includes('rate limit')) {
         errorMessage = 'AI service đang quá tải. Vui lòng thử lại sau vài phút.';
-      } else if (error.message?.includes('quota') || error.message?.includes('limit')) {
+      } else if (lower.includes('quota') || lower.includes('limit') || lower.includes('billing')) {
         errorMessage = 'AI service quota đã hết. Vui lòng liên hệ support@cvmate.com.';
       }
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/chat',
+        type: 'chat',
+        model,
+        durationMs,
+        success: false,
+        errorCode: 'CHAT_ERROR',
+      });
 
       res.status(503).json({
         success: false,

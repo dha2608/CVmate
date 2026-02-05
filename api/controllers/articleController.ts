@@ -1,16 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { HfInference } from '@huggingface/inference';
 import Article from '../models/Article.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
-
-const getHFClient = () => {
-  const apiKey = process.env.HF_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-  return new HfInference(apiKey);
-};
+import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
 
 export const createArticle = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -31,46 +23,70 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
     let summary = '';
     let tags: string[] = [];
 
-    const hf = getHFClient();
-    if (hf) {
-      try {
+    const model = resolveModel(req, 'chat');
+    const payload = { title, content: content.substring(0, 2000) };
+    const cacheKey = buildCacheKey('article_seo', model, payload);
+    const startedAt = Date.now();
+
+    try {
+      const aiResponse = await getCachedOrRun(cacheKey, 60 * 60 * 1000, async () => {
+        const hf = getHFOrThrow();
+
         const completion = await hf.chatCompletion({
-          model: process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct',
+          model,
           messages: [
             {
               role: 'system',
               content:
-                'You are an SEO expert. Only respond with a valid JSON object and no other text.',
+                'You are an SEO expert and content strategist. Only respond with a valid JSON object and no other text.',
             },
             {
               role: 'user',
-              content: `Analyze the following article content. Return a JSON object with two keys: "summary" (a professional 3-sentence summary) and "tags" (an array of 5 relevant keywords). Content: ${content.substring(0, 2000)}`,
+              content: `Analyze the following article content. Return a JSON object with two keys: "summary" (a professional 2-3 sentence summary optimized for click-through) and "tags" (an array of 5-8 relevant, lowercase, hyphenated SEO keywords). Content: ${content.substring(0, 2000)}`,
             },
           ],
           max_tokens: 512,
-          temperature: 0.3,
+          temperature: 0.35,
         });
 
         const responseContent = completion.choices?.[0]?.message?.content;
-        if (responseContent) {
-          const aiResponse = JSON.parse(responseContent);
-          summary = aiResponse.summary || content.substring(0, 150) + '...';
-          tags = aiResponse.tags || [];
-        } else {
-          summary = content.substring(0, 150) + '...';
-          tags = ['general'];
+        if (!responseContent) {
+          throw new Error('No response from AI provider');
         }
-      } catch (error) {
-        logger.error('AI summary generation error', error instanceof Error ? error : new Error(String(error)), {
-          articleTitle: title,
-          userId: req.user?._id,
-        });
-        summary = content.substring(0, 150) + '...';
-        tags = ['general'];
-      }
-    } else {
+
+        return JSON.parse(responseContent);
+      });
+
+      summary = (aiResponse as any).summary || content.substring(0, 150) + '...';
+      tags = (aiResponse as any).tags || [];
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/articles',
+        type: 'article_seo',
+        model,
+        durationMs,
+        success: true,
+      });
+    } catch (error) {
+      logger.error('AI summary generation error', error instanceof Error ? error : new Error(String(error)), {
+        articleTitle: title,
+        userId: req.user?._id,
+      });
       summary = content.substring(0, 150) + '...';
       tags = ['general'];
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/articles',
+        type: 'article_seo',
+        model,
+        durationMs,
+        success: false,
+        errorCode: 'SEO_ERROR',
+      });
     }
 
     const article = await Article.create({

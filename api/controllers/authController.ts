@@ -110,19 +110,19 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         }
       }
 
-      res.json({
-        success: true,
-        data: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-          role: user.role,
-          onboardingCompleted: user.onboardingCompleted,
-          careerGoal: user.careerGoal,
-          token: generateToken((user._id as Types.ObjectId).toString()),
-        },
-      });
+        res.json({
+          success: true,
+          data: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            role: user.role,
+            onboardingCompleted: user.onboardingCompleted,
+            careerGoal: user.careerGoal,
+            token: generateToken((user._id as Types.ObjectId).toString()),
+          },
+        });
     } else {
       res.status(401).json({ success: false, message: 'Invalid email or password' });
     }

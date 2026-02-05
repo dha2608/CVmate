@@ -1,16 +1,9 @@
 import { Response, NextFunction } from 'express';
-import { HfInference } from '@huggingface/inference';
 import Resume from '../models/Resume.js';
+import ResumeHistory from '../models/ResumeHistory.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
-
-const getHFClient = () => {
-  const apiKey = process.env.HF_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-  return new HfInference(apiKey);
-};
+import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
 
 export const createResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -179,16 +172,41 @@ export const updateResume = async (req: AuthRequest, res: Response, next: NextFu
       } : undefined,
     };
 
-    const updatedResume = await Resume.findOneAndUpdate(
-      { _id: req.params.id, user: req.user?._id },
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const existing = await Resume.findById(req.params.id);
 
-    if (!updatedResume) {
+    if (!existing) {
       res.status(404).json({ success: false, message: 'Resume not found' });
       return;
     }
+
+    const userId = req.user?._id;
+    const isOwner = existing.user.toString() === String(userId);
+    const isCollaborator = Array.isArray(existing.collaborators)
+      ? existing.collaborators.some(c => c.toString() === String(userId))
+      : false;
+
+    if (!isOwner && !isCollaborator) {
+      res.status(403).json({ success: false, message: 'Not authorized to edit this resume' });
+      return;
+    }
+
+    // Save history snapshot before updating (owner only to avoid noisy history from collaborators if needed)
+    try {
+      await ResumeHistory.create({
+        user: existing.user,
+        resume: existing._id,
+        snapshot: existing.toObject(),
+      });
+    } catch (historyError) {
+      logger.warn('Failed to save resume history', {
+        error: historyError,
+        resumeId: existing._id,
+        userId,
+      });
+    }
+
+    existing.set(updateData);
+    const updatedResume = await existing.save();
 
     res.json({ success: true, data: updatedResume });
   } catch (error: unknown) {
@@ -206,6 +224,31 @@ export const updateResume = async (req: AuthRequest, res: Response, next: NextFu
       });
       return;
     }
+    next(error);
+  }
+};
+
+export const getResumeHistory = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const resume = await Resume.findOne({ _id: req.params.id, user: userId });
+    if (!resume) {
+      res.status(404).json({ success: false, message: 'Resume not found' });
+      return;
+    }
+
+    const history = await ResumeHistory.find({ resume: resume._id })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .select('createdAt snapshot');
+
+    res.json({ success: true, data: history });
+  } catch (error) {
     next(error);
   }
 };
@@ -237,39 +280,53 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
       return;
     }
 
-    const hf = getHFClient();
-    if (!hf) {
-      res.status(503).json({ 
-        success: false, 
-        message: 'AI provider API key is not configured. Please set HF_API_KEY in your environment variables.',
-      });
-      return;
-    }
+    const model = resolveModel(req, 'chat');
+    const payload = { text, type };
+    const cacheKey = buildCacheKey('resume_enhance', model, payload);
 
-    const prompt = `
-      Act as a professional resume writer. Enhance the following ${type || 'text'} to be more impactful.
-      - Use strong action verbs.
-      - Quantify results where possible.
-      - Fix grammar and improve flow.
-      - Keep it concise and professional.
-      
-      Original Text: "${text}"
-      
-      Enhanced Text:
-    `;
-
+    const startedAt = Date.now();
     try {
-      const completion = await hf.chatCompletion({
-        model: process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 256,
-        temperature: 0.7,
+      const enhancedText = await getCachedOrRun(cacheKey, 2 * 60 * 1000, async () => {
+        const hf = getHFOrThrow();
+        const prompt = `
+You are a senior CV and resume writer.
+Enhance the following ${type || 'text'} to be more impactful and tailored for modern ATS-friendly resumes.
+- Use strong, varied action verbs.
+- Quantify results where possible with concrete numbers or percentages.
+- Fix grammar and improve clarity and flow.
+- Keep the tone professional and concise (2–4 lines).
+- Do NOT add information that is not already implied by the original text.
+
+Original Text:
+${text}
+
+Enhanced Text (ONLY return the improved text, no explanations):
+`;
+
+        const completion = await hf.chatCompletion({
+          model,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 256,
+          temperature: 0.6,
+        });
+
+        const content = completion.choices?.[0]?.message?.content;
+        if (!content) {
+          throw new Error('No response from AI provider');
+        }
+
+        return content.trim();
       });
 
-      const enhancedText = completion.choices?.[0]?.message?.content;
-      if (!enhancedText) {
-        throw new Error('No response from OpenAI');
-      }
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/resumes/ai-enhance',
+        type: 'resume_enhance',
+        model,
+        durationMs,
+        success: true,
+      });
 
       res.json({ success: true, data: enhancedText });
 
@@ -285,15 +342,24 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
       const errorMsg = errorObj.message || '';
       const errorMsgLower = errorMsg.toLowerCase();
       
-      if (errorObj.status === 401 || errorObj.statusCode === 401) {
+      if (errorObj.status === 401 || errorObj.statusCode === 401 || errorMsgLower.includes('api key')) {
         errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
-      } else if (errorObj.status === 429 || errorObj.statusCode === 429) {
+      } else if (errorObj.status === 429 || errorObj.statusCode === 429 || errorMsgLower.includes('rate limit')) {
         errorMessage = 'AI API rate limit exceeded. Please try again later.';
-      } else if (errorMsgLower.includes('api key') || errorMsgLower.includes('invalid api key')) {
-        errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
       } else if (errorMsgLower.includes('quota') || errorMsgLower.includes('billing')) {
         errorMessage = 'AI API quota exceeded. Please check your provider account limits.';
       }
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/resumes/ai-enhance',
+        type: 'resume_enhance',
+        model,
+        durationMs,
+        success: false,
+        errorCode: (errorObj.status || errorObj.statusCode || 'UNKNOWN') as any,
+      });
 
       res.status(503).json({ 
         success: false, 
@@ -336,39 +402,50 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
       prompt += `\n\nJob Description:\n${jobDescription.substring(0, 2000)}\n\nCompare the resume with the job description. Identify missing keywords and calculate match score.`;
     }
 
-    const hf = getHFClient();
-    if (!hf) {
-      res.status(503).json({ 
-        success: false, 
-        message: 'AI provider API key is not configured. Please set HF_API_KEY in your environment variables.',
-      });
-      return;
-    }
+    const model = resolveModel(req, 'chat');
+    const payload = { resumeId: req.params.id, jobDescription: jobDescription || null };
+    const cacheKey = buildCacheKey('resume_analyze', model, payload);
+
+    const startedAt = Date.now();
 
     try {
-      const completion = await hf.chatCompletion({
-        model: process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct',
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are an AI assistant that only responds with a valid JSON object and no other text.',
-          },
-          { role: 'user', content: prompt },
-        ],
-        max_tokens: 512,
-        temperature: 0.2,
+      const analysis = await getCachedOrRun(cacheKey, 10 * 60 * 1000, async () => {
+        const hf = getHFOrThrow();
+
+        const completion = await hf.chatCompletion({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are an ATS and resume analysis assistant. Only respond with a valid JSON object and no other text.',
+            },
+            { role: 'user', content: prompt },
+          ],
+          max_tokens: 512,
+          temperature: 0.2,
+        });
+
+        const responseContent = completion.choices?.[0]?.message?.content;
+        if (!responseContent) {
+          throw new Error('No response from AI provider');
+        }
+
+        return JSON.parse(responseContent);
       });
-
-      const responseContent = completion.choices?.[0]?.message?.content;
-      if (!responseContent) {
-        throw new Error('No response from OpenAI');
-      }
-
-      const analysis = JSON.parse(responseContent);
       
-      resume.atsScore = analysis.score || 0;
+      resume.atsScore = (analysis as any).score || 0;
       await resume.save();
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/resumes/:id/analyze',
+        type: 'resume_analyze',
+        model,
+        durationMs,
+        success: true,
+      });
 
       res.json({ success: true, data: analysis });
 
@@ -384,15 +461,24 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
       const errorMsg = errorObj.message || '';
       const errorMsgLower = errorMsg.toLowerCase();
       
-      if (errorObj.status === 401 || errorObj.statusCode === 401) {
+      if (errorObj.status === 401 || errorObj.statusCode === 401 || errorMsgLower.includes('api key')) {
         errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
-      } else if (errorObj.status === 429 || errorObj.statusCode === 429) {
+      } else if (errorObj.status === 429 || errorObj.statusCode === 429 || errorMsgLower.includes('rate limit')) {
         errorMessage = 'AI API rate limit exceeded. Please try again later.';
-      } else if (errorMsgLower.includes('api key') || errorMsgLower.includes('invalid api key')) {
-        errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
       } else if (errorMsgLower.includes('quota') || errorMsgLower.includes('billing')) {
         errorMessage = 'AI API quota exceeded. Please check your provider account limits.';
       }
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/resumes/:id/analyze',
+        type: 'resume_analyze',
+        model,
+        durationMs,
+        success: false,
+        errorCode: (errorObj.status || errorObj.statusCode || 'UNKNOWN') as any,
+      });
 
       res.status(503).json({ 
         success: false, 
@@ -418,14 +504,9 @@ export const aiGenerateFullResume = async (req: AuthRequest, res: Response, next
       return;
     }
 
-    const hf = getHFClient();
-    if (!hf) {
-      res.status(503).json({
-        success: false,
-        message: 'AI provider API key is not configured. Please set HF_API_KEY in your environment variables.',
-      });
-      return;
-    }
+    const model = resolveModel(req, 'chat');
+    const payload = { prompt: prompt || null, jobDescription: jobDescription || null };
+    const cacheKey = buildCacheKey('resume_generate', model, payload);
 
     const basePrompt = `
       You are an expert resume writer.
@@ -462,35 +543,51 @@ export const aiGenerateFullResume = async (req: AuthRequest, res: Response, next
       ${jobDescription || 'N/A'}
     `;
 
+    const startedAt = Date.now();
+
     try {
-      const completion = await hf.chatCompletion({
-        model: process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct',
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are an AI assistant that only responds with a valid JSON object and no other text.',
-          },
-          { role: 'user', content: basePrompt },
-        ],
-        max_tokens: 768,
-        temperature: 0.4,
+      const data = await getCachedOrRun(cacheKey, 15 * 60 * 1000, async () => {
+        const hf = getHFOrThrow();
+
+        const completion = await hf.chatCompletion({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are an expert resume writer that only responds with a valid JSON object and no other text.',
+            },
+            { role: 'user', content: basePrompt },
+          ],
+          max_tokens: 768,
+          temperature: 0.4,
+        });
+
+        const responseContent = completion.choices?.[0]?.message?.content;
+        if (!responseContent) {
+          throw new Error('No response from AI provider');
+        }
+
+        return JSON.parse(responseContent);
       });
-
-      const responseContent = completion.choices?.[0]?.message?.content;
-      if (!responseContent) {
-        throw new Error('No response from AI provider');
-      }
-
-      const data = JSON.parse(responseContent);
 
       // Normalize to frontend structure; IDs sẽ được tạo ở client
       const result = {
-        summary: typeof data.summary === 'string' ? data.summary : '',
-        experience: Array.isArray(data.experience) ? data.experience : [],
-        education: Array.isArray(data.education) ? data.education : [],
-        skills: Array.isArray(data.skills) ? data.skills : [],
+        summary: typeof (data as any).summary === 'string' ? (data as any).summary : '',
+        experience: Array.isArray((data as any).experience) ? (data as any).experience : [],
+        education: Array.isArray((data as any).education) ? (data as any).education : [],
+        skills: Array.isArray((data as any).skills) ? (data as any).skills : [],
       };
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/resumes/ai-generate-full',
+        type: 'resume_generate',
+        model,
+        durationMs,
+        success: true,
+      });
 
       res.json({ success: true, data: result });
     } catch (e: unknown) {
@@ -504,15 +601,24 @@ export const aiGenerateFullResume = async (req: AuthRequest, res: Response, next
       const errorMsg = errorObj.message || '';
       const errorMsgLower = errorMsg.toLowerCase();
 
-      if (errorObj.status === 401 || errorObj.statusCode === 401) {
+      if (errorObj.status === 401 || errorObj.statusCode === 401 || errorMsgLower.includes('api key')) {
         errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
-      } else if (errorObj.status === 429 || errorObj.statusCode === 429) {
+      } else if (errorObj.status === 429 || errorObj.statusCode === 429 || errorMsgLower.includes('rate limit')) {
         errorMessage = 'AI API rate limit exceeded. Please try again later.';
-      } else if (errorMsgLower.includes('api key') || errorMsgLower.includes('invalid api key')) {
-        errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
       } else if (errorMsgLower.includes('quota') || errorMsgLower.includes('billing')) {
         errorMessage = 'AI API quota exceeded. Please check your provider account limits.';
       }
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/resumes/ai-generate-full',
+        type: 'resume_generate',
+        model,
+        durationMs,
+        success: false,
+        errorCode: (errorObj.status || errorObj.statusCode || 'UNKNOWN') as any,
+      });
 
       res.status(503).json({
         success: false,

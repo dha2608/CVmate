@@ -1,16 +1,8 @@
 import { Response, NextFunction } from 'express';
-import { HfInference } from '@huggingface/inference';
 import Interview from '../models/Interview.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
-
-const getHFClient = () => {
-  const apiKey = process.env.HF_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-  return new HfInference(apiKey);
-};
+import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
 
 const PERSONA_CONFIG = {
   'friendly-hr': {
@@ -116,25 +108,20 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       content: msg.content
     }));
 
-    const hf = getHFClient();
-    if (!hf) {
-      res.status(503).json({ 
-        success: false, 
-        message: 'AI provider API key is not configured. Please set HF_API_KEY in your environment variables.',
-      });
-      return;
-    }
+    const model = resolveModel(req, 'chat');
+    const startedAt = Date.now();
 
     try {
+      const hf = getHFOrThrow();
       const completion = await hf.chatCompletion({
-        model: process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct',
+        model,
         messages: historyForAI,
         max_tokens: 512,
-        temperature: 0.7,
+        temperature: 0.65,
       });
 
       const aiResponse =
-        completion.choices?.[0]?.message?.content ||
+        completion.choices?.[0]?.message?.content?.trim() ||
         "I'm sorry, I didn't catch that.";
 
       interview.chatHistory.push({
@@ -144,6 +131,17 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       });
 
       await interview.save();
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/interviews/:id/chat',
+        type: 'interview_chat',
+        model,
+        durationMs,
+        success: true,
+      });
+
       res.json({ success: true, data: interview });
 
     } catch (aiError: unknown) {
@@ -183,6 +181,17 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       } else if (errorObj.message) {
         errorMessage = `AI API error: ${errorObj.message}`;
       }
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/interviews/:id/chat',
+        type: 'interview_chat',
+        model,
+        durationMs,
+        success: false,
+        errorCode: errorObj.status || errorObj.statusCode || 'UNKNOWN',
+      });
 
       res.status(statusCode).json({ 
         success: false, 
@@ -252,36 +261,35 @@ Conversation:
 ${conversationText}
     `;
 
-    const hf = getHFClient();
-    if (!hf) {
-      res.status(503).json({ 
-        success: false, 
-        message: 'AI provider API key is not configured. Please set HF_API_KEY in your environment variables.',
-      });
-      return;
-    }
+    const model = resolveModel(req, 'chat');
+    const cacheKey = buildCacheKey('interview_feedback', model, { interviewId: id });
+    const startedAt = Date.now();
 
     try {
-      const completion = await hf.chatCompletion({
-        model: process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct',
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are an AI assistant that only responds with a valid JSON object and no other text.',
-          },
-          { role: 'user', content: feedbackPrompt },
-        ],
-        max_tokens: 512,
-        temperature: 0.2,
+      const aiData = await getCachedOrRun(cacheKey, 15 * 60 * 1000, async () => {
+        const hf = getHFOrThrow();
+
+        const completion = await hf.chatCompletion({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are an AI interview coach that only responds with a valid JSON object and no other text.',
+            },
+            { role: 'user', content: feedbackPrompt },
+          ],
+          max_tokens: 512,
+          temperature: 0.25,
+        });
+
+        const responseContent = completion.choices?.[0]?.message?.content;
+        if (!responseContent) {
+          throw new Error('No response from AI provider');
+        }
+
+        return JSON.parse(responseContent);
       });
-
-      const responseContent = completion.choices?.[0]?.message?.content;
-      if (!responseContent) {
-        throw new Error('No response from OpenAI');
-      }
-
-      const aiData = JSON.parse(responseContent);
 
       const scores = aiData.scores || {};
       const overallScore =
@@ -331,6 +339,16 @@ ${conversationText}
       interview.status = 'completed';
       await interview.save();
 
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/interviews/:id/end',
+        type: 'interview_feedback',
+        model,
+        durationMs,
+        success: true,
+      });
+
       res.json({ success: true, data: interview });
 
     } catch (error: unknown) {
@@ -349,6 +367,17 @@ ${conversationText}
       } else if (errorObj.message?.toLowerCase().includes('api key')) {
         errorMessage = 'AI API key is invalid or missing.';
       }
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/interviews/:id/end',
+        type: 'interview_feedback',
+        model,
+        durationMs,
+        success: false,
+        errorCode: errorObj.status || 'UNKNOWN',
+      });
 
       const errorMsg = error instanceof Error ? error.message : String(error);
       res.status(503).json({ 
@@ -370,6 +399,91 @@ export const getInterviews = async (req: AuthRequest, res: Response, next: NextF
       .sort({ createdAt: -1 });
       
     res.json({ success: true, data: interviews });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getInterviewAnalytics = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const interviews = await Interview.find({ user: userId }).select('persona feedback status createdAt');
+
+    if (!interviews.length) {
+      res.json({
+        success: true,
+        data: {
+          totalSessions: 0,
+          completedSessions: 0,
+          averageScore: 0,
+          sessionsByPersona: {},
+          averageScoresByPersona: {},
+          trendLast5: [],
+        },
+      });
+      return;
+    }
+
+    const totalSessions = interviews.length;
+    const completed = interviews.filter(i => i.status === 'completed' && i.feedback?.overallScore != null);
+    const completedSessions = completed.length;
+
+    const averageScore =
+      completedSessions > 0
+        ? Math.round(
+            completed.reduce((sum, i) => sum + (i.feedback?.overallScore ?? 0), 0) / completedSessions,
+          )
+        : 0;
+
+    const sessionsByPersona: Record<string, number> = {};
+    const scoresByPersona: Record<string, { total: number; count: number }> = {};
+
+    for (const i of interviews) {
+      const persona = i.persona;
+      sessionsByPersona[persona] = (sessionsByPersona[persona] || 0) + 1;
+
+      if (i.status === 'completed' && i.feedback?.overallScore != null) {
+        if (!scoresByPersona[persona]) {
+          scoresByPersona[persona] = { total: 0, count: 0 };
+        }
+        scoresByPersona[persona].total += i.feedback.overallScore ?? 0;
+        scoresByPersona[persona].count += 1;
+      }
+    }
+
+    const averageScoresByPersona: Record<string, number> = {};
+    for (const [persona, agg] of Object.entries(scoresByPersona)) {
+      averageScoresByPersona[persona] =
+        agg.count > 0 ? Math.round(agg.total / agg.count) : 0;
+    }
+
+    const last5Completed = completed
+      .slice()
+      .sort((a, b) => (a.createdAt?.getTime?.() || 0) - (b.createdAt?.getTime?.() || 0))
+      .slice(-5)
+      .map(i => ({
+        id: i._id,
+        createdAt: i.createdAt,
+        persona: i.persona,
+        overallScore: i.feedback?.overallScore ?? 0,
+      }));
+
+    res.json({
+      success: true,
+      data: {
+        totalSessions,
+        completedSessions,
+        averageScore,
+        sessionsByPersona,
+        averageScoresByPersona,
+        trendLast5: last5Completed,
+      },
+    });
   } catch (error) {
     next(error);
   }

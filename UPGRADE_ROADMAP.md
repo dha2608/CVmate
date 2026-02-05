@@ -132,20 +132,22 @@
 ## 🤖 Phase 5: AI & Features (Priority: Medium)
 
 ### 5.1 AI Enhancements
-- [ ] Improve AI response quality with better prompts
-- [ ] Add AI model selection (user can choose)
-- [ ] Implement AI response caching
-- [ ] Add AI usage analytics
-- [ ] Create AI-powered job recommendations
+### 5.1 AI Enhancements
+- [x] Improve AI response quality with better prompts
+- [x] Add AI model selection (user can choose)
+- [x] Implement AI response caching
+- [x] Add AI usage analytics
+- [x] Create AI-powered job recommendations
 
 ### 5.2 New Features
-- [ ] Add CV templates library (10+ templates)
-- [ ] Implement CV versioning/history
-- [ ] Add collaborative CV editing
-- [ ] Create interview analytics dashboard
-- [ ] Add job application tracking
-- [ ] Implement email notifications
-- [ ] Add push notifications (PWA)
+### 5.2 New Features
+- [x] Add CV templates library (backend API & default templates)
+- [x] Implement CV versioning/history (backend history snapshots)
+- [x] Add collaborative CV editing (backend collaborators support)
+- [x] Create interview analytics dashboard (backend summary API)
+- [x] Add job application tracking (job model + apply flow + email)
+- [x] Implement email notifications (infrastructure + job apply)
+- [x] Add push notifications (PWA) (backend subscription & test endpoint)
 
 ---
 

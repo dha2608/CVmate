@@ -32,6 +32,8 @@ import uploadRoutes from './routes/upload.js';
 import paymentRoutes from './routes/payment.js';
 import chatRoutes from './routes/chat.js';
 import twoFactorRoutes from './routes/twofactor.js';
+import templateRoutes from './routes/templates.js';
+import pushRoutes from './routes/push.js';
 
 // Load env
 dotenv.config();
@@ -199,6 +201,8 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/2fa', twoFactorRoutes);
+app.use('/api/templates', templateRoutes);
+app.use('/api/push', pushRoutes);
 
 /**
  * Root Endpoint

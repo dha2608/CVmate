@@ -1,15 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { HfInference } from '@huggingface/inference';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
-
-const getHFClient = () => {
-  const apiKey = process.env.HF_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-  return new HfInference(apiKey);
-};
+import { getHFOrThrow, resolveModel, logAIUsage } from '../utils/aiClient.js';
 
 // Speech-to-Text endpoint using OpenAI Whisper API
 export const speechToText = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -46,19 +38,25 @@ export const speechToText = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
-    const hf = getHFClient();
-    if (!hf) {
-      res.status(503).json({ 
-        success: false, 
-        message: 'AI provider API key is not configured. Please set HF_API_KEY in your environment variables.',
-      });
-      return;
-    }
+    const model = resolveModel(req, 'stt');
+    const startedAt = Date.now();
 
     try {
+      const hf = getHFOrThrow();
+
       const transcription = await hf.automaticSpeechRecognition({
-        model: process.env.HF_STT_MODEL || 'openai/whisper-small',
+        model,
         data: audioBuffer,
+      });
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/speech/transcribe',
+        type: 'speech_to_text',
+        model,
+        durationMs,
+        success: true,
       });
 
       res.json({
@@ -72,6 +70,18 @@ export const speechToText = async (req: AuthRequest, res: Response, next: NextFu
       logger.error('AI Speech-to-Text Error', apiError instanceof Error ? apiError : new Error(String(apiError)), {
         userId: req.user?._id,
       });
+
+      const durationMs = Date.now() - startedAt;
+      logAIUsage({
+        userId: req.user?._id?.toString(),
+        endpoint: '/api/speech/transcribe',
+        type: 'speech_to_text',
+        model,
+        durationMs,
+        success: false,
+        errorCode: 'STT_ERROR',
+      });
+
       res.status(503).json({
         success: false,
         message: 'Speech-to-text service unavailable. Please try typing instead.',

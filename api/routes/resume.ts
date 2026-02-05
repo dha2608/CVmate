@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createResume, getResumes, getResumeById, updateResume, deleteResume, aiEnhance, analyzeResume, aiGenerateFullResume } from '../controllers/resumeController.js';
+import { createResume, getResumes, getResumeById, updateResume, deleteResume, aiEnhance, analyzeResume, aiGenerateFullResume, getResumeHistory } from '../controllers/resumeController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { aiLimiter, freeUserLimiter } from '../middleware/rateLimiter.js';
 import { validate, createResumeSchema } from '../utils/validators.js';
@@ -14,6 +14,8 @@ router.route('/:id')
   .get(protect, getResumeById)
   .put(protect, updateResume)
   .delete(protect, deleteResume);
+
+router.get('/:id/history', protect, getResumeHistory);
 
 router.post('/ai-enhance', protect, aiLimiter, aiEnhance);
 router.post('/:id/analyze', protect, freeUserLimiter, analyzeResume);
