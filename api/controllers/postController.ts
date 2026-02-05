@@ -110,15 +110,13 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    // --- FIX QUAN TRỌNG: Ép kiểu khi tạo comment ---
     const newComment = {
-      _id: new mongoose.Types.ObjectId(), // Tự tạo ID
+      _id: new mongoose.Types.ObjectId(),
       user: req.user?._id,
       text,
       createdAt: new Date()
     };
 
-    // Sử dụng 'as any' để TypeScript không báo lỗi thiếu thuộc tính
     post.comments.push(newComment as any); 
     
     await post.save();
