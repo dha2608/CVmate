@@ -1,0 +1,46 @@
+# Vercel Ignore - Files that don't trigger deployments
+
+# Documentation
+*.md
+README.md
+docs/
+VERCEL_*.md
+QUICK_*.md
+*.md
+
+# Configuration files that don't affect build
+.gitignore
+.gitattributes
+.editorconfig
+
+# Development files
+.vscode/
+.idea/
+*.log
+*.tmp
+
+# Backend files (monorepo - only frontend should deploy)
+api/
+uploads/
+node_modules/
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+tests/
+
+# Build artifacts (shouldn't trigger new builds)
+dist/
+build/
+*.tsbuildinfo
+
+# Environment files
+.env.local
+.env.*.local
+
+# Misc
+.DS_Store
+Thumbs.db
