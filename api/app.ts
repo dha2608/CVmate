@@ -134,6 +134,38 @@ const __dirname = path.dirname(__filename);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 /**
+ * Root Endpoint
+ * Returns API information and available endpoints
+ */
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'CVmate API Server',
+    version: '1.0.0',
+    documentation: {
+      health: '/api/health',
+      endpoints: {
+        auth: '/api/auth',
+        resumes: '/api/resumes',
+        interviews: '/api/interviews',
+        posts: '/api/posts',
+        articles: '/api/articles',
+        jobs: '/api/jobs',
+        messages: '/api/messages',
+        notifications: '/api/notifications',
+        dashboard: '/api/dashboard',
+        speech: '/api/speech',
+        news: '/api/news',
+        upload: '/api/upload',
+        payment: '/api/payment',
+      },
+    },
+    status: 'running',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/**
  * Health Check Endpoint
  * Returns server status, database connection, and system information
  */
