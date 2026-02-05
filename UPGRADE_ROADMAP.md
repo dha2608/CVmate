@@ -42,9 +42,9 @@
 - `frontend/src/pages/*.tsx` (multiple files)
 
 ### 1.2 Code Organization
-- [ ] Extract shared utilities to `shared/` directory
-- [ ] Consolidate duplicate code
-- [x] Create proper error boundary components (ErrorBoundary exists)
+- [x] Extract shared validation utilities (`frontend/src/utils/validation.ts`)
+- [x] Refactor form components to use shared validation (PersonalForm, Jobs, SkillsForm)
+- [x] Create proper error boundary components (ErrorBoundary exists, PageErrorBoundary added)
 - [x] Standardize API response types (ApiResponse type created)
 
 ### 1.3 Cleanup
