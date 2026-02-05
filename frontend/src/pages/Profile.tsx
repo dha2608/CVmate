@@ -390,9 +390,9 @@ const Profile = () => {
               className="hidden"
               id="cover-photo-upload"
             />
-            <div className="absolute -bottom-12 sm:-bottom-14 lg:-bottom-16 left-4 sm:left-6 lg:left-8">
+            <div className="absolute -bottom-12 sm:-bottom-14 lg:-bottom-16 left-4 sm:left-6 lg:left-8 z-20">
               <div className="relative group">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full border-2 sm:border-3 lg:border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 shadow-lg overflow-hidden flex items-center justify-center relative">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full border-2 sm:border-3 lg:border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 shadow-lg overflow-hidden flex items-center justify-center relative z-20">
                   {currentAvatar && currentAvatar.trim() ? (
                     <img 
                       src={currentAvatar} 
@@ -425,7 +425,7 @@ const Profile = () => {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-1.5 sm:p-2 lg:p-2.5 shadow-lg border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                  className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-1.5 sm:p-2 lg:p-2.5 shadow-lg border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all disabled:opacity-50 z-30"
                   title={t('profile.chooseImage')}
                 >
                   {uploading ? (
