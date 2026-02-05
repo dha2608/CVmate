@@ -77,7 +77,7 @@ const OptimizedImage = ({
           animate={{ opacity: isLoading ? 0 : 1 }}
           transition={{ duration: 0.3 }}
           decoding="async"
-          fetchPriority={loading === 'eager' ? 'high' : 'low'}
+          fetchpriority={loading === 'eager' ? 'high' : 'low'}
         />
       )}
     </div>

@@ -353,4 +353,10 @@ export const api = {
     apiRequest<{ success: boolean; message: string }>(`/jobs/${id}/apply`, {
       method: 'POST',
     }),
+
+  chatWithAI: (message: string, conversationHistory?: Array<{ type: string; text: string }>) =>
+    apiRequest<{ success: boolean; data: { message: string } }>('/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message, conversationHistory }),
+    }),
 };

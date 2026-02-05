@@ -5,6 +5,7 @@
 @import './styles/mobile-utilities.css';
 @import './styles/accessibility.css';
 @import './styles/final-polish.css';
+@import './styles/glassmorphism.css';
 
 @tailwind base;
 @tailwind components;
