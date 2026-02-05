@@ -171,23 +171,129 @@ app.get('/', (req: Request, res: Response) => {
     documentation: {
       health: '/api/health',
       endpoints: {
-        auth: '/api/auth',
-        resumes: '/api/resumes',
-        interviews: '/api/interviews',
-        posts: '/api/posts',
-        articles: '/api/articles',
-        jobs: '/api/jobs',
-        messages: '/api/messages',
-        notifications: '/api/notifications',
-        dashboard: '/api/dashboard',
-        speech: '/api/speech',
-        news: '/api/news',
-        upload: '/api/upload',
-        payment: '/api/payment',
+        auth: {
+          base: '/api/auth',
+          routes: [
+            'POST /api/auth/register',
+            'POST /api/auth/login',
+            'GET /api/auth/google',
+            'GET /api/auth/google/callback',
+            'POST /api/auth/onboarding',
+            'GET /api/auth/me',
+            'PUT /api/auth/me',
+            'GET /api/auth/users/:id/public',
+          ],
+        },
+        resumes: {
+          base: '/api/resumes',
+          routes: [
+            'GET /api/resumes',
+            'POST /api/resumes',
+            'GET /api/resumes/:id',
+            'PUT /api/resumes/:id',
+            'DELETE /api/resumes/:id',
+            'POST /api/resumes/ai-enhance',
+            'POST /api/resumes/:id/analyze',
+            'POST /api/resumes/ai-generate-full',
+          ],
+        },
+        interviews: {
+          base: '/api/interviews',
+          routes: [
+            'POST /api/interviews/start',
+            'GET /api/interviews',
+            'GET /api/interviews/:id',
+            'POST /api/interviews/:id/chat',
+            'POST /api/interviews/:id/end',
+          ],
+        },
+        posts: {
+          base: '/api/posts',
+          routes: [
+            'GET /api/posts',
+            'POST /api/posts',
+            'PUT /api/posts/:id/like',
+            'POST /api/posts/:id/comment',
+          ],
+        },
+        articles: {
+          base: '/api/articles',
+          routes: [
+            'GET /api/articles',
+            'POST /api/articles',
+            'GET /api/articles/:id',
+          ],
+        },
+        jobs: {
+          base: '/api/jobs',
+          routes: [
+            'GET /api/jobs',
+            'GET /api/jobs/:id',
+            'POST /api/jobs',
+            'POST /api/jobs/:id/apply',
+          ],
+        },
+        messages: {
+          base: '/api/messages',
+          routes: [
+            'GET /api/messages/conversations',
+            'GET /api/messages/:userId',
+            'POST /api/messages',
+          ],
+        },
+        notifications: {
+          base: '/api/notifications',
+          routes: [
+            'GET /api/notifications',
+            'PUT /api/notifications/:id/read',
+            'PUT /api/notifications/read-all',
+            'DELETE /api/notifications/:id',
+          ],
+        },
+        dashboard: {
+          base: '/api/dashboard',
+          routes: [
+            'GET /api/dashboard/stats',
+          ],
+        },
+        speech: {
+          base: '/api/speech',
+          routes: [
+            'POST /api/speech/transcribe',
+            'GET /api/speech/instructions',
+          ],
+        },
+        news: {
+          base: '/api/news',
+          routes: [
+            'GET /api/news',
+            'POST /api/news/refresh',
+          ],
+        },
+        upload: {
+          base: '/api/upload',
+          routes: [
+            'POST /api/upload/avatar',
+            'POST /api/upload/cover-photo',
+            'GET /api/upload/file/:filename',
+          ],
+        },
+        payment: {
+          base: '/api/payment',
+          routes: [
+            'POST /api/payment/webhook',
+            'POST /api/payment/create-checkout-session',
+            'GET /api/payment/subscription-status',
+            'POST /api/payment/cancel-subscription',
+            'POST /api/payment/paypal/create-order',
+            'POST /api/payment/paypal/capture',
+          ],
+        },
       },
     },
     status: 'running',
     timestamp: new Date().toISOString(),
+    totalEndpoints: 50,
   });
 });
 
