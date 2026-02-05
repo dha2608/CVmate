@@ -15,6 +15,7 @@ import AIJobMatcher from '@/components/jobs/AIJobMatcher';
 import { Briefcase, MapPin, DollarSign, Clock, Search, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp, X, Video, MessageSquare } from 'lucide-react';
 
 const Jobs = () => {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const { t } = useI18n();
   const toast = useToastStore();
