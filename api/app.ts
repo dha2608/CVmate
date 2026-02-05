@@ -143,6 +143,23 @@ app.use('/uploads', (req, res, next) => {
 }));
 
 /**
+ * API Routes
+ */
+app.use('/api/auth', authRoutes);
+app.use('/api/resumes', resumeRoutes);
+app.use('/api/interviews', interviewRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/articles', articleRoutes);
+app.use('/api/jobs', jobRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/speech', speechRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/payment', paymentRoutes);
+
+/**
  * Root Endpoint
  * Returns API information and available endpoints
  */
