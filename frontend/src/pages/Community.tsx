@@ -42,7 +42,7 @@ const Community = () => {
         {isLoading ? (
             <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                    <div key={i} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+                    <div key={i} className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 sm:p-6">
                         <div className="flex items-start gap-3 sm:gap-4 mb-4">
                             <Skeleton variant="circular" width={40} height={40} />
                             <div className="flex-1 space-y-2">

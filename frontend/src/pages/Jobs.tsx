@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useJobStore } from '@/store/jobStore';
 import { useAuthStore } from '@/store/authStore';
@@ -147,7 +147,7 @@ const Jobs = () => {
   return (
     <MainLayout
       rightSidebar={
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sticky top-20">
+          <div className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 sticky top-20">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{t('jobs.jobSeekerGuidance')}</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{t('jobs.recommendedBasedOn')}</p>
               <div className="space-y-3">
@@ -169,7 +169,7 @@ const Jobs = () => {
           </div>
       }
     >
-      <div className="card-base mb-6">
+      <div className="glass-card bg-white/90 dark:bg-gray-800/90 mb-6">
         <h1 className="text-heading-2 mb-6">{t('jobs.findDreamJob')}</h1>
         <div className="space-y-4">
           <div className="flex gap-2">
@@ -424,7 +424,7 @@ const Jobs = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className="card-interactive"
+                  className="glass-card bg-white/90 dark:bg-gray-800/90 hover:shadow-xl transition-all duration-300 cursor-pointer"
                 >
                     <div className="flex gap-4">
                         <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center font-bold text-gray-400 dark:text-gray-500 flex-shrink-0">

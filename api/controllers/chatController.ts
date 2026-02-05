@@ -53,31 +53,41 @@ Hãy trả lời bằng tiếng Việt, ngắn gọn và hữu ích.`;
     const fullPrompt = `${systemPrompt}\n\n${conversationContext ? `Lịch sử hội thoại:\n${conversationContext}\n\n` : ''}Người dùng: ${message}\nTrợ lý:`;
 
     try {
-      // Use text generation model for chat
-      const response = await hf.textGeneration({
-        model: 'microsoft/DialoGPT-medium', // Or use a better model like 'mistralai/Mistral-7B-Instruct-v0.2'
-        inputs: fullPrompt,
-        parameters: {
-          max_new_tokens: 200,
-          temperature: 0.7,
-          top_p: 0.9,
-          return_full_text: false,
-        },
+      // Use chat completion model for better responses
+      const model = process.env.HF_CHAT_MODEL || 'meta-llama/Meta-Llama-3-8B-Instruct';
+      
+      // Build messages array for chat completion
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        ...conversationHistory.slice(-5).map((msg: { type: string; text: string }) => ({
+          role: msg.type === 'user' ? 'user' : 'assistant',
+          content: msg.text,
+        })),
+        { role: 'user', content: message },
+      ];
+
+      const response = await hf.chatCompletion({
+        model,
+        messages,
+        max_tokens: 200,
+        temperature: 0.7,
+        top_p: 0.9,
       });
 
       let aiResponse = '';
-      if (typeof response === 'string') {
+      if (response.choices && response.choices.length > 0) {
+        aiResponse = response.choices[0].message?.content?.trim() || '';
+      } else if (typeof response === 'string') {
         aiResponse = response.trim();
       } else if (response.generated_text) {
         aiResponse = response.generated_text.trim();
-      } else if (Array.isArray(response) && response.length > 0) {
-        aiResponse = response[0].generated_text?.trim() || '';
       }
 
       // Clean up response
       aiResponse = aiResponse
         .replace(/^Trợ lý:\s*/i, '')
         .replace(/Người dùng:.*$/g, '')
+        .replace(/^Assistant:\s*/i, '')
         .trim();
 
       // Fallback if response is empty
