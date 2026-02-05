@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useJobStore } from '@/store/jobStore';
 import { useAuthStore } from '@/store/authStore';
@@ -11,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import BookmarkButton from '@/components/BookmarkButton';
 import AIJobMatcher from '@/components/jobs/AIJobMatcher';
-import { Briefcase, MapPin, DollarSign, Clock, Search, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign, Clock, Search, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp, X, Video, MessageSquare } from 'lucide-react';
 
 const Jobs = () => {
   const { user } = useAuthStore();
