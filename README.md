@@ -42,12 +42,15 @@ CV Mate is an "All-in-one" career support platform powered by AI, designed to he
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React + Vite, TypeScript, Tailwind CSS, Shadcn/UI, Zustand, Framer Motion
+- **Frontend**: React 18 + Vite, TypeScript, Tailwind CSS, Shadcn/UI, Zustand, Framer Motion
 - **Backend**: Node.js + Express.js, MongoDB (Mongoose)
-- **AI**: Hugging Face Inference API (e.g. Llama 3 / open-source LLMs)
+- **AI**: Hugging Face Inference API (Llama 3 / open-source LLMs)
 - **Authentication**: JWT + Google OAuth 2.0 (Passport.js)
 - **PDF Export**: jsPDF + html2canvas
 - **Speech Recognition**: Web Speech API (Browser native)
+- **Deployment**: Vercel (Frontend) + Render (Backend)
+- **State Management**: Zustand with persistence
+- **UI Components**: Shadcn/UI + Custom components with Glassmorphism
 
 ## 🚀 Getting Started
 
