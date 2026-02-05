@@ -42,4 +42,5 @@ export const upload = multer({
 
 export const uploadSingle = upload.single('avatar');
 export const uploadSingleCover = upload.single('coverPhoto');
+export const uploadPostImage = upload.single('postImage');
 export const uploadMultiple = upload.array('images', 10);

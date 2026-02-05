@@ -355,9 +355,30 @@ export const api = {
       method: 'POST',
     }),
 
-  chatWithAI: (message: string, conversationHistory?: Array<{ type: string; text: string }>) =>
-    apiRequest<{ success: boolean; data: { message: string } }>('/chat', {
-      method: 'POST',
-      body: JSON.stringify({ message, conversationHistory }),
-    }),
-};
+         chatWithAI: (message: string, conversationHistory?: Array<{ type: string; text: string }>) =>
+           apiRequest<{ success: boolean; data: { message: string } }>('/chat', {
+             method: 'POST',
+             body: JSON.stringify({ message, conversationHistory }),
+           }),
+
+         upload: {
+           uploadAvatar: (formData: FormData) =>
+             apiRequest<ApiResponse<{ avatar: string }>>('/upload/avatar', {
+               method: 'POST',
+               body: formData,
+               headers: {}, // Important: do not set Content-Type for FormData
+             }),
+           uploadCoverPhoto: (formData: FormData) =>
+             apiRequest<ApiResponse<{ coverPhoto: string }>>('/upload/cover-photo', {
+               method: 'POST',
+               body: formData,
+               headers: {}, // Important: do not set Content-Type for FormData
+             }),
+           uploadPostImage: (formData: FormData) =>
+             apiRequest<ApiResponse<{ url: string; filename: string; size: number }>>('/upload/post-image', {
+               method: 'POST',
+               body: formData,
+               headers: {}, // Important: do not set Content-Type for FormData
+             }),
+         },
+       };

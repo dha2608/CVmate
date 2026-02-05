@@ -50,6 +50,28 @@ export const uploadCoverPhoto = async (req: AuthRequest, res: Response, next: Ne
   }
 };
 
+export const uploadPostImage = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ success: false, message: 'No file uploaded' });
+      return;
+    }
+
+    const fileUrl = `/uploads/${req.file.filename}`;
+
+    res.json({
+      success: true,
+      data: {
+        url: fileUrl,
+        filename: req.file.filename,
+        size: req.file.size
+      }
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
+
 export const getFileAsBase64 = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { filename } = req.params;
