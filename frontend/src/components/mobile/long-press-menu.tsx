@@ -31,8 +31,11 @@ export const LongPressMenu = ({
   const handleLongPressStart = (e: React.TouchEvent | React.MouseEvent) => {
     if (trigger !== 'longpress') return;
 
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const touches = 'touches' in e ? e.touches : null;
+    const clientX = touches?.[0]?.clientX ?? ('clientX' in e ? e.clientX : 0);
+    const clientY = touches?.[0]?.clientY ?? ('clientY' in e ? e.clientY : 0);
+
+    touchStart.current = { clientX, clientY };
 
     longPressTimer.current = setTimeout(() => {
       setPosition({ x: clientX, y: clientY });

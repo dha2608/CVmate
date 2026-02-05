@@ -4,6 +4,7 @@ import { Keyboard, LayoutTemplate, ListTree, Sparkles, X, Zap } from 'lucide-rea
 import TemplateSelector from '@/components/builder/TemplateSelector';
 import SectionReorder from '@/components/builder/SectionReorder';
 import AISuggestions from '@/components/builder/AISuggestions';
+import type { BuilderSection } from './BuilderSidebar';
 
 interface QuickPreset {
   id: string;
@@ -17,8 +18,8 @@ interface BuilderActionsDialogProps {
   onOpenChange: (open: boolean) => void;
   selectedTemplate: string;
   onSelectTemplate: (templateId: string) => void;
-  sections: { id: string; label: string; visible: boolean }[];
-  onReorderSections: (sections: { id: string; label: string; visible: boolean }[]) => void;
+  sections: BuilderSection[];
+  onReorderSections: (sections: BuilderSection[]) => void;
   onToggleSectionVisibility: (id: string) => void;
   onOpenShortcuts: () => void;
   quickPresets?: QuickPreset[];

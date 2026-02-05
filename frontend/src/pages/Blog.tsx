@@ -419,7 +419,7 @@ const Blog = () => {
                                         {(article.image || article.coverImage) && (
                                             <div className="h-64 w-full overflow-hidden bg-gray-100 dark:bg-gray-700 relative">
                                                 <OptimizedImage
-                                                    src={article.image || article.coverImage} 
+                                                    src={(article.image || article.coverImage) || ''} 
                                                     alt={article.title} 
                                                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                                                     loading="lazy"

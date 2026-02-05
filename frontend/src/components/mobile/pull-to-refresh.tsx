@@ -33,17 +33,17 @@ export const PullToRefresh = ({
     if (!container) return;
 
     // Only trigger if at the top of the scroll
-    if (container.scrollTop === 0) {
+    if (container.scrollTop === 0 && e.touches[0]) {
       startY.current = e.touches[0].clientY;
       isPulling.current = true;
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isPulling.current || disabled || isRefreshing) return;
+    if (!isPulling.current || disabled || isRefreshing || !e.touches[0]) return;
 
     const currentY = e.touches[0].clientY;
-    const distance = currentY - startY.current;
+    const distance = currentY - (startY.current || 0);
 
     if (distance > 0) {
       const pullAmount = Math.min(distance * 0.5, threshold * 1.5);
