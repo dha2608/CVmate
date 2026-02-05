@@ -283,7 +283,17 @@ const MainLayout = ({
               <div className="hidden lg:block lg:col-span-3">
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-20 lg:top-24 group mb-6">
                   {/* Header Profile */}
-                  <div className="h-20 lg:h-24 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-gray-900 dark:to-gray-800 relative">
+                  <div 
+                    className="h-20 lg:h-24 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-gray-900 dark:to-gray-800 relative"
+                    style={{
+                      backgroundImage: (user as any)?.coverPhoto ? `url(${(user as any).coverPhoto})` : undefined,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  >
+                    {(user as any)?.coverPhoto && (
+                      <div className="absolute inset-0 bg-black/30" />
+                    )}
                     <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
                       <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center shadow-lg relative">
                         {user?.avatar?.trim() ? (

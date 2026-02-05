@@ -121,7 +121,7 @@ const Profile = () => {
     }
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -137,8 +137,14 @@ const Profile = () => {
       return;
     }
 
+    // Use setTimeout to avoid blocking UI
     setUploading(true);
+    setTimeout(() => {
+      handleAvatarUpload(file);
+    }, 0);
+  };
 
+  const handleAvatarUpload = async (file: File) => {
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('avatar', file);
@@ -163,7 +169,13 @@ const Profile = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Upload failed' }));
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { message: errorText || 'Upload failed' };
+        }
         throw new Error(errorData.message || errorData.error || t('profile.uploadFailed'));
       }
 
