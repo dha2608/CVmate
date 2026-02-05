@@ -161,8 +161,10 @@ const Builder = () => {
       }
       
       // Check for response errors
-      if (error?.response?.data) {
-        const data = error.response.data;
+      if (error && typeof error === 'object' && 'response' in error) {
+        const errorWithResponse = error as { response?: { data?: unknown } };
+        if (errorWithResponse.response?.data) {
+          const data = errorWithResponse.response.data;
         if (data.errors && Array.isArray(data.errors)) {
           errors.push(...data.errors);
         }

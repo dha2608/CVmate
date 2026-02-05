@@ -36,7 +36,7 @@ const InterviewDashboard = () => {
       const userMsg = userMessages[i];
       const prevAssistantMsg = assistantMessages[i];
       
-      if (userMsg.timestamp && prevAssistantMsg?.timestamp) {
+      if (userMsg?.timestamp && prevAssistantMsg?.timestamp) {
         const timeDiff = new Date(userMsg.timestamp).getTime() - new Date(prevAssistantMsg.timestamp).getTime();
         totalResponseTime += timeDiff;
         responseCount++;
@@ -50,7 +50,7 @@ const InterviewDashboard = () => {
       return acc + msg.content.split(' ').length;
     }, 0);
     
-    const totalTime = userMessages.length > 0 && userMessages[0].timestamp 
+    const totalTime = userMessages.length > 0 && userMessages[0]?.timestamp 
       ? (new Date().getTime() - new Date(userMessages[0].timestamp).getTime()) / 1000 / 60
       : 1;
     
