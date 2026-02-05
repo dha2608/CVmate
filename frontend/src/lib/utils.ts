@@ -8,15 +8,38 @@ export function cn(...inputs: ClassValue[]) {
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 // Logger utility - only logs in development
-const isDev = import.meta.env.DEV;
+// Check both DEV and MODE to ensure we're truly in development
+const isDev = import.meta.env.DEV || import.meta.env.MODE === 'development';
+const isProduction = import.meta.env.MODE === 'production' || import.meta.env.PROD;
+
 export const logger = {
-  log: (...args: any[]) => isDev && console.log(...args),
-  error: (...args: any[]) => console.error(...args),
-  warn: (...args: any[]) => isDev && console.warn(...args),
-  info: (...args: any[]) => isDev && console.info(...args),
+  log: (...args: any[]) => {
+    if (isDev && !isProduction) {
+      console.log(...args);
+    }
+  },
+  error: (...args: any[]) => {
+    // Always log errors, but only in dev show full details
+    if (isDev) {
+      console.error(...args);
+    } else {
+      // In production, log minimal error info
+      console.error('[Error]', args[0]);
+    }
+  },
+  warn: (...args: any[]) => {
+    if (isDev && !isProduction) {
+      console.warn(...args);
+    }
+  },
+  info: (...args: any[]) => {
+    if (isDev && !isProduction) {
+      console.info(...args);
+    }
+  },
 };
 
-if (isDev) {
+if (isDev && !isProduction) {
   logger.log('🔗 API Base URL:', API_BASE_URL);
 }
 

@@ -243,7 +243,8 @@ const Builder = () => {
 
   const handleAIGenerateFull = async () => {
     if (!generatePrompt.trim() && !generateJD.trim()) {
-      alert('Please provide at least a short prompt or job description for AI to work with.');
+      const { useToastStore } = await import('@/store/toastStore');
+      useToastStore.getState().error('Please provide at least a short prompt or job description for AI to work with.');
       return;
     }
 
@@ -271,14 +272,29 @@ const Builder = () => {
         skills: Array.isArray(data.skills) && data.skills.length > 0 ? data.skills : currentResume.skills,
       });
 
+      const { useToastStore } = await import('@/store/toastStore');
+      useToastStore.getState().success('CV generated successfully!');
+
       trackEvent('cv_ai_enhance', {
         field: 'full_resume',
         hasJD: !!generateJD.trim(),
       });
     } catch (error: any) {
       const errorMessage = error.message || 'Failed to generate resume. Please try again.';
-      setAiError(errorMessage);
-      alert(errorMessage);
+      
+      // Check if it's a configuration error (API key missing)
+      const isConfigError = errorMessage.toLowerCase().includes('unavailable') || 
+                           errorMessage.toLowerCase().includes('api key') || 
+                           errorMessage.toLowerCase().includes('not configured');
+      
+      if (isConfigError) {
+        // Show notice banner instead of toast for config errors
+        setAiError(errorMessage);
+      } else {
+        // Use toast for other errors
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().error(errorMessage);
+      }
     } finally {
       setIsGeneratingFull(false);
     }
@@ -479,6 +495,15 @@ const Builder = () => {
 
                 {/* AI Generate Full Resume */}
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100 p-5 space-y-3">
+                  {aiError && (aiError.toLowerCase().includes('unavailable') || aiError.toLowerCase().includes('api key') || aiError.toLowerCase().includes('not configured')) && !dismissedHints.includes('ai-unavailable') && (
+                    <AIFeatureNotice 
+                      feature="AI CV Builder" 
+                      onDismiss={() => {
+                        setDismissedHints([...dismissedHints, 'ai-unavailable']);
+                        setAiError(null);
+                      }}
+                    />
+                  )}
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
