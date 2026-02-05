@@ -1,6 +1,7 @@
 import { useResumeStore } from '@/store/resumeStore';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Phone, MapPin, Linkedin, Globe, HelpCircle } from 'lucide-react';
+import { validateEmail, validateUrl, validateRequired } from '@/utils/validation';
 
 const PersonalForm = () => {
   const { currentResume, updatePersonalInfo } = useResumeStore();
@@ -104,16 +105,8 @@ const PersonalForm = () => {
                     value={value} 
                     onChange={(e) => {
                       let val = e.target.value;
-                      // Validation
-                      if (field.key === 'email' && val) {
-                        // Basic email validation
-                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                        if (!emailRegex.test(val)) {
-                          // Still allow typing, but show warning
-                        }
-                      }
+                      // Auto-add https:// for URLs if missing
                       if ((field.key === 'linkedin' || field.key === 'website') && val && !val.startsWith('http')) {
-                        // Auto-add https:// if missing
                         if (!val.startsWith('//')) {
                           val = `https://${val}`;
                         }
@@ -130,13 +123,13 @@ const PersonalForm = () => {
                     <span>This field is required</span>
                   </p>
                 )}
-                {field.key === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && (
+                {field.key === 'email' && value && !validateEmail(value) && (
                   <p className="text-xs text-red-600 flex items-center gap-1">
                     <span>⚠</span>
                     <span>Please enter a valid email address</span>
                   </p>
                 )}
-                {((field.key === 'linkedin' || field.key === 'website') && value && !/^https?:\/\/.+/.test(value)) && (
+                {((field.key === 'linkedin' || field.key === 'website') && value && !validateUrl(value)) && (
                   <p className="text-xs text-amber-600 flex items-center gap-1">
                     <span>ℹ</span>
                     <span>URL should start with http:// or https://</span>

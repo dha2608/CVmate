@@ -3,6 +3,7 @@ import { useResumeStore } from '@/store/resumeStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X } from 'lucide-react';
+import { validateSkill } from '@/utils/validation';
 
 const SkillsForm = () => {
   const { currentResume, setSkills } = useResumeStore();
@@ -21,18 +22,11 @@ const SkillsForm = () => {
       return;
     }
     
-    // Validation: Check for duplicates (case-insensitive)
-    const isDuplicate = currentResume.skills.some(
-      skill => skill.toLowerCase() === trimmed.toLowerCase()
-    );
+    // Use shared validation utility
+    const validation = validateSkill(trimmed, currentResume.skills);
     
-    if (isDuplicate) {
-      // Show warning but don't add
-      return;
-    }
-    
-    // Limit skill length
-    if (trimmed.length > 50) {
+    if (!validation.valid) {
+      // Show error message (could use toast here)
       return;
     }
     

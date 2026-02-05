@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import BookmarkButton from '@/components/BookmarkButton';
 import AIJobMatcher from '@/components/jobs/AIJobMatcher';
 import { Briefcase, MapPin, DollarSign, Clock, Search, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp, X, Video, MessageSquare } from 'lucide-react';
+import { validateJobPosting, validateRequired, validateNotOnlyNumbers, validateSalary } from '@/utils/validation';
 
 const Jobs = () => {
   const navigate = useNavigate();
@@ -105,25 +106,19 @@ const Jobs = () => {
       return;
     }
     
-    // Validation
-    if (!jobForm.title.trim() || !jobForm.company.trim() || !jobForm.description.trim()) {
-      toast.error(t('jobs.fillRequiredFields') || 'Please fill in at least title, company, and description.');
-      return;
-    }
+    // Use shared validation utilities
+    const validation = validateJobPosting({
+      title: jobForm.title,
+      company: jobForm.company,
+      description: jobForm.description,
+      salary: jobForm.salary,
+      location: jobForm.location,
+      type: jobForm.type,
+    });
     
-    // Validate title - should not be only numbers
-    if (/^\d+$/.test(jobForm.title.trim())) {
-      toast.error(t('jobs.titleCannotBeNumbers') || 'Job title cannot be only numbers.');
+    if (!validation.valid) {
+      toast.error(validation.errors.join(', '));
       return;
-    }
-    
-    // Validate salary format if provided
-    if (jobForm.salary.trim()) {
-      const salaryPattern = /^[\d,.\s-]+$/;
-      if (!salaryPattern.test(jobForm.salary.trim())) {
-        toast.error(t('jobs.invalidSalaryFormat') || 'Invalid salary format. Use numbers, commas, dots, or dashes.');
-        return;
-      }
     }
     setIsPostingJob(true);
     try {
