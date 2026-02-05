@@ -165,11 +165,14 @@ const Builder = () => {
         const errorWithResponse = error as { response?: { data?: unknown } };
         if (errorWithResponse.response?.data) {
           const data = errorWithResponse.response.data;
-        if (data.errors && Array.isArray(data.errors)) {
-          errors.push(...data.errors);
-        }
-        if (data.message) {
-          errorMessage = data.message;
+          if (data && typeof data === 'object') {
+            if ('errors' in data && Array.isArray(data.errors)) {
+              errors.push(...data.errors.map(e => String(e)));
+            }
+            if ('message' in data && typeof data.message === 'string') {
+              errorMessage = data.message;
+            }
+          }
         }
       }
       

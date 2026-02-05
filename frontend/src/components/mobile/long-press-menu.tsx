@@ -27,6 +27,8 @@ export const LongPressMenu = ({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const touchStart = useRef<{ clientX: number; clientY: number } | null>(null);
+  const touchEnd = useRef<{ clientX: number; clientY: number } | null>(null);
 
   const handleLongPressStart = (e: React.TouchEvent | React.MouseEvent) => {
     if (trigger !== 'longpress') return;
