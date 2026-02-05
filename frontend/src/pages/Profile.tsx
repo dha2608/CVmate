@@ -379,7 +379,7 @@ const Profile = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Cover / Header Background */}
           <div 
-            className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative group/cover overflow-hidden"
+            className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative group/cover overflow-visible"
             style={{
               backgroundImage: formData.coverPhoto ? `url(${formData.coverPhoto}?t=${Date.now()})` : undefined,
               backgroundSize: 'cover',
@@ -409,9 +409,10 @@ const Profile = () => {
               className="hidden"
               id="cover-photo-upload"
             />
-            <div className="absolute -bottom-12 sm:-bottom-14 lg:-bottom-16 left-4 sm:left-6 lg:left-8 z-20">
+            {/* Avatar - positioned to overlap cover photo */}
+            <div className="absolute -bottom-8 sm:-bottom-10 lg:-bottom-12 left-4 sm:left-6 lg:left-8 z-30">
               <div className="relative group">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full border-2 sm:border-3 lg:border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 shadow-lg overflow-hidden flex items-center justify-center relative z-20">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-full border-3 sm:border-4 lg:border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 shadow-xl overflow-hidden flex items-center justify-center relative">
                   {currentAvatar && currentAvatar.trim() ? (
                     <img 
                       key={currentAvatar.split('?')[0]} 
@@ -446,8 +447,9 @@ const Profile = () => {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-1.5 sm:p-2 lg:p-2.5 shadow-lg border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all disabled:opacity-50 z-30"
+                  className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-1.5 sm:p-2 lg:p-2.5 shadow-lg border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all disabled:opacity-50 z-40"
                   title={t('profile.chooseImage')}
+                  aria-label={t('profile.chooseImage')}
                 >
                   {uploading ? (
                     <Loader2 size={14} className="sm:w-4 sm:h-4 lg:w-[18px] lg:h-[18px] animate-spin" />
