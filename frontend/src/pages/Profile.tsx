@@ -182,20 +182,15 @@ const Profile = () => {
           avatarUrl = `${baseUrl}${urlPath}`;
         }
         
-        // Update form data immediately
-        const updatedFormData = { ...formData, avatar: avatarUrl };
+        // Update form data immediately with timestamp to force re-render
+        const avatarUrlWithTimestamp = avatarUrl + (avatarUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+        const updatedFormData = { ...formData, avatar: avatarUrlWithTimestamp };
         setFormData(updatedFormData);
-        setOriginalData(updatedFormData); // Also update originalData so changes are tracked
+        setOriginalData({ ...updatedFormData, avatar: avatarUrl }); // Store without timestamp in originalData
         
         // Also update user in store immediately for instant display
         if (user) {
           setUser({ ...user, avatar: avatarUrl });
-        }
-        
-        // Force image reload by adding timestamp
-        const img = document.querySelector('img[alt="Profile"]') as HTMLImageElement;
-        if (img) {
-          img.src = avatarUrl + (avatarUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
         }
         
         toast.success(t('profile.avatarUploaded'));
@@ -395,9 +390,11 @@ const Profile = () => {
                 <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full border-2 sm:border-3 lg:border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 shadow-lg overflow-hidden flex items-center justify-center relative z-20">
                   {currentAvatar && currentAvatar.trim() ? (
                     <img 
-                      src={currentAvatar} 
+                      key={currentAvatar.split('?')[0]} 
+                      src={currentAvatar}
                       alt="Profile" 
                       className="w-full h-full object-cover"
+                      crossOrigin="anonymous"
                       onError={(e) => {
                         // Hide image and show fallback
                         const img = e.target as HTMLImageElement;
@@ -407,11 +404,11 @@ const Profile = () => {
                           fallback.style.display = 'flex';
                         }
                       }}
-                      onLoad={() => {
+                      onLoad={(e) => {
                         // Hide fallback when image loads successfully
-                        const img = document.querySelector('.avatar-fallback') as HTMLElement;
-                        if (img) {
-                          img.style.display = 'none';
+                        const fallback = (e.target as HTMLImageElement).parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                        if (fallback) {
+                          fallback.style.display = 'none';
                         }
                       }}
                     />
