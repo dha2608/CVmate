@@ -373,7 +373,7 @@ const Profile = () => {
             <button
               onClick={() => coverPhotoInputRef.current?.click()}
               disabled={uploadingCover}
-              className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/90 rounded-full p-2 shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all opacity-0 group-hover/cover:opacity-100 disabled:opacity-50"
+              className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/90 rounded-full p-2 shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all disabled:opacity-50 z-10"
               title="Đổi ảnh bìa"
             >
               {uploadingCover ? (

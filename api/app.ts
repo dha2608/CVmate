@@ -34,35 +34,20 @@ connectDB();
 
 const app: express.Application = express();
 
-// Security Headers
-const renderUrl = process.env.RENDER_URL || 'https://cvmate-kf5p.onrender.com';
+// Security Headers - Disable CSP for images to allow cross-origin
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
-      imgSrc: [
-        "'self'", 
-        "data:", 
-        "https:", 
-        "http:",
-        renderUrl, // Allow images from Render
-        "*.onrender.com", // Allow all Render subdomains
-        "*.vercel.app", // Allow Vercel previews
-      ],
-      connectSrc: [
-        "'self'", 
-        "https:",
-        renderUrl,
-        "*.onrender.com",
-        "*.vercel.app",
-      ],
+      imgSrc: ["'self'", "data:", "https:", "http:", "*"], // Allow all images
+      connectSrc: ["'self'", "https:", "http:"],
       fontSrc: ["'self'", "data:"],
     },
   },
   crossOriginEmbedderPolicy: false, // Allow embedding for PDF generation
-  crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow images to be loaded cross-origin
+  crossOriginResourcePolicy: false, // Disable CORP to allow cross-origin images
 }));
 
 // Middleware
@@ -148,17 +133,23 @@ app.use('/api/payment', paymentRoutes);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use('/uploads', (req, res, next) => {
-  // Set CORS headers for static files
+  // Set CORS headers for static files - allow all origins
   const origin = req.headers.origin;
-  if (origin && (origin.includes('.vercel.app') || origin.includes('localhost'))) {
+  if (origin) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    // Allow requests without origin (direct image loads)
+    res.setHeader('Access-Control-Allow-Origin', '*');
   }
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
   next();
 }, express.static(path.join(__dirname, '../uploads'), {
   setHeaders: (res, path) => {
-    // Allow images to be loaded cross-origin
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    // Remove CORP header that blocks cross-origin
+    res.removeHeader('Cross-Origin-Resource-Policy');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   }
 }));
