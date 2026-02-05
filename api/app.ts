@@ -130,27 +130,32 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/payment', paymentRoutes);
 
 // Serve uploaded files statically with CORS headers
+// IMPORTANT: This must be before API routes to handle static file requests
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use('/uploads', (req, res, next) => {
-  // Set CORS headers for static files - allow all origins
-  const origin = req.headers.origin;
-  if (origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  } else {
-    // Allow requests without origin (direct image loads)
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
   }
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  
+  // Set CORS headers for static files - allow all origins
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type');
+  // Explicitly remove CORP header that blocks cross-origin
+  res.removeHeader('Cross-Origin-Resource-Policy');
+  res.removeHeader('Cross-Origin-Embedder-Policy');
   next();
 }, express.static(path.join(__dirname, '../uploads'), {
-  setHeaders: (res, path) => {
-    // Remove CORP header that blocks cross-origin
-    res.removeHeader('Cross-Origin-Resource-Policy');
+  setHeaders: (res, filePath) => {
+    // Ensure CORS headers are set
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    // Don't set CORP - it blocks cross-origin
   }
 }));
 
