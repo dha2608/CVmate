@@ -141,7 +141,7 @@ const Jobs = () => {
       };
       const response = await api.createJob(payload);
       if (response.success) {
-        toast.success('Đăng job thành công!');
+        toast.success(t('jobs.postSuccess') || 'Job posted successfully!');
         setShowPostJob(false);
         setJobForm({
           title: '',
