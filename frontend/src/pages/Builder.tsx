@@ -136,10 +136,38 @@ const Builder = () => {
         });
       }
     } catch (error: any) {
-      const details = error?.details;
-      const errors = Array.isArray(details?.errors) ? details.errors : [];
-      const extra = errors.length ? `\n\nDetails:\n- ${errors.join('\n- ')}` : '';
-      alert('Failed to save: ' + (error.message || 'Unknown error') + extra);
+      // Better error handling
+      let errorMessage = 'Failed to save resume';
+      const errors: string[] = [];
+      
+      // Check for validation errors
+      if (error?.errors && Array.isArray(error.errors)) {
+        errors.push(...error.errors);
+      } else if (error?.errors && typeof error.errors === 'object') {
+        // Mongoose validation errors
+        errors.push(...Object.values(error.errors).map((e: any) => e.message || String(e)));
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      // Check for response errors
+      if (error?.response?.data) {
+        const data = error.response.data;
+        if (data.errors && Array.isArray(data.errors)) {
+          errors.push(...data.errors);
+        }
+        if (data.message) {
+          errorMessage = data.message;
+        }
+      }
+      
+      const finalMessage = errors.length 
+        ? `${errorMessage}\n\nValidation errors:\n${errors.map(e => `- ${e}`).join('\n')}`
+        : errorMessage;
+      
+      // Use toast instead of alert
+      const { useToastStore } = await import('@/store/toastStore');
+      useToastStore.getState().error(finalMessage);
     } finally {
       setSaving(false);
     }

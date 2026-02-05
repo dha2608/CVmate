@@ -22,13 +22,29 @@ const ExperienceForm = () => {
   };
 
   const handleEnhance = async (index: number, text: string) => {
-      if (!text) {
+      if (!text?.trim()) {
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().error('Please enter some text to enhance');
         return;
       }
       setLoadingAi(index);
-      const enhanced = await aiEnhanceText(text, 'experience');
-      updateExperience(index, { ...currentResume.experience[index], description: enhanced });
-      setLoadingAi(null);
+      try {
+        const enhanced = await aiEnhanceText(text, 'experience');
+        if (enhanced && enhanced !== text) {
+          updateExperience(index, { ...currentResume.experience[index], description: enhanced });
+          const { useToastStore } = await import('@/store/toastStore');
+          useToastStore.getState().success('Description enhanced successfully!');
+        }
+      } catch (error: any) {
+        const { useToastStore } = await import('@/store/toastStore');
+        const errorMsg = error?.message || 'Failed to enhance text';
+        // Only show toast if it's not a config error (those show notices)
+        if (!errorMsg.toLowerCase().includes('unavailable') && !errorMsg.toLowerCase().includes('api key')) {
+          useToastStore.getState().error(errorMsg);
+        }
+      } finally {
+        setLoadingAi(null);
+      }
   };
 
   return (
@@ -53,22 +69,32 @@ const ExperienceForm = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-xs font-medium uppercase text-gray-500">Company</label>
+                        <label className="text-xs font-medium uppercase text-gray-500">
+                            Company <span className="text-red-500">*</span>
+                        </label>
                         <Input 
                             value={exp.company} 
                             onChange={(e) => updateExperience(index, { ...exp, company: e.target.value })}
                             placeholder="Company Name"
-                            className="bg-white"
+                            className={`bg-white ${!exp.company?.trim() ? 'border-amber-300' : ''}`}
                         />
+                        {!exp.company?.trim() && (
+                          <p className="text-xs text-amber-600">Required field</p>
+                        )}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-medium uppercase text-gray-500">Position</label>
+                        <label className="text-xs font-medium uppercase text-gray-500">
+                            Position <span className="text-red-500">*</span>
+                        </label>
                         <Input 
                             value={exp.position} 
                             onChange={(e) => updateExperience(index, { ...exp, position: e.target.value })}
                             placeholder="Job Title"
-                            className="bg-white"
+                            className={`bg-white ${!exp.position?.trim() ? 'border-amber-300' : ''}`}
                         />
+                        {!exp.position?.trim() && (
+                          <p className="text-xs text-amber-600">Required field</p>
+                        )}
                     </div>
                     <div className="space-y-2">
                         <label className="text-xs font-medium uppercase text-gray-500">Start Date</label>

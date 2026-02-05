@@ -102,14 +102,44 @@ const PersonalForm = () => {
                 </div>
                 <Input 
                     value={value} 
-                    onChange={(e) => updatePersonalInfo(field.key as any, e.target.value)}
+                    onChange={(e) => {
+                      let val = e.target.value;
+                      // Validation
+                      if (field.key === 'email' && val) {
+                        // Basic email validation
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(val)) {
+                          // Still allow typing, but show warning
+                        }
+                      }
+                      if ((field.key === 'linkedin' || field.key === 'website') && val && !val.startsWith('http')) {
+                        // Auto-add https:// if missing
+                        if (!val.startsWith('//')) {
+                          val = `https://${val}`;
+                        }
+                      }
+                      updatePersonalInfo(field.key as any, val);
+                    }}
                     placeholder={field.placeholder}
-                    className={isEmpty ? 'border-gray-300' : 'border-gray-200'}
+                    type={field.key === 'email' ? 'email' : field.key === 'phone' ? 'tel' : 'text'}
+                    className={isEmpty && field.required ? 'border-amber-300 focus:border-amber-500' : 'border-gray-200'}
                 />
                 {isEmpty && field.required && (
                   <p className="text-xs text-amber-600 flex items-center gap-1">
                     <span>⚠</span>
                     <span>This field is required</span>
+                  </p>
+                )}
+                {field.key === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && (
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <span>⚠</span>
+                    <span>Please enter a valid email address</span>
+                  </p>
+                )}
+                {((field.key === 'linkedin' || field.key === 'website') && value && !/^https?:\/\/.+/.test(value)) && (
+                  <p className="text-xs text-amber-600 flex items-center gap-1">
+                    <span>ℹ</span>
+                    <span>URL should start with http:// or https://</span>
                   </p>
                 )}
               </div>

@@ -104,9 +104,57 @@ export const getResumeById = async (req: AuthRequest, res: Response, next: NextF
 
 export const updateResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    // Sanitize arrays to avoid failing required field validation on empty placeholder items
+    const body = req.body || {};
+    const experience = Array.isArray(body.experience) ? body.experience : [];
+    const education = Array.isArray(body.education) ? body.education : [];
+    const skills = Array.isArray(body.skills) ? body.skills : [];
+
+    const cleanedExperience = experience
+      .filter((e: any) => e && (String(e.company || '').trim() || String(e.position || '').trim() || String(e.description || '').trim() || String(e.startDate || '').trim() || String(e.endDate || '').trim()))
+      .filter((e: any) => String(e.company || '').trim() && String(e.position || '').trim())
+      .map((e: any) => ({
+        ...e,
+        company: String(e.company || '').trim(),
+        position: String(e.position || '').trim(),
+        startDate: String(e.startDate || '').trim(),
+        endDate: String(e.endDate || '').trim(),
+        description: String(e.description || ''),
+      }));
+
+    const cleanedEducation = education
+      .filter((e: any) => e && (String(e.institution || '').trim() || String(e.degree || '').trim() || String(e.description || '').trim() || String(e.startDate || '').trim() || String(e.endDate || '').trim()))
+      .filter((e: any) => String(e.institution || '').trim() && String(e.degree || '').trim())
+      .map((e: any) => ({
+        ...e,
+        institution: String(e.institution || '').trim(),
+        degree: String(e.degree || '').trim(),
+        startDate: String(e.startDate || '').trim(),
+        endDate: String(e.endDate || '').trim(),
+        description: String(e.description || ''),
+      }));
+
+    const cleanedSkills = skills.map((s: any) => String(s).trim()).filter(Boolean);
+
+    const updateData = {
+      ...body,
+      experience: cleanedExperience,
+      education: cleanedEducation,
+      skills: cleanedSkills,
+      // Ensure personalInfo fields are trimmed
+      personalInfo: body.personalInfo ? {
+        fullName: String(body.personalInfo.fullName || '').trim(),
+        email: String(body.personalInfo.email || '').trim(),
+        phone: String(body.personalInfo.phone || '').trim(),
+        address: String(body.personalInfo.address || '').trim(),
+        linkedin: String(body.personalInfo.linkedin || '').trim(),
+        website: String(body.personalInfo.website || '').trim(),
+      } : undefined,
+    };
+
     const updatedResume = await Resume.findOneAndUpdate(
       { _id: req.params.id, user: req.user?._id },
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
 
@@ -116,7 +164,21 @@ export const updateResume = async (req: AuthRequest, res: Response, next: NextFu
     }
 
     res.json({ success: true, data: updatedResume });
-  } catch (error) {
+  } catch (error: unknown) {
+    logger.error('Update Resume Error', error instanceof Error ? error : new Error(String(error)), {
+      userId: req.user?._id,
+      resumeId: req.params.id,
+    });
+    if (error instanceof Error && error.name === 'ValidationError') {
+      const mongooseError = error as { errors?: Record<string, { message: string }> };
+      const errors = mongooseError.errors ? Object.values(mongooseError.errors).map((err) => err.message) : [];
+      res.status(400).json({ 
+        success: false, 
+        message: 'Validation error', 
+        errors 
+      });
+      return;
+    }
     next(error);
   }
 };
