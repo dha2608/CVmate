@@ -9,7 +9,10 @@ import { useBookmarkStore } from '@/store/bookmarkStore';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
+import { GlassButton } from '@/components/ui/glass-button';
+import { GlassCard } from '@/components/ui/glass-card';
 import { Input } from '@/components/ui/input';
+import { GlassInput } from '@/components/ui/glass-input';
 import BookmarkButton from '@/components/BookmarkButton';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { SkeletonCard, SkeletonText } from '@/components/ui/skeleton';
@@ -125,7 +128,7 @@ const Blog = () => {
       <MainLayout
         rightSidebar={
             <div className="space-y-4 sticky top-20 animate-fade-in">
-                <div className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 hover:shadow-md transition-shadow duration-300">
+                <GlassCard className="p-4" gradient="purple">
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                       {t('blog.writingGoodArticle')}
                     </h3>
@@ -135,19 +138,19 @@ const Blog = () => {
                         <li>{t('blog.addCoverImage')}</li>
                         <li>{t('blog.keepConcise')}</li>
                     </ul>
-                    <Button 
+                    <GlassButton 
                         onClick={() => setShowCreate(!showCreate)} 
-                        className="w-full mt-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-crimson-red hover:text-crimson-red dark:hover:text-crimson-red transition-all duration-300"
+                        className="w-full mt-4"
                         variant="outline"
                     >
                         {showCreate ? t('blog.cancel') : t('blog.writeArticle')}
-                    </Button>
-                </div>
+                    </GlassButton>
+                </GlassCard>
             </div>
         }
-    >
-            <div className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 sm:p-6 mb-6 animate-fade-in">
-            <div className="flex items-center justify-between mb-4">
+      >
+        <GlassCard className="p-4 sm:p-6 mb-6" gradient="cyan">
+          <div className="flex items-center justify-between mb-4">
                 <div>
                     <h1 className="text-3xl font-black text-jet-black dark:text-white mb-2">{t('blog.title')}</h1>
                     <p className="text-gray-600 dark:text-gray-400">{t('blog.description')}</p>
@@ -243,10 +246,10 @@ const Blog = () => {
                     {t('blog.communityArticles')} ({filteredArticles.length})
                 </button>
             </div>
-        </div>
+        </GlassCard>
 
         {showCreate && (
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6 animate-scale-in">
+            <GlassCard className="p-6 mb-6" gradient="pink">
                 <div className="flex items-center gap-2 mb-4 text-gray-900 dark:text-white font-semibold border-b dark:border-gray-700 pb-2">
                     <PenTool size={18} />
                     <h2>{t('blog.createNewArticle')}</h2>
@@ -300,7 +303,7 @@ const Blog = () => {
                         <Button type="submit" className="bg-accent hover:bg-red-700 text-white">{t('blog.publish')}</Button>
                     </div>
                 </form>
-            </div>
+            </GlassCard>
         )}
 
         {/* News Tab */}

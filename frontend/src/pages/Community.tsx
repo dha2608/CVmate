@@ -8,6 +8,7 @@ import CreatePost from '@/components/community/CreatePost';
 import PostCard from '@/components/community/PostCard';
 import VirtualList from '@/components/VirtualList';
 import { Skeleton } from '@/components/ui/skeleton';
+import { GlassCard } from '@/components/ui/glass-card';
 import { Loader2, MessageSquare } from 'lucide-react';
 
 const Community = () => {
@@ -48,7 +49,7 @@ const Community = () => {
         {isLoading ? (
             <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                    <div key={i} className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 sm:p-6">
+                    <GlassCard key={i} className="p-4 sm:p-6" gradient="purple">
                         <div className="flex items-start gap-3 sm:gap-4 mb-4">
                             <Skeleton variant="circular" width={40} height={40} />
                             <div className="flex-1 space-y-2">
@@ -63,7 +64,7 @@ const Community = () => {
                             <Skeleton variant="rectangular" width={60} height={24} className="rounded-full" />
                             <Skeleton variant="rectangular" width={60} height={24} className="rounded-full" />
                         </div>
-                    </div>
+                    </GlassCard>
                 ))}
             </div>
         ) : (
@@ -77,13 +78,13 @@ const Community = () => {
                   )}
                 />
                 {posts.length === 0 && (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 text-center animate-fade-in">
+                    <GlassCard className="p-6 sm:p-8 text-center" gradient="cyan">
                         <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto opacity-50 mb-4 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg">
                           <MessageSquare className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 dark:text-gray-500" />
                         </div>
                         <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">{t('community.noPostsYet')}</h3>
                         <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">{t('community.beFirstToShare')}</p>
-                    </div>
+                    </GlassCard>
                 )}
             </div>
         )}

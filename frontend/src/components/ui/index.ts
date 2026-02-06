@@ -64,3 +64,13 @@ export { Skeleton, SkeletonCard, SkeletonText, SkeletonAvatar } from './skeleton
 
 export { Input } from './input';
 export type { InputProps } from './input';
+
+// Glass 2.0 Components
+export { GlassButton, glassButtonVariants } from './glass-button';
+export type { GlassButtonProps } from './glass-button';
+
+export { GlassInput } from './glass-input';
+export type { GlassInputProps } from './glass-input';
+
+export { GlassCard } from './glass-card';
+export type { GlassCardProps } from './glass-card';

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
@@ -9,6 +9,8 @@ import { useAchievementStore } from '@/store/achievementStore';
 import { useI18n } from '@/store/i18nStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
+import { GlassButton } from '@/components/ui/glass-button';
+import { GlassCard } from '@/components/ui/glass-card';
 import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CardEnhanced } from '@/components/ui/card-enhanced';
@@ -139,7 +141,7 @@ const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-         <div className="glass-card bg-white/90 dark:bg-gray-800/90">
+         <GlassCard className="p-4 sm:p-6" gradient="purple">
             <div className="flex items-center justify-between gap-4 mb-4 sm:mb-6">
                <div className="flex-1 min-w-0">
                   {isLoading ? (
@@ -170,10 +172,10 @@ const Dashboard = () => {
                </div>
                <span className="text-gray-500 dark:text-gray-400 text-sm font-medium flex-1">{t('dashboard.startPost')}</span>
             </div>
-         </div>
+         </GlassCard>
 
          {/* Next Best Action + Profile Progress */}
-         <div className="glass-card bg-white/90 dark:bg-gray-800/90">
+         <GlassCard className="p-4 sm:p-6" gradient="cyan">
            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
              <div className="space-y-1">
                <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide flex items-center gap-1">
@@ -202,16 +204,17 @@ const Dashboard = () => {
                    {Math.round(profileProgress)}%
                  </span>
                </div>
-               <Button
+               <GlassButton
                  size="sm"
-                 className="whitespace-nowrap bg-crimson-red hover:bg-fire-red text-white"
+                 variant="pink"
+                 className="whitespace-nowrap"
                  onClick={() => navigate(nextAction.href)}
                >
                  {nextAction.cta}
-               </Button>
+               </GlassButton>
              </div>
            </div>
-         </div>
+         </GlassCard>
 
          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
             <QuickActionCard 
@@ -244,7 +247,7 @@ const Dashboard = () => {
             />
          </div>
 
-         <div className="glass-card bg-white/90 dark:bg-gray-800/90">
+         <GlassCard className="p-4 sm:p-6" gradient="pink">
             <h2 className="text-heading-3 mb-6 flex items-center gap-2">
                <TrendingUp size={20} className="text-crimson-red dark:text-red-400" />
                {t('dashboard.yourActivity')}
@@ -265,7 +268,7 @@ const Dashboard = () => {
                  <StatItem label={t('dashboard.postViews')} value={stats.postsCount || 0} color="text-orange-600 dark:text-orange-400" />
               </div>
             )}
-         </div>
+         </GlassCard>
 
          {/* Activity Feed */}
          <ActivityFeed limit={3} />
@@ -274,7 +277,7 @@ const Dashboard = () => {
          <AdvancedStats stats={stats} />
 
          {/* Advanced Analytics */}
-         <div className="glass-card bg-white/90 dark:bg-gray-800/90">
+         <GlassCard className="p-4 sm:p-6" gradient="blue">
             <div className="flex items-center justify-between mb-4">
                <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <BarChart3 size={18} className="text-rose-500 dark:text-rose-400" />
@@ -319,7 +322,7 @@ const Dashboard = () => {
                   </div>
                </div>
             </div>
-         </div>
+         </GlassCard>
 
          <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
@@ -377,10 +380,12 @@ const Dashboard = () => {
   );
 };
 
-const QuickActionCard = ({ icon, title, desc, color, onClick }: any) => (
-   <div 
+const QuickActionCard = memo(({ icon, title, desc, color, onClick }: any) => (
+   <motion.div 
       onClick={onClick}
-      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-300 cursor-pointer group flex flex-col items-center text-center gap-2 ${color} dark:border-gray-700 hover:shadow-md hover:scale-[1.02] active:scale-100`}
+      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-300 cursor-pointer group flex flex-col items-center text-center gap-2 ${color} dark:border-gray-700 hover:shadow-md`}
+      whileHover={{ scale: 1.02, y: -2 }}
+      whileTap={{ scale: 0.98 }}
    >
       <div className="p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm group-hover:scale-110 transition-transform duration-300">
          {icon}
@@ -389,23 +394,33 @@ const QuickActionCard = ({ icon, title, desc, color, onClick }: any) => (
          <h3 className="font-bold text-gray-800 dark:text-white text-xs sm:text-sm truncate">{title}</h3>
          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{desc}</p>
       </div>
-   </div>
-);
+   </motion.div>
+));
+QuickActionCard.displayName = 'QuickActionCard';
 
-const StatItem = ({ label, value, color }: any) => (
-   <div className="text-center">
+const StatItem = memo(({ label, value, color }: any) => (
+   <motion.div 
+      className="text-center"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+   >
       <div className={`text-2xl sm:text-3xl font-black ${color} mb-1`}>{value}</div>
       <div className="text-[10px] sm:text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{label}</div>
-   </div>
-);
+   </motion.div>
+));
+StatItem.displayName = 'StatItem';
 
-const RecommendationCard = ({ image, title, author, views, desc, onClick }: any) => {
+const RecommendationCard = memo(({ image, title, author, views, desc, onClick }: any) => {
   const { t } = useI18n();
   
   return (
-    <div 
-      className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex gap-3 sm:gap-4 items-start group hover:scale-[1.01] active:scale-100"
+    <motion.div 
+      className="glass-card bg-white/5 dark:bg-gray-800/30 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-sm cursor-pointer flex gap-3 sm:gap-4 items-start group"
       onClick={onClick}
+      whileHover={{ scale: 1.01, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2 }}
     >
       <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700 border border-gray-100 dark:border-gray-600">
          {image ? (
@@ -428,8 +443,9 @@ const RecommendationCard = ({ image, title, author, views, desc, onClick }: any)
            {t('home.readMore')} <ExternalLink size={10} className="sm:w-3 sm:h-3" />
          </div>
       </div>
-    </div>
+    </motion.div>
   );
-};
+});
+RecommendationCard.displayName = 'RecommendationCard';
 
 export default Dashboard;

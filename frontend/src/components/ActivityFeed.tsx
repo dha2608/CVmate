@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/store/i18nStore';
 import { Clock, FileText, Video, MessageSquare, Briefcase, TrendingUp } from 'lucide-react';
@@ -19,11 +19,15 @@ interface ActivityFeedProps {
   showHeader?: boolean;
 }
 
-const ActivityFeed = ({ limit = 5, showHeader = true }: ActivityFeedProps) => {
+const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) => {
   const { language } = useI18n();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const displayedActivities = useMemo(() => {
+    return activities.slice(0, limit);
+  }, [activities, limit]);
 
   useEffect(() => {
     // Simulate fetching activities from localStorage or API
@@ -146,7 +150,7 @@ const ActivityFeed = ({ limit = 5, showHeader = true }: ActivityFeedProps) => {
         </h3>
       )}
       <div className="space-y-3">
-        {activities.map((activity) => (
+        {displayedActivities.map((activity) => (
           <div
             key={activity.id}
             onClick={() => activity.link && navigate(activity.link)}
@@ -177,6 +181,8 @@ const ActivityFeed = ({ limit = 5, showHeader = true }: ActivityFeedProps) => {
       </div>
     </div>
   );
-};
+});
+
+ActivityFeed.displayName = 'ActivityFeed';
 
 export default ActivityFeed;
