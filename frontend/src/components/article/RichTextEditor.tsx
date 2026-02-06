@@ -181,9 +181,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      handleImageUpload(file);
+      if (file) {
+        handleImageUpload(file);
+      }
     }
-  }, []);
+  }, [handleImageUpload]);
 
   const renderMarkdown = (text: string): string => {
     // Simple markdown to HTML converter

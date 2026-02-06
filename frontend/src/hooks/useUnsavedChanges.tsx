@@ -15,7 +15,6 @@ export const useUnsavedChanges = (message?: string) => {
       if (isDirty) {
         e.preventDefault();
         e.returnValue = '';
-        return '';
       }
     };
 
