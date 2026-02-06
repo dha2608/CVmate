@@ -53,15 +53,15 @@
 
 ## 🚀 Phase 3 – Product Intelligence
 
-### ✅ 9. Tối ưu AI CV Builder & Chuẩn ATS
-- [ ] Thiết kế lại prompt theo cấu trúc:
-  - [ ] Role-based prompt (FE/BE/QA/Designer…)
-  - [ ] Output giới hạn số dòng, bullet-point
-  - [ ] Ưu tiên keyword theo JD
-- [ ] Thêm chế độ:
-  - [ ] Concise Mode (ATS)
-  - [ ] Human Mode (đọc tự nhiên)
-- [ ] Kết quả: CV ngắn gọn hơn, tăng tỷ lệ pass ATS, giảm token AI
+### ✅ 9. Tối ưu AI CV Builder & Chuẩn ATS ✅ COMPLETED
+- [x] Thiết kế lại prompt theo cấu trúc:
+  - [x] Role-based prompt (FE/BE/QA/Designer/DevOps/Data)
+  - [x] Output giới hạn số dòng, bullet-point
+  - [x] Ưu tiên keyword theo JD
+- [x] Thêm chế độ:
+  - [x] Concise Mode (ATS)
+  - [x] Human Mode (đọc tự nhiên)
+- [x] Kết quả: CV ngắn gọn hơn, tăng tỷ lệ pass ATS, giảm token AI
 
 ### ✅ 10. Fix AI Job Match Analysis UI
 - [ ] Refactor component:
