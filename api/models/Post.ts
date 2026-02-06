@@ -5,6 +5,9 @@ export interface IComment {
   user: mongoose.Types.ObjectId;
   text: string;
   createdAt: Date;
+  updatedAt?: Date;
+  likes?: mongoose.Types.ObjectId[];
+  parentId?: mongoose.Types.ObjectId; // For nested replies
   _id: mongoose.Types.ObjectId;
 }
 
@@ -30,7 +33,20 @@ const commentSchema = new Schema<IComment>({
     required: true,
     trim: true
   },
+  likes: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  parentId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Comment',
+    default: null
+  },
   createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
     type: Date,
     default: Date.now
   }

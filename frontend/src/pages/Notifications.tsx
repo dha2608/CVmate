@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { useNotificationStore, Notification } from '@/store/notificationStore';
 import { useI18n } from '@/store/i18nStore';
+import { useCommunityStore } from '@/store/communityStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -48,9 +50,46 @@ const Notifications = () => {
     isLoading 
   } = useNotificationStore();
   const { t } = useI18n();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { fetchPosts } = useCommunityStore();
+  const commentRef = useRef<HTMLDivElement>(null);
   
   const [filter, setFilter] = useState<'all' | 'unread' | Notification['type']>('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Handle deep linking from URL params
+  useEffect(() => {
+    const postId = searchParams.get('post');
+    const commentId = searchParams.get('comment');
+    
+    if (postId) {
+      // Navigate to community and scroll to post/comment
+      navigate('/community');
+      setTimeout(() => {
+        if (commentId) {
+          // Scroll to specific comment
+          const commentElement = document.getElementById(`comment-${commentId}`);
+          if (commentElement) {
+            commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            commentElement.classList.add('ring-2', 'ring-crimson-red', 'ring-offset-2');
+            setTimeout(() => {
+              commentElement.classList.remove('ring-2', 'ring-crimson-red', 'ring-offset-2');
+            }, 3000);
+          }
+        } else {
+          // Scroll to post
+          const postElement = document.getElementById(`post-${postId}`);
+          if (postElement) {
+            postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }, 500);
+      
+      // Clear URL params after handling
+      setSearchParams({});
+    }
+  }, [searchParams, navigate, setSearchParams]);
 
   useEffect(() => {
     fetchNotifications();
@@ -60,6 +99,46 @@ const Notifications = () => {
     }, 30000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
+
+  const handleNotificationClick = (notif: Notification) => {
+    if (!notif.isRead) {
+      markAsRead(notif._id);
+    }
+
+    // Deep linking based on notification type and link
+    if (notif.link) {
+      if (notif.link.includes('community')) {
+        // Parse post/comment IDs from link
+        const url = new URL(notif.link, window.location.origin);
+        const postId = url.searchParams.get('post');
+        const commentId = url.searchParams.get('comment');
+        
+        navigate('/community');
+        setTimeout(() => {
+          if (commentId) {
+            const commentElement = document.getElementById(`comment-${commentId}`);
+            if (commentElement) {
+              commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              commentElement.classList.add('ring-2', 'ring-crimson-red', 'ring-offset-2', 'rounded-lg');
+              setTimeout(() => {
+                commentElement.classList.remove('ring-2', 'ring-crimson-red', 'ring-offset-2');
+              }, 3000);
+            }
+          } else if (postId) {
+            const postElement = document.getElementById(`post-${postId}`);
+            if (postElement) {
+              postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        }, 500);
+      } else {
+        navigate(notif.link);
+      }
+    } else if (notif.sender?._id) {
+      // Click on sender name -> navigate to profile
+      navigate(`/u/${notif.sender._id}`);
+    }
+  };
 
   const filteredNotifications = notifications.filter(notif => {
     if (filter === 'unread' && notif.isRead) return false;
@@ -187,8 +266,8 @@ const Notifications = () => {
               filteredNotifications.map(notif => (
                 <div 
                   key={notif._id} 
-                  onClick={() => !notif.isRead && markAsRead(notif._id)}
-                  className={`group p-4 flex gap-4 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 animate-fade-in ${
+                  onClick={() => handleNotificationClick(notif)}
+                  className={`group p-4 flex gap-4 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 animate-fade-in cursor-pointer ${
                     !notif.isRead ? 'bg-indigo-50/40 dark:bg-indigo-900/20' : 'bg-white dark:bg-gray-800'
                   }`}
                 >
@@ -211,8 +290,19 @@ const Notifications = () => {
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
-                      <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
-                        {notif.sender && <span className="font-bold text-indigo-700">{notif.sender.name} </span>}
+                      <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {notif.sender && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/u/${notif.sender?._id}`);
+                            }}
+                            className="font-bold text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 hover:underline"
+                          >
+                            {notif.sender.name}
+                          </button>
+                        )}
+                        {notif.sender && ' '}
                         {notif.message}
                       </p>
                       <button 

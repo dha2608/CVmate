@@ -6,6 +6,7 @@ export interface INotification extends Document {
   type: 'like' | 'comment' | 'job' | 'system' | 'connection' | 'security';
   message: string;
   link?: string;
+  relatedId?: string; // Post ID, Comment ID, etc. for deep linking
   read: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -32,6 +33,9 @@ const notificationSchema = new Schema<INotification>({
     required: true
   },
   link: {
+    type: String
+  },
+  relatedId: {
     type: String
   },
   read: {

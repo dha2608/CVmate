@@ -96,7 +96,7 @@ export const likePost = async (req: AuthRequest, res: Response, next: NextFuncti
 
 export const commentPost = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { text } = req.body;
+    const { text, parentId } = req.body;
     
     if (!text) {
       res.status(400).json({ success: false, message: 'Comment text is required' });
@@ -114,7 +114,10 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
       _id: new mongoose.Types.ObjectId(),
       user: req.user?._id,
       text,
-      createdAt: new Date()
+      likes: [],
+      parentId: parentId || null,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     post.comments.push(newComment as any); 
@@ -122,15 +125,133 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
     await post.save();
 
     // Tạo notification khi có bình luận (không gửi cho chính mình)
-    if (post.user.toString() !== (req.user?._id as Types.ObjectId).toString()) {
+    const recipientId = parentId 
+      ? post.comments.find((c: any) => c._id.toString() === parentId)?.user 
+      : post.user;
+    
+    if (recipientId && recipientId.toString() !== (req.user?._id as Types.ObjectId).toString()) {
       await Notification.create({
-        recipient: post.user,
+        recipient: recipientId,
         sender: req.user?._id,
         type: 'comment',
-        message: 'đã bình luận trên bài viết của bạn.',
-        link: `/community`,
+        message: parentId ? 'đã trả lời bình luận của bạn.' : 'đã bình luận trên bài viết của bạn.',
+        link: `/community?post=${req.params.id}&comment=${newComment._id}`,
+        relatedId: req.params.id,
       });
     }
+
+    const updatedPost = await Post.findById(req.params.id)
+        .populate('user', 'name avatar')
+        .populate('comments.user', 'name avatar');
+
+    res.json({ success: true, data: updatedPost?.comments });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const likeComment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    
+    if (!post) {
+      res.status(404).json({ success: false, message: 'Post not found' });
+      return;
+    }
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) {
+      res.status(404).json({ success: false, message: 'Comment not found' });
+      return;
+    }
+
+    const userId = (req.user?._id as Types.ObjectId).toString();
+    const likes = comment.likes || [];
+    const index = likes.findIndex((id: any) => id.toString() === userId);
+
+    if (index === -1) {
+      likes.push(req.user?._id);
+    } else {
+      likes.splice(index, 1);
+    }
+
+    comment.likes = likes;
+    await post.save();
+
+    res.json({ success: true, data: likes });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateComment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { text } = req.body;
+    
+    if (!text) {
+      res.status(400).json({ success: false, message: 'Comment text is required' });
+      return;
+    }
+
+    const post = await Post.findById(req.params.id);
+    
+    if (!post) {
+      res.status(404).json({ success: false, message: 'Post not found' });
+      return;
+    }
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) {
+      res.status(404).json({ success: false, message: 'Comment not found' });
+      return;
+    }
+
+    if (comment.user.toString() !== (req.user?._id as Types.ObjectId).toString()) {
+      res.status(403).json({ success: false, message: 'Not authorized' });
+      return;
+    }
+
+    comment.text = text;
+    comment.updatedAt = new Date();
+    await post.save();
+
+    const updatedPost = await Post.findById(req.params.id)
+        .populate('user', 'name avatar')
+        .populate('comments.user', 'name avatar');
+
+    res.json({ success: true, data: updatedPost?.comments });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteComment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    
+    if (!post) {
+      res.status(404).json({ success: false, message: 'Post not found' });
+      return;
+    }
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) {
+      res.status(404).json({ success: false, message: 'Comment not found' });
+      return;
+    }
+
+    if (comment.user.toString() !== (req.user?._id as Types.ObjectId).toString()) {
+      res.status(403).json({ success: false, message: 'Not authorized' });
+      return;
+    }
+
+    // Remove comment and all its replies
+    post.comments = post.comments.filter((c: any) => {
+      return c._id.toString() !== req.params.commentId && 
+             c.parentId?.toString() !== req.params.commentId;
+    });
+
+    await post.save();
 
     const updatedPost = await Post.findById(req.params.id)
         .populate('user', 'name avatar')

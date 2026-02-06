@@ -37,17 +37,17 @@
 - [x] Preview markdown
 - [x] Auto save draft
 
-### ✅ 7. Comment Real-time + Nâng cấp tính năng
-- [ ] Socket.io / Supabase Realtime
-- [ ] Reply comment
-- [ ] Like comment
-- [ ] Edit / Delete comment
-- [ ] Mention @user
+### ✅ 7. Comment Real-time + Nâng cấp tính năng ✅ COMPLETED
+- [x] Real-time polling (15s interval) - Socket.io deferred
+- [x] Reply comment (nested replies)
+- [x] Like comment
+- [x] Edit / Delete comment
+- [x] Mention @user
 
-### ✅ 8. Notification Deep Linking
-- [ ] Click notification → Jump đúng post
-- [ ] Scroll tới comment
-- [ ] Click username → profile
+### ✅ 8. Notification Deep Linking ✅ COMPLETED
+- [x] Click notification → Jump đúng post
+- [x] Scroll tới comment
+- [x] Click username → profile
 
 ---
 
@@ -113,11 +113,11 @@
 ## 📊 Progress Tracking
 
 **Phase 1:** 4/4 completed ✅  
-**Phase 2:** 2/4 completed (50%)  
+**Phase 2:** 4/4 completed ✅  
 **Phase 3:** 0/4 completed  
 **Additional:** 0/4 completed  
 
-**Total:** 6/16 completed (38%)
+**Total:** 8/16 completed (50%)
 
 ---
 

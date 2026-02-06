@@ -4,6 +4,7 @@ import { useCommunityStore } from '@/store/communityStore';
 import { useAuthStore } from '@/store/authStore';
 import { useMessageStore } from '@/store/messageStore';
 import { Button } from '@/components/ui/button';
+import { CommentItem } from './CommentItem';
 
 interface PostCardProps {
   post: any;
@@ -33,7 +34,7 @@ const normalizeImageUrl = (url: string | undefined | null): string | null => {
 
 const PostCardComponent = ({ post }: PostCardProps) => {
   const { user } = useAuthStore();
-  const { likePost, commentPost } = useCommunityStore();
+  const { likePost, commentPost, likeComment, updateComment, deleteComment } = useCommunityStore();
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
@@ -74,7 +75,7 @@ const PostCardComponent = ({ post }: PostCardProps) => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow border border-gray-200 mb-4">
+    <div id={`post-${post._id}`} className="bg-white p-4 rounded-lg shadow border border-gray-200 mb-4">
       {/* Header */}
       <div className="flex items-center mb-3">
         <button
@@ -161,18 +162,31 @@ const PostCardComponent = ({ post }: PostCardProps) => {
 
       {/* Comments Section */}
       {showComments && (
-        <div className="mt-4 pt-3 border-t border-gray-100">
-            {post.comments.map((comment: any) => (
-                <div key={comment._id} className="mb-3 flex gap-2">
-                    <div className="h-6 w-6 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-xs">
-                        {comment.user.name.charAt(0)}
-                    </div>
-                    <div className="bg-gray-50 p-2 rounded-lg flex-1">
-                        <p className="text-xs font-bold text-gray-900">{comment.user.name}</p>
-                        <p className="text-sm text-gray-700">{comment.text}</p>
-                    </div>
-                </div>
-            ))}
+        <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
+            {post.comments
+              .filter((c: any) => !c.parentId)
+              .map((comment: any) => {
+                const replies = post.comments.filter((c: any) => c.parentId === comment._id);
+                return (
+                  <CommentItem
+                    key={comment._id}
+                    comment={{ ...comment, replies }}
+                    postId={post._id}
+                    onReply={(commentId, text) => {
+                      commentPost(post._id, text, commentId);
+                    }}
+                    onEdit={(commentId, text) => {
+                      updateComment(post._id, commentId, text);
+                    }}
+                    onDelete={(commentId) => {
+                      deleteComment(post._id, commentId);
+                    }}
+                    onLike={(commentId) => {
+                      likeComment(post._id, commentId);
+                    }}
+                  />
+                );
+              })}
             
             <form onSubmit={handleComment} className="flex gap-2 mt-3">
                 <input

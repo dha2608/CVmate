@@ -10,6 +10,7 @@ export interface Notification {
   };
   type: 'like' | 'comment' | 'job' | 'system' | 'connection' | 'security';
   message: string;
+  link?: string;
   relatedId?: string; // ID of post, job, etc.
   isRead: boolean;
   createdAt: string;

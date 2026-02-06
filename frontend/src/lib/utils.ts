@@ -254,10 +254,26 @@ export const api = {
       method: 'PUT',
     }),
 
-  commentPost: (postId: string, content: string) =>
+  commentPost: (postId: string, content: string, parentId?: string) =>
     apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/comment`, {
       method: 'POST',
-      body: JSON.stringify({ text: content }),
+      body: JSON.stringify({ text: content, parentId }),
+    }),
+
+  likeComment: (postId: string, commentId: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/comment/${commentId}/like`, {
+      method: 'PUT',
+    }),
+
+  updateComment: (postId: string, commentId: string, text: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/comment/${commentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ text }),
+    }),
+
+  deleteComment: (postId: string, commentId: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/comment/${commentId}`, {
+      method: 'DELETE',
     }),
 
   getArticles: () => apiRequest<{ success: boolean; data: any[] }>('/articles'),
