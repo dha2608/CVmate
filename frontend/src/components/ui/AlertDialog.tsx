@@ -84,9 +84,3 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     </Dialog>
   );
 };
-
-export {
-  ConfirmDialog,
-  AlertDialogFooter,
-  AlertDialogDescription,
-};

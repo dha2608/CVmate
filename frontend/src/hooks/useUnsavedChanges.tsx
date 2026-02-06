@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDirtyStateStore } from '@/store/dirtyStateStore';
 import { ConfirmDialog } from '@/components/ui/AlertDialog';
-import type { ReactElement } from 'react';
 
 export const useUnsavedChanges = (message?: string) => {
   const { isDirty } = useDirtyStateStore();
@@ -48,26 +47,28 @@ export const useUnsavedChanges = (message?: string) => {
     setPendingNavigation(null);
   };
 
-  const DialogComponent: ReactElement = (
-    <ConfirmDialog
-      open={showDialog}
-      onOpenChange={setShowDialog}
-      title="Unsaved Changes"
-      description={
-        message ||
-        'You have unsaved changes. Are you sure you want to leave? Your changes will be lost.'
-      }
-      confirmText="Leave"
-      cancelText="Stay"
-      onConfirm={handleConfirm}
-      onCancel={handleCancel}
-      variant="destructive"
-    />
-  );
+  const Dialog = () => {
+    return (
+      <ConfirmDialog
+        open={showDialog}
+        onOpenChange={setShowDialog}
+        title="Unsaved Changes"
+        description={
+          message ||
+          'You have unsaved changes. Are you sure you want to leave? Your changes will be lost.'
+        }
+        confirmText="Leave"
+        cancelText="Stay"
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+        variant="destructive"
+      />
+    );
+  };
 
   return {
     isDirty,
     handleNavigation,
-    Dialog: DialogComponent,
+    Dialog,
   };
 };

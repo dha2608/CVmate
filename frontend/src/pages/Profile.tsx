@@ -18,7 +18,7 @@ const Profile = () => {
   const toast = useToastStore();
   const navigate = useNavigate();
   const { setDirty, clearDirty } = useDirtyStateStore();
-  const { Dialog: UnsavedChangesDialog } = useUnsavedChanges(
+  const { Dialog: UnsavedChangesDialogComponent } = useUnsavedChanges(
     t('profile.unsavedChangesWarning') || 'You have unsaved changes. Are you sure you want to leave?'
   );
   const [isLoading, setIsLoading] = useState(false);
@@ -394,7 +394,7 @@ const Profile = () => {
 
   return (
     <MainLayout>
-      {UnsavedChangesDialog}
+      <UnsavedChangesDialogComponent />
       <div className="max-w-5xl mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-4 lg:px-6">
         <div className="glass-card bg-white/90 dark:bg-gray-800/90 rounded-xl sm:rounded-2xl overflow-hidden">
           {/* Cover / Header Background */}
