@@ -494,7 +494,12 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
 
 export const aiGenerateFullResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { prompt, jobDescription } = req.body as { prompt?: string; jobDescription?: string };
+    const { prompt, jobDescription, role, mode } = req.body as { 
+      prompt?: string; 
+      jobDescription?: string;
+      role?: 'frontend' | 'backend' | 'fullstack' | 'qa' | 'designer' | 'devops' | 'data' | 'other';
+      mode?: 'concise' | 'human';
+    };
 
     if (!prompt && !jobDescription) {
       res.status(400).json({
@@ -505,23 +510,53 @@ export const aiGenerateFullResume = async (req: AuthRequest, res: Response, next
     }
 
     const model = resolveModel(req, 'chat');
-    const payload = { prompt: prompt || null, jobDescription: jobDescription || null };
+    const payload = { prompt: prompt || null, jobDescription: jobDescription || null, role, mode };
     const cacheKey = buildCacheKey('resume_generate', model, payload);
 
+    // Role-based prompt templates
+    const rolePrompts: Record<string, string> = {
+      frontend: 'You are an expert resume writer specializing in Frontend Development roles. Focus on: React, Vue, Angular, TypeScript, UI/UX, responsive design, performance optimization, modern frameworks, and frontend architecture.',
+      backend: 'You are an expert resume writer specializing in Backend Development roles. Focus on: Node.js, Python, Java, APIs, databases, microservices, system design, scalability, and server architecture.',
+      fullstack: 'You are an expert resume writer specializing in Fullstack Development roles. Balance both frontend and backend skills, emphasize end-to-end ownership, and full product development experience.',
+      qa: 'You are an expert resume writer specializing in QA/Testing roles. Focus on: test automation, manual testing, CI/CD, test frameworks, bug tracking, quality assurance processes, and testing methodologies.',
+      designer: 'You are an expert resume writer specializing in UI/UX Design roles. Focus on: design systems, user research, prototyping, Figma, design thinking, user experience, and visual design.',
+      devops: 'You are an expert resume writer specializing in DevOps/Infrastructure roles. Focus on: CI/CD, cloud platforms, containerization, monitoring, infrastructure as code, and automation.',
+      data: 'You are an expert resume writer specializing in Data Science/Analytics roles. Focus on: data analysis, machine learning, SQL, Python, data visualization, and statistical methods.',
+      other: 'You are an expert resume writer. Create a professional, ATS-friendly resume that highlights relevant skills and experience.',
+    };
+
+    const rolePrompt = rolePrompts[role || 'other'] || rolePrompts.other;
+    const isConciseMode = mode === 'concise';
+
+    // Extract keywords from JD if provided
+    const extractKeywords = (jd: string): string[] => {
+      const commonTech = ['react', 'vue', 'angular', 'node', 'python', 'java', 'typescript', 'javascript', 'sql', 'aws', 'docker', 'kubernetes', 'git', 'agile', 'scrum'];
+      const words = jd.toLowerCase().split(/\s+/);
+      return commonTech.filter(tech => words.some(w => w.includes(tech)));
+    };
+
+    const keywords = jobDescription ? extractKeywords(jobDescription) : [];
+
     const basePrompt = `
-      You are an expert resume writer.
-      Generate a JSON object for a professional resume based on the information below.
+      ${rolePrompt}
       
-      The JSON MUST have exactly this structure:
+      ${isConciseMode 
+        ? 'MODE: ATS-OPTIMIZED (Concise)\n- Keep descriptions SHORT and keyword-dense\n- Use 2-3 bullet points per experience (max 1 line each)\n- Prioritize quantifiable metrics and keywords\n- Remove fluff, focus on achievements\n- Optimize for Applicant Tracking Systems'
+        : 'MODE: HUMAN-READABLE\n- Write naturally flowing descriptions\n- Use 3-5 bullet points per experience\n- Tell a story, show impact\n- More engaging for human recruiters\n- Still ATS-friendly but more narrative'
+      }
+      
+      ${keywords.length > 0 ? `\nPRIORITY KEYWORDS (from Job Description): ${keywords.join(', ')}\n- Naturally incorporate these keywords into the resume\n- Prioritize experiences that match these keywords` : ''}
+      
+      Generate a JSON object for a professional resume. The JSON MUST have exactly this structure:
       {
-        "summary": "string, 2-4 sentences professional summary",
+        "summary": "string, ${isConciseMode ? '2-3 sentences' : '3-4 sentences'} professional summary${keywords.length > 0 ? ', include relevant keywords' : ''}",
         "experience": [
           {
             "company": "string",
             "position": "string",
             "startDate": "YYYY-MM",
             "endDate": "YYYY-MM or Present",
-            "description": "multi-line bullet-style description"
+            "description": "${isConciseMode ? '2-3 short bullet points (max 1 line each), focus on metrics and keywords' : '3-5 bullet points, natural narrative with impact'}"
           }
         ],
         "education": [
@@ -530,17 +565,16 @@ export const aiGenerateFullResume = async (req: AuthRequest, res: Response, next
             "degree": "string",
             "startDate": "YYYY-MM",
             "endDate": "YYYY-MM or Present",
-            "description": "short description of achievements"
+            "description": "${isConciseMode ? '1-2 lines max' : '2-3 lines'} of key achievements"
           }
         ],
-        "skills": ["string", "string", "..."]
+        "skills": ["string", "string", "..."] ${keywords.length > 0 ? '- Prioritize skills matching keywords' : ''}
       }
 
       User prompt (career background / profile):
       ${prompt || 'N/A'}
       
-      Job description (if provided, align resume to this role):
-      ${jobDescription || 'N/A'}
+      ${jobDescription ? `Job description (align resume to this role, prioritize keywords):\n${jobDescription.substring(0, 2000)}` : 'N/A'}
     `;
 
     const startedAt = Date.now();

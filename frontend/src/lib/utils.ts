@@ -197,7 +197,12 @@ export const api = {
       body: JSON.stringify({ text, type }),
     }),
 
-  aiGenerateFullResume: (payload: { prompt?: string; jobDescription?: string }) =>
+  aiGenerateFullResume: (payload: { 
+    prompt?: string; 
+    jobDescription?: string;
+    role?: 'frontend' | 'backend' | 'fullstack' | 'qa' | 'designer' | 'devops' | 'data' | 'other';
+    mode?: 'concise' | 'human';
+  }) =>
     apiRequest<ApiResponse<{ summary: string; experience: IExperience[]; education: IEducation[]; skills: string[] }>>('/resumes/ai-generate-full', {
       method: 'POST',
       body: JSON.stringify(payload),

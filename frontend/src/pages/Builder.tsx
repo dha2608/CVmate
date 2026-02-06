@@ -356,6 +356,9 @@ const Builder = () => {
     }
   };
 
+  const [generateRole, setGenerateRole] = useState<'frontend' | 'backend' | 'fullstack' | 'qa' | 'designer' | 'devops' | 'data' | 'other'>('other');
+  const [generateMode, setGenerateMode] = useState<'concise' | 'human'>('concise');
+
   const handleAIGenerateFull = async () => {
     if (!generatePrompt.trim() && !generateJD.trim()) {
       const { useToastStore } = await import('@/store/toastStore');
@@ -370,6 +373,8 @@ const Builder = () => {
       const data = await aiGenerateFull({
         prompt: generatePrompt,
         jobDescription: generateJD,
+        role: generateRole,
+        mode: generateMode,
       });
 
       // Map dữ liệu AI vào resume hiện tại, giữ nguyên title & personalInfo

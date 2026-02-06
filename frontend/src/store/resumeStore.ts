@@ -37,7 +37,12 @@ interface ResumeState {
   aiEnhanceText: (text: string, type?: string) => Promise<string>;
 
   // AI Generate full resume
-  aiGenerateFull: (payload: { prompt?: string; jobDescription?: string }) => Promise<{
+  aiGenerateFull: (payload: { 
+    prompt?: string; 
+    jobDescription?: string;
+    role?: 'frontend' | 'backend' | 'fullstack' | 'qa' | 'designer' | 'devops' | 'data' | 'other';
+    mode?: 'concise' | 'human';
+  }) => Promise<{
     summary: string;
     experience: IExperience[];
     education: IEducation[];
