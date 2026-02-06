@@ -34,6 +34,7 @@ import chatRoutes from './routes/chat.js';
 import twoFactorRoutes from './routes/twofactor.js';
 import templateRoutes from './routes/templates.js';
 import pushRoutes from './routes/push.js';
+import achievementRoutes from './routes/achievements.js';
 
 // Load env
 dotenv.config();
@@ -203,6 +204,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/2fa', twoFactorRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/push', pushRoutes);
+app.use('/api/achievements', achievementRoutes);
 
 /**
  * Root Endpoint

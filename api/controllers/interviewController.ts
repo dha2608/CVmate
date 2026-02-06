@@ -3,6 +3,7 @@ import Interview from '../models/Interview.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
+import { checkAndAwardAchievement } from './achievementController.js';
 
 const PERSONA_CONFIG = {
   'friendly-hr': {
@@ -338,6 +339,19 @@ ${conversationText}
       
       interview.status = 'completed';
       await interview.save();
+
+      // Check for complete_interview achievement
+      const interviewCount = await Interview.countDocuments({ 
+        user: req.user?._id, 
+        status: 'completed' 
+      });
+      if (interviewCount === 1) {
+        await checkAndAwardAchievement(
+          req.user?._id.toString(),
+          'complete_interview',
+          { interviewId: interview._id.toString() }
+        );
+      }
 
       const durationMs = Date.now() - startedAt;
       logAIUsage({

@@ -281,6 +281,12 @@ export const api = {
       method: 'DELETE',
     }),
 
+  getAchievements: () =>
+    apiRequest<{ success: boolean; data: any[] }>('/achievements'),
+
+  getAchievementStats: () =>
+    apiRequest<{ success: boolean; data: any }>('/achievements/stats'),
+
   getArticles: () => apiRequest<{ success: boolean; data: any[] }>('/articles'),
   
   getArticle: (id: string) => apiRequest<{ success: boolean; data: any }>(`/articles/${id}`),

@@ -296,6 +296,7 @@ const Dashboard = () => {
                      </div>
                      <div>
                         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{t('dashboard.achievements')}</h3>
+                        <AchievementList achievements={achievements} />
                         <p className="text-xs text-gray-600 dark:text-gray-400">{t('dashboard.yourProgress')}</p>
                      </div>
                   </div>

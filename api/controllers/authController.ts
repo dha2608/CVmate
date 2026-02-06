@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import User, { IUser } from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import { checkAndAwardAchievement } from './achievementController.js';
 
 export const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET as string, {
@@ -204,6 +205,29 @@ export const updateUserProfile = async (req: AuthRequest, res: Response, next: N
       }
 
       const updatedUser = await user.save();
+
+      // Check profile completion (80% threshold)
+      const profileFields = [
+        updatedUser.name,
+        updatedUser.email,
+        updatedUser.bio,
+        updatedUser.headline,
+        updatedUser.location,
+        updatedUser.avatar,
+        updatedUser.yearsOfExperience,
+        updatedUser.currentRole,
+        updatedUser.skills?.length > 0,
+        updatedUser.industries?.length > 0,
+      ];
+      const completedFields = profileFields.filter(Boolean).length;
+      const completionPercentage = (completedFields / profileFields.length) * 100;
+
+      if (completionPercentage >= 80) {
+        await checkAndAwardAchievement(
+          req.user?._id.toString(),
+          'complete_profile'
+        );
+      }
 
       res.json({
         success: true,

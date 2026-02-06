@@ -3,10 +3,12 @@ import { Types } from 'mongoose';
 import Job from '../models/Job.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
+import Application from '../models/Application.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
 import { sendJobApplicationEmail } from '../utils/emailService.js';
+import { checkAndAwardAchievement } from './achievementController.js';
 
 export const getJobs = async (req: Request, res: Response, next: NextFunction) => {
   try {

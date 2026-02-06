@@ -3,6 +3,7 @@ import mongoose, { Types } from 'mongoose';
 import Post from '../models/Post.js';
 import Notification from '../models/Notification.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import { checkAndAwardAchievement } from './achievementController.js';
 
 export const createPost = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -20,6 +21,16 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
     });
 
     const populatedPost = await Post.findById(post._id).populate('user', 'name avatar careerGoal location');
+
+    // Check for write_post achievement
+    const postCount = await Post.countDocuments({ user: req.user?._id });
+    if (postCount === 1) {
+      await checkAndAwardAchievement(
+        req.user?._id.toString(),
+        'write_post',
+        { postId: post._id.toString() }
+      );
+    }
 
     res.status(201).json({ success: true, data: populatedPost });
   } catch (error) {

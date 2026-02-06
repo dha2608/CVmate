@@ -4,6 +4,7 @@ import ResumeHistory from '../models/ResumeHistory.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
+import { checkAndAwardAchievement } from './achievementController.js';
 
 export const createResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -74,6 +75,17 @@ export const createResume = async (req: AuthRequest, res: Response, next: NextFu
         layout: 'standard',
       },
     });
+
+    // Check for first CV achievement
+    const resumeCount = await Resume.countDocuments({ user: req.user?._id });
+    if (resumeCount === 1) {
+      await checkAndAwardAchievement(
+        req.user?._id.toString(),
+        'first_cv',
+        { resumeId: resume._id.toString() }
+      );
+    }
+
     res.status(201).json({ success: true, data: resume });
   } catch (error: unknown) {
     logger.error('Create Resume Error', error instanceof Error ? error : new Error(String(error)), {
