@@ -36,7 +36,17 @@ const Login = () => {
       }
     } catch (err: any) {
       console.error('❌ Login error:', err);
-      const errorMsg = err.message || t('toast.loginFailed');
+      let errorMsg = err.message || t('toast.loginFailed');
+      
+      // Handle timeout errors specifically
+      if (err.type === 'timeout' || err.status === 408) {
+        errorMsg = t('toast.requestTimeout') || 'Request timeout. Please check your connection and try again.';
+      } else if (err.status === 503) {
+        errorMsg = 'Service temporarily unavailable. Please try again in a few moments.';
+      } else if (err.status === 429) {
+        errorMsg = 'Too many requests. Please wait a moment and try again.';
+      }
+      
       setError(errorMsg);
       toast.error(errorMsg);
     } finally {

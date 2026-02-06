@@ -58,13 +58,17 @@ const getAuthToken = (): string | null => {
 };
 interface ApiOptions extends RequestInit {
   requiresAuth?: boolean;
+  timeout?: number; // Timeout in milliseconds
 }
+
+const DEFAULT_TIMEOUT = 30000; // 30 seconds default timeout
+const AUTH_TIMEOUT = 15000; // 15 seconds for auth endpoints (login/register)
 
 export const apiRequest = async <T = any>(
   endpoint: string,
   options: ApiOptions = {}
 ): Promise<T> => {
-  const { requiresAuth = true, ...fetchOptions } = options;
+  const { requiresAuth = true, timeout, ...fetchOptions } = options;
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -85,47 +89,71 @@ export const apiRequest = async <T = any>(
     logger.log('📤 API Request:', url, { method: fetchOptions.method || 'GET' });
   }
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    headers,
-  });
+  // Create AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeout || DEFAULT_TIMEOUT);
 
-  if (!response.ok) {
-      let errorMessage = 'Request failed';
-      let errorType = 'unknown';
-      let errorDetails: any = undefined;
-    try {
-      const error = await response.json();
-      errorMessage = error.message || error.error || `HTTP error! status: ${response.status}`;
-      errorType = error.type || 'unknown'; // 'server_rate_limit' or 'openai_api_error'
-      errorDetails = error;
-    } catch {
-      // If JSON parsing fails, use status-based messages
-      if (response.status === 503) {
-        errorMessage = 'Service temporarily unavailable. Please try again in a few moments.';
-      } else if (response.status === 429) {
-        // Check response headers for rate limit info
-        const retryAfter = response.headers.get('Retry-After');
-        const retryMessage = retryAfter ? ` Please try again after ${retryAfter} seconds.` : ' Please wait a moment and try again.';
-        errorMessage = `Rate limit exceeded.${retryMessage}`;
-        errorType = 'server_rate_limit';
-      } else if (response.status === 401) {
-        errorMessage = 'Unauthorized. Please login again.';
-      } else if (response.status === 404) {
-        errorMessage = 'Resource not found.';
-      } else {
-        errorMessage = `HTTP error! status: ${response.status}`;
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      headers,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+        let errorMessage = 'Request failed';
+        let errorType = 'unknown';
+        let errorDetails: any = undefined;
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || `HTTP error! status: ${response.status}`;
+        errorType = error.type || 'unknown'; // 'server_rate_limit' or 'openai_api_error'
+        errorDetails = error;
+      } catch {
+        // If JSON parsing fails, use status-based messages
+        if (response.status === 503) {
+          errorMessage = 'Service temporarily unavailable. Please try again in a few moments.';
+        } else if (response.status === 429) {
+          // Check response headers for rate limit info
+          const retryAfter = response.headers.get('Retry-After');
+          const retryMessage = retryAfter ? ` Please try again after ${retryAfter} seconds.` : ' Please wait a moment and try again.';
+          errorMessage = `Rate limit exceeded.${retryMessage}`;
+          errorType = 'server_rate_limit';
+        } else if (response.status === 401) {
+          errorMessage = 'Unauthorized. Please login again.';
+        } else if (response.status === 404) {
+          errorMessage = 'Resource not found.';
+        } else {
+          errorMessage = `HTTP error! status: ${response.status}`;
+        }
       }
+      
+      const error = new Error(errorMessage);
+      (error as any).status = response.status;
+      (error as any).type = errorType;
+      (error as any).details = errorDetails;
+      throw error;
+    }
+
+    return response.json();
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    
+    // Handle timeout/abort errors
+    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+      const timeoutError = new Error('Request timeout. Please check your connection and try again.');
+      (timeoutError as any).type = 'timeout';
+      (timeoutError as any).status = 408;
+      throw timeoutError;
     }
     
-    const error = new Error(errorMessage);
-    (error as any).status = response.status;
-    (error as any).type = errorType;
-    (error as any).details = errorDetails;
+    // Re-throw other errors
     throw error;
   }
-
-  return response.json();
 };
 
 export const api = {
@@ -134,6 +162,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
       requiresAuth: false,
+      timeout: AUTH_TIMEOUT,
     }),
 
   register: (name: string, email: string, password: string) =>
@@ -141,6 +170,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ name, email, password }),
       requiresAuth: false,
+      timeout: AUTH_TIMEOUT,
     }),
 
   getMe: () => apiRequest<{ success: boolean; data: any }>('/auth/me'),

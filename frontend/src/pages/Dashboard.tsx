@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useDashboardStore } from '@/store/dashboardStore';
 import { useCommunityStore } from '@/store/communityStore';
 import { useBlogStore } from '@/store/blogStore';
+import { useAchievementStore } from '@/store/achievementStore';
 import { useI18n } from '@/store/i18nStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CardEnhanced } from '@/components/ui/card-enhanced';
 import ActivityFeed from '@/components/ActivityFeed';
+import { AchievementList } from '@/components/achievements/AchievementBadge';
 import { 
     FileText, 
     MessageSquare, 
@@ -35,6 +37,7 @@ const Dashboard = () => {
   const { stats, fetchStats, isLoading: statsLoading } = useDashboardStore();
   const { posts, fetchPosts, isLoading: postsLoading } = useCommunityStore();
   const { articles, fetchArticles, isLoading: articlesLoading } = useBlogStore();
+  const { achievements, fetchAchievements } = useAchievementStore();
   const { t } = useI18n();
   const navigate = useNavigate();
   const [greeting, setGreeting] = useState('');
@@ -57,7 +60,8 @@ const Dashboard = () => {
         await Promise.all([
           fetchStats(),
           fetchPosts(),
-          fetchArticles()
+          fetchArticles(),
+          fetchAchievements()
         ]);
       } finally {
         setIsInitialLoading(false);
@@ -65,7 +69,7 @@ const Dashboard = () => {
     };
 
     loadData();
-  }, [user, navigate, t, fetchStats, fetchPosts, fetchArticles]);
+  }, [user, navigate, t, fetchStats, fetchPosts, fetchArticles, fetchAchievements]);
 
   if (!user) return null;
 
