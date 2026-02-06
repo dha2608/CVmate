@@ -69,13 +69,13 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
         durationMs,
         success: true,
       });
-    } catch (error) {
-      logger.error('AI summary generation error', error instanceof Error ? error : new Error(String(error)), {
-        articleTitle: title,
-        userId: req.user?._id,
-      });
-      summary = content.substring(0, 150) + '...';
-      tags = ['general'];
+      } catch (error) {
+        logger.error('AI summary generation error', error instanceof Error ? error : new Error(String(error)), {
+          articleTitle: title,
+          userId: req.user?._id,
+        });
+        summary = content.substring(0, 150) + '...';
+        tags = ['general'];
 
       const durationMs = Date.now() - startedAt;
       logAIUsage({

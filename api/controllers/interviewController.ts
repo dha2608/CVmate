@@ -269,24 +269,24 @@ ${conversationText}
       const aiData = await getCachedOrRun(cacheKey, 15 * 60 * 1000, async () => {
         const hf = getHFOrThrow();
 
-        const completion = await hf.chatCompletion({
+      const completion = await hf.chatCompletion({
           model,
-          messages: [
-            {
-              role: 'system',
-              content:
+        messages: [
+          {
+            role: 'system',
+            content:
                 'You are an AI interview coach that only responds with a valid JSON object and no other text.',
-            },
-            { role: 'user', content: feedbackPrompt },
-          ],
-          max_tokens: 512,
+          },
+          { role: 'user', content: feedbackPrompt },
+        ],
+        max_tokens: 512,
           temperature: 0.25,
-        });
+      });
 
-        const responseContent = completion.choices?.[0]?.message?.content;
-        if (!responseContent) {
+      const responseContent = completion.choices?.[0]?.message?.content;
+      if (!responseContent) {
           throw new Error('No response from AI provider');
-        }
+      }
 
         return JSON.parse(responseContent);
       });
@@ -358,14 +358,76 @@ ${conversationText}
         userId: req.user?._id,
       });
       
+      const errorObj = error as { status?: number; statusCode?: number; message?: string };
+      const errorMsg = errorObj.message || '';
+      const errorMsgLower = errorMsg.toLowerCase();
+      
       let errorMessage = 'Feedback generation service is currently unavailable.';
-      const errorObj = error as { status?: number; message?: string };
-      if (errorObj.status === 401) {
+      let statusCode = 503;
+      let shouldFallback = false;
+      
+      // Determine error type and fallback strategy
+      if (errorObj.status === 401 || errorObj.statusCode === 401 || errorMsgLower.includes('api key')) {
         errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your .env file.';
-      } else if (errorObj.status === 429) {
+        statusCode = 503;
+      } else if (errorObj.status === 429 || errorObj.statusCode === 429 || errorMsgLower.includes('rate limit')) {
         errorMessage = 'AI API rate limit exceeded. Please try again later.';
-      } else if (errorObj.message?.toLowerCase().includes('api key')) {
-        errorMessage = 'AI API key is invalid or missing.';
+        statusCode = 429;
+        shouldFallback = true; // Can provide basic feedback without AI
+      } else if (errorObj.status === 402 || errorObj.statusCode === 402 || errorMsgLower.includes('quota') || errorMsgLower.includes('billing')) {
+        errorMessage = 'AI API quota exceeded. Please check your provider account limits.';
+        statusCode = 402;
+        shouldFallback = true;
+      } else if (errorMsgLower.includes('service unavailable') || errorMsgLower.includes('503')) {
+        errorMessage = 'AI service temporarily unavailable. Generating basic feedback...';
+        statusCode = 503;
+        shouldFallback = true;
+      }
+
+      // Fallback: Generate basic feedback without AI if possible
+      if (shouldFallback && interview.chatHistory && interview.chatHistory.length > 2) {
+        try {
+          const userMessages = interview.chatHistory.filter(msg => msg.role === 'user');
+          const assistantMessages = interview.chatHistory.filter(msg => msg.role === 'assistant');
+          
+          // Generate basic feedback based on conversation length and structure
+          const basicFeedback = {
+            confidenceScore: 50,
+            contentScore: 50,
+            suggestions: `Basic Feedback (AI unavailable):\n\nYou completed ${userMessages.length} questions in this interview session. The AI feedback service is currently unavailable, but you can review your answers and practice more to improve.\n\nTo get detailed AI feedback, please try again later when the service is available.`,
+            strengths: ['Completed the interview session'],
+            improvements: ['Review your answers and practice more'],
+            overallScore: 50,
+            scoresByDimension: {
+              communication: 50,
+              content: 50,
+              confidence: 50,
+              structure: 50,
+            },
+            perQuestionFeedback: [],
+          };
+          
+          interview.feedback = basicFeedback;
+          interview.status = 'completed';
+          await interview.save();
+          
+          logger.info('Fallback feedback generated', {
+            interviewId: id,
+            userId: req.user?._id,
+          });
+          
+          res.json({ 
+            success: true, 
+            data: interview,
+            warning: 'AI feedback unavailable. Basic feedback provided.',
+          });
+          return;
+        } catch (fallbackError) {
+          logger.error('Fallback feedback generation failed', fallbackError, {
+            interviewId: id,
+            userId: req.user?._id,
+          });
+        }
       }
 
       const durationMs = Date.now() - startedAt;
@@ -376,14 +438,14 @@ ${conversationText}
         model,
         durationMs,
         success: false,
-        errorCode: errorObj.status || 'UNKNOWN',
+        errorCode: errorObj.status || errorObj.statusCode || 'UNKNOWN',
       });
 
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      res.status(503).json({ 
+      res.status(statusCode).json({ 
         success: false, 
         message: errorMessage,
-        error: errorMsg || 'AI API error'
+        error: err.message || 'AI API error',
+        retryable: statusCode === 503 || statusCode === 429,
       });
     }
 

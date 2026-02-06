@@ -9,13 +9,40 @@ interface PostCardProps {
   post: any;
 }
 
+// Normalize CDN image URLs and provide fallback
+const normalizeImageUrl = (url: string | undefined | null): string | null => {
+  if (!url || typeof url !== 'string') return null;
+  
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  
+  // If already a full URL, return as is
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  
+  // If relative path, assume it's from uploads folder
+  if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+    return `${baseUrl.replace('/api', '')}/${trimmed.startsWith('/') ? trimmed.slice(1) : trimmed}`;
+  }
+  
+  // Return as is if it looks like a valid URL pattern
+  return trimmed;
+};
+
 const PostCardComponent = ({ post }: PostCardProps) => {
   const { user } = useAuthStore();
   const { likePost, commentPost } = useCommunityStore();
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const navigate = useNavigate();
   const { setActiveConversation } = useMessageStore();
+  
+  const normalizedAvatar = normalizeImageUrl(post.user?.avatar);
+  const normalizedPostImage = normalizeImageUrl(post.image);
 
   const isLiked = post.likes.includes(user?._id);
 
@@ -55,10 +82,16 @@ const PostCardComponent = ({ post }: PostCardProps) => {
           onClick={() => post.user?._id && navigate(`/u/${post.user._id}`)}
           aria-label={post.user.name}
         >
-          {post.user.avatar ? (
-            <img src={post.user.avatar} className="h-full w-full rounded-full" alt={post.user.name} loading="lazy" />
+          {normalizedAvatar && !avatarError ? (
+            <img 
+              src={normalizedAvatar} 
+              className="h-full w-full rounded-full object-cover" 
+              alt={post.user.name} 
+              loading="lazy"
+              onError={() => setAvatarError(true)}
+            />
           ) : (
-            post.user.name.charAt(0)
+            <span className="text-sm">{post.user.name?.charAt(0)?.toUpperCase() || 'U'}</span>
           )}
         </button>
         <div className="ml-3">
@@ -86,8 +119,14 @@ const PostCardComponent = ({ post }: PostCardProps) => {
 
       {/* Content */}
       <p className="text-gray-800 mb-3 whitespace-pre-wrap">{post.content}</p>
-      {post.image && (
-        <img src={post.image} alt="Post content" className="w-full h-auto rounded-lg mb-3 object-cover max-h-96" loading="lazy" />
+      {normalizedPostImage && !imageError && (
+        <img 
+          src={normalizedPostImage} 
+          alt="Post content" 
+          className="w-full h-auto rounded-lg mb-3 object-cover max-h-96" 
+          loading="lazy"
+          onError={() => setImageError(true)}
+        />
       )}
 
       {/* Actions */}

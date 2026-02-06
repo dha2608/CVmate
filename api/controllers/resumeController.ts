@@ -288,7 +288,7 @@ export const aiEnhance = async (req: AuthRequest, res: Response, next: NextFunct
     try {
       const enhancedText = await getCachedOrRun(cacheKey, 2 * 60 * 1000, async () => {
         const hf = getHFOrThrow();
-        const prompt = `
+    const prompt = `
 You are a senior CV and resume writer.
 Enhance the following ${type || 'text'} to be more impactful and tailored for modern ATS-friendly resumes.
 - Use strong, varied action verbs.
@@ -296,19 +296,19 @@ Enhance the following ${type || 'text'} to be more impactful and tailored for mo
 - Fix grammar and improve clarity and flow.
 - Keep the tone professional and concise (2–4 lines).
 - Do NOT add information that is not already implied by the original text.
-
+      
 Original Text:
 ${text}
-
+      
 Enhanced Text (ONLY return the improved text, no explanations):
-`;
+    `;
 
-        const completion = await hf.chatCompletion({
+      const completion = await hf.chatCompletion({
           model,
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 256,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 256,
           temperature: 0.6,
-        });
+      });
 
         const content = completion.choices?.[0]?.message?.content;
         if (!content) {
@@ -412,24 +412,24 @@ export const analyzeResume = async (req: AuthRequest, res: Response, next: NextF
       const analysis = await getCachedOrRun(cacheKey, 10 * 60 * 1000, async () => {
         const hf = getHFOrThrow();
 
-        const completion = await hf.chatCompletion({
+      const completion = await hf.chatCompletion({
           model,
-          messages: [
-            {
-              role: 'system',
-              content:
+        messages: [
+          {
+            role: 'system',
+            content:
                 'You are an ATS and resume analysis assistant. Only respond with a valid JSON object and no other text.',
-            },
-            { role: 'user', content: prompt },
-          ],
-          max_tokens: 512,
-          temperature: 0.2,
-        });
+          },
+          { role: 'user', content: prompt },
+        ],
+        max_tokens: 512,
+        temperature: 0.2,
+      });
 
-        const responseContent = completion.choices?.[0]?.message?.content;
-        if (!responseContent) {
+      const responseContent = completion.choices?.[0]?.message?.content;
+      if (!responseContent) {
           throw new Error('No response from AI provider');
-        }
+      }
 
         return JSON.parse(responseContent);
       });
@@ -549,24 +549,24 @@ export const aiGenerateFullResume = async (req: AuthRequest, res: Response, next
       const data = await getCachedOrRun(cacheKey, 15 * 60 * 1000, async () => {
         const hf = getHFOrThrow();
 
-        const completion = await hf.chatCompletion({
+      const completion = await hf.chatCompletion({
           model,
-          messages: [
-            {
-              role: 'system',
-              content:
+        messages: [
+          {
+            role: 'system',
+            content:
                 'You are an expert resume writer that only responds with a valid JSON object and no other text.',
-            },
-            { role: 'user', content: basePrompt },
-          ],
-          max_tokens: 768,
-          temperature: 0.4,
-        });
+          },
+          { role: 'user', content: basePrompt },
+        ],
+        max_tokens: 768,
+        temperature: 0.4,
+      });
 
-        const responseContent = completion.choices?.[0]?.message?.content;
-        if (!responseContent) {
-          throw new Error('No response from AI provider');
-        }
+      const responseContent = completion.choices?.[0]?.message?.content;
+      if (!responseContent) {
+        throw new Error('No response from AI provider');
+      }
 
         return JSON.parse(responseContent);
       });

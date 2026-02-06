@@ -16,6 +16,28 @@ import { SkeletonCard, SkeletonText } from '@/components/ui/skeleton';
 import { PenTool, RefreshCw, ExternalLink, Newspaper, Loader2, Search, Filter, X, ChevronDown } from 'lucide-react';
 import SEOHead from '@/components/SEOHead';
 
+// Normalize CDN image URLs and provide fallback
+const normalizeImageUrl = (url: string | undefined | null): string | null => {
+  if (!url || typeof url !== 'string') return null;
+  
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  
+  // If already a full URL, return as is
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  
+  // If relative path, assume it's from uploads folder
+  if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+    return `${baseUrl.replace('/api', '')}/${trimmed.startsWith('/') ? trimmed.slice(1) : trimmed}`;
+  }
+  
+  // Return as is if it looks like a valid URL pattern
+  return trimmed;
+};
+
 const Blog = () => {
   const { user } = useAuthStore();
   const { t } = useI18n();
@@ -31,12 +53,17 @@ const Blog = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [displayedNewsCount, setDisplayedNewsCount] = useState(15);
   const [displayedArticlesCount, setDisplayedArticlesCount] = useState(10);
+  const [avatarErrors, setAvatarErrors] = useState<Set<string>>(new Set());
 
   // Form State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Tips CV');
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
+  
+  const handleAvatarError = (authorId: string) => {
+    setAvatarErrors(prev => new Set([...prev, authorId]));
+  };
 
   useEffect(() => {
     if (!user) {
@@ -452,17 +479,38 @@ const Blog = () => {
                                 <div className="flex items-center gap-2">
                                     {article.author && typeof article.author === 'object' && article.author.name ? (
                                       <>
-                                        {article.author.avatar ? (
-                                          <img 
-                                            src={article.author.avatar} 
-                                            alt={article.author.name} 
-                                            className="w-6 h-6 rounded-full object-cover"
-                                          />
-                                        ) : (
-                                          <div className="w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-300">
-                                            {article.author.name.charAt(0).toUpperCase()}
-                                          </div>
-                                        )}
+                                        {(() => {
+                                          if (typeof article.author !== 'object' || !article.author) {
+                                            return (
+                                              <div className="w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-300">
+                                                U
+                                              </div>
+                                            );
+                                          }
+                                          
+                                          const author = article.author;
+                                          const normalizedAvatar = normalizeImageUrl(author.avatar);
+                                          const authorId = (author as any)._id || author.name;
+                                          const hasError = avatarErrors.has(authorId);
+                                          
+                                          if (normalizedAvatar && !hasError) {
+                                            return (
+                                              <img 
+                                                src={normalizedAvatar} 
+                                                alt={author.name} 
+                                                className="w-6 h-6 rounded-full object-cover"
+                                                onError={() => handleAvatarError(authorId)}
+                                                loading="lazy"
+                                              />
+                                            );
+                                          }
+                                          
+                                          return (
+                                            <div className="w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-300">
+                                              {author.name.charAt(0).toUpperCase()}
+                                            </div>
+                                          );
+                                        })()}
                                         <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                                           {article.author.name}
                                         </span>

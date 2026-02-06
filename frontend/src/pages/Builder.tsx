@@ -46,9 +46,29 @@ const Builder = () => {
   const [dismissedHints, setDismissedHints] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  const handleSave = async () => {
+  const handleSave = async (retryCount = 0) => {
+    // Frontend validation before submit
+    const { validatePersonalInfo } = await import('@/utils/validation');
+    const personalInfoValidation = validatePersonalInfo({
+      fullName: currentResume.personalInfo.fullName || '',
+      email: currentResume.personalInfo.email || '',
+      phone: currentResume.personalInfo.phone,
+      address: currentResume.personalInfo.address,
+      linkedin: currentResume.personalInfo.linkedin,
+      website: currentResume.personalInfo.website,
+    });
+
+    if (!personalInfoValidation.valid) {
+      const { useToastStore } = await import('@/store/toastStore');
+      useToastStore.getState().error(
+        `Please fix the following errors:\n${personalInfoValidation.errors.map(e => `- ${e}`).join('\n')}`
+      );
+      return;
+    }
+
     if (!currentResume.personalInfo.fullName || !currentResume.personalInfo.email) {
-      alert('Please fill in at least your name and email');
+      const { useToastStore } = await import('@/store/toastStore');
+      useToastStore.getState().error('Please fill in at least your name and email');
       return;
     }
 
@@ -95,24 +115,45 @@ const Builder = () => {
 
       const missingExp = cleanedExperience.findIndex((e) => !e.company || !e.position);
       if (missingExp >= 0) {
-        alert(`Experience #${missingExp + 1} is missing required fields (Company and Position). Please complete or delete it before saving.`);
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().error(
+          `Experience #${missingExp + 1} is missing required fields (Company and Position). Please complete or delete it before saving.`
+        );
+        setSaving(false);
         return;
       }
 
       const missingEdu = cleanedEducation.findIndex((e) => !e.institution || !e.degree);
       if (missingEdu >= 0) {
-        alert(`Education #${missingEdu + 1} is missing required fields (Institution and Degree). Please complete or delete it before saving.`);
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().error(
+          `Education #${missingEdu + 1} is missing required fields (Institution and Degree). Please complete or delete it before saving.`
+        );
+        setSaving(false);
         return;
       }
 
+      // Prepare payload with proper structure
       const resumeData = {
-        title: currentResume.title || 'My Resume',
-        personalInfo: currentResume.personalInfo,
-        summary: currentResume.summary,
+        title: (currentResume.title || 'My Resume').trim(),
+        personalInfo: {
+          fullName: (currentResume.personalInfo.fullName || '').trim(),
+          email: (currentResume.personalInfo.email || '').trim(),
+          phone: (currentResume.personalInfo.phone || '').trim(),
+          address: (currentResume.personalInfo.address || '').trim(),
+          linkedin: (currentResume.personalInfo.linkedin || '').trim(),
+          website: (currentResume.personalInfo.website || '').trim(),
+        },
+        summary: (currentResume.summary || '').trim(),
         experience: cleanedExperience,
         education: cleanedEducation,
         skills: (currentResume.skills || []).map((s) => String(s).trim()).filter(Boolean),
       };
+
+      // Log payload in development for debugging
+      if (import.meta.env.DEV) {
+        console.log('📤 Saving resume payload:', JSON.stringify(resumeData, null, 2));
+      }
 
       let response;
       if (currentResume._id) {
@@ -127,6 +168,8 @@ const Builder = () => {
       if (response.success) {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().success('CV saved successfully!');
         trackEvent('cv_saved', {
           hasId: !!currentResume._id,
           hasSummary: !!currentResume.summary?.trim(),
@@ -135,45 +178,60 @@ const Builder = () => {
           skillsCount: currentResume.skills.length,
         });
       }
-    } catch (error) {
-      // Better error handling
+    } catch (error: any) {
+      // Enhanced error handling with detailed logging
       let errorMessage = 'Failed to save resume';
       const errors: string[] = [];
       
-      // Check for validation errors
-      if (error && typeof error === 'object' && 'errors' in error) {
-        const errorObj = error as { errors?: unknown };
-        if (Array.isArray(errorObj.errors)) {
-          errors.push(...errorObj.errors.map(e => String(e)));
-        } else if (errorObj.errors && typeof errorObj.errors === 'object') {
-          // Mongoose validation errors
-          errors.push(...Object.values(errorObj.errors).map(e => {
-            if (e && typeof e === 'object' && 'message' in e) {
-              return String((e as { message: unknown }).message);
-            }
+      // Log error details for debugging
+      console.error('❌ Save CV Error:', {
+        error,
+        status: error?.status,
+        message: error?.message,
+        details: error?.details,
+        retryCount,
+      });
+      
+      // Check for validation errors from API response
+      if (error?.details) {
+        const details = error.details;
+        if (details.errors && Array.isArray(details.errors)) {
+          errors.push(...details.errors.map((e: any) => {
+            if (typeof e === 'string') return e;
+            if (e?.message) return e.message;
+            if (e?.path) return `${e.path}: ${e.message || 'Invalid'}`;
             return String(e);
           }));
         }
+        if (details.message) {
+          errorMessage = details.message;
+        }
+      }
+      
+      // Check for Zod validation errors
+      if (error?.details?.errors && Array.isArray(error.details.errors)) {
+        error.details.errors.forEach((err: any) => {
+          if (err.path) {
+            errors.push(`${err.path.join('.')}: ${err.message || 'Invalid'}`);
+          } else {
+            errors.push(err.message || 'Validation error');
+          }
+        });
       }
       
       if (error instanceof Error) {
         errorMessage = error.message;
       }
       
-      // Check for response errors
-      if (error && typeof error === 'object' && 'response' in error) {
-        const errorWithResponse = error as { response?: { data?: unknown } };
-        if (errorWithResponse.response?.data) {
-          const data = errorWithResponse.response.data;
-          if (data && typeof data === 'object') {
-            if ('errors' in data && Array.isArray(data.errors)) {
-              errors.push(...data.errors.map(e => String(e)));
-            }
-            if ('message' in data && typeof data.message === 'string') {
-              errorMessage = data.message;
-            }
-          }
-        }
+      // Retry mechanism for network errors (max 2 retries)
+      const isNetworkError = error?.status === 0 || error?.status >= 500 || error?.message?.includes('fetch');
+      if (isNetworkError && retryCount < 2) {
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().error(`Network error. Retrying... (${retryCount + 1}/2)`);
+        setSaving(false);
+        // Wait 1 second before retry
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return handleSave(retryCount + 1);
       }
       
       const finalMessage = errors.length 

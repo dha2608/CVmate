@@ -315,53 +315,59 @@ interface Translations {
     overallPerformance?: string;
     startNew?: string;
   };
-  jobs: {
-    findDreamJob: string;
-    searchPlaceholder: string;
-    search: string;
-    filters: string;
-    all: string;
-    fullTime: string;
-    partTime: string;
-    remote: string;
-    contract: string;
-    internship: string;
-    location: string;
-    loadingJobs: string;
-    noJobsAvailable: string;
-    noJobsMatch: string;
-    noJobsAtMoment: string;
-    clearSearch: string;
-    applied: string;
-    apply: string;
-    pleaseLogin: string;
-    appliedSuccessfully: string;
-    failedToApply: string;
-    jobSeekerGuidance: string;
-    recommendedBasedOn: string;
-    improveResume: string;
-    exploreBuilder: string;
-    salaryInsights: string;
-    seeWhatWorth: string;
-    salaryRange: string;
-    minSalary?: string;
-    maxSalary?: string;
-    experienceLevel?: string;
-    entry?: string;
-    junior?: string;
-    mid?: string;
-    senior?: string;
-    lead?: string;
-    executive?: string;
-    companySize?: string;
-    startup?: string;
-    small?: string;
-    medium?: string;
-    large?: string;
-    enterprise?: string;
-    advancedFilters?: string;
-    clearFilters?: string;
-  };
+    jobs: {
+      findDreamJob: string;
+      searchPlaceholder: string;
+      search: string;
+      filters: string;
+      all: string;
+      fullTime: string;
+      partTime: string;
+      remote: string;
+      contract: string;
+      internship: string;
+      location: string;
+      loadingJobs: string;
+      noJobsAvailable: string;
+      noJobsMatch: string;
+      noJobsAtMoment: string;
+      clearSearch: string;
+      applied: string;
+      apply: string;
+      pleaseLogin: string;
+      appliedSuccessfully: string;
+      failedToApply: string;
+      jobSeekerGuidance: string;
+      recommendedBasedOn: string;
+      improveResume: string;
+      exploreBuilder: string;
+      salaryInsights: string;
+      seeWhatWorth: string;
+      salaryRange: string;
+      postJob: string;
+      hideForm: string;
+      showPostForm: string;
+      postSuccess: string;
+      postFailed: string;
+      posting: string;
+      minSalary?: string;
+      maxSalary?: string;
+      experienceLevel?: string;
+      entry?: string;
+      junior?: string;
+      mid?: string;
+      senior?: string;
+      lead?: string;
+      executive?: string;
+      companySize?: string;
+      startup?: string;
+      small?: string;
+      medium?: string;
+      large?: string;
+      enterprise?: string;
+      advancedFilters?: string;
+      clearFilters?: string;
+    };
   footer: {
     description: string;
     quickLinks: string;
@@ -709,6 +715,12 @@ const translations: Record<Language, Translations> = {
       salaryInsights: 'Thông tin lương',
       seeWhatWorth: 'Xem bạn đáng giá bao nhiêu',
       salaryRange: 'Khoảng lương',
+      postJob: 'Đăng việc',
+      hideForm: 'Ẩn form',
+      showPostForm: 'Hiển thị form đăng việc',
+      postSuccess: 'Đăng việc thành công!',
+      postFailed: 'Đăng việc thất bại',
+      posting: 'Đang đăng...',
       minSalary: 'Lương tối thiểu',
       maxSalary: 'Lương tối đa',
       experienceLevel: 'Cấp độ kinh nghiệm',
@@ -1110,6 +1122,12 @@ const translations: Record<Language, Translations> = {
       salaryInsights: 'Salary insights',
       seeWhatWorth: 'See what you are worth',
       salaryRange: 'Salary Range',
+      postJob: 'Post a Job',
+      hideForm: 'Hide Form',
+      showPostForm: 'Show Post Form',
+      postSuccess: 'Job posted successfully!',
+      postFailed: 'Failed to post job',
+      posting: 'Posting...',
       minSalary: 'Min Salary',
       maxSalary: 'Max Salary',
       experienceLevel: 'Experience Level',

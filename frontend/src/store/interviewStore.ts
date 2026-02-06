@@ -45,7 +45,7 @@ interface InterviewState {
 
   startSession: (persona: PersonaType) => Promise<void>;
   sendUserMessage: (message: string) => Promise<void>;
-  endSession: () => Promise<void>;
+  endSession: (retryCount?: number) => Promise<void>;
   reset: () => void;
 }
 
@@ -149,15 +149,15 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
     }
   },
 
-  endSession: async () => {
-    const { interviewId, status } = get();
+  endSession: async (retryCount = 0) => {
+    const { interviewId, status, endSession: endSessionFn } = get();
     if (!interviewId || status === 'completed') return;
 
     set({ isEnding: true, error: null });
     try {
-      const response = await api.endInterview(interviewId);
+      const response = await api.endInterview(interviewId) as { success: boolean; data: any; warning?: string; message?: string };
       if (!response.success) {
-        throw new Error('Failed to end interview');
+        throw new Error((response as any).message || 'Failed to end interview');
       }
 
       const interview = response.data;
@@ -167,9 +167,38 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
         status: interview.status || 'completed',
         isEnding: false,
       });
+      
+      // Show warning if fallback feedback was used
+      if (response.warning) {
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().warning(response.warning);
+      }
     } catch (error: any) {
       console.error('endSession error', error);
-      set({ error: error.message || 'Failed to end interview', isEnding: false });
+      
+      // Retry mechanism for retryable errors (max 2 retries)
+      const isRetryable = error?.details?.retryable || error?.status === 503 || error?.status === 429;
+      if (isRetryable && retryCount < 2) {
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().warning(`Service temporarily unavailable. Retrying... (${retryCount + 1}/2)`);
+        set({ isEnding: false });
+        // Wait 2 seconds before retry
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return get().endSession(retryCount + 1);
+      }
+      
+      let errorMessage = error.message || 'Failed to end interview';
+      
+      // Provide helpful error messages
+      if (error?.status === 503 || error?.message?.toLowerCase().includes('unavailable')) {
+        errorMessage = 'AI feedback service is temporarily unavailable. Please try again in a few moments.';
+      } else if (error?.status === 429) {
+        errorMessage = 'Rate limit exceeded. Please wait a moment and try again.';
+      } else if (error?.status === 402) {
+        errorMessage = 'AI service quota exceeded. Please check your account limits.';
+      }
+      
+      set({ error: errorMessage, isEnding: false });
     }
   },
 

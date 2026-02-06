@@ -91,20 +91,59 @@ export const commentPostSchema = z.object({
  * Resume Validation Schemas
  */
 export const createResumeSchema = z.object({
+  title: z.string().min(1).max(200).trim().optional(),
   personalInfo: z.object({
-    name: z.string().min(1).max(100),
-    email: z.string().email(),
-    phone: z.string().optional(),
-    location: z.string().optional(),
-    linkedin: z.string().url().optional().or(z.literal('')),
-    github: z.string().url().optional().or(z.literal('')),
-    portfolio: z.string().url().optional().or(z.literal('')),
+    fullName: z.string().min(1, 'Full name is required').max(100).trim(),
+    email: z.string().email('Invalid email format').trim(),
+    phone: z.string().trim().optional().or(z.literal('')),
+    address: z.string().trim().optional().or(z.literal('')),
+    linkedin: z.string().url('Invalid LinkedIn URL').optional().or(z.literal('')),
+    website: z.string().url('Invalid website URL').optional().or(z.literal('')),
   }),
-  summary: z.string().max(500).optional(),
-  experience: z.array(z.any()).optional().default([]),
-  education: z.array(z.any()).optional().default([]),
-  skills: z.array(z.string()).optional().default([]),
-  template: z.string().optional(),
+  summary: z.string().max(2000).trim().optional().or(z.literal('')),
+  experience: z.array(z.object({
+    company: z.string().trim().optional(),
+    position: z.string().trim().optional(),
+    startDate: z.string().trim().optional(),
+    endDate: z.string().trim().optional(),
+    description: z.string().trim().optional(),
+  })).optional().default([]),
+  education: z.array(z.object({
+    institution: z.string().trim().optional(),
+    degree: z.string().trim().optional(),
+    startDate: z.string().trim().optional(),
+    endDate: z.string().trim().optional(),
+    description: z.string().trim().optional(),
+  })).optional().default([]),
+  skills: z.array(z.string().trim()).optional().default([]),
+  variantType: z.enum(['general', 'job-a', 'job-b']).optional(),
+  themeConfig: z.object({
+    color: z.string().optional(),
+    font: z.string().optional(),
+    layout: z.string().optional(),
+  }).optional(),
+}).refine((data) => {
+  // Validate that experience items have both company and position if they have any data
+  if (data.experience && data.experience.length > 0) {
+    for (const exp of data.experience) {
+      const hasAnyData = exp.company || exp.position || exp.description || exp.startDate || exp.endDate;
+      if (hasAnyData && (!exp.company || !exp.position)) {
+        return false;
+      }
+    }
+  }
+  // Validate that education items have both institution and degree if they have any data
+  if (data.education && data.education.length > 0) {
+    for (const edu of data.education) {
+      const hasAnyData = edu.institution || edu.degree || edu.description || edu.startDate || edu.endDate;
+      if (hasAnyData && (!edu.institution || !edu.degree)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}, {
+  message: 'Experience items must have both company and position. Education items must have both institution and degree.',
 });
 
 /**
