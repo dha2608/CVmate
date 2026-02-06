@@ -70,17 +70,17 @@
   - [x] Loading skeleton
   - [x] Error boundary
 
-### ✅ 11. Điều chỉnh Achievement System
-- [ ] Tạo CV đầu tiên
-- [ ] Hoàn thiện profile 80%
-- [ ] Apply 1 job
-- [ ] Viết 1 bài community
-- [ ] Hoàn thành 1 mock interview
+### ✅ 11. Điều chỉnh Achievement System ✅ COMPLETED
+- [x] Tạo CV đầu tiên
+- [x] Hoàn thiện profile 80%
+- [x] Apply 1 job
+- [x] Viết 1 bài community
+- [x] Hoàn thành 1 mock interview
 
-### ✅ 12. Thêm cơ chế Duyệt bài Community
-- [ ] Flow: User post → Pending → Admin approve → Public
-- [ ] Admin dashboard:
-  - [ ] Approve / Reject / Ban user
+### ✅ 12. Thêm cơ chế Duyệt bài Community ✅ COMPLETED
+- [x] Flow: User post → Pending → Admin approve → Public
+- [x] Admin dashboard:
+  - [x] Approve / Reject / Ban user
 
 ---
 
@@ -114,10 +114,10 @@
 
 **Phase 1:** 4/4 completed ✅  
 **Phase 2:** 4/4 completed ✅  
-**Phase 3:** 2/4 completed (50%)  
+**Phase 3:** 4/4 completed ✅  
 **Additional:** 0/4 completed  
 
-**Total:** 10/16 completed (63%)
+**Total:** 12/16 completed (75%)
 
 ---
 
