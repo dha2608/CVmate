@@ -31,11 +31,11 @@
 - [x] Chỉ commit khi user bấm Save
 - [x] Khi rời route: Hiển thị modal confirm lưu thay đổi
 
-### ✅ 6. Cải tiến Form viết Article (IN PROGRESS)
-- [ ] Dùng rich editor: TipTap / Quill / Slate
-- [ ] Upload ảnh (drag & drop)
-- [ ] Preview markdown
-- [ ] Auto save draft
+### ✅ 6. Cải tiến Form viết Article ✅ COMPLETED
+- [x] Dùng rich editor: Custom Markdown editor với toolbar
+- [x] Upload ảnh (drag & drop)
+- [x] Preview markdown
+- [x] Auto save draft
 
 ### ✅ 7. Comment Real-time + Nâng cấp tính năng
 - [ ] Socket.io / Supabase Realtime
@@ -113,11 +113,11 @@
 ## 📊 Progress Tracking
 
 **Phase 1:** 4/4 completed ✅  
-**Phase 2:** 1/4 completed (25%)  
+**Phase 2:** 2/4 completed (50%)  
 **Phase 3:** 0/4 completed  
 **Additional:** 0/4 completed  
 
-**Total:** 5/16 completed (31%)
+**Total:** 6/16 completed (38%)
 
 ---
 

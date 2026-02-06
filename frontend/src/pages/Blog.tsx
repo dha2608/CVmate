@@ -15,6 +15,7 @@ import OptimizedImage from '@/components/ui/OptimizedImage';
 import { SkeletonCard, SkeletonText } from '@/components/ui/skeleton';
 import { PenTool, RefreshCw, ExternalLink, Newspaper, Loader2, Search, Filter, X, ChevronDown } from 'lucide-react';
 import SEOHead from '@/components/SEOHead';
+import { RichTextEditor } from '@/components/article/RichTextEditor';
 
 // Normalize CDN image URLs and provide fallback
 const normalizeImageUrl = (url: string | undefined | null): string | null => {
@@ -99,12 +100,19 @@ const Blog = () => {
       setTitle('');
       setContent('');
       setImage('');
+      // Clear draft after successful publish
+      localStorage.removeItem('article_draft');
       toast.success(t('toast.articlePublished'));
       await fetchArticles();
     } catch (error: any) {
       toast.error(error.message || t('toast.articlePublishFailed'));
     }
   }, [title, category, content, image, createArticle, toast, t, fetchArticles]);
+
+  const handleAutoSave = useCallback((content: string) => {
+    // Auto-save callback - can be used for additional logic
+    console.log('Draft auto-saved');
+  }, []);
 
   if (!user) return null;
 
@@ -279,13 +287,12 @@ const Blog = () => {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('blog.contentLabel')}</label>
-                        <textarea 
-                            className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm p-3 focus:ring-accent focus:border-accent"
-                            rows={8}
+                        <RichTextEditor
                             value={content}
-                            onChange={e => setContent(e.target.value)}
-                            required
-                            placeholder="Write your article content here..."
+                            onChange={setContent}
+                            placeholder="Write your article content here... (Supports Markdown: **bold**, *italic*, - lists, ![image](url))"
+                            autoSave={true}
+                            onAutoSave={handleAutoSave}
                         />
                     </div>
                     <div className="flex justify-end gap-2">
