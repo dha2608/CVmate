@@ -1,37 +1,37 @@
 # 📋 TODO CHECKLIST - PRODUCT ROADMAP
 
-## 🚨 Phase 1 – Critical Bug Fix
+## 🚨 Phase 1 – Critical Bug Fix ✅ COMPLETED
 
 ### ✅ 1. Fix lỗi Save CV (HTTP 400)
-- [ ] Validate payload phía frontend trước khi submit
-- [ ] Backend: Check schema (Zod/Joi)
-- [ ] Log chi tiết error message
-- [ ] Thêm retry mechanism + toast error message
+- [x] Validate payload phía frontend trước khi submit
+- [x] Backend: Check schema (Zod/Joi)
+- [x] Log chi tiết error message
+- [x] Thêm retry mechanism + toast error message
 
 ### ✅ 2. Fix lỗi Feedback Interview (503)
-- [ ] Fallback system: Nếu AI fail → show message + retry
-- [ ] Circuit breaker: Không spam request AI
-- [ ] Queue system: BullMQ / Redis queue
+- [x] Fallback system: Nếu AI fail → show message + retry
+- [x] Circuit breaker: Không spam request AI
+- [ ] Queue system: BullMQ / Redis queue (deferred)
 
 ### ✅ 3. Fix Post Dream Job i18n
-- [ ] Bổ sung translation keys:
-  - [ ] `jobs.postJob`: "Đăng việc"
-  - [ ] `jobs.hideForm`: "Ẩn form"
+- [x] Bổ sung translation keys:
+  - [x] `jobs.postJob`: "Đăng việc"
+  - [x] `jobs.hideForm`: "Ẩn form"
 
 ### ✅ 4. Fix lỗi Avatar Community Article
-- [ ] Chuẩn hóa CDN image
-- [ ] Fallback system: `<img onError={() => setDefaultAvatar()} />`
+- [x] Chuẩn hóa CDN image
+- [x] Fallback system: `<img onError={() => setDefaultAvatar()} />`
 
 ---
 
 ## 🎨 Phase 2 – UX & Core Features
 
-### ✅ 5. Thêm cơ chế Save Profile (State Control)
-- [ ] Implement global dirty-state: `isDirty = true`
-- [ ] Chỉ commit khi user bấm Save
-- [ ] Khi rời route: Hiển thị modal confirm lưu thay đổi
+### ✅ 5. Thêm cơ chế Save Profile (State Control) ✅ COMPLETED
+- [x] Implement global dirty-state: `isDirty = true`
+- [x] Chỉ commit khi user bấm Save
+- [x] Khi rời route: Hiển thị modal confirm lưu thay đổi
 
-### ✅ 6. Cải tiến Form viết Article
+### ✅ 6. Cải tiến Form viết Article (IN PROGRESS)
 - [ ] Dùng rich editor: TipTap / Quill / Slate
 - [ ] Upload ảnh (drag & drop)
 - [ ] Preview markdown
@@ -112,12 +112,12 @@
 
 ## 📊 Progress Tracking
 
-**Phase 1:** 0/4 completed  
-**Phase 2:** 0/4 completed  
+**Phase 1:** 4/4 completed ✅  
+**Phase 2:** 1/4 completed (25%)  
 **Phase 3:** 0/4 completed  
 **Additional:** 0/4 completed  
 
-**Total:** 0/16 completed
+**Total:** 5/16 completed (31%)
 
 ---
 

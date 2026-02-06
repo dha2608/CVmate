@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18n } from '@/store/i18nStore';
 import { useToastStore } from '@/store/toastStore';
+import { useDirtyStateStore } from '@/store/dirtyStateStore';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +17,10 @@ const Profile = () => {
   const { t } = useI18n();
   const toast = useToastStore();
   const navigate = useNavigate();
+  const { setDirty, clearDirty } = useDirtyStateStore();
+  const { Dialog: UnsavedChangesDialog } = useUnsavedChanges(
+    t('profile.unsavedChangesWarning') || 'You have unsaved changes. Are you sure you want to leave?'
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
@@ -63,6 +69,15 @@ const Profile = () => {
 
   // Check if form has changes
   const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
+  
+  // Sync dirty state with form changes
+  useEffect(() => {
+    if (hasChanges) {
+      setDirty('profile');
+    } else {
+      clearDirty();
+    }
+  }, [hasChanges, setDirty, clearDirty]);
 
   // Get current avatar for display - prioritize formData (latest upload) then user data
   const currentAvatar = (formData.avatar?.trim() || user?.avatar?.trim() || '').trim();
@@ -317,6 +332,7 @@ const Profile = () => {
   const handleCancel = () => {
     if (user) {
       setFormData(originalData);
+      clearDirty();
     }
   };
 
@@ -363,6 +379,9 @@ const Profile = () => {
       // Update originalData to include new avatar
       setOriginalData({ ...formData, avatar: updatedUser.avatar || formData.avatar });
       
+      // Clear dirty state after successful save
+      clearDirty();
+      
       toast.success(t('toast.profileUpdated'));
     } catch (error: any) {
       toast.error(error.message || t('toast.profileUpdateFailed'));
@@ -375,6 +394,7 @@ const Profile = () => {
 
   return (
     <MainLayout>
+      {UnsavedChangesDialog}
       <div className="max-w-5xl mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-4 lg:px-6">
         <div className="glass-card bg-white/90 dark:bg-gray-800/90 rounded-xl sm:rounded-2xl overflow-hidden">
           {/* Cover / Header Background */}

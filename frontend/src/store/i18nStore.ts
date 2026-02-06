@@ -99,6 +99,7 @@ interface Translations {
     updateFailed: string;
     selectImageFile: string;
     imageTooLarge: string;
+    unsavedChangesWarning?: string;
   };
   dashboard: {
     goodMorning: string;
@@ -467,6 +468,7 @@ const translations: Record<Language, Translations> = {
       updateFailed: 'Cập nhật thất bại',
       selectImageFile: 'Vui lòng chọn file ảnh',
       imageTooLarge: 'Kích thước ảnh phải nhỏ hơn 5MB',
+      unsavedChangesWarning: 'Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
     },
     dashboard: {
       goodMorning: 'Chào buổi sáng',
@@ -874,6 +876,7 @@ const translations: Record<Language, Translations> = {
       updateFailed: 'Failed to update profile',
       selectImageFile: 'Please select an image file',
       imageTooLarge: 'Image size must be less than 5MB',
+      unsavedChangesWarning: 'You have unsaved changes. Are you sure you want to leave? Your changes will be lost.',
     },
     dashboard: {
       goodMorning: 'Good Morning',
