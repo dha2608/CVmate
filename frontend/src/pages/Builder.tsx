@@ -654,7 +654,37 @@ const Builder = () => {
                       )}
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-600 leading-relaxed">
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Role Type</label>
+                      <select
+                        value={generateRole}
+                        onChange={(e) => setGenerateRole(e.target.value as any)}
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:border-crimson-red focus:outline-none bg-white"
+                      >
+                        <option value="other">General</option>
+                        <option value="frontend">Frontend</option>
+                        <option value="backend">Backend</option>
+                        <option value="fullstack">Fullstack</option>
+                        <option value="qa">QA/Testing</option>
+                        <option value="designer">UI/UX Designer</option>
+                        <option value="devops">DevOps</option>
+                        <option value="data">Data Science</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Mode</label>
+                      <select
+                        value={generateMode}
+                        onChange={(e) => setGenerateMode(e.target.value as any)}
+                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:border-crimson-red focus:outline-none bg-white"
+                      >
+                        <option value="concise">ATS-Optimized (Concise)</option>
+                        <option value="human">Human-Readable</option>
+                      </select>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed mb-2">
                     Mô tả nhanh về kinh nghiệm, mục tiêu nghề nghiệp và (tuỳ chọn) dán Job Description. AI sẽ gợi ý
                     Summary, Experience, Education và Skills phù hợp.
                   </p>
