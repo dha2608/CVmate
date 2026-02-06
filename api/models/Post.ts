@@ -18,6 +18,8 @@ export interface IPost extends Document {
   image?: string;
   likes: mongoose.Types.ObjectId[];
   comments: IComment[];
+  status: 'pending' | 'approved' | 'rejected';
+  rejectedReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -71,7 +73,17 @@ const postSchema = new Schema<IPost>({
     type: Schema.Types.ObjectId,
     ref: 'User'
   }],
-  comments: [commentSchema]
+  comments: [commentSchema],
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending',
+    index: true
+  },
+  rejectedReason: {
+    type: String,
+    trim: true
+  }
 }, {
   timestamps: true
 });

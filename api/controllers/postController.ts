@@ -44,14 +44,18 @@ export const getPosts = async (req: AuthRequest, res: Response, next: NextFuncti
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
+    // Admin can see all posts, regular users only see approved posts
+    const isAdmin = req.user?.role === 'admin';
+    const query = isAdmin ? {} : { status: 'approved' };
+
     const [posts, total] = await Promise.all([
-      Post.find()
+      Post.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .populate('user', 'name avatar careerGoal location')
         .populate('comments.user', 'name avatar careerGoal location'),
-      Post.countDocuments()
+      Post.countDocuments(query)
     ]);
     
     res.json({ 
