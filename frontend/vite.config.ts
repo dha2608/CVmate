@@ -74,12 +74,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     // 确保源映射不会影响生产构建
     sourcemap: false,
-    // 确保构建输出稳定
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: false, // 保留 console 以便调试
-      },
-    },
+    // 使用默认的 esbuild minifier（更快，无需额外依赖）
+    minify: 'esbuild',
   },
 });
