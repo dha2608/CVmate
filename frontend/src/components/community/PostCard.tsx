@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCommunityStore } from '@/store/communityStore';
 import { useAuthStore } from '@/store/authStore';
 import { useMessageStore } from '@/store/messageStore';
+import { useI18n } from '@/store/i18nStore';
 import { Button } from '@/components/ui/button';
 import { CommentItem } from './CommentItem';
 
@@ -34,6 +35,7 @@ const normalizeImageUrl = (url: string | undefined | null): string | null => {
 
 const PostCardComponent = ({ post }: PostCardProps) => {
   const { user } = useAuthStore();
+  const { t } = useI18n();
   const { likePost, commentPost, likeComment, updateComment, deleteComment } = useCommunityStore();
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
@@ -75,7 +77,7 @@ const PostCardComponent = ({ post }: PostCardProps) => {
   };
 
   return (
-    <div id={`post-${post._id}`} className="bg-white p-4 rounded-lg shadow border border-gray-200 mb-4">
+    <div id={`post-${post._id}`} className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-4">
       {/* Header */}
       <div className="flex items-center mb-3">
         <button
@@ -119,8 +121,8 @@ const PostCardComponent = ({ post }: PostCardProps) => {
       </div>
 
       {/* Content */}
-      <div className="mb-3">
-        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">{post.content}</p>
+      <div className="mb-4">
+        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words leading-relaxed">{post.content}</p>
       </div>
       {normalizedPostImage && !imageError && (
         <img 
@@ -133,21 +135,25 @@ const PostCardComponent = ({ post }: PostCardProps) => {
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between border-t border-gray-100 pt-2">
-        <div className="flex gap-4">
+      <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-3 mt-4">
+        <div className="flex gap-4 sm:gap-6">
             <button 
                 onClick={handleLike}
-                className={`flex items-center gap-1 text-sm font-medium ${isLiked ? 'text-accent' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                  isLiked 
+                    ? 'text-crimson-red dark:text-red-400' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
             >
-                <span>{isLiked ? '❤️' : '🤍'}</span>
-                <span>{post.likes.length} Likes</span>
+                <span className="text-base">{isLiked ? '❤️' : '🤍'}</span>
+                <span>{post.likes.length} {t('community.likes') || 'Likes'}</span>
             </button>
             <button 
                 onClick={() => setShowComments(!showComments)}
-                className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-700"
+                className="flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             >
-                <span>💬</span>
-                <span>{post.comments.length} Comments</span>
+                <span className="text-base">💬</span>
+                <span>{post.comments.length} {t('community.comments') || 'Comments'}</span>
             </button>
         </div>
         {post.user?._id !== user?._id && (
@@ -155,9 +161,9 @@ const PostCardComponent = ({ post }: PostCardProps) => {
             variant="outline" 
             size="sm" 
             onClick={handleMessage}
-            className="text-xs text-gray-600 hover:text-accent border-gray-200 hover:border-accent"
+            className="text-xs text-gray-600 dark:text-gray-400 hover:text-crimson-red dark:hover:text-red-400 border-gray-200 dark:border-gray-600 hover:border-crimson-red dark:hover:border-red-400"
           >
-            Nhắn tin
+            {t('community.message') || 'Nhắn tin'}
           </Button>
         )}
       </div>

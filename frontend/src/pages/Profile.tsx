@@ -216,31 +216,7 @@ const Profile = () => {
         // Use normalizeImageUrl to ensure correct URL format
         const avatarUrl = normalizeImageUrl(data.data.url) || data.data.url;
         
-        // Verify the image can be loaded before updating state
-        const img = new Image();
-        img.onerror = () => {
-          console.error('Uploaded image failed to load:', avatarUrl);
-          toast.error(t('profile.uploadFailed') || 'Image upload failed - file not accessible');
-        };
-        img.onload = () => {
-          // Image loaded successfully, update state
-          const updatedFormData = { ...formData, avatar: avatarUrl };
-          setFormData(updatedFormData);
-          setOriginalData(updatedFormData);
-          
-          // Update user in store
-          if (user) {
-            const updatedUser = { ...user, avatar: avatarUrl };
-            setUser(updatedUser);
-          }
-          
-          toast.success(t('profile.avatarUploaded'));
-        };
-        
-        // Start loading the image to verify it exists
-        img.src = avatarUrl;
-        
-        // Also update immediately for instant feedback (optimistic update)
+        // Update immediately for instant feedback (optimistic update)
         const updatedFormData = { ...formData, avatar: avatarUrl };
         setFormData(updatedFormData);
         setOriginalData(updatedFormData);
@@ -249,6 +225,20 @@ const Profile = () => {
           const updatedUser = { ...user, avatar: avatarUrl };
           setUser(updatedUser);
         }
+        
+        // Verify the image can be loaded
+        const img = new Image();
+        img.onerror = () => {
+          console.error('Uploaded image failed to load:', avatarUrl);
+          // Don't show error toast here as upload was successful, just log
+        };
+        img.onload = () => {
+          // Image loaded successfully
+          toast.success(t('profile.avatarUploaded'));
+        };
+        
+        // Start loading the image to verify it exists
+        img.src = avatarUrl;
         
         // Refresh user data from server after a short delay to ensure DB is updated
         if (user) {
@@ -346,31 +336,7 @@ const Profile = () => {
         // Use normalizeImageUrl to ensure correct URL format
         const coverPhotoUrl = normalizeImageUrl(data.data.url) || data.data.url;
         
-        // Verify the image can be loaded before updating state
-        const img = new Image();
-        img.onerror = () => {
-          console.error('Uploaded cover photo failed to load:', coverPhotoUrl);
-          toast.error(t('profile.uploadFailed') || 'Image upload failed - file not accessible');
-        };
-        img.onload = () => {
-          // Image loaded successfully, update state
-          const updatedFormData = { ...formData, coverPhoto: coverPhotoUrl };
-          setFormData(updatedFormData);
-          setOriginalData(updatedFormData);
-          
-          // Update user in store
-          if (user) {
-            const updatedUser = { ...user, coverPhoto: coverPhotoUrl } as any;
-            setUser(updatedUser);
-          }
-          
-          toast.success(t('profile.coverPhotoUploaded') || 'Ảnh bìa đã được tải lên');
-        };
-        
-        // Start loading the image to verify it exists
-        img.src = coverPhotoUrl;
-        
-        // Also update immediately for instant feedback (optimistic update)
+        // Update immediately for instant feedback (optimistic update)
         const updatedFormData = { ...formData, coverPhoto: coverPhotoUrl };
         setFormData(updatedFormData);
         setOriginalData(updatedFormData);
@@ -379,6 +345,20 @@ const Profile = () => {
           const updatedUser = { ...user, coverPhoto: coverPhotoUrl } as any;
           setUser(updatedUser);
         }
+        
+        // Verify the image can be loaded
+        const img = new Image();
+        img.onerror = () => {
+          console.error('Uploaded cover photo failed to load:', coverPhotoUrl);
+          // Don't show error toast here as upload was successful, just log
+        };
+        img.onload = () => {
+          // Image loaded successfully
+          toast.success(t('profile.coverPhotoUploaded') || 'Ảnh bìa đã được tải lên');
+        };
+        
+        // Start loading the image to verify it exists
+        img.src = coverPhotoUrl;
         
         // Refresh user data from server after a short delay to ensure DB is updated
         if (user) {
