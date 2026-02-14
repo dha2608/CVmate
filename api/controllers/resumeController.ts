@@ -5,6 +5,16 @@ import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
 import { checkAndAwardAchievement } from './achievementController.js';
+import {
+  sendSuccessResponse,
+  sendErrorResponse,
+  handleValidationError,
+  handleNotFoundError,
+  handleUnauthorizedError,
+  handleForbiddenError,
+  handleServerError,
+  ErrorCode,
+} from '../utils/errorHandler.js';
 
 export const createResume = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -124,11 +134,11 @@ export const getResumeById = async (req: AuthRequest, res: Response, next: NextF
     });
 
     if (!resume) {
-      res.status(404).json({ success: false, message: 'Resume not found' });
+      handleNotFoundError(res, 'Resume');
       return;
     }
 
-    res.json({ success: true, data: resume });
+    sendSuccessResponse(res, resume);
   } catch (error) {
     next(error);
   }

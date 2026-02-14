@@ -16,7 +16,7 @@ export const getConversations = async (req: AuthRequest, res: Response, next: Ne
 
     const users = await User.find({ _id: { $in: distinctUserIds } }).select('name avatar email');
 
-    res.json({ success: true, data: users });
+    sendSuccessResponse(res, users);
   } catch (error) {
     next(error);
   }
@@ -69,7 +69,7 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
     const { receiverId, content } = req.body;
 
     if (!receiverId || !content) {
-      res.status(400).json({ success: false, message: 'Receiver and content are required' });
+      handleValidationError(res, 'Receiver and content are required');
       return;
     }
 
@@ -79,7 +79,7 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       content
     });
 
-    res.status(201).json({ success: true, data: message });
+    sendSuccessResponse(res, message, 201);
   } catch (error) {
     next(error);
   }

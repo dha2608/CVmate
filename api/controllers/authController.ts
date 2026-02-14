@@ -5,6 +5,14 @@ import { Types } from 'mongoose';
 import User, { IUser } from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { checkAndAwardAchievement } from './achievementController.js';
+import {
+  sendSuccessResponse,
+  sendErrorResponse,
+  handleValidationError,
+  handleServerError,
+  handleUnauthorizedError,
+  ErrorCode,
+} from '../utils/errorHandler.js';
 
 export const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET as string, {
@@ -19,7 +27,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
     // Validation is now handled by middleware, but keep as fallback
     if (!name || !email || !password) {
-      res.status(400).json({ success: false, message: 'Please provide all required fields' });
+      handleValidationError(res, 'Please provide all required fields');
       return;
     }
 
@@ -28,7 +36,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     const userExists = await User.findOne({ email: normalizedEmail });
 
     if (userExists) {
-      res.status(409).json({ success: false, message: 'User already exists' });
+      sendErrorResponse(res, ErrorCode.ALREADY_EXISTS, 'User already exists', 409);
       return;
     }
 
@@ -40,9 +48,9 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     });
 
     if (user) {
-      res.status(201).json({
-        success: true,
-        data: {
+      sendSuccessResponse(
+        res,
+        {
           _id: user._id,
           name: user.name,
           email: user.email,
@@ -52,9 +60,10 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
           careerGoal: user.careerGoal,
           token: generateToken((user._id as Types.ObjectId).toString()),
         },
-      });
+        201
+      );
     } else {
-      res.status(400).json({ success: false, message: 'Invalid user data' });
+      handleValidationError(res, 'Invalid user data');
     }
   } catch (error) {
     next(error);
@@ -71,7 +80,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
     // Validation is now handled by middleware, but keep as fallback
     if (!email || !password) {
-      res.status(400).json({ success: false, message: 'Please provide email and password' });
+      handleValidationError(res, 'Please provide email and password');
       return;
     }
 
@@ -84,48 +93,49 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       const isPasswordValid = await user.matchPassword(password);
       
       if (!isPasswordValid) {
-        res.status(401).json({ success: false, message: 'Invalid email or password' });
+        handleUnauthorizedError(res, 'Invalid email or password');
         return;
       }
 
       // If 2FA is enabled, require a valid token to complete login
       if (user.twoFactorEnabled) {
         if (!twoFactorToken) {
-          res.status(401).json({
-            success: false,
-            requiresTwoFactor: true,
-            message: 'Two-factor authentication token is required',
-          });
+          sendErrorResponse(
+            res,
+            ErrorCode.UNAUTHORIZED,
+            'Two-factor authentication token is required',
+            401,
+            { requiresTwoFactor: true }
+          );
           return;
         }
 
         // Import lazily to avoid loading otplib unless needed
         const { authenticator } = await import('otplib');
         if (!user.twoFactorSecret || !authenticator.verify({ token: twoFactorToken, secret: user.twoFactorSecret })) {
-          res.status(401).json({
-            success: false,
-            requiresTwoFactor: true,
-            message: 'Invalid two-factor authentication token',
-          });
+          sendErrorResponse(
+            res,
+            ErrorCode.UNAUTHORIZED,
+            'Invalid two-factor authentication token',
+            401,
+            { requiresTwoFactor: true }
+          );
           return;
         }
       }
 
-        res.json({
-          success: true,
-          data: {
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-            role: user.role,
-            onboardingCompleted: user.onboardingCompleted,
-            careerGoal: user.careerGoal,
-            token: generateToken((user._id as Types.ObjectId).toString()),
-          },
-        });
+      sendSuccessResponse(res, {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+        onboardingCompleted: user.onboardingCompleted,
+        careerGoal: user.careerGoal,
+        token: generateToken((user._id as Types.ObjectId).toString()),
+      });
     } else {
-      res.status(401).json({ success: false, message: 'Invalid email or password' });
+      handleUnauthorizedError(res, 'Invalid email or password');
     }
   } catch (error) {
     next(error);
@@ -159,11 +169,11 @@ export const getMe = async (req: AuthRequest, res: Response, next: NextFunction)
     const user = await User.findById(req.user?._id).select('-password');
     
     if (!user) {
-      res.status(404).json({ success: false, message: 'User not found' });
+      handleNotFoundError(res, 'User');
       return;
     }
 
-    res.json({ success: true, data: user });
+    sendSuccessResponse(res, user);
   } catch (error) {
     next(error);
   }
@@ -229,31 +239,28 @@ export const updateUserProfile = async (req: AuthRequest, res: Response, next: N
         );
       }
 
-      res.json({
-        success: true,
-        data: {
-          _id: updatedUser._id,
-          name: updatedUser.name,
-          email: updatedUser.email,
-          avatar: updatedUser.avatar,
-          coverPhoto: updatedUser.coverPhoto,
-          bio: updatedUser.bio,
-          headline: updatedUser.headline,
-          location: updatedUser.location,
-          yearsOfExperience: updatedUser.yearsOfExperience,
-          currentRole: updatedUser.currentRole,
-          industries: updatedUser.industries,
-          skills: updatedUser.skills,
-          socialLinks: updatedUser.socialLinks,
-          isPublicProfile: updatedUser.isPublicProfile,
-          role: updatedUser.role,
-          onboardingCompleted: updatedUser.onboardingCompleted,
-          careerGoal: updatedUser.careerGoal,
-          token: generateToken((updatedUser._id as Types.ObjectId).toString()),
-        },
+      sendSuccessResponse(res, {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar,
+        coverPhoto: updatedUser.coverPhoto,
+        bio: updatedUser.bio,
+        headline: updatedUser.headline,
+        location: updatedUser.location,
+        yearsOfExperience: updatedUser.yearsOfExperience,
+        currentRole: updatedUser.currentRole,
+        industries: updatedUser.industries,
+        skills: updatedUser.skills,
+        socialLinks: updatedUser.socialLinks,
+        isPublicProfile: updatedUser.isPublicProfile,
+        role: updatedUser.role,
+        onboardingCompleted: updatedUser.onboardingCompleted,
+        careerGoal: updatedUser.careerGoal,
+        token: generateToken((updatedUser._id as Types.ObjectId).toString()),
       });
     } else {
-      res.status(404).json({ success: false, message: 'User not found' });
+      handleNotFoundError(res, 'User');
     }
   } catch (error) {
     next(error);
@@ -265,17 +272,14 @@ export const completeOnboarding = async (req: AuthRequest, res: Response, next: 
     const { careerGoal } = req.body;
 
     if (!careerGoal || !['new-job', 'internship', 'career-switch'].includes(careerGoal)) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'Invalid career goal. Must be: new-job, internship, or career-switch' 
-      });
+      handleValidationError(res, 'Invalid career goal. Must be: new-job, internship, or career-switch');
       return;
     }
 
     const user = await User.findById(req.user?._id);
 
     if (!user) {
-      res.status(404).json({ success: false, message: 'User not found' });
+      handleNotFoundError(res, 'User');
       return;
     }
 
@@ -283,17 +287,14 @@ export const completeOnboarding = async (req: AuthRequest, res: Response, next: 
     user.onboardingCompleted = true;
     await user.save();
 
-    res.json({
-      success: true,
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        role: user.role,
-        onboardingCompleted: user.onboardingCompleted,
-        careerGoal: user.careerGoal,
-      },
+    sendSuccessResponse(res, {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      role: user.role,
+      onboardingCompleted: user.onboardingCompleted,
+      careerGoal: user.careerGoal,
     });
   } catch (error) {
     next(error);
@@ -307,13 +308,11 @@ export const getPublicProfile = async (req: Request, res: Response, next: NextFu
     const user = await User.findById(id).select('name avatar bio headline location yearsOfExperience currentRole industries skills socialLinks isPublicProfile careerGoal createdAt');
 
     if (!user || user.isPublicProfile === false) {
-      res.status(404).json({ success: false, message: 'User not found' });
+      handleNotFoundError(res, 'User');
       return;
     }
 
-    res.json({
-      success: true,
-      data: {
+    sendSuccessResponse(res, {
         _id: user._id,
         name: user.name,
         avatar: user.avatar,

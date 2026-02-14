@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import BookmarkButton from '@/components/BookmarkButton';
 import { Bookmark, Briefcase, FileText, Trash2, Loader2 } from 'lucide-react';
 import { api } from '@/lib/utils';
+import { getUserFriendlyMessage } from '@/lib/errorHandler';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const Bookmarks = () => {

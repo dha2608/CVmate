@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import Achievement from '../models/Achievement.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import { sendSuccessResponse } from '../utils/errorHandler.js';
 
 export const getUserAchievements = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -8,7 +9,7 @@ export const getUserAchievements = async (req: AuthRequest, res: Response, next:
     const achievements = await Achievement.find({ user: userId })
       .sort({ unlockedAt: -1 });
     
-    res.json({ success: true, data: achievements });
+    sendSuccessResponse(res, achievements);
   } catch (error) {
     next(error);
   }
@@ -54,7 +55,7 @@ export const getAchievementStats = async (req: AuthRequest, res: Response, next:
       }
     };
 
-    res.json({ success: true, data: stats });
+    sendSuccessResponse(res, stats);
   } catch (error) {
     next(error);
   }

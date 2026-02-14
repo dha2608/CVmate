@@ -9,7 +9,7 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
     const { title, content, category, image } = req.body;
 
     if (!title || !content) {
-      res.status(400).json({ success: false, message: 'Title and content are required' });
+      handleValidationError(res, 'Title and content are required');
       return;
     }
 
@@ -102,7 +102,7 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
       isPublished: true,
     });
 
-    res.status(201).json({ success: true, data: article });
+    sendSuccessResponse(res, article, 201);
   } catch (error) {
     next(error);
   }

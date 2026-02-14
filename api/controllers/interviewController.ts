@@ -3,6 +3,16 @@ import Interview from '../models/Interview.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
+import {
+  sendSuccessResponse,
+  sendErrorResponse,
+  handleValidationError,
+  handleNotFoundError,
+  handleUnauthorizedError,
+  handleForbiddenError,
+  handleServerError,
+  ErrorCode,
+} from '../utils/errorHandler.js';
 import { checkAndAwardAchievement } from './achievementController.js';
 
 const PERSONA_CONFIG = {
@@ -67,7 +77,7 @@ export const startInterview = async (req: AuthRequest, res: Response, next: Next
       status: 'active'
     });
 
-    res.status(201).json({ success: true, data: interview });
+    sendSuccessResponse(res, interview, 201);
   } catch (error) {
     next(error);
   }

@@ -7,6 +7,7 @@ import { useI18n } from '@/store/i18nStore';
 import { useToastStore } from '@/store/toastStore';
 import { useBookmarkStore } from '@/store/bookmarkStore';
 import { api } from '@/lib/utils';
+import { getUserFriendlyMessage } from '@/lib/errorHandler';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

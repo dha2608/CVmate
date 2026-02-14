@@ -416,43 +416,34 @@ app.get('/api/health', async (req: Request, res: Response) => {
  * 404 handler
  */
 app.use((req: Request, res: Response) => {
-  res.status(404).json({ success: false, error: `Not Found - ${req.originalUrl}` });
+  sendErrorResponse(res, ErrorCode.NOT_FOUND, `Not Found - ${req.originalUrl}`, 404);
 });
 
 /**
  * Error Handler
  */
 app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
-  const isDev = process.env.NODE_ENV !== 'production';
-  
   // Log error
   logger.error(`Error ${req.method} ${req.path}`, error instanceof Error ? error : new Error(String(error)), {
     method: req.method,
     path: req.path,
-    statusCode: (error as any).statusCode || 500,
-    code: (error as any).code,
   });
   
-  // Handle AppError instances
-  if (error instanceof Error && 'statusCode' in error && (error as any).isOperational) {
-    const appError = error as any;
-    return res.status(appError.statusCode).json({
-      success: false,
-      error: appError.message || 'An error occurred',
-      code: appError.code,
-      ...(isDev && appError.details && { details: appError.details }),
-    });
+  // Handle AppError instances (if any custom error class exists)
+  if (error instanceof Error && 'statusCode' in error && (error as { isOperational?: boolean }).isOperational) {
+    const appError = error as { statusCode: number; message: string; code?: string; details?: unknown };
+    const isDev = process.env.NODE_ENV !== 'production';
+    return sendErrorResponse(
+      res,
+      (appError.code as ErrorCode) || ErrorCode.UNKNOWN_ERROR,
+      appError.message || 'An error occurred',
+      appError.statusCode,
+      isDev ? appError.details : undefined
+    );
   }
   
   // Handle unknown errors
-  const statusCode = (error as any).statusCode || 500;
-  res.status(statusCode).json({
-    success: false,
-    error: isDev 
-      ? ((error as any).message || 'Server internal error')
-      : 'Server internal error',
-    ...(isDev && { stack: (error as any).stack }),
-  });
+  handleServerError(res, error, 'Internal server error');
 });
 
 export default app;

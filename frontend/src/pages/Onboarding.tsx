@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/utils';
+import { getUserFriendlyMessage } from '@/lib/errorHandler';
 import SEOHead from '@/components/SEOHead';
 import { Briefcase, GraduationCap, ArrowRight } from 'lucide-react';
 

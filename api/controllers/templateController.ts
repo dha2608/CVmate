@@ -16,7 +16,7 @@ export const getResumeTemplates = async (req: AuthRequest, res: Response, next: 
       .sort({ isPremium: 1, createdAt: 1 })
       .select('key name description previewImage layout defaultTheme tags isPremium');
 
-    res.json({ success: true, data: templates });
+    sendSuccessResponse(res, templates);
   } catch (error) {
     next(error);
   }
@@ -62,7 +62,7 @@ export const seedDefaultTemplates = async (_req: Request, res: Response, next: N
       );
     }
 
-    res.json({ success: true, message: 'Default templates seeded' });
+    sendSuccessResponse(res, { message: 'Default templates seeded' });
   } catch (error) {
     next(error);
   }

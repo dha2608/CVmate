@@ -1,6 +1,10 @@
 import { Response, NextFunction } from 'express';
 import Notification from '../models/Notification.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import {
+  sendSuccessResponse,
+  handleNotFoundError,
+} from '../utils/errorHandler.js';
 
 export const getNotifications = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -60,7 +64,7 @@ export const markAllAsRead = async (req: AuthRequest, res: Response, next: NextF
       { read: true }
     );
 
-    res.json({ success: true, message: 'All notifications marked as read' });
+    sendSuccessResponse(res, { message: 'All notifications marked as read' });
   } catch (error) {
     next(error);
   }
@@ -74,11 +78,11 @@ export const deleteNotification = async (req: AuthRequest, res: Response, next: 
     });
 
     if (!notification) {
-      res.status(404).json({ success: false, message: 'Notification not found' });
+      handleNotFoundError(res, 'Notification');
       return;
     }
 
-    res.json({ success: true, message: 'Notification deleted' });
+    sendSuccessResponse(res, { message: 'Notification deleted' });
   } catch (error) {
     next(error);
   }

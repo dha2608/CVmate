@@ -6,6 +6,7 @@ import { useToastStore } from '@/store/toastStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/utils';
+import { getUserFriendlyMessage } from '@/lib/errorHandler';
 
 const Login = () => {
   const { t } = useI18n();
@@ -34,19 +35,8 @@ const Login = () => {
         setError(errorMsg);
         toast.error(errorMsg);
       }
-    } catch (err: any) {
-      console.error('❌ Login error:', err);
-      let errorMsg = err.message || t('toast.loginFailed');
-      
-      // Handle timeout errors specifically
-      if (err.type === 'timeout' || err.status === 408) {
-        errorMsg = t('toast.requestTimeout') || 'Request timeout. Please check your connection and try again.';
-      } else if (err.status === 503) {
-        errorMsg = 'Service temporarily unavailable. Please try again in a few moments.';
-      } else if (err.status === 429) {
-        errorMsg = t('toast.rateLimitExceeded') || 'Too many login attempts. Please wait a few minutes before trying again.';
-      }
-      
+    } catch (err: unknown) {
+      const errorMsg = getUserFriendlyMessage(err);
       setError(errorMsg);
       toast.error(errorMsg);
     } finally {

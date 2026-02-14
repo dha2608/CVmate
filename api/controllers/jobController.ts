@@ -129,7 +129,7 @@ export const createJob = async (req: AuthRequest, res: Response, next: NextFunct
     const { title, company, location, type, description, salary, requirements } = req.body;
 
     if (!title || !company || !description) {
-      res.status(400).json({ success: false, message: 'Please provide all required fields' });
+      handleValidationError(res, 'Please provide all required fields');
       return;
     }
 
@@ -145,7 +145,7 @@ export const createJob = async (req: AuthRequest, res: Response, next: NextFunct
       postedAt: new Date(),
     });
 
-    res.status(201).json({ success: true, data: job });
+    sendSuccessResponse(res, job, 201);
   } catch (error) {
     next(error);
   }

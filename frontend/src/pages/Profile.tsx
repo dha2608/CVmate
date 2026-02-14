@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Camera, Save, X, Loader2, Shield, Crown, CreditCard, MapPin, Briefcase, Linkedin, Github, Globe2 } from 'lucide-react';
 import { api, normalizeImageUrl } from '@/lib/utils';
+import { getUserFriendlyMessage } from '@/lib/errorHandler';
 import { useNavigate } from 'react-router-dom';
 import PayPalButton from '@/components/PayPalButton';
 
@@ -256,8 +257,7 @@ const Profile = () => {
         throw new Error(data.message || data.error || t('profile.uploadFailed'));
       }
     } catch (error: unknown) {
-      console.error('Avatar upload error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('profile.uploadFailed');
+      const errorMessage = getUserFriendlyMessage(error) || t('profile.uploadFailed');
       toast.error(errorMessage);
     } finally {
       setUploading(false);
@@ -368,8 +368,7 @@ const Profile = () => {
         throw new Error(data.message || data.error || t('profile.uploadFailed'));
       }
     } catch (error: unknown) {
-      console.error('Cover photo upload error:', error);
-      const errorMessage = error instanceof Error ? error.message : t('profile.uploadFailed');
+      const errorMessage = getUserFriendlyMessage(error) || t('profile.uploadFailed');
       toast.error(errorMessage);
     } finally {
       setUploadingCover(false);
@@ -440,7 +439,7 @@ const Profile = () => {
       
       toast.success(t('toast.profileUpdated'));
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : t('toast.profileUpdateFailed');
+      const errorMessage = getUserFriendlyMessage(error) || t('toast.profileUpdateFailed');
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);

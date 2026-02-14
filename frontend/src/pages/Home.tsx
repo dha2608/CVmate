@@ -8,6 +8,7 @@ import SEOHead from '@/components/SEOHead';
 import { Brain, FileText, Video, Users, ArrowRight, Check, BookOpen, ExternalLink, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/utils';
+import { getUserFriendlyMessage } from '@/lib/errorHandler';
 import Footer from '@/components/Footer';
 
 const Home = () => {

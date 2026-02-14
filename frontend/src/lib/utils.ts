@@ -1,6 +1,34 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { ApiResponse, IExperience, IEducation } from "@/types/shared"
+import type { ApiResponse, IExperience, IEducation, IResume } from "@/types/shared"
+import type { 
+  AuthUser, 
+  LoginResponse, 
+  RegisterResponse,
+  Resume,
+  ResumeListResponse,
+  ResumeResponse,
+  Interview,
+  InterviewResponse,
+  InterviewListResponse,
+  Post,
+  PostListResponse,
+  PostResponse,
+  Article,
+  ArticleListResponse,
+  ArticleResponse,
+  Job,
+  JobListResponse,
+  JobResponse,
+  DashboardStatsResponse,
+  NotificationListResponse,
+  CheckoutSessionResponse,
+  SubscriptionStatusResponse,
+  UploadResponse,
+  AchievementListResponse,
+  AchievementStatsResponse,
+  NewsResponse
+} from "@/types/api"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -46,12 +74,12 @@ const isDev = import.meta.env.DEV || import.meta.env.MODE === 'development';
 const isProduction = import.meta.env.MODE === 'production' || import.meta.env.PROD;
 
 export const logger = {
-  log: (...args: any[]) => {
+  log: (...args: unknown[]) => {
     if (isDev && !isProduction) {
       console.log(...args);
     }
   },
-  error: (...args: any[]) => {
+  error: (...args: unknown[]) => {
     // Always log errors, but only in dev show full details
     if (isDev) {
       console.error(...args);
@@ -60,12 +88,12 @@ export const logger = {
       console.error('[Error]', args[0]);
     }
   },
-  warn: (...args: any[]) => {
+  warn: (...args: unknown[]) => {
     if (isDev && !isProduction) {
       console.warn(...args);
     }
   },
-  info: (...args: any[]) => {
+  info: (...args: unknown[]) => {
     if (isDev && !isProduction) {
       console.info(...args);
     }
@@ -96,7 +124,7 @@ interface ApiOptions extends RequestInit {
 const DEFAULT_TIMEOUT = 30000; // 30 seconds default timeout
 const AUTH_TIMEOUT = 15000; // 15 seconds for auth endpoints (login/register)
 
-export const apiRequest = async <T = any>(
+export const apiRequest = async <T = unknown>(
   endpoint: string,
   options: ApiOptions = {}
 ): Promise<T> => {
@@ -139,52 +167,68 @@ export const apiRequest = async <T = any>(
   if (!response.ok) {
       let errorMessage = 'Request failed';
       let errorType = 'unknown';
-      let errorDetails: any = undefined;
+      let errorDetails: unknown = undefined;
     try {
       const error = await response.json();
-      errorMessage = error.message || error.error || `HTTP error! status: ${response.status}`;
-      errorType = error.type || 'unknown'; // 'server_rate_limit' or 'openai_api_error'
+      errorMessage = error.message || error.error || getUserFriendlyMessage(error);
+      errorType = error.type || extractErrorCode(error);
       errorDetails = error;
     } catch {
       // If JSON parsing fails, use status-based messages
-      if (response.status === 503) {
-        errorMessage = 'Service temporarily unavailable. Please try again in a few moments.';
-      } else if (response.status === 429) {
-        // Check response headers for rate limit info
+      const errorCode = extractErrorCode({ status: response.status });
+      errorMessage = getUserFriendlyMessage({ status: response.status, code: errorCode });
+      errorType = errorCode;
+      
+      // Add retry information for rate limits
+      if (response.status === 429) {
         const retryAfter = response.headers.get('Retry-After');
-        const retrySeconds = retryAfter ? parseInt(retryAfter, 10) : 60;
-        const retryMinutes = Math.ceil(retrySeconds / 60);
-        const retryMessage = retryAfter 
-          ? ` Please try again after ${retryMinutes} minute${retryMinutes > 1 ? 's' : ''}.` 
-          : ' Please wait a few minutes and try again.';
-        errorMessage = `Too many requests.${retryMessage}`;
-        errorType = 'server_rate_limit';
-      } else if (response.status === 401) {
-        errorMessage = 'Unauthorized. Please login again.';
-      } else if (response.status === 404) {
-        errorMessage = 'Resource not found.';
-      } else {
-        errorMessage = `HTTP error! status: ${response.status}`;
+        if (retryAfter) {
+          const retrySeconds = parseInt(retryAfter, 10);
+          const retryMinutes = Math.ceil(retrySeconds / 60);
+          errorMessage += ` Please try again after ${retryMinutes} minute${retryMinutes > 1 ? 's' : ''}.`;
+        }
       }
     }
     
-    const error = new Error(errorMessage);
-    (error as any).status = response.status;
-    (error as any).type = errorType;
-    (error as any).details = errorDetails;
+    const error = new Error(errorMessage) as Error & {
+      status?: number;
+      type?: string;
+      code?: ErrorCode;
+      details?: unknown;
+    };
+    error.status = response.status;
+    error.type = errorType;
+    error.code = extractErrorCode({ status: response.status, type: errorType });
+    error.details = errorDetails;
     throw error;
   }
 
   return response.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     clearTimeout(timeoutId);
     
     // Handle timeout/abort errors
-    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-      const timeoutError = new Error('Request timeout. Please check your connection and try again.');
-      (timeoutError as any).type = 'timeout';
-      (timeoutError as any).status = 408;
+    if (isTimeoutError(error) || (error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError'))) {
+      const timeoutError = new Error(getUserFriendlyMessage(error)) as Error & {
+        type?: string;
+        status?: number;
+        code?: ErrorCode;
+      };
+      timeoutError.type = 'timeout';
+      timeoutError.status = 408;
+      timeoutError.code = ErrorCode.TIMEOUT;
       throw timeoutError;
+    }
+    
+    // Handle network errors
+    if (isNetworkError(error)) {
+      const networkError = new Error(getUserFriendlyMessage(error)) as Error & {
+        type?: string;
+        code?: ErrorCode;
+      };
+      networkError.type = 'network';
+      networkError.code = ErrorCode.NETWORK_ERROR;
+      throw networkError;
     }
     
     // Re-throw other errors
@@ -194,7 +238,7 @@ export const apiRequest = async <T = any>(
 
 export const api = {
   login: (email: string, password: string) =>
-    apiRequest<{ success: boolean; data: any }>('/auth/login', {
+    apiRequest<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
       requiresAuth: false,
@@ -202,14 +246,14 @@ export const api = {
     }),
 
   register: (name: string, email: string, password: string) =>
-    apiRequest<{ success: boolean; data?: any; message?: string }>('/auth/register', {
+    apiRequest<RegisterResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ name, email, password }),
       requiresAuth: false,
       timeout: AUTH_TIMEOUT,
     }),
 
-  getMe: () => apiRequest<{ success: boolean; data: any }>('/auth/me'),
+  getMe: () => apiRequest<ApiResponse<AuthUser>>('/auth/me'),
 
   updateProfile: (payload: {
     name?: string; 
@@ -231,23 +275,23 @@ export const api = {
     };
     isPublicProfile?: boolean;
   }) =>
-    apiRequest<{ success: boolean; data: any }>('/auth/me', {
+    apiRequest<ApiResponse<AuthUser>>('/auth/me', {
       method: 'PUT',
       body: JSON.stringify(payload),
     }),
 
-  getResumes: () => apiRequest<{ success: boolean; data: any[] }>('/resumes'),
+  getResumes: () => apiRequest<ResumeListResponse>('/resumes'),
   
-  getResume: (id: string) => apiRequest<{ success: boolean; data: any }>(`/resumes/${id}`),
+  getResume: (id: string) => apiRequest<ResumeResponse>(`/resumes/${id}`),
   
-  createResume: (data: any) =>
-    apiRequest<{ success: boolean; data: any }>('/resumes', {
+  createResume: (data: IResume) =>
+    apiRequest<ResumeResponse>('/resumes', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  updateResume: (id: string, data: any) =>
-    apiRequest<{ success: boolean; data: any }>(`/resumes/${id}`, {
+  updateResume: (id: string, data: Partial<IResume>) =>
+    apiRequest<ResumeResponse>(`/resumes/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
@@ -275,119 +319,127 @@ export const api = {
     }),
 
   analyzeResume: (id: string, jobDescription?: string) =>
-    apiRequest<{ success: boolean; data: any }>(`/resumes/${id}/analyze`, {
+    apiRequest<ApiResponse<{
+      score: number;
+      suggestions: string[];
+      missingKeywords: string[];
+      matchedKeywords: string[];
+    }>>(`/resumes/${id}/analyze`, {
       method: 'POST',
       body: JSON.stringify({ jobDescription }),
     }),
 
   completeOnboarding: (careerGoal: 'new-job' | 'internship' | 'career-switch') =>
-    apiRequest<{ success: boolean; data: any }>('/auth/onboarding', {
+    apiRequest<ApiResponse<AuthUser>>('/auth/onboarding', {
       method: 'POST',
       body: JSON.stringify({ careerGoal }),
     }),
 
   startInterview: (persona: string) =>
-    apiRequest<{ success: boolean; data: any }>('/interviews/start', {
+    apiRequest<InterviewResponse>('/interviews/start', {
       method: 'POST',
       body: JSON.stringify({ persona }),
     }),
 
   sendInterviewMessage: (interviewId: string, message: string) =>
-    apiRequest<{ success: boolean; data: any }>(`/interviews/${interviewId}/chat`, {
+    apiRequest<ApiResponse<{
+      message: string;
+      interview: Interview;
+    }>>(`/interviews/${interviewId}/chat`, {
       method: 'POST',
       body: JSON.stringify({ message }),
     }),
 
   endInterview: (interviewId: string) =>
-    apiRequest<{ success: boolean; data: any }>(`/interviews/${interviewId}/end`, {
+    apiRequest<InterviewResponse>(`/interviews/${interviewId}/end`, {
       method: 'POST',
     }),
 
   getInterview: (interviewId: string) =>
-    apiRequest<{ success: boolean; data: any }>(`/interviews/${interviewId}`),
+    apiRequest<InterviewResponse>(`/interviews/${interviewId}`),
 
   getInterviews: () =>
-    apiRequest<{ success: boolean; data: any[] }>('/interviews'),
+    apiRequest<InterviewListResponse>('/interviews'),
 
   getDashboardStats: () =>
-    apiRequest<{ success: boolean; data: any }>('/dashboard/stats'),
+    apiRequest<DashboardStatsResponse>('/dashboard/stats'),
 
-  getPosts: () => apiRequest<{ success: boolean; data: any[] }>('/posts'),
+  getPosts: () => apiRequest<PostListResponse>('/posts'),
   
   createPost: (content: string, imageUrl?: string) =>
-    apiRequest<{ success: boolean; data: any }>('/posts', {
+    apiRequest<PostResponse>('/posts', {
       method: 'POST',
       body: JSON.stringify({ content, image: imageUrl }),
     }),
 
   likePost: (postId: string) =>
-    apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/like`, {
+    apiRequest<PostResponse>(`/posts/${postId}/like`, {
       method: 'PUT',
     }),
 
   commentPost: (postId: string, content: string, parentId?: string) =>
-    apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/comment`, {
+    apiRequest<PostResponse>(`/posts/${postId}/comment`, {
       method: 'POST',
       body: JSON.stringify({ text: content, parentId }),
     }),
 
   likeComment: (postId: string, commentId: string) =>
-    apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/comment/${commentId}/like`, {
+    apiRequest<PostResponse>(`/posts/${postId}/comment/${commentId}/like`, {
       method: 'PUT',
     }),
 
   updateComment: (postId: string, commentId: string, text: string) =>
-    apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/comment/${commentId}`, {
+    apiRequest<PostResponse>(`/posts/${postId}/comment/${commentId}`, {
       method: 'PUT',
       body: JSON.stringify({ text }),
     }),
 
   deleteComment: (postId: string, commentId: string) =>
-    apiRequest<{ success: boolean; data: any }>(`/posts/${postId}/comment/${commentId}`, {
+    apiRequest<ApiResponse<Post>>(`/posts/${postId}/comment/${commentId}`, {
       method: 'DELETE',
     }),
 
   getAchievements: () =>
-    apiRequest<{ success: boolean; data: any[] }>('/achievements'),
+    apiRequest<AchievementListResponse>('/achievements'),
 
   getAchievementStats: () =>
-    apiRequest<{ success: boolean; data: any }>('/achievements/stats'),
+    apiRequest<AchievementStatsResponse>('/achievements/stats'),
 
-  getArticles: () => apiRequest<{ success: boolean; data: any[] }>('/articles'),
+  getArticles: () => apiRequest<ArticleListResponse>('/articles'),
   
-  getArticle: (id: string) => apiRequest<{ success: boolean; data: any }>(`/articles/${id}`),
+  getArticle: (id: string) => apiRequest<ArticleResponse>(`/articles/${id}`),
 
   getNews: (limit?: number) =>
-    apiRequest<{ success: boolean; data: any[]; count: number }>(`/news?limit=${limit || 20}`, {
+    apiRequest<NewsResponse>(`/news?limit=${limit || 20}`, {
       requiresAuth: false,
     }),
 
   refreshNews: () =>
-    apiRequest<{ success: boolean; data: any[]; count: number }>('/news/refresh', {
+    apiRequest<NewsResponse>('/news/refresh', {
       method: 'POST',
       requiresAuth: false,
     }),
 
   createCheckoutSession: () =>
-    apiRequest<{ success: boolean; data: { sessionId: string; url: string } }>('/payment/create-checkout-session', {
+    apiRequest<CheckoutSessionResponse>('/payment/create-checkout-session', {
       method: 'POST',
     }),
 
   getSubscriptionStatus: () =>
-    apiRequest<{ success: boolean; data: { plan: string; status: string; endDate?: string } }>('/payment/subscription-status'),
+    apiRequest<SubscriptionStatusResponse>('/payment/subscription-status'),
 
   cancelSubscription: () =>
-    apiRequest<{ success: boolean;       message: string }>('/payment/cancel-subscription', {
+    apiRequest<ApiResponse<{ message: string }>>('/payment/cancel-subscription', {
       method: 'POST',
     }),
 
   createPayPalOrder: () =>
-    apiRequest<{ success: boolean; data: { orderId: string; amount: { value: string; currency: string } } }>('/payment/paypal/create-order', {
+    apiRequest<ApiResponse<{ orderId: string; amount: { value: string; currency: string } }>>('/payment/paypal/create-order', {
       method: 'POST',
     }),
 
   capturePayPalPayment: (orderId: string) =>
-    apiRequest<{ success: boolean; message: string; data: { subscription: any } }>('/payment/paypal/capture', {
+    apiRequest<ApiResponse<{ subscription: AuthUser['subscription'] }>>('/payment/paypal/capture', {
       method: 'POST',
       body: JSON.stringify({ orderId }),
     }),
@@ -456,19 +508,19 @@ export const api = {
 
          upload: {
            uploadAvatar: (formData: FormData) =>
-             apiRequest<ApiResponse<{ avatar: string }>>('/upload/avatar', {
+             apiRequest<UploadResponse>('/upload/avatar', {
                method: 'POST',
                body: formData,
                headers: {}, // Important: do not set Content-Type for FormData
              }),
            uploadCoverPhoto: (formData: FormData) =>
-             apiRequest<ApiResponse<{ coverPhoto: string }>>('/upload/cover-photo', {
+             apiRequest<UploadResponse>('/upload/cover-photo', {
                method: 'POST',
                body: formData,
                headers: {}, // Important: do not set Content-Type for FormData
              }),
            uploadPostImage: (formData: FormData) =>
-             apiRequest<ApiResponse<{ url: string; filename: string; size: number }>>('/upload/post-image', {
+             apiRequest<UploadResponse>('/upload/post-image', {
                method: 'POST',
                body: formData,
                headers: {}, // Important: do not set Content-Type for FormData

@@ -10,7 +10,7 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
     const { content, image } = req.body;
     
     if (!content && !image) {
-      res.status(400).json({ success: false, message: 'Content or image is required' });
+      handleValidationError(res, 'Content or image is required');
       return;
     }
 
@@ -32,7 +32,7 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
       );
     }
 
-    res.status(201).json({ success: true, data: populatedPost });
+    sendSuccessResponse(res, populatedPost, 201);
   } catch (error) {
     next(error);
   }

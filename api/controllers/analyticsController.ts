@@ -2,6 +2,13 @@ import { Response, NextFunction } from 'express';
 import Analytics from '../models/Analytics.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
+import {
+  sendSuccessResponse,
+  sendErrorResponse,
+  handleValidationError,
+  handleUnauthorizedError,
+  ErrorCode,
+} from '../utils/errorHandler.js';
 
 /**
  * Track analytics event
