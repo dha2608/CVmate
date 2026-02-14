@@ -8,6 +8,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { OfflineIndicator } from "@/components/mobile";
 import { Loader2 } from "lucide-react";
 import ScrollToTop from "@/components/ScrollToTop";
+import PageTransition from "@/components/PageTransition";
 
 // Lazy load pages for better performance
 const Home = lazy(() => import("@/pages/Home"));
@@ -63,6 +64,7 @@ export default function App() {
         <Toast />
         <ScrollToTop />
         <Suspense fallback={<PageLoader />}>
+          <PageTransition>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -203,6 +205,7 @@ export default function App() {
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </PageTransition>
         </Suspense>
       </Router>
     </ErrorBoundary>

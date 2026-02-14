@@ -11,6 +11,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import BookmarkButton from '@/components/BookmarkButton';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import AIJobMatcher from '@/components/jobs/AIJobMatcher';
 import VirtualList from '@/components/VirtualList';
 import { Briefcase, MapPin, DollarSign, Clock, Search, Filter, CheckCircle2, Loader2, ChevronDown, ChevronUp, X, Video, MessageSquare } from 'lucide-react';
@@ -162,7 +163,7 @@ const Jobs = () => {
   return (
     <MainLayout
       rightSidebar={
-          <div className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 sm:p-5 sticky top-20 space-y-4">
+          <div className="glass-card p-4 sm:p-5 sticky top-20 space-y-4">
               <div>
                 <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white mb-1">{t('jobs.jobSeekerGuidance') || 'Job Seeker Guidance'}</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t('jobs.recommendedBasedOn') || 'Personalized recommendations for you'}</p>
@@ -220,7 +221,7 @@ const Jobs = () => {
           </div>
       }
     >
-      <div className="glass-card bg-white/90 dark:bg-gray-800/90 mb-6">
+      <div className="glass-card mb-6">
         <h1 className="text-heading-2 mb-6">{t('jobs.findDreamJob')}</h1>
         <div className="space-y-4">
           <div className="flex gap-2">
@@ -459,7 +460,7 @@ const Jobs = () => {
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('jobs.loadingJobs')}</p>
         </div>
       ) : jobs.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="glass-card text-center py-16">
           <Briefcase className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{t('jobs.noJobsAvailable')}</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -494,11 +495,21 @@ const Jobs = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: index * 0.02 }}
-                className="glass-card bg-white/90 dark:bg-gray-800/90 hover:shadow-xl transition-all duration-300 cursor-pointer mb-4"
+                className="glass-card hover:shadow-xl transition-all duration-300 cursor-pointer mb-4"
               >
                   <div className="flex gap-4">
-                      <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center font-bold text-gray-400 dark:text-gray-500 flex-shrink-0">
-                          {job.logo ? <img src={job.logo} className="w-full h-full object-cover rounded" alt={job.company} loading="lazy" /> : job.company.charAt(0)}
+                      <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center font-bold text-gray-400 dark:text-gray-500 flex-shrink-0 overflow-hidden">
+                          {job.logo ? (
+                            <OptimizedImage 
+                              src={job.logo} 
+                              alt={job.company} 
+                              className="w-full h-full object-cover rounded"
+                              loading="lazy"
+                              sizes="48px"
+                            />
+                          ) : (
+                            job.company.charAt(0)
+                          )}
                       </div>
                       <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-bold text-accent dark:text-red-400">{job.title}</h3>

@@ -336,10 +336,10 @@ const Blog = () => {
                         ))}
                     </div>
                 ) : newsArticles.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <GlassCard className="text-center py-12">
                         <Newspaper className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
                         <p className="text-gray-600 dark:text-gray-400">{t('blog.noNewsAvailable')}</p>
-                    </div>
+                    </GlassCard>
                 ) : (
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -349,7 +349,7 @@ const Blog = () => {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.4, delay: index * 0.05 }}
-                                    className="glass-card bg-white/90 dark:bg-gray-800/90 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col"
+                                    className="glass-card overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col"
                                     onClick={() => navigate(`/news/${encodeURIComponent(article.link)}`)}
                                 >
                                     {article.image && (
@@ -423,13 +423,13 @@ const Blog = () => {
                 ) : (
                     <div className="space-y-6">
                         {articles.length === 0 ? (
-                            <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <GlassCard className="text-center py-12">
                                 <PenTool className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
                                 <p className="text-gray-600 dark:text-gray-400 mb-4">{t('blog.noArticlesYet')}</p>
                                 <Button onClick={() => setShowCreate(true)} className="bg-crimson-red hover:bg-fire-red text-white">
                                     {t('blog.writeFirstArticle')}
                                 </Button>
-                            </div>
+                            </GlassCard>
                         ) : (
                             <>
                                 {filteredArticles.slice(0, displayedArticlesCount).map((article, index) => (
@@ -438,7 +438,7 @@ const Blog = () => {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.4, delay: index * 0.05 }}
-                                        className="glass-card bg-white/90 dark:bg-gray-800/90 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                                        className="glass-card overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           navigate(`/blog/${article._id}`);

@@ -8,6 +8,7 @@ const isAnalyze = process.env.NODE_ENV === 'production' && process.env.VITE_ANAL
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [
     react({
       babel: {
@@ -47,6 +48,9 @@ export default defineConfig({
     }
   },
   build: {
+    assetsDir: 'assets',
+    // 确保资源使用正确的路径
+    assetsInlineLimit: 4096,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -54,8 +58,14 @@ export default defineConfig({
           'ui-vendor': ['framer-motion', 'lucide-react'],
           'pdf-vendor': ['jspdf', 'html2canvas'],
         },
+        // 确保使用相对路径
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]',
       },
     },
     chunkSizeWarningLimit: 1000,
+    // 确保源映射不会影响生产构建
+    sourcemap: false,
   },
 });

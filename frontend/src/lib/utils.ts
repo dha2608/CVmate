@@ -96,50 +96,50 @@ export const apiRequest = async <T = any>(
   }, timeout || DEFAULT_TIMEOUT);
 
   try {
-    const response = await fetch(url, {
-      ...fetchOptions,
-      headers,
+  const response = await fetch(url, {
+    ...fetchOptions,
+    headers,
       signal: controller.signal,
-    });
+  });
 
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-        let errorMessage = 'Request failed';
-        let errorType = 'unknown';
-        let errorDetails: any = undefined;
-      try {
-        const error = await response.json();
-        errorMessage = error.message || error.error || `HTTP error! status: ${response.status}`;
-        errorType = error.type || 'unknown'; // 'server_rate_limit' or 'openai_api_error'
-        errorDetails = error;
-      } catch {
-        // If JSON parsing fails, use status-based messages
-        if (response.status === 503) {
-          errorMessage = 'Service temporarily unavailable. Please try again in a few moments.';
-        } else if (response.status === 429) {
-          // Check response headers for rate limit info
-          const retryAfter = response.headers.get('Retry-After');
-          const retryMessage = retryAfter ? ` Please try again after ${retryAfter} seconds.` : ' Please wait a moment and try again.';
-          errorMessage = `Rate limit exceeded.${retryMessage}`;
-          errorType = 'server_rate_limit';
-        } else if (response.status === 401) {
-          errorMessage = 'Unauthorized. Please login again.';
-        } else if (response.status === 404) {
-          errorMessage = 'Resource not found.';
-        } else {
-          errorMessage = `HTTP error! status: ${response.status}`;
-        }
+  if (!response.ok) {
+      let errorMessage = 'Request failed';
+      let errorType = 'unknown';
+      let errorDetails: any = undefined;
+    try {
+      const error = await response.json();
+      errorMessage = error.message || error.error || `HTTP error! status: ${response.status}`;
+      errorType = error.type || 'unknown'; // 'server_rate_limit' or 'openai_api_error'
+      errorDetails = error;
+    } catch {
+      // If JSON parsing fails, use status-based messages
+      if (response.status === 503) {
+        errorMessage = 'Service temporarily unavailable. Please try again in a few moments.';
+      } else if (response.status === 429) {
+        // Check response headers for rate limit info
+        const retryAfter = response.headers.get('Retry-After');
+        const retryMessage = retryAfter ? ` Please try again after ${retryAfter} seconds.` : ' Please wait a moment and try again.';
+        errorMessage = `Rate limit exceeded.${retryMessage}`;
+        errorType = 'server_rate_limit';
+      } else if (response.status === 401) {
+        errorMessage = 'Unauthorized. Please login again.';
+      } else if (response.status === 404) {
+        errorMessage = 'Resource not found.';
+      } else {
+        errorMessage = `HTTP error! status: ${response.status}`;
       }
-      
-      const error = new Error(errorMessage);
-      (error as any).status = response.status;
-      (error as any).type = errorType;
-      (error as any).details = errorDetails;
-      throw error;
     }
+    
+    const error = new Error(errorMessage);
+    (error as any).status = response.status;
+    (error as any).type = errorType;
+    (error as any).details = errorDetails;
+    throw error;
+  }
 
-    return response.json();
+  return response.json();
   } catch (error: any) {
     clearTimeout(timeoutId);
     
