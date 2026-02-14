@@ -93,8 +93,8 @@ export default function App() {
         <OfflineIndicator />
         <Toast />
         <ScrollToTop />
-        <PageTransition>
-          <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={<PageLoader />}>
+          <PageTransition>
             <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -235,8 +235,8 @@ export default function App() {
             />
             <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </Suspense>
-        </PageTransition>
+          </PageTransition>
+        </Suspense>
       </Router>
     </ErrorBoundary>
   );

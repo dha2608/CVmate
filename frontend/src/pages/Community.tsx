@@ -68,16 +68,8 @@ const Community = () => {
                 ))}
             </div>
         ) : (
-            <div className="space-y-4 animate-fade-in">
-                <VirtualList
-                  items={posts}
-                  itemHeight={220}
-                  height={600}
-                  renderItem={(post) => (
-                    <PostCard key={post._id} post={post} />
-                  )}
-                />
-                {posts.length === 0 && (
+            <div className="space-y-4">
+                {posts.length === 0 ? (
                     <GlassCard className="p-6 sm:p-8 text-center" gradient="cyan">
                         <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto opacity-50 mb-4 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg">
                           <MessageSquare className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 dark:text-gray-500" />
@@ -85,6 +77,12 @@ const Community = () => {
                         <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">{t('community.noPostsYet')}</h3>
                         <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">{t('community.beFirstToShare')}</p>
                     </GlassCard>
+                ) : (
+                    posts.map((post) => (
+                        <div key={post._id} className="mb-4">
+                            <PostCard post={post} />
+                        </div>
+                    ))
                 )}
             </div>
         )}

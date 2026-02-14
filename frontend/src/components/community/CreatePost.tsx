@@ -65,7 +65,10 @@ const CreatePost = () => {
       const response = await api.upload.uploadPostImage(formData);
       
       if (response.success && response.data?.url) {
-        setImageUrl(response.data.url);
+        // Normalize the URL using the utility function
+        const { normalizeImageUrl } = await import('@/lib/utils');
+        const finalUrl = normalizeImageUrl(response.data.url) || response.data.url;
+        setImageUrl(finalUrl);
         toast.success(t('common.imageUploaded') || 'Image uploaded successfully');
       } else {
         throw new Error(response.message || 'Failed to upload image');
@@ -110,21 +113,23 @@ const CreatePost = () => {
   };
 
   return (
-    <div className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
-      <form onSubmit={handleSubmit}>
-        <textarea
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-crimson-red focus:border-transparent resize-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-          rows={4}
-          placeholder={t('community.sharePlaceholder') || 'Share your career updates or ask for CV feedback...'}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          disabled={isLoading || isUploadingImage}
-        />
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 sm:p-6 mb-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <textarea
+            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-crimson-red focus:border-transparent resize-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 min-h-[100px]"
+            rows={4}
+            placeholder={t('community.sharePlaceholder') || 'Share your career updates or ask for CV feedback...'}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            disabled={isLoading || isUploadingImage}
+          />
+        </div>
         
         {/* Image Preview */}
         {imagePreview && (
-          <div className="mt-3 relative">
-            <div className="relative inline-block">
+          <div className="relative w-full">
+            <div className="relative inline-block max-w-full">
               <img
                 src={imagePreview}
                 alt="Preview"
@@ -133,7 +138,7 @@ const CreatePost = () => {
               <button
                 type="button"
                 onClick={handleRemoveImage}
-                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg transition-colors"
+                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg transition-colors z-10"
                 aria-label="Remove image"
               >
                 <X size={16} />
@@ -142,9 +147,9 @@ const CreatePost = () => {
           </div>
         )}
 
-        <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-          {/* Image Upload Button */}
-          <div className="flex items-center gap-2 flex-1 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+          {/* Image Upload Section */}
+          <div className="flex items-center gap-2 flex-1">
             <input
               ref={fileInputRef}
               type="file"
@@ -156,46 +161,48 @@ const CreatePost = () => {
             />
             <label
               htmlFor="post-image-upload"
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer transition-all text-sm ${
                 isLoading || isUploadingImage
-                  ? 'opacity-50 cursor-not-allowed'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-700'
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800'
               }`}
             >
               <ImageIcon size={18} className="text-gray-600 dark:text-gray-400" />
-              <span className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="text-gray-700 dark:text-gray-300">
                 {selectedImage ? t('common.imageSelected') || 'Image Selected' : t('common.uploadImage') || 'Upload Image'}
               </span>
             </label>
 
             {/* URL Input (fallback) */}
-            <Input 
-              placeholder={t('common.imageUrl') || 'Or paste image URL'} 
-              value={imageUrl}
-              onChange={(e) => {
-                setImageUrl(e.target.value);
-                if (e.target.value) {
-                  setSelectedImage(null);
-                  setImagePreview(null);
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
+            {!selectedImage && (
+              <Input 
+                placeholder={t('common.imageUrl') || 'Or paste image URL'} 
+                value={imageUrl}
+                onChange={(e) => {
+                  setImageUrl(e.target.value);
+                  if (e.target.value) {
+                    setSelectedImage(null);
+                    setImagePreview(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = '';
+                    }
                   }
-                }
-              }}
-              className="flex-1 text-sm max-w-xs"
-              disabled={isLoading || isUploadingImage || !!selectedImage}
-            />
+                }}
+                className="flex-1 text-sm max-w-xs"
+                disabled={isLoading || isUploadingImage}
+              />
+            )}
           </div>
 
           {/* Submit Button */}
           <Button 
             type="submit" 
             disabled={isLoading || isUploadingImage || (!content.trim() && !imageUrl && !selectedImage)}
-            className="bg-crimson-red hover:bg-fire-red text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="bg-crimson-red hover:bg-fire-red text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap px-6 py-2"
           >
             {isLoading || isUploadingImage ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin inline-block" />
                 {isUploadingImage ? (t('common.uploading') || 'Uploading...') : (t('common.posting') || 'Posting...')}
               </>
             ) : (
