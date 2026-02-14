@@ -213,32 +213,48 @@ const Profile = () => {
       const data = await response.json();
 
       if (data.success && data.data?.url) {
-        // Construct full URL - data.data.url is like "/uploads/avatar-xxx.jpg"
-        let avatarUrl = data.data.url;
+        // Use normalizeImageUrl to ensure correct URL format
+        const avatarUrl = normalizeImageUrl(data.data.url) || data.data.url;
         
-        // If URL doesn't start with http, prepend API base URL
-        if (!avatarUrl.startsWith('http')) {
-          // Remove trailing slash from apiBaseUrl if present
-          const baseUrl = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
-          // Ensure url starts with /
-          const urlPath = avatarUrl.startsWith('/') ? avatarUrl : `/${avatarUrl}`;
-          avatarUrl = `${baseUrl}${urlPath}`;
-        }
+        // Verify the image can be loaded before updating state
+        const img = new Image();
+        img.onerror = () => {
+          console.error('Uploaded image failed to load:', avatarUrl);
+          toast.error(t('profile.uploadFailed') || 'Image upload failed - file not accessible');
+        };
+        img.onload = () => {
+          // Image loaded successfully, update state
+          const updatedFormData = { ...formData, avatar: avatarUrl };
+          setFormData(updatedFormData);
+          setOriginalData(updatedFormData);
+          
+          // Update user in store
+          if (user) {
+            const updatedUser = { ...user, avatar: avatarUrl };
+            setUser(updatedUser);
+          }
+          
+          toast.success(t('profile.avatarUploaded'));
+        };
         
-        // Update form data immediately (no timestamp to prevent flickering)
+        // Start loading the image to verify it exists
+        img.src = avatarUrl;
+        
+        // Also update immediately for instant feedback (optimistic update)
         const updatedFormData = { ...formData, avatar: avatarUrl };
         setFormData(updatedFormData);
         setOriginalData(updatedFormData);
         
-        // Also update user in store immediately for instant display
         if (user) {
           const updatedUser = { ...user, avatar: avatarUrl };
           setUser(updatedUser);
-          // 立即从服务器获取最新用户数据以确保同步
+        }
+        
+        // Refresh user data from server after a short delay to ensure DB is updated
+        setTimeout(async () => {
           try {
             const userResponse = await api.getMe();
             if (userResponse.success && userResponse.data) {
-              // Normalize avatar URL before saving
               const normalizedData = {
                 ...userResponse.data,
                 avatar: normalizeImageUrl(userResponse.data.avatar) || userResponse.data.avatar,
@@ -250,9 +266,7 @@ const Profile = () => {
           } catch (err) {
             console.warn('Failed to refresh user data:', err);
           }
-        }
-        
-        toast.success(t('profile.avatarUploaded'));
+        }, 500);
       } else {
         throw new Error(data.message || data.error || t('profile.uploadFailed'));
       }
@@ -327,29 +341,48 @@ const Profile = () => {
       const data = await response.json();
 
       if (data.success && data.data?.url) {
-        // Construct full URL
-        let coverPhotoUrl = data.data.url;
+        // Use normalizeImageUrl to ensure correct URL format
+        const coverPhotoUrl = normalizeImageUrl(data.data.url) || data.data.url;
         
-        if (!coverPhotoUrl.startsWith('http')) {
-          const baseUrl = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
-          const urlPath = coverPhotoUrl.startsWith('/') ? coverPhotoUrl : `/${coverPhotoUrl}`;
-          coverPhotoUrl = `${baseUrl}${urlPath}`;
-        }
+        // Verify the image can be loaded before updating state
+        const img = new Image();
+        img.onerror = () => {
+          console.error('Uploaded cover photo failed to load:', coverPhotoUrl);
+          toast.error(t('profile.uploadFailed') || 'Image upload failed - file not accessible');
+        };
+        img.onload = () => {
+          // Image loaded successfully, update state
+          const updatedFormData = { ...formData, coverPhoto: coverPhotoUrl };
+          setFormData(updatedFormData);
+          setOriginalData(updatedFormData);
+          
+          // Update user in store
+          if (user) {
+            const updatedUser = { ...user, coverPhoto: coverPhotoUrl } as any;
+            setUser(updatedUser);
+          }
+          
+          toast.success(t('profile.coverPhotoUploaded') || 'Ảnh bìa đã được tải lên');
+        };
         
-        // Update form data immediately
+        // Start loading the image to verify it exists
+        img.src = coverPhotoUrl;
+        
+        // Also update immediately for instant feedback (optimistic update)
         const updatedFormData = { ...formData, coverPhoto: coverPhotoUrl };
         setFormData(updatedFormData);
         setOriginalData(updatedFormData);
         
-        // Also update user in store
         if (user) {
-          const updatedUser = { ...user, coverPhoto: coverPhotoUrl };
+          const updatedUser = { ...user, coverPhoto: coverPhotoUrl } as any;
           setUser(updatedUser);
-          // 立即从服务器获取最新用户数据以确保同步
+        }
+        
+        // Refresh user data from server after a short delay to ensure DB is updated
+        setTimeout(async () => {
           try {
             const userResponse = await api.getMe();
             if (userResponse.success && userResponse.data) {
-              // Normalize avatar URL before saving
               const normalizedData = {
                 ...userResponse.data,
                 avatar: normalizeImageUrl(userResponse.data.avatar) || userResponse.data.avatar,
@@ -361,9 +394,7 @@ const Profile = () => {
           } catch (err) {
             console.warn('Failed to refresh user data:', err);
           }
-        }
-        
-        toast.success('Ảnh bìa đã được tải lên');
+        }, 500);
       } else {
         throw new Error(data.message || data.error || t('profile.uploadFailed'));
       }

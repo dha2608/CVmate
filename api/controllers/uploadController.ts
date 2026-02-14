@@ -23,6 +23,14 @@ export const uploadAvatar = async (req: AuthRequest, res: Response, next: NextFu
     }
 
     const fileUrl = `/uploads/${req.file.filename}`;
+    const filePath = path.join(__dirname, '../../uploads', req.file.filename);
+
+    // Verify file was actually saved
+    const fs = await import('fs');
+    if (!fs.existsSync(filePath)) {
+      handleServerError(res, new Error('File was not saved successfully'), 'File upload failed');
+      return;
+    }
 
     // 立即更新用户记录中的 avatar
     if (req.user?._id) {
@@ -47,6 +55,14 @@ export const uploadCoverPhoto = async (req: AuthRequest, res: Response, next: Ne
     }
 
     const fileUrl = `/uploads/${req.file.filename}`;
+    const filePath = path.join(__dirname, '../../uploads', req.file.filename);
+
+    // Verify file was actually saved
+    const fs = await import('fs');
+    if (!fs.existsSync(filePath)) {
+      handleServerError(res, new Error('File was not saved successfully'), 'File upload failed');
+      return;
+    }
 
     // 立即更新用户记录中的 coverPhoto
     if (req.user?._id) {
