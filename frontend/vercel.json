@@ -5,17 +5,13 @@
   "devCommand": "npm run client:dev",
   "rewrites": [
     {
-      "source": "/assets/(.*)",
-      "destination": "/assets/$1"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
   "headers": [
     {
-      "source": "/assets/(.*\\.js)",
+      "source": "/assets/:path*.js",
       "headers": [
         {
           "key": "Content-Type",
@@ -28,7 +24,7 @@
       ]
     },
     {
-      "source": "/assets/(.*\\.css)",
+      "source": "/assets/:path*.css",
       "headers": [
         {
           "key": "Content-Type",
@@ -54,15 +50,6 @@
         {
           "key": "Expires",
           "value": "0"
-        }
-      ]
-    },
-    {
-      "source": "/",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate, max-age=0"
         }
       ]
     }
