@@ -5,7 +5,7 @@
   "devCommand": "npm run client:dev",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!assets|api|uploads|logo\\.svg|favicon\\.svg).*)",
       "destination": "/index.html"
     }
   ],
