@@ -52,6 +52,13 @@ export default defineConfig({
     // 确保资源使用正确的路径
     assetsInlineLimit: 4096,
     rollupOptions: {
+      external: (id) => {
+        // Mark Sentry as external since it's optional and may not be installed
+        if (id === '@sentry/react' || id.startsWith('@sentry/')) {
+          return true;
+        }
+        return false;
+      },
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],

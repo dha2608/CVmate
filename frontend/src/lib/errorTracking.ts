@@ -26,8 +26,13 @@ export const initErrorTracking = async (): Promise<void> => {
 
   try {
     // Dynamically import Sentry to avoid bundling it if not needed
-    // @ts-expect-error - Sentry is optional dependency
-    const Sentry = await import('@sentry/react');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - Sentry is optional dependency, may not be installed
+    const sentryModule = await import('@sentry/react').catch(() => null);
+    if (!sentryModule) {
+      return;
+    }
+    const Sentry = sentryModule;
     
     Sentry.init({
       dsn: sentryDsn,
@@ -79,8 +84,10 @@ export const logError = (error: Error, errorInfo?: ErrorInfo): void => {
   if (isSentryInitialized) {
     try {
       // Dynamically import Sentry
-      // @ts-expect-error - Sentry is optional dependency
-      import('@sentry/react').then((Sentry) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - Sentry is optional dependency, may not be installed
+      import('@sentry/react').catch(() => null).then((Sentry) => {
+        if (!Sentry) return;
         Sentry.captureException(error, {
           contexts: {
             react: {
@@ -108,8 +115,10 @@ export const logError = (error: Error, errorInfo?: ErrorInfo): void => {
  */
 export const setUserContext = (userId: string, email?: string, name?: string): void => {
   if (isSentryInitialized) {
-    // @ts-expect-error - Sentry is optional dependency
-    import('@sentry/react').then((Sentry) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - Sentry is optional dependency, may not be installed
+    import('@sentry/react').catch(() => null).then((Sentry) => {
+      if (!Sentry) return;
       Sentry.setUser({
         id: userId,
         email,
@@ -124,8 +133,10 @@ export const setUserContext = (userId: string, email?: string, name?: string): v
  */
 export const clearUserContext = (): void => {
   if (isSentryInitialized) {
-    // @ts-expect-error - Sentry is optional dependency
-    import('@sentry/react').then((Sentry) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - Sentry is optional dependency, may not be installed
+    import('@sentry/react').catch(() => null).then((Sentry) => {
+      if (!Sentry) return;
       Sentry.setUser(null);
     });
   }
@@ -136,8 +147,10 @@ export const clearUserContext = (): void => {
  */
 export const addBreadcrumb = (message: string, category?: string, level?: 'info' | 'warning' | 'error'): void => {
   if (isSentryInitialized) {
-    // @ts-expect-error - Sentry is optional dependency
-    import('@sentry/react').then((Sentry) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - Sentry is optional dependency, may not be installed
+    import('@sentry/react').catch(() => null).then((Sentry) => {
+      if (!Sentry) return;
       Sentry.addBreadcrumb({
         message,
         category: category || 'default',

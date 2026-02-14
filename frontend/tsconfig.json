@@ -10,6 +10,7 @@
     ],
     "module": "ESNext",
     "skipLibCheck": true,
+    "noErrorTruncation": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": false,
