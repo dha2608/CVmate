@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api } from '@/lib/utils';
+import type { Post } from '@/types/api';
 
 interface User {
   _id: string;
@@ -76,10 +77,11 @@ export const useCommunityStore = create<CommunityState>((set) => ({
   likePost: async (postId: string) => {
     try {
       const res = await api.likePost(postId);
-      if (res.success) {
+      if (res.success && res.data) {
+        const updatedPost = res.data as Post;
         set((state) => ({
           posts: state.posts.map((post) =>
-            post._id === postId ? { ...post, likes: res.data as string[] } : post
+            post._id === postId ? { ...post, likes: updatedPost.likes } : post
           ),
         }));
       }
@@ -91,10 +93,11 @@ export const useCommunityStore = create<CommunityState>((set) => ({
   commentPost: async (postId: string, text: string, parentId?: string) => {
     try {
       const res = await api.commentPost(postId, text, parentId);
-      if (res.success) {
+      if (res.success && res.data) {
+        const updatedPost = res.data as Post;
         set((state) => ({
           posts: state.posts.map((post) =>
-            post._id === postId ? { ...post, comments: res.data as Comment[] } : post
+            post._id === postId ? { ...post, comments: updatedPost.comments } : post
           ),
         }));
       }
@@ -106,17 +109,12 @@ export const useCommunityStore = create<CommunityState>((set) => ({
   likeComment: async (postId: string, commentId: string) => {
     try {
       const res = await api.likeComment(postId, commentId);
-      if (res.success) {
+      if (res.success && res.data) {
+        const updatedPost = res.data as Post;
         set((state) => ({
           posts: state.posts.map((post) => {
             if (post._id === postId) {
-              const updatedComments = post.comments.map((comment) => {
-                if (comment._id === commentId) {
-                  return { ...comment, likes: res.data as string[] };
-                }
-                return comment;
-              });
-              return { ...post, comments: updatedComments };
+              return { ...post, comments: updatedPost.comments };
             }
             return post;
           }),
@@ -130,10 +128,11 @@ export const useCommunityStore = create<CommunityState>((set) => ({
   updateComment: async (postId: string, commentId: string, text: string) => {
     try {
       const res = await api.updateComment(postId, commentId, text);
-      if (res.success) {
+      if (res.success && res.data) {
+        const updatedPost = res.data as Post;
         set((state) => ({
           posts: state.posts.map((post) =>
-            post._id === postId ? { ...post, comments: res.data as Comment[] } : post
+            post._id === postId ? { ...post, comments: updatedPost.comments } : post
           ),
         }));
       }
@@ -145,10 +144,11 @@ export const useCommunityStore = create<CommunityState>((set) => ({
   deleteComment: async (postId: string, commentId: string) => {
     try {
       const res = await api.deleteComment(postId, commentId);
-      if (res.success) {
+      if (res.success && res.data) {
+        const updatedPost = res.data as Post;
         set((state) => ({
           posts: state.posts.map((post) =>
-            post._id === postId ? { ...post, comments: res.data as Comment[] } : post
+            post._id === postId ? { ...post, comments: updatedPost.comments } : post
           ),
         }));
       }

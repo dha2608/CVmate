@@ -69,12 +69,19 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       }
 
       const interview = response.data;
+      if (!interview) {
+        throw new Error('Interview not found');
+      }
       set({
         interviewId: interview._id,
         persona: interview.persona,
-        messages: interview.chatHistory || [],
-        feedback: interview.feedback || null,
-        status: interview.status || 'active',
+        messages: interview.messages || [],
+        feedback: interview.feedback ? {
+          confidenceScore: interview.feedback.confidence,
+          contentScore: interview.feedback.accuracy,
+          suggestions: interview.feedback.suggestions.join('\n'),
+        } : null,
+        status: interview.endedAt ? 'completed' : 'active',
         isStarting: false,
       });
     } catch (error: any) {
@@ -101,12 +108,18 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
         throw new Error('Failed to send message');
       }
 
-      const interview = response.data;
-      set({
-        messages: interview.chatHistory || optimisticMessages,
-        status: interview.status || 'active',
-        isSending: false,
-      });
+      const interview = response.data?.interview;
+      if (interview) {
+        set({
+          messages: interview.messages || optimisticMessages,
+          status: interview.endedAt ? 'completed' : 'active',
+          isSending: false,
+        });
+      } else {
+        set({
+          isSending: false,
+        });
+      }
     } catch (error: any) {
       console.error('sendUserMessage error', error);
       

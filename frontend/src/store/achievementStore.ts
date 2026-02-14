@@ -1,18 +1,6 @@
 import { create } from 'zustand';
 import { api } from '@/lib/utils';
-
-export interface Achievement {
-  _id: string;
-  user: string;
-  type: 'first_cv' | 'complete_profile' | 'apply_job' | 'write_post' | 'complete_interview';
-  unlockedAt: string;
-  metadata?: {
-    resumeId?: string;
-    jobId?: string;
-    postId?: string;
-    interviewId?: string;
-  };
-}
+import type { Achievement } from '@/types/api';
 
 interface AchievementState {
   achievements: Achievement[];
@@ -42,8 +30,8 @@ export const useAchievementStore = create<AchievementState>((set) => ({
     set({ isLoading: true });
     try {
       const res = await api.getAchievements();
-      if (res.success) {
-        set({ achievements: res.data as Achievement[], isLoading: false });
+      if (res.success && res.data) {
+        set({ achievements: res.data, isLoading: false });
       } else {
         set({ error: (res as any).message || 'Failed to load achievements', isLoading: false });
       }

@@ -161,7 +161,7 @@ const Builder = () => {
         response = await api.updateResume(currentResume._id, resumeData);
       } else {
         response = await api.createResume(resumeData);
-        if (response.success && response.data._id) {
+        if (response.success && response.data?._id) {
           setResume({ ...currentResume, _id: response.data._id });
         }
       }

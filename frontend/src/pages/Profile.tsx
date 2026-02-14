@@ -141,7 +141,7 @@ const Profile = () => {
     setLoadingSubscription(true);
     try {
       const response = await api.createCheckoutSession();
-      if (response.success && response.data.url) {
+      if (response.success && response.data?.url) {
         window.location.href = response.data.url;
       }
     } catch (error: unknown) {
@@ -423,13 +423,15 @@ const Profile = () => {
 
       // Update user in store with new data including avatar
       // Normalize URLs before saving
-      const updatedUser = {
-        ...response.data,
-        avatar: normalizeImageUrl(response.data.avatar) || response.data.avatar,
-        coverPhoto: normalizeImageUrl((response.data as any).coverPhoto) || (response.data as any).coverPhoto,
-        token: user.token
-      };
-      setUser(updatedUser);
+      if (response.data && user) {
+        const updatedUser = {
+          ...response.data,
+          avatar: normalizeImageUrl(response.data.avatar) || response.data.avatar,
+          coverPhoto: normalizeImageUrl((response.data as any).coverPhoto) || (response.data as any).coverPhoto,
+          token: user.token
+        };
+        setUser(updatedUser);
+      }
       
       // Update originalData to include new avatar
       setOriginalData({ ...formData, avatar: updatedUser.avatar || formData.avatar });

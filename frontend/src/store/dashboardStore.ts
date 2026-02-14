@@ -47,7 +47,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       }
 
       const data = response.data || {};
-      const overview = data.overview || {};
+      const overview = (data as any).overview || {};
 
       set({
         stats: {

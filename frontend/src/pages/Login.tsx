@@ -26,7 +26,7 @@ const Login = () => {
     try {
       const data = await api.login(email, password);
       
-      if (data.success) {
+      if (data.success && data.data) {
         setUser(data.data);
         toast.success(t('toast.loginSuccess'));
         navigate('/dashboard');

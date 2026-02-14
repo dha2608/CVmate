@@ -29,9 +29,11 @@ export const useNewsStore = create<NewsState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await api.getNews(limit);
-      if (res.success) {
+      if (res.success && res.data) {
+        const newsData = res.data;
+        const articles = (newsData as any).news || (Array.isArray(newsData) ? newsData : []);
         set({ 
-          articles: res.data, 
+          articles, 
           isLoading: false, 
           lastFetched: Date.now(),
           error: null 
@@ -54,9 +56,11 @@ export const useNewsStore = create<NewsState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await api.refreshNews();
-      if (res.success) {
+      if (res.success && res.data) {
+        const newsData = res.data;
+        const articles = (newsData as any).news || (Array.isArray(newsData) ? newsData : []);
         set({ 
-          articles: res.data, 
+          articles, 
           isLoading: false, 
           lastFetched: Date.now(),
           error: null 

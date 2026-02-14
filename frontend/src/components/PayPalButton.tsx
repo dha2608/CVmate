@@ -17,7 +17,7 @@ export default function PayPalButton({ onSuccess, onError }: PayPalButtonProps) 
   const handleCreateOrder = async () => {
     try {
       const response = await api.createPayPalOrder();
-      if (response.success) {
+      if (response.success && response.data?.orderId) {
         return response.data.orderId;
       }
       throw new Error('Failed to create PayPal order');
@@ -33,7 +33,7 @@ export default function PayPalButton({ onSuccess, onError }: PayPalButtonProps) 
       if (response.success) {
         // Update user subscription
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-        if (currentUser.data) {
+        if (currentUser.data && response.data?.subscription) {
           currentUser.data.subscription = response.data.subscription;
           localStorage.setItem('user', JSON.stringify(currentUser));
           setUser(currentUser.data);

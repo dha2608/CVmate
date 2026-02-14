@@ -27,8 +27,8 @@ interface User {
   subscription?: {
     plan: 'free' | 'premium';
     status: 'active' | 'cancelled' | 'expired';
-    startDate?: Date;
-    endDate?: Date;
+    startDate?: string | Date;
+    endDate?: string | Date;
     paymentMethod?: string;
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;

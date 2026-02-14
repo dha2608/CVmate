@@ -29,6 +29,13 @@ import type {
   AchievementStatsResponse,
   NewsResponse
 } from "@/types/api"
+import { 
+  getUserFriendlyMessage, 
+  extractErrorCode, 
+  ErrorCode, 
+  isTimeoutError, 
+  isNetworkError 
+} from "@/lib/errorHandler"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

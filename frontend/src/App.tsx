@@ -67,10 +67,11 @@ export default function App() {
           const response = await api.getMe();
           if (response.success && response.data) {
             // 只更新数据，保留 token，并规范化图片 URL
+            const userData = response.data;
             const normalizedData = {
-              ...response.data,
-              avatar: normalizeImageUrl(response.data.avatar) || response.data.avatar,
-              coverPhoto: normalizeImageUrl((response.data as any).coverPhoto) || (response.data as any).coverPhoto,
+              ...userData,
+              avatar: normalizeImageUrl(userData.avatar) || userData.avatar,
+              coverPhoto: normalizeImageUrl((userData as any).coverPhoto) || (userData as any).coverPhoto,
               token: user.token
             };
             setUser(normalizedData);

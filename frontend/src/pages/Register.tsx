@@ -33,7 +33,7 @@ const Register = () => {
 
     try {
       const data = await api.register(name, email, password);
-      if (data.success) {
+      if (data.success && data.data) {
         setUser(data.data);
         toast.success(t('toast.registerSuccess'));
         navigate('/dashboard');

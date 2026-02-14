@@ -23,7 +23,7 @@ const Home = () => {
     const fetchLatestArticles = async () => {
       try {
         const response = await api.getArticles();
-        if (response.success) {
+        if (response.success && response.data) {
           setLatestArticles(response.data.slice(0, 3)); // Get latest 3 articles
         }
       } catch (error) {
