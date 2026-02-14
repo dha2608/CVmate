@@ -21,15 +21,6 @@ interface Comment {
   replies?: Comment[];
 }
 
-interface Post {
-  _id: string;
-  user: User;
-  content: string;
-  image?: string;
-  likes: string[];
-  comments: Comment[];
-  createdAt: string;
-}
 
 interface CommunityState {
   posts: Post[];

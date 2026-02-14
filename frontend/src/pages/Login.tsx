@@ -27,7 +27,12 @@ const Login = () => {
       const data = await api.login(email, password);
       
       if (data.success && data.data) {
-        setUser(data.data);
+        // data.data is { user: AuthUser; token: string }
+        const { user, token } = data.data;
+        setUser({
+          ...user,
+          token,
+        });
         toast.success(t('toast.loginSuccess'));
         navigate('/dashboard');
       } else {

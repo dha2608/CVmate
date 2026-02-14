@@ -423,8 +423,9 @@ const Profile = () => {
 
       // Update user in store with new data including avatar
       // Normalize URLs before saving
+      let updatedUser: any = null;
       if (response.data && user) {
-        const updatedUser = {
+        updatedUser = {
           ...response.data,
           avatar: normalizeImageUrl(response.data.avatar) || response.data.avatar,
           coverPhoto: normalizeImageUrl((response.data as any).coverPhoto) || (response.data as any).coverPhoto,
@@ -434,7 +435,9 @@ const Profile = () => {
       }
       
       // Update originalData to include new avatar
-      setOriginalData({ ...formData, avatar: updatedUser.avatar || formData.avatar });
+      if (updatedUser) {
+        setOriginalData({ ...formData, avatar: updatedUser.avatar || formData.avatar });
+      }
       
       // Clear dirty state after successful save
       clearDirty();
