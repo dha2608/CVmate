@@ -45,7 +45,7 @@ export const initErrorTracking = async (): Promise<void> => {
       replaysSessionSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
       replaysOnErrorSampleRate: 1.0,
       // Filter out known non-critical errors
-      beforeSend(event, hint) {
+      beforeSend(event: unknown, hint: { originalException?: unknown }) {
         // Filter out network errors that are expected
         if (hint.originalException instanceof Error) {
           const error = hint.originalException;

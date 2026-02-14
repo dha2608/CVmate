@@ -44,7 +44,7 @@ class PageErrorBoundary extends Component<Props, State> {
 
     // Log to error tracking service (Sentry if configured)
     logError(error, {
-      componentStack: errorInfo.componentStack,
+      componentStack: errorInfo.componentStack || undefined,
       errorBoundary: this.props.pageName || 'PageErrorBoundary',
     });
   }

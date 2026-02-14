@@ -36,7 +36,7 @@ class ErrorBoundary extends Component<Props, State> {
 
     // Log to error tracking service (Sentry if configured)
     logError(error, {
-      componentStack: errorInfo.componentStack,
+      componentStack: errorInfo.componentStack || undefined,
       errorBoundary: 'ErrorBoundary',
     });
   }

@@ -235,7 +235,8 @@ const Builder = () => {
       }
       
       // Retry mechanism for network errors (max 2 retries)
-      const isNetworkError = error?.status === 0 || error?.status >= 500 || error?.message?.includes('fetch');
+      const errorObj = error as { status?: number; message?: string } | null;
+      const isNetworkError = errorObj?.status === 0 || (errorObj?.status && errorObj.status >= 500) || errorObj?.message?.includes('fetch');
       if (isNetworkError && retryCount < 2) {
         const { useToastStore } = await import('@/store/toastStore');
         useToastStore.getState().error(`Network error. Retrying... (${retryCount + 1}/2)`);
