@@ -8,7 +8,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Camera, Save, X, Loader2, Shield, Crown, CreditCard, MapPin, Briefcase, Linkedin, Github, Globe2 } from 'lucide-react';
-import { api } from '@/lib/utils';
+import { api, normalizeImageUrl } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import PayPalButton from '@/components/PayPalButton';
 
@@ -84,14 +84,15 @@ const Profile = () => {
   }, [hasChanges, setDirty, clearDirty]);
 
   // Get current avatar for display - prioritize formData (latest upload) then user data
-  const currentAvatar = (formData.avatar?.trim() || user?.avatar?.trim() || '').trim();
+  // Normalize URL to ensure it's a full URL
+  const currentAvatar = normalizeImageUrl(formData.avatar || user?.avatar) || '';
 
   useEffect(() => {
     if (user) {
       const initialData = {
         name: user.name || '',
-        avatar: user.avatar || '',
-        coverPhoto: (user as any).coverPhoto || '',
+        avatar: normalizeImageUrl(user.avatar) || '',
+        coverPhoto: normalizeImageUrl((user as any).coverPhoto) || '',
         email: user.email || '',
         role: user.role || 'user',
         bio: user.bio || '',
@@ -236,7 +237,14 @@ const Profile = () => {
           try {
             const userResponse = await api.getMe();
             if (userResponse.success && userResponse.data) {
-              setUser({ ...userResponse.data, token: user.token });
+              // Normalize avatar URL before saving
+              const normalizedData = {
+                ...userResponse.data,
+                avatar: normalizeImageUrl(userResponse.data.avatar) || userResponse.data.avatar,
+                coverPhoto: normalizeImageUrl((userResponse.data as any).coverPhoto) || (userResponse.data as any).coverPhoto,
+                token: user.token
+              };
+              setUser(normalizedData);
             }
           } catch (err) {
             console.warn('Failed to refresh user data:', err);
@@ -341,7 +349,14 @@ const Profile = () => {
           try {
             const userResponse = await api.getMe();
             if (userResponse.success && userResponse.data) {
-              setUser({ ...userResponse.data, token: user.token });
+              // Normalize avatar URL before saving
+              const normalizedData = {
+                ...userResponse.data,
+                avatar: normalizeImageUrl(userResponse.data.avatar) || userResponse.data.avatar,
+                coverPhoto: normalizeImageUrl((userResponse.data as any).coverPhoto) || (userResponse.data as any).coverPhoto,
+                token: user.token
+              };
+              setUser(normalizedData);
             }
           } catch (err) {
             console.warn('Failed to refresh user data:', err);
@@ -408,7 +423,13 @@ const Profile = () => {
       }
 
       // Update user in store with new data including avatar
-      const updatedUser = response.data;
+      // Normalize URLs before saving
+      const updatedUser = {
+        ...response.data,
+        avatar: normalizeImageUrl(response.data.avatar) || response.data.avatar,
+        coverPhoto: normalizeImageUrl((response.data as any).coverPhoto) || (response.data as any).coverPhoto,
+        token: user.token
+      };
       setUser(updatedUser);
       
       // Update originalData to include new avatar
@@ -437,7 +458,7 @@ const Profile = () => {
           <div 
             className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative group/cover overflow-visible"
             style={{
-              backgroundImage: formData.coverPhoto ? `url(${formData.coverPhoto})` : undefined,
+              backgroundImage: formData.coverPhoto ? `url(${normalizeImageUrl(formData.coverPhoto) || formData.coverPhoto})` : undefined,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}

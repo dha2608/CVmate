@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
+import { normalizeImageUrl } from "@/lib/utils";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
 import Toast from "@/components/Toast";
@@ -65,8 +66,14 @@ export default function App() {
           const { api } = await import('@/lib/utils');
           const response = await api.getMe();
           if (response.success && response.data) {
-            // 只更新数据，保留 token
-            setUser({ ...response.data, token: user.token });
+            // 只更新数据，保留 token，并规范化图片 URL
+            const normalizedData = {
+              ...response.data,
+              avatar: normalizeImageUrl(response.data.avatar) || response.data.avatar,
+              coverPhoto: normalizeImageUrl((response.data as any).coverPhoto) || (response.data as any).coverPhoto,
+              token: user.token
+            };
+            setUser(normalizedData);
           }
         } catch (error) {
           // 静默失败，不影响用户体验

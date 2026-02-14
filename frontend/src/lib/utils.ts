@@ -6,6 +6,38 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Normalize image URL - convert relative paths to full URLs
+ * Handles both relative paths (/uploads/...) and full URLs (http://...)
+ */
+export const normalizeImageUrl = (url: string | undefined | null): string | null => {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  
+  // Already a full URL
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  
+  // Relative path - convert to full URL
+  if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
+    let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+    // Remove /api suffix if present
+    if (baseUrl.endsWith('/api')) {
+      baseUrl = baseUrl.slice(0, -4);
+    }
+    // Remove trailing slash
+    baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    // Ensure path starts with /
+    const path = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    return `${baseUrl}${path}`;
+  }
+  
+  // Return as-is if it doesn't match known patterns
+  return trimmed;
+};
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 // Logger utility - only logs in development
