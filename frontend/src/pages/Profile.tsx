@@ -251,22 +251,24 @@ const Profile = () => {
         }
         
         // Refresh user data from server after a short delay to ensure DB is updated
-        setTimeout(async () => {
-          try {
-            const userResponse = await api.getMe();
-            if (userResponse.success && userResponse.data) {
-              const normalizedData = {
-                ...userResponse.data,
-                avatar: normalizeImageUrl(userResponse.data.avatar) || userResponse.data.avatar,
-                coverPhoto: normalizeImageUrl((userResponse.data as any).coverPhoto) || (userResponse.data as any).coverPhoto,
-                token: user.token
-              };
-              setUser(normalizedData);
+        if (user) {
+          setTimeout(async () => {
+            try {
+              const userResponse = await api.getMe();
+              if (userResponse.success && userResponse.data) {
+                const normalizedData = {
+                  ...userResponse.data,
+                  avatar: normalizeImageUrl(userResponse.data.avatar) || userResponse.data.avatar,
+                  coverPhoto: normalizeImageUrl((userResponse.data as any).coverPhoto) || (userResponse.data as any).coverPhoto,
+                  token: user.token
+                };
+                setUser(normalizedData);
+              }
+            } catch (err) {
+              console.warn('Failed to refresh user data:', err);
             }
-          } catch (err) {
-            console.warn('Failed to refresh user data:', err);
-          }
-        }, 500);
+          }, 500);
+        }
       } else {
         throw new Error(data.message || data.error || t('profile.uploadFailed'));
       }
@@ -379,22 +381,24 @@ const Profile = () => {
         }
         
         // Refresh user data from server after a short delay to ensure DB is updated
-        setTimeout(async () => {
-          try {
-            const userResponse = await api.getMe();
-            if (userResponse.success && userResponse.data) {
-              const normalizedData = {
-                ...userResponse.data,
-                avatar: normalizeImageUrl(userResponse.data.avatar) || userResponse.data.avatar,
-                coverPhoto: normalizeImageUrl((userResponse.data as any).coverPhoto) || (userResponse.data as any).coverPhoto,
-                token: user.token
-              };
-              setUser(normalizedData);
+        if (user) {
+          setTimeout(async () => {
+            try {
+              const userResponse = await api.getMe();
+              if (userResponse.success && userResponse.data) {
+                const normalizedData = {
+                  ...userResponse.data,
+                  avatar: normalizeImageUrl(userResponse.data.avatar) || userResponse.data.avatar,
+                  coverPhoto: normalizeImageUrl((userResponse.data as any).coverPhoto) || (userResponse.data as any).coverPhoto,
+                  token: user.token
+                };
+                setUser(normalizedData);
+              }
+            } catch (err) {
+              console.warn('Failed to refresh user data:', err);
             }
-          } catch (err) {
-            console.warn('Failed to refresh user data:', err);
-          }
-        }, 500);
+          }, 500);
+        }
       } else {
         throw new Error(data.message || data.error || t('profile.uploadFailed'));
       }
