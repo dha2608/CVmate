@@ -48,7 +48,8 @@ export const useAchievementStore = create<AchievementState>((set) => ({
         set({ error: (res as any).message || 'Failed to load achievements', isLoading: false });
       }
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      // Silently fail - achievements are optional
+      set({ error: null, isLoading: false });
     }
   },
 
@@ -59,7 +60,8 @@ export const useAchievementStore = create<AchievementState>((set) => ({
         set({ stats: res.data as any });
       }
     } catch (error: any) {
-      console.error('Failed to fetch achievement stats:', error);
+      // Silently fail - achievements are optional
+      // Don't log errors for optional features
     }
   },
 }));
