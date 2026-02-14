@@ -32,8 +32,15 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             if (user) {
               // Nếu user đã tồn tại với email/password, link Google account
               user.googleId = profile.id;
-              if (!user.avatar && profile.photos?.[0]?.value) {
+              // 总是更新 Google 的头像和姓名（如果用户没有手动上传过）
+              // 如果用户已经有自定义头像（不是 Google 的 URL），则保留
+              const isGoogleAvatar = user.avatar?.includes('googleusercontent.com') || !user.avatar;
+              if (isGoogleAvatar && profile.photos?.[0]?.value) {
                 user.avatar = profile.photos[0].value;
+              }
+              // 更新姓名（如果用户没有自定义过）
+              if (profile.displayName) {
+                user.name = profile.displayName;
               }
               await user.save();
             } else {
@@ -46,6 +53,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                 onboardingCompleted: false,
               });
             }
+          } else {
+            // 用户已存在，更新 Google 的头像和姓名（如果用户没有手动上传过）
+            const isGoogleAvatar = user.avatar?.includes('googleusercontent.com') || !user.avatar;
+            if (isGoogleAvatar && profile.photos?.[0]?.value) {
+              user.avatar = profile.photos[0].value;
+            }
+            // 更新姓名（如果用户没有自定义过，或者使用 Google 的显示名称）
+            if (profile.displayName) {
+              user.name = profile.displayName;
+            }
+            await user.save();
           }
 
           return done(null, user);

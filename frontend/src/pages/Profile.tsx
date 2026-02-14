@@ -223,15 +223,24 @@ const Profile = () => {
           avatarUrl = `${baseUrl}${urlPath}`;
         }
         
-        // Update form data immediately with timestamp to force re-render
-        const avatarUrlWithTimestamp = avatarUrl + (avatarUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
-        const updatedFormData = { ...formData, avatar: avatarUrlWithTimestamp };
+        // Update form data immediately (no timestamp to prevent flickering)
+        const updatedFormData = { ...formData, avatar: avatarUrl };
         setFormData(updatedFormData);
-        setOriginalData({ ...updatedFormData, avatar: avatarUrl }); // Store without timestamp in originalData
+        setOriginalData(updatedFormData);
         
         // Also update user in store immediately for instant display
         if (user) {
-          setUser({ ...user, avatar: avatarUrl });
+          const updatedUser = { ...user, avatar: avatarUrl };
+          setUser(updatedUser);
+          // 立即从服务器获取最新用户数据以确保同步
+          try {
+            const userResponse = await api.getMe();
+            if (userResponse.success && userResponse.data) {
+              setUser({ ...userResponse.data, token: user.token });
+            }
+          } catch (err) {
+            console.warn('Failed to refresh user data:', err);
+          }
         }
         
         toast.success(t('profile.avatarUploaded'));
@@ -326,7 +335,17 @@ const Profile = () => {
         
         // Also update user in store
         if (user) {
-          setUser({ ...user });
+          const updatedUser = { ...user, coverPhoto: coverPhotoUrl };
+          setUser(updatedUser);
+          // 立即从服务器获取最新用户数据以确保同步
+          try {
+            const userResponse = await api.getMe();
+            if (userResponse.success && userResponse.data) {
+              setUser({ ...userResponse.data, token: user.token });
+            }
+          } catch (err) {
+            console.warn('Failed to refresh user data:', err);
+          }
         }
         
         toast.success('Ảnh bìa đã được tải lên');
@@ -418,7 +437,7 @@ const Profile = () => {
           <div 
             className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative group/cover overflow-visible"
             style={{
-              backgroundImage: formData.coverPhoto ? `url(${formData.coverPhoto}?t=${Date.now()})` : undefined,
+              backgroundImage: formData.coverPhoto ? `url(${formData.coverPhoto})` : undefined,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -458,6 +477,8 @@ const Profile = () => {
                       alt="Profile" 
                       className="w-full h-full object-cover"
                       crossOrigin="anonymous"
+                      loading="eager"
+                      decoding="sync"
                       onError={(e) => {
                         // Hide image and show fallback
                         const img = e.target as HTMLImageElement;

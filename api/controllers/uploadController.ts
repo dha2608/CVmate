@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import User from '../models/User.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +15,11 @@ export const uploadAvatar = async (req: AuthRequest, res: Response, next: NextFu
     }
 
     const fileUrl = `/uploads/${req.file.filename}`;
+
+    // 立即更新用户记录中的 avatar
+    if (req.user?._id) {
+      await User.findByIdAndUpdate(req.user._id, { avatar: fileUrl });
+    }
 
     res.json({
       success: true,
@@ -36,6 +42,11 @@ export const uploadCoverPhoto = async (req: AuthRequest, res: Response, next: Ne
     }
 
     const fileUrl = `/uploads/${req.file.filename}`;
+
+    // 立即更新用户记录中的 coverPhoto
+    if (req.user?._id) {
+      await User.findByIdAndUpdate(req.user._id, { coverPhoto: fileUrl });
+    }
 
     res.json({
       success: true,

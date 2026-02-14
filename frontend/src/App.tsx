@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -55,7 +55,29 @@ const PageLoader = () => (
 );
 
 export default function App() {
-  useAuthStore(); // Keep store initialized
+  const { user, setUser } = useAuthStore();
+
+  // 在应用初始化时刷新用户数据，确保获取最新的头像和封面图片
+  useEffect(() => {
+    const refreshUserData = async () => {
+      if (user?.token) {
+        try {
+          const { api } = await import('@/lib/utils');
+          const response = await api.getMe();
+          if (response.success && response.data) {
+            // 只更新数据，保留 token
+            setUser({ ...response.data, token: user.token });
+          }
+        } catch (error) {
+          // 静默失败，不影响用户体验
+          console.warn('Failed to refresh user data on app init:', error);
+        }
+      }
+    };
+
+    refreshUserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 只在应用启动时运行一次
 
   return (
     <ErrorBoundary>
@@ -63,9 +85,9 @@ export default function App() {
         <OfflineIndicator />
         <Toast />
         <ScrollToTop />
-        <Suspense fallback={<PageLoader />}>
-          <PageTransition>
-          <Routes>
+        <PageTransition>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -204,9 +226,9 @@ export default function App() {
               }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-          </PageTransition>
-        </Suspense>
+            </Routes>
+          </Suspense>
+        </PageTransition>
       </Router>
     </ErrorBoundary>
   );
