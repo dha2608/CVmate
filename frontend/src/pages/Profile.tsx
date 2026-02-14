@@ -22,7 +22,11 @@ const Profile = () => {
     t('profile.unsavedChangesWarning') || 'You have unsaved changes. Are you sure you want to leave?'
   );
   const [isLoading, setIsLoading] = useState(false);
-  const [subscription, setSubscription] = useState<any>(null);
+  const [subscription, setSubscription] = useState<{
+    plan: 'free' | 'premium';
+    status: 'active' | 'cancelled' | 'expired';
+    endDate?: string;
+  } | null>(null);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe');
   
@@ -129,8 +133,9 @@ const Profile = () => {
       if (response.success && response.data.url) {
         window.location.href = response.data.url;
       }
-    } catch (error: any) {
-      toast.error(error.message || t('toast.somethingWentWrong'));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : t('toast.somethingWentWrong');
+      toast.error(errorMessage);
     } finally {
       setLoadingSubscription(false);
     }
@@ -224,9 +229,10 @@ const Profile = () => {
       } else {
         throw new Error(data.message || data.error || t('profile.uploadFailed'));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Avatar upload error:', error);
-      toast.error(error.message || t('profile.uploadFailed'));
+      const errorMessage = error instanceof Error ? error.message : t('profile.uploadFailed');
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -311,16 +317,17 @@ const Profile = () => {
         
         // Also update user in store
         if (user) {
-          setUser({ ...user, coverPhoto: coverPhotoUrl } as any);
+          setUser({ ...user, coverPhoto: coverPhotoUrl });
         }
         
         toast.success('Ảnh bìa đã được tải lên');
       } else {
         throw new Error(data.message || data.error || t('profile.uploadFailed'));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Cover photo upload error:', error);
-      toast.error(error.message || t('profile.uploadFailed'));
+      const errorMessage = error instanceof Error ? error.message : t('profile.uploadFailed');
+      toast.error(errorMessage);
     } finally {
       setUploadingCover(false);
       if (coverPhotoInputRef.current) {
@@ -383,8 +390,9 @@ const Profile = () => {
       clearDirty();
       
       toast.success(t('toast.profileUpdated'));
-    } catch (error: any) {
-      toast.error(error.message || t('toast.profileUpdateFailed'));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : t('toast.profileUpdateFailed');
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

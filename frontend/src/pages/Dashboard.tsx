@@ -380,7 +380,15 @@ const Dashboard = () => {
   );
 };
 
-const QuickActionCard = memo(({ icon, title, desc, color, onClick }: any) => (
+interface QuickActionCardProps {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  color: string;
+  onClick: () => void;
+}
+
+const QuickActionCard = memo(({ icon, title, desc, color, onClick }: QuickActionCardProps) => (
    <motion.div 
       onClick={onClick}
       className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-300 cursor-pointer group flex flex-col items-center text-center gap-2 ${color} dark:border-gray-700 hover:shadow-md`}
@@ -398,7 +406,13 @@ const QuickActionCard = memo(({ icon, title, desc, color, onClick }: any) => (
 ));
 QuickActionCard.displayName = 'QuickActionCard';
 
-const StatItem = memo(({ label, value, color }: any) => (
+interface StatItemProps {
+  label: string;
+  value: string | number;
+  color: string;
+}
+
+const StatItem = memo(({ label, value, color }: StatItemProps) => (
    <motion.div 
       className="text-center"
       initial={{ opacity: 0, scale: 0.8 }}
@@ -411,7 +425,16 @@ const StatItem = memo(({ label, value, color }: any) => (
 ));
 StatItem.displayName = 'StatItem';
 
-const RecommendationCard = memo(({ image, title, author, views, desc, onClick }: any) => {
+interface RecommendationCardProps {
+  image?: string;
+  title: string;
+  author: string;
+  views: number;
+  desc: string;
+  onClick: () => void;
+}
+
+const RecommendationCard = memo(({ image, title, author, views, desc, onClick }: RecommendationCardProps) => {
   const { t } = useI18n();
   
   return (

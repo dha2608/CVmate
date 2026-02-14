@@ -55,7 +55,10 @@ const Jobs = () => {
     if (user && jobs.length > 0) {
       const applied = new Set<string>();
       jobs.forEach(job => {
-        if (job.applicants?.some((id: any) => id.toString() === user._id)) {
+        if (job.applicants?.some((id: string | { toString: () => string }) => {
+          const idStr = typeof id === 'string' ? id : id.toString();
+          return idStr === user._id;
+        })) {
           applied.add(job._id);
         }
       });
@@ -97,8 +100,9 @@ const Jobs = () => {
       await applyJob(jobId);
       setAppliedJobs(prev => new Set([...prev, jobId]));
       toast.success(t('toast.jobApplied'));
-    } catch (error: any) {
-      toast.error(error.message || t('toast.jobApplyFailed'));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : t('toast.jobApplyFailed');
+      toast.error(errorMessage);
     }
   };
 
@@ -153,8 +157,9 @@ const Jobs = () => {
         });
         fetchJobs({ page: 1, limit: 20 });
       }
-    } catch (error: any) {
-      toast.error(error.message || (t('jobs.postFailed') || 'Failed to post job.'));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : (t('jobs.postFailed') || 'Failed to post job.');
+      toast.error(errorMessage);
     } finally {
       setIsPostingJob(false);
     }

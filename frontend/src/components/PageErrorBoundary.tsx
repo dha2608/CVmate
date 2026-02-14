@@ -6,6 +6,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { logError } from '@/lib/errorTracking';
 
 interface Props {
   children: ReactNode;
@@ -36,20 +37,16 @@ class PageErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to console in development
-    if (import.meta.env.DEV) {
-      console.error('Page Error Boundary caught an error:', error, errorInfo);
-    }
-
     this.setState({
       error,
       errorInfo,
     });
 
-    // TODO: Log to error tracking service (e.g., Sentry) in production
-    // if (import.meta.env.PROD) {
-    //   logErrorToService(error, errorInfo);
-    // }
+    // Log to error tracking service (Sentry if configured)
+    logError(error, {
+      componentStack: errorInfo.componentStack,
+      errorBoundary: this.props.pageName || 'PageErrorBoundary',
+    });
   }
 
   handleReset = () => {

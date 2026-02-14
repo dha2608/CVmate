@@ -178,28 +178,35 @@ const Builder = () => {
           skillsCount: currentResume.skills.length,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Enhanced error handling with detailed logging
       let errorMessage = 'Failed to save resume';
       const errors: string[] = [];
       
+      // Type guard for ApiError
+      const isApiError = (err: unknown): err is ApiError => {
+        return typeof err === 'object' && err !== null && 'details' in err;
+      };
+      
       // Log error details for debugging
-      console.error('❌ Save CV Error:', {
-        error,
-        status: error?.status,
-        message: error?.message,
-        details: error?.details,
-        retryCount,
-      });
+      if (import.meta.env.DEV) {
+        console.error('❌ Save CV Error:', {
+          error,
+          status: isApiError(error) ? error.status : undefined,
+          message: error instanceof Error ? error.message : String(error),
+          details: isApiError(error) ? error.details : undefined,
+          retryCount,
+        });
+      }
       
       // Check for validation errors from API response
-      if (error?.details) {
+      if (isApiError(error) && error.details) {
         const details = error.details;
         if (details.errors && Array.isArray(details.errors)) {
-          errors.push(...details.errors.map((e: any) => {
+          errors.push(...details.errors.map((e: string | { message?: string; path?: string | string[] }) => {
             if (typeof e === 'string') return e;
             if (e?.message) return e.message;
-            if (e?.path) return `${e.path}: ${e.message || 'Invalid'}`;
+            if (e?.path) return `${Array.isArray(e.path) ? e.path.join('.') : e.path}: ${e.message || 'Invalid'}`;
             return String(e);
           }));
         }
@@ -209,10 +216,13 @@ const Builder = () => {
       }
       
       // Check for Zod validation errors
-      if (error?.details?.errors && Array.isArray(error.details.errors)) {
-        error.details.errors.forEach((err: any) => {
-          if (err.path) {
-            errors.push(`${err.path.join('.')}: ${err.message || 'Invalid'}`);
+      if (isApiError(error) && error.details?.errors && Array.isArray(error.details.errors)) {
+        error.details.errors.forEach((err: string | { message?: string; path?: string | string[] }) => {
+          if (typeof err === 'string') {
+            errors.push(err);
+          } else if (err.path) {
+            const pathStr = Array.isArray(err.path) ? err.path.join('.') : err.path;
+            errors.push(`${pathStr}: ${err.message || 'Invalid'}`);
           } else {
             errors.push(err.message || 'Validation error');
           }

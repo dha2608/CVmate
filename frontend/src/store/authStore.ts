@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { setUserContext, clearUserContext } from '@/lib/errorTracking';
 
 interface User {
   _id: string;
@@ -47,15 +48,21 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (user.token) {
         localStorage.setItem('token', user.token);
       }
+      // Set user context for error tracking
+      setUserContext(user._id, user.email, user.name);
     } else {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      // Clear user context on logout
+      clearUserContext();
     }
     set({ user });
   },
   logout: () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    // Clear user context on logout
+    clearUserContext();
     set({ user: null });
   },
 }));

@@ -36,6 +36,7 @@ import templateRoutes from './routes/templates.js';
 import pushRoutes from './routes/push.js';
 import achievementRoutes from './routes/achievements.js';
 import adminRoutes from './routes/admin.js';
+import analyticsRoutes from './routes/analytics.js';
 
 // Load env
 dotenv.config();
@@ -207,6 +208,7 @@ app.use('/api/templates', templateRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 /**
  * Root Endpoint
