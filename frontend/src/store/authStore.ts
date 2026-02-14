@@ -8,6 +8,7 @@ interface User {
   role: string;
   token: string;
   avatar?: string;
+  coverPhoto?: string;
   bio?: string;
   headline?: string;
   location?: string;

@@ -109,7 +109,11 @@ const Profile = () => {
       setFormData(initialData);
       setOriginalData(initialData);
       if (user.subscription) {
-        setSubscription(user.subscription);
+        setSubscription({
+          plan: user.subscription.plan,
+          status: user.subscription.status,
+          endDate: user.subscription.endDate ? new Date(user.subscription.endDate).toISOString() : undefined,
+        });
       }
     }
     fetchSubscriptionStatus();
@@ -118,8 +122,13 @@ const Profile = () => {
   const fetchSubscriptionStatus = async () => {
     try {
       const response = await api.getSubscriptionStatus();
-      if (response.success) {
-        setSubscription(response.data);
+      if (response.success && response.data) {
+        const data = response.data;
+        setSubscription({
+          plan: data.plan as 'free' | 'premium',
+          status: data.status as 'active' | 'cancelled' | 'expired',
+          endDate: data.endDate ? (typeof data.endDate === 'string' ? data.endDate : new Date(data.endDate).toISOString()) : undefined,
+        });
       }
     } catch (error) {
       console.error('Failed to fetch subscription status:', error);
@@ -317,7 +326,7 @@ const Profile = () => {
         
         // Also update user in store
         if (user) {
-          setUser({ ...user, coverPhoto: coverPhotoUrl });
+          setUser({ ...user });
         }
         
         toast.success('Ảnh bìa đã được tải lên');

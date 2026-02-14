@@ -26,6 +26,7 @@ export const initErrorTracking = async (): Promise<void> => {
 
   try {
     // Dynamically import Sentry to avoid bundling it if not needed
+    // @ts-expect-error - Sentry is optional dependency
     const Sentry = await import('@sentry/react');
     
     Sentry.init({
@@ -78,6 +79,7 @@ export const logError = (error: Error, errorInfo?: ErrorInfo): void => {
   if (isSentryInitialized) {
     try {
       // Dynamically import Sentry
+      // @ts-expect-error - Sentry is optional dependency
       import('@sentry/react').then((Sentry) => {
         Sentry.captureException(error, {
           contexts: {
@@ -106,6 +108,7 @@ export const logError = (error: Error, errorInfo?: ErrorInfo): void => {
  */
 export const setUserContext = (userId: string, email?: string, name?: string): void => {
   if (isSentryInitialized) {
+    // @ts-expect-error - Sentry is optional dependency
     import('@sentry/react').then((Sentry) => {
       Sentry.setUser({
         id: userId,
@@ -121,6 +124,7 @@ export const setUserContext = (userId: string, email?: string, name?: string): v
  */
 export const clearUserContext = (): void => {
   if (isSentryInitialized) {
+    // @ts-expect-error - Sentry is optional dependency
     import('@sentry/react').then((Sentry) => {
       Sentry.setUser(null);
     });
@@ -132,6 +136,7 @@ export const clearUserContext = (): void => {
  */
 export const addBreadcrumb = (message: string, category?: string, level?: 'info' | 'warning' | 'error'): void => {
   if (isSentryInitialized) {
+    // @ts-expect-error - Sentry is optional dependency
     import('@sentry/react').then((Sentry) => {
       Sentry.addBreadcrumb({
         message,

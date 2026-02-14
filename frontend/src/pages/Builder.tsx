@@ -21,6 +21,7 @@ import AIFeatureNotice from '@/components/AIFeatureNotice';
 import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
 import { api } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
+import type { ApiError } from '@/types/api';
 
 const Builder = () => {
   const { currentResume, resumes, updateField, aiEnhanceText, setResume, setResumes } = useResumeStore();

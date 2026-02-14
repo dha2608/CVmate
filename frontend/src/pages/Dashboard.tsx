@@ -357,7 +357,7 @@ const Dashboard = () => {
                   image={article.image || article.coverImage}
                   title={article.title}
                   author={typeof article.author === 'object' ? article.author?.name || 'Author' : 'Author'}
-                  views={article.views ? `${article.views} ${t('blog.views')}` : t('blog.new')}
+                  views={article.views || 0}
                   desc={article.summary || article.content?.substring(0, 100) + '...'}
                   onClick={() => navigate(`/blog/${article._id}`)}
                 />
@@ -436,6 +436,7 @@ interface RecommendationCardProps {
 
 const RecommendationCard = memo(({ image, title, author, views, desc, onClick }: RecommendationCardProps) => {
   const { t } = useI18n();
+  const viewsText = views > 0 ? `${views} ${t('blog.views')}` : t('blog.new');
   
   return (
     <motion.div 
@@ -459,7 +460,7 @@ const RecommendationCard = memo(({ image, title, author, views, desc, onClick }:
          <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <span className="font-medium text-gray-700 dark:text-gray-300">{author}</span>
             <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></span>
-            <span>{views}</span>
+            <span>{viewsText}</span>
          </div>
          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">{desc}</p>
          <div className="mt-2 flex items-center gap-1 text-[10px] sm:text-xs text-rose-500 dark:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
