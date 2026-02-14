@@ -120,8 +120,12 @@ export const apiRequest = async <T = any>(
       } else if (response.status === 429) {
         // Check response headers for rate limit info
         const retryAfter = response.headers.get('Retry-After');
-        const retryMessage = retryAfter ? ` Please try again after ${retryAfter} seconds.` : ' Please wait a moment and try again.';
-        errorMessage = `Rate limit exceeded.${retryMessage}`;
+        const retrySeconds = retryAfter ? parseInt(retryAfter, 10) : 60;
+        const retryMinutes = Math.ceil(retrySeconds / 60);
+        const retryMessage = retryAfter 
+          ? ` Please try again after ${retryMinutes} minute${retryMinutes > 1 ? 's' : ''}.` 
+          : ' Please wait a few minutes and try again.';
+        errorMessage = `Too many requests.${retryMessage}`;
         errorType = 'server_rate_limit';
       } else if (response.status === 401) {
         errorMessage = 'Unauthorized. Please login again.';

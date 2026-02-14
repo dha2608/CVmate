@@ -44,7 +44,7 @@ const Login = () => {
       } else if (err.status === 503) {
         errorMsg = 'Service temporarily unavailable. Please try again in a few moments.';
       } else if (err.status === 429) {
-        errorMsg = 'Too many requests. Please wait a moment and try again.';
+        errorMsg = t('toast.rateLimitExceeded') || 'Too many login attempts. Please wait a few minutes before trying again.';
       }
       
       setError(errorMsg);
