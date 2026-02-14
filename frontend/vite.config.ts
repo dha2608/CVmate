@@ -65,14 +65,21 @@ export default defineConfig({
           'ui-vendor': ['framer-motion', 'lucide-react'],
           'pdf-vendor': ['jspdf', 'html2canvas'],
         },
-        // 确保使用相对路径
-        entryFileNames: 'assets/[name].[hash].js',
-        chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash].[ext]',
+        // 确保使用相对路径，避免绝对路径问题
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
     chunkSizeWarningLimit: 1000,
     // 确保源映射不会影响生产构建
     sourcemap: false,
+    // 确保构建输出稳定
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: false, // 保留 console 以便调试
+      },
+    },
   },
 });

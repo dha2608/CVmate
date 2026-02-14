@@ -3,14 +3,32 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "devCommand": "npm run client:dev",
+  "cleanUrls": true,
   "rewrites": [
     {
       "source": "/assets/:path*",
-      "destination": "/assets/:path*"
+      "destination": "/assets/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "/uploads/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json|map))",
+      "destination": "/$1",
+      "permanent": false
     },
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/index.html",
+      "permanent": false
     }
   ],
   "headers": [
