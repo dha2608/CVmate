@@ -59,11 +59,14 @@ const Dashboard = () => {
     const loadData = async () => {
       setIsInitialLoading(true);
       try {
-        await Promise.all([
+        // Use Promise.allSettled to prevent one failure from blocking others
+        await Promise.allSettled([
           fetchStats(),
           fetchPosts(),
           fetchArticles(),
-          fetchAchievements()
+          fetchAchievements().catch(() => {
+            // Silently fail - achievements are optional
+          })
         ]);
       } finally {
         setIsInitialLoading(false);

@@ -66,9 +66,9 @@ export default defineConfig({
           'pdf-vendor': ['jspdf', 'html2canvas'],
         },
         // 确保使用相对路径
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]',
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]',
       },
     },
     chunkSizeWarningLimit: 1000,
