@@ -11,8 +11,8 @@ export const csrfProtection = csurf({
   cookie: {
     key: 'cvmate_csrf',
     httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' required for cross-origin in production
+    secure: process.env.NODE_ENV === 'production', // Must be true when sameSite is 'none'
   },
   value: (req: Request) => {
     return (req.headers['x-csrf-token'] as string) || '';

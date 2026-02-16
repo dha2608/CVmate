@@ -134,6 +134,64 @@ const getAuthToken = (): string | null => {
   }
   return null;
 };
+
+// CSRF token cache
+let csrfTokenCache: string | null = null;
+let csrfTokenPromise: Promise<string | null> | null = null;
+
+/**
+ * Fetch CSRF token from backend and cache it
+ * This token must be sent in x-csrf-token header for mutating requests
+ */
+const getCsrfToken = async (): Promise<string | null> => {
+  // Return cached token if available
+  if (csrfTokenCache) {
+    return csrfTokenCache;
+  }
+
+  // If already fetching, return the existing promise
+  if (csrfTokenPromise) {
+    return csrfTokenPromise;
+  }
+
+  // Fetch new token
+  csrfTokenPromise = (async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/csrf-token`, {
+        method: 'GET',
+        credentials: 'include', // Include cookies to get CSRF cookie
+      });
+
+      if (!response.ok) {
+        logger.warn('Failed to fetch CSRF token:', response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      if (data.success && data.csrfToken) {
+        csrfTokenCache = data.csrfToken;
+        return csrfTokenCache;
+      }
+
+      return null;
+    } catch (error) {
+      logger.error('Error fetching CSRF token:', error);
+      return null;
+    } finally {
+      csrfTokenPromise = null; // Clear promise after completion
+    }
+  })();
+
+  return csrfTokenPromise;
+};
+
+/**
+ * Clear CSRF token cache (call after logout or token expiration)
+ */
+export const clearCsrfToken = (): void => {
+  csrfTokenCache = null;
+  csrfTokenPromise = null;
+};
 interface ApiOptions extends RequestInit {
   requiresAuth?: boolean;
   timeout?: number; // Timeout in milliseconds
@@ -144,9 +202,13 @@ const AUTH_TIMEOUT = 15000; // 15 seconds for auth endpoints (login/register)
 
 export const apiRequest = async <T = unknown>(
   endpoint: string,
-  options: ApiOptions = {}
+  options: ApiOptions = {},
+  retryOnCsrfError = true
 ): Promise<T> => {
   const { requiresAuth = true, timeout, ...fetchOptions } = options;
+  
+  const method = (fetchOptions.method || 'GET').toUpperCase();
+  const isMutatingRequest = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method);
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -157,6 +219,14 @@ export const apiRequest = async <T = unknown>(
     const token = getAuthToken();
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
+  // Add CSRF token for mutating requests
+  if (isMutatingRequest) {
+    const csrfToken = await getCsrfToken();
+    if (csrfToken) {
+      headers['x-csrf-token'] = csrfToken;
     }
   }
 
@@ -192,6 +262,16 @@ export const apiRequest = async <T = unknown>(
       errorMessage = error.message || error.error || getUserFriendlyMessage(error);
       errorType = error.type || extractErrorCode(error);
       errorDetails = error;
+      
+      // Check if it's a CSRF error and retry once
+      if (retryOnCsrfError && isMutatingRequest && 
+          (response.status === 403 || response.status === 500) &&
+          (errorMessage.toLowerCase().includes('csrf') || errorMessage.toLowerCase().includes('invalid token'))) {
+        logger.warn('CSRF token expired, clearing cache and retrying...');
+        clearCsrfToken(); // Clear cache
+        // Retry the request once with a fresh CSRF token
+        return apiRequest<T>(endpoint, options, false); // Don't retry again
+      }
     } catch {
       // If JSON parsing fails, use status-based messages
       const errorCode = extractErrorCode({ status: response.status });

@@ -150,22 +150,29 @@ app.get('/favicon.ico', (req: Request, res: Response) => {
   res.status(204).end();
 });
 
-// CSRF protection: enable after sessions/cookies are configured, before API routes
-// Note: frontend must read token from `/api/csrf-token` and send it back in `x-csrf-token` header for mutating requests.
-// Skip CSRF for static assets
-app.use((req: Request, res: Response, next: NextFunction) => {
-  if (req.path.startsWith('/assets/') || req.path.startsWith('/uploads/')) {
-    return next();
-  }
-  return csrfProtection(req, res, next);
-});
-
 // Expose CSRF token for frontend to fetch and cache
-app.get('/api/csrf-token', (req: Request, res: Response) => {
+// MUST be before CSRF middleware to avoid circular dependency
+app.get('/api/csrf-token', csrfProtection, (req: Request, res: Response) => {
   res.json({
     success: true,
     csrfToken: (req as any).csrfToken(),
   });
+});
+
+// CSRF protection: enable after sessions/cookies are configured, before API routes
+// Note: frontend must read token from `/api/csrf-token` and send it back in `x-csrf-token` header for mutating requests.
+// Skip CSRF for static assets and GET requests (except mutating GET endpoints)
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Skip CSRF for static assets
+  if (req.path.startsWith('/assets/') || req.path.startsWith('/uploads/')) {
+    return next();
+  }
+  // Skip CSRF for GET requests (except specific mutating endpoints)
+  // GET requests are generally safe and don't need CSRF protection
+  if (req.method === 'GET' && req.path !== '/api/csrf-token') {
+    return next();
+  }
+  return csrfProtection(req, res, next);
 });
 
 // Serve uploaded files statically with CORS headers
