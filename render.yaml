@@ -9,7 +9,7 @@ services:
     region: oregon
     plan: free
     buildCommand: npm install
-    startCommand: npm run server:start
+    startCommand: bash start.sh
     envVars:
       - key: NODE_ENV
         value: production
