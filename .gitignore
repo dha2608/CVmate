@@ -10,6 +10,7 @@ node_modules/
 /build
 /dist
 /api/dist
+frontend/dist
 
 # Misc
 .DS_Store
@@ -52,3 +53,23 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+**/.tsbuildinfo
+**/tsconfig.tsbuildinfo
+
+# Cache
+.cache/
+.vite/
+**/.vite/
+**/node_modules/.cache/
+**/node_modules/.vite/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+.DS_Store
+Thumbs.db
+
+# Documentation (keep only README.md)
+*.md
+!README.md
