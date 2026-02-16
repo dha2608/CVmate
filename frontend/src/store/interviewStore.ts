@@ -79,7 +79,11 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
         feedback: interview.feedback ? {
           confidenceScore: interview.feedback.confidence,
           contentScore: interview.feedback.accuracy,
-          suggestions: interview.feedback.suggestions.join('\n'),
+          suggestions: interview.feedback.suggestions 
+            ? (Array.isArray(interview.feedback.suggestions) 
+                ? interview.feedback.suggestions.join('\n') 
+                : String(interview.feedback.suggestions))
+            : undefined,
         } : null,
         status: interview.endedAt ? 'completed' : 'active',
         isStarting: false,
