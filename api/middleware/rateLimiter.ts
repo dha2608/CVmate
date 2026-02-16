@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import User from '../models/User.js';
 import { AuthRequest } from './authMiddleware.js';
 
@@ -27,15 +27,15 @@ const skipPremium = async (req: AuthRequest) => {
 /**
  * Generate a stable key for rate limiting:
  * - If user is authenticated, use user id
- * - Otherwise, fall back to IP address
+ * - Otherwise, fall back to IP address using ipKeyGenerator helper for IPv6 support
  */
 const userOrIpKeyGenerator = (req: AuthRequest): string => {
   if (req.user?._id) {
     return String(req.user._id);
   }
 
-  // Express will respect X-Forwarded-For when `trust proxy` is enabled
-  return req.ip || req.headers['x-forwarded-for']?.toString() || 'unknown';
+  // Use ipKeyGenerator helper for proper IPv6 support
+  return ipKeyGenerator(req);
 };
 
 export const freeUserLimiter = rateLimit({
