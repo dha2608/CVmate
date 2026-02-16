@@ -152,10 +152,31 @@ app.get('/favicon.ico', (req: Request, res: Response) => {
 
 // Expose CSRF token for frontend to fetch and cache
 // MUST be before CSRF middleware to avoid circular dependency
-app.get('/api/csrf-token', csrfProtection, (req: Request, res: Response) => {
-  res.json({
-    success: true,
-    csrfToken: (req as any).csrfToken(),
+// This endpoint doesn't need CSRF verification - it's used to GET the token
+app.get('/api/csrf-token', (req: Request, res: Response, next: NextFunction) => {
+  // Use csrfProtection to generate token (it will create cookie automatically)
+  // For GET requests, csurf doesn't verify, it just generates the token
+  csrfProtection(req, res, (err: unknown) => {
+    if (err) {
+      // If there's an error, try to generate token anyway
+      logger.warn('CSRF token generation error (non-critical):', err);
+    }
+    
+    // Get the token (csurf adds csrfToken() method to request)
+    const token = (req as any).csrfToken ? (req as any).csrfToken() : '';
+    
+    if (!token) {
+      logger.error('Failed to generate CSRF token');
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to generate CSRF token',
+      });
+    }
+    
+    res.json({
+      success: true,
+      csrfToken: token,
+    });
   });
 });
 
