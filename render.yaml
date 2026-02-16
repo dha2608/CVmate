@@ -8,8 +8,8 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: npm install
-    startCommand: npx tsx -r dotenv/config api/server.ts
+    buildCommand: cd .. && npm install
+    startCommand: npx tsx -r dotenv/config server.ts
     rootDir: api
     envVars:
       - key: NODE_ENV
