@@ -15,6 +15,7 @@ import logger from './utils/logger.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { sanitizeRequest } from './middleware/sanitize.js';
 import { csrfProtection } from './middleware/csrf.js';
+import { sendErrorResponse, handleServerError, ErrorCode } from './utils/errorHandler.js';
 
 // Import Routes
 import authRoutes from './routes/auth.js';
@@ -144,9 +145,20 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   app.use(passport.session());
 }
 
+// Handle favicon requests early (before CSRF)
+app.get('/favicon.ico', (req: Request, res: Response) => {
+  res.status(204).end();
+});
+
 // CSRF protection: enable after sessions/cookies are configured, before API routes
 // Note: frontend must read token from `/api/csrf-token` and send it back in `x-csrf-token` header for mutating requests.
-app.use(csrfProtection);
+// Skip CSRF for static assets
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.path.startsWith('/assets/') || req.path.startsWith('/uploads/')) {
+    return next();
+  }
+  return csrfProtection(req, res, next);
+});
 
 // Expose CSRF token for frontend to fetch and cache
 app.get('/api/csrf-token', (req: Request, res: Response) => {
