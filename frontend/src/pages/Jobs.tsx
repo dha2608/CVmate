@@ -8,6 +8,7 @@ import { useToastStore } from '@/store/toastStore';
 import { useBookmarkStore } from '@/store/bookmarkStore';
 import { api } from '@/lib/utils';
 import { getUserFriendlyMessage } from '@/lib/errorHandler';
+import { useDebounce } from '@/hooks/useDebounce';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ const Jobs = () => {
   const { jobs, fetchJobs, applyJob, isLoading, pagination } = useJobStore();
   const { fetchBookmarks } = useBookmarkStore();
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500); // Debounce search input
   const [selectedType, setSelectedType] = useState<string>('All');
   const [locationFilter, setLocationFilter] = useState('');
   const [salaryMin, setSalaryMin] = useState<number | undefined>();
@@ -50,6 +52,14 @@ const Jobs = () => {
     fetchJobs({ page: 1, limit: 20 });
     fetchBookmarks();
   }, [fetchJobs, fetchBookmarks]);
+
+  // Auto-search when debounced search term changes
+  useEffect(() => {
+    if (debouncedSearchTerm !== undefined && debouncedSearchTerm !== searchTerm) {
+      handleSearch(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm]);
 
   useEffect(() => {
     // Check which jobs user has applied to

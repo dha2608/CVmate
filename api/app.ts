@@ -109,7 +109,18 @@ app.use(cors({
   credentials: true
 }));
 app.use(requestLogger);
-app.use(compression());
+// Compression middleware - optimize response size
+app.use(compression({
+  level: 6, // Balance between compression and CPU usage
+  filter: (req, res) => {
+    // Don't compress if client doesn't support it
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Use compression for all responses
+    return compression.filter(req, res);
+  }
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser(process.env.COOKIE_SECRET || process.env.SESSION_SECRET || 'cvmate-cookie-secret'));

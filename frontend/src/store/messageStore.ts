@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api } from '@/lib/utils';
 
 interface User {
   _id: string;
@@ -27,8 +28,6 @@ interface MessageState {
   markAsRead: (userId: string) => Promise<void>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-
 export const useMessageStore = create<MessageState>((set) => ({
   conversations: [],
   activeConversation: null,
@@ -38,14 +37,9 @@ export const useMessageStore = create<MessageState>((set) => ({
 
   fetchConversations: async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/messages/conversations`, {
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        set({ conversations: data.data });
+      const response = await api.getConversations();
+      if (response.success) {
+        set({ conversations: response.data });
       }
     } catch (error) {
       console.error(error);
@@ -55,14 +49,9 @@ export const useMessageStore = create<MessageState>((set) => ({
   fetchMessages: async (userId: string) => {
     set({ isLoading: true });
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/messages/${userId}`, {
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        set({ messages: data.data, isLoading: false });
+      const response = await api.getMessages(userId);
+      if (response.success) {
+        set({ messages: response.data, isLoading: false });
       } else {
         set({ isLoading: false });
       }
@@ -74,21 +63,11 @@ export const useMessageStore = create<MessageState>((set) => ({
 
   sendMessage: async (receiverId: string, content: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/messages`, {
-        method: 'POST',
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ receiverId, content }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        set((state) => ({ messages: [...state.messages, data.data] }));
+      const response = await api.sendMessage(receiverId, content);
+      if (response.success) {
+        set((state) => ({ messages: [...state.messages, response.data] }));
       } else {
-        throw new Error(data.message || 'Failed to send message');
+        throw new Error((response as any).message || 'Failed to send message');
       }
     } catch (error: any) {
       console.error(error);

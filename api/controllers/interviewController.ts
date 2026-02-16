@@ -482,7 +482,8 @@ export const getInterviews = async (req: AuthRequest, res: Response, next: NextF
   try {
     const interviews = await Interview.find({ user: req.user?._id })
       .select('persona feedback status createdAt updatedAt')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean(); // Use lean() for better performance
       
     res.json({ success: true, data: interviews });
   } catch (error) {
@@ -498,7 +499,9 @@ export const getInterviewAnalytics = async (req: AuthRequest, res: Response, nex
       return;
     }
 
-    const interviews = await Interview.find({ user: userId }).select('persona feedback status createdAt');
+    const interviews = await Interview.find({ user: userId })
+      .select('persona feedback status createdAt')
+      .lean(); // Use lean() for better performance
 
     if (!interviews.length) {
       res.json({

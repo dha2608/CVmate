@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api } from '@/lib/utils';
 
 export interface Notification {
   _id: string;
@@ -27,8 +28,6 @@ interface NotificationState {
   deleteNotification: (id: string) => Promise<void>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
@@ -38,30 +37,22 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   fetchNotifications: async () => {
     set({ isLoading: true });
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Not authenticated');
-
-      const res = await fetch(`${API_URL}/notifications`, {
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-
-      if (data.success) {
+      const response = await api.getNotifications();
+      if (response.success) {
         interface NotificationData {
           read?: boolean;
           isRead?: boolean;
           [key: string]: unknown;
         }
-        const unread = (data.data as NotificationData[]).filter((n) => !(n.read ?? n.isRead)).length;
+        const unread = (response.data as NotificationData[]).filter((n) => !(n.read ?? n.isRead)).length;
         // Map backend field `read` -> `isRead` for frontend convenience
-        const normalized = (data.data as NotificationData[]).map((n) => ({
+        const normalized = (response.data as NotificationData[]).map((n) => ({
           ...n,
           isRead: n.isRead ?? n.read ?? false,
         }));
         set({ notifications: normalized as any, unreadCount: unread, isLoading: false });
       } else {
-        set({ error: data.message, isLoading: false });
+        set({ error: (response as any).message, isLoading: false });
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
@@ -70,7 +61,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   markAsRead: async (id: string) => {
     try {
-      const token = localStorage.getItem('token');
       // Optimistic update
       set((state) => {
         const updated = state.notifications.map((n) =>
@@ -82,11 +72,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         };
       });
 
-      await fetch(`${API_URL}/notifications/${id}/read`, {
-        method: 'PUT',
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.markNotificationAsRead(id);
     } catch (error) {
       console.error(error);
       get().fetchNotifications(); // Revert on error
@@ -95,17 +81,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   markAllAsRead: async () => {
     try {
-      const token = localStorage.getItem('token');
       set((state) => ({
         notifications: state.notifications.map((n) => ({ ...n, isRead: true })),
         unreadCount: 0,
       }));
 
-      await fetch(`${API_URL}/notifications/read-all`, {
-        method: 'PUT',
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.markAllNotificationsAsRead();
     } catch (error) {
       console.error(error);
       get().fetchNotifications();
@@ -114,7 +95,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   deleteNotification: async (id: string) => {
     try {
-      const token = localStorage.getItem('token');
       set((state) => {
         const updated = state.notifications.filter((n) => n._id !== id);
         return {
@@ -123,11 +103,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         };
       });
 
-      await fetch(`${API_URL}/notifications/${id}`, {
-        method: 'DELETE',
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.deleteNotification(id);
     } catch (error) {
       console.error(error);
     }

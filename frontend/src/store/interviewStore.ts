@@ -72,30 +72,46 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       if (!interview) {
         throw new Error('Interview not found');
       }
+      
+      // Map chatHistory to messages format
+      const messages: InterviewMessage[] = (interview.chatHistory || []).map((msg: any) => ({
+        role: msg.role,
+        content: msg.content,
+        timestamp: msg.timestamp ? new Date(msg.timestamp).toISOString() : new Date().toISOString(),
+      }));
+      
+      // Map feedback structure
+      const feedback: InterviewFeedback | null = interview.feedback ? {
+        confidenceScore: interview.feedback.confidenceScore,
+        contentScore: interview.feedback.contentScore,
+        suggestions: (() => {
+          const suggestions = interview.feedback.suggestions;
+          if (!suggestions) return undefined;
+          if (Array.isArray(suggestions)) {
+            return suggestions.filter(s => s != null).join('\n');
+          }
+          if (typeof suggestions === 'string') {
+            return suggestions;
+          }
+          try {
+            return String(suggestions);
+          } catch {
+            return undefined;
+          }
+        })(),
+        strengths: interview.feedback.strengths,
+        improvements: interview.feedback.improvements,
+        overallScore: interview.feedback.overallScore,
+        scoresByDimension: interview.feedback.scoresByDimension,
+        perQuestionFeedback: interview.feedback.perQuestionFeedback,
+      } : null;
+      
       set({
         interviewId: interview._id,
         persona: interview.persona,
-        messages: interview.messages || [],
-        feedback: interview.feedback ? {
-          confidenceScore: interview.feedback.confidence,
-          contentScore: interview.feedback.accuracy,
-          suggestions: (() => {
-            const suggestions = interview.feedback.suggestions;
-            if (!suggestions) return undefined;
-            if (Array.isArray(suggestions)) {
-              return suggestions.filter(s => s != null).join('\n');
-            }
-            if (typeof suggestions === 'string') {
-              return suggestions;
-            }
-            try {
-              return String(suggestions);
-            } catch {
-              return undefined;
-            }
-          })(),
-        } : null,
-        status: interview.endedAt ? 'completed' : 'active',
+        messages,
+        feedback,
+        status: interview.status || (interview.endedAt ? 'completed' : 'active'),
         isStarting: false,
       });
     } catch (error: any) {
@@ -122,11 +138,18 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
         throw new Error('Failed to send message');
       }
 
-      const interview = response.data?.interview;
+      const interview = response.data?.interview || response.data;
       if (interview) {
+        // Map chatHistory to messages format
+        const messages: InterviewMessage[] = (interview.chatHistory || interview.messages || optimisticMessages).map((msg: any) => ({
+          role: msg.role,
+          content: msg.content,
+          timestamp: msg.timestamp ? new Date(msg.timestamp).toISOString() : new Date().toISOString(),
+        }));
+        
         set({
-          messages: interview.messages || optimisticMessages,
-          status: interview.endedAt ? 'completed' : 'active',
+          messages,
+          status: interview.status || (interview.endedAt ? 'completed' : 'active'),
           isSending: false,
         });
       } else {
@@ -188,9 +211,43 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       }
 
       const interview = response.data;
+      
+      // Map chatHistory to messages format
+      const messages: InterviewMessage[] = (interview.chatHistory || []).map((msg: any) => ({
+        role: msg.role,
+        content: msg.content,
+        timestamp: msg.timestamp ? new Date(msg.timestamp).toISOString() : new Date().toISOString(),
+      }));
+      
+      // Map feedback structure
+      const feedback: InterviewFeedback | null = interview.feedback ? {
+        confidenceScore: interview.feedback.confidenceScore,
+        contentScore: interview.feedback.contentScore,
+        suggestions: (() => {
+          const suggestions = interview.feedback.suggestions;
+          if (!suggestions) return undefined;
+          if (Array.isArray(suggestions)) {
+            return suggestions.filter(s => s != null).join('\n');
+          }
+          if (typeof suggestions === 'string') {
+            return suggestions;
+          }
+          try {
+            return String(suggestions);
+          } catch {
+            return undefined;
+          }
+        })(),
+        strengths: interview.feedback.strengths,
+        improvements: interview.feedback.improvements,
+        overallScore: interview.feedback.overallScore,
+        scoresByDimension: interview.feedback.scoresByDimension,
+        perQuestionFeedback: interview.feedback.perQuestionFeedback,
+      } : null;
+      
       set({
-        feedback: interview.feedback || null,
-        messages: interview.chatHistory || [],
+        feedback,
+        messages,
         status: interview.status || 'completed',
         isEnding: false,
       });

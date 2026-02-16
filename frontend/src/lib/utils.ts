@@ -195,20 +195,43 @@ export const clearCsrfToken = (): void => {
 interface ApiOptions extends RequestInit {
   requiresAuth?: boolean;
   timeout?: number; // Timeout in milliseconds
+  cache?: boolean; // Enable caching for GET requests
+  cacheTTL?: number; // Cache TTL in milliseconds
+  params?: Record<string, unknown>; // Query parameters for cache key generation
 }
 
 const DEFAULT_TIMEOUT = 30000; // 30 seconds default timeout
 const AUTH_TIMEOUT = 15000; // 15 seconds for auth endpoints (login/register)
+
+// Import cache
+let apiCache: typeof import('./apiCache').apiCache;
+if (typeof window !== 'undefined') {
+  import('./apiCache').then(module => {
+    apiCache = module.apiCache;
+  });
+}
 
 export const apiRequest = async <T = unknown>(
   endpoint: string,
   options: ApiOptions = {},
   retryOnCsrfError = true
 ): Promise<T> => {
-  const { requiresAuth = true, timeout, ...fetchOptions } = options;
+  const { requiresAuth = true, timeout, cache, cacheTTL, ...fetchOptions } = options;
   
   const method = (fetchOptions.method || 'GET').toUpperCase();
   const isMutatingRequest = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method);
+  
+  // Check cache for GET requests
+  if (method === 'GET' && cache && typeof window !== 'undefined' && apiCache) {
+    const cacheKey = apiCache.constructor.generateKey(endpoint, options.params as Record<string, unknown>);
+    const cached = apiCache.get<T>(cacheKey);
+    if (cached !== null) {
+      if (isDev) {
+        logger.log('📦 Cache hit:', endpoint);
+      }
+      return cached;
+    }
+  }
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -302,7 +325,18 @@ export const apiRequest = async <T = unknown>(
     throw error;
   }
 
-  return response.json();
+  const data = await response.json();
+  
+  // Cache successful GET responses
+  if (method === 'GET' && cache && typeof window !== 'undefined' && apiCache) {
+    const cacheKey = apiCache.constructor.generateKey(endpoint, options.params as Record<string, unknown>);
+    apiCache.set(cacheKey, data, cacheTTL);
+    if (isDev) {
+      logger.log('💾 Cached:', endpoint);
+    }
+  }
+  
+  return data;
   } catch (error: unknown) {
     clearTimeout(timeoutId);
     
@@ -352,7 +386,10 @@ export const api = {
       timeout: AUTH_TIMEOUT,
     }),
 
-  getMe: () => apiRequest<ApiResponse<AuthUser>>('/auth/me'),
+  getMe: () => apiRequest<ApiResponse<AuthUser>>('/auth/me', {
+    cache: true,
+    cacheTTL: 2 * 60 * 1000, // 2 minutes
+  }),
 
   updateProfile: (payload: {
     name?: string; 
@@ -461,9 +498,15 @@ export const api = {
     apiRequest<InterviewListResponse>('/interviews'),
 
   getDashboardStats: () =>
-    apiRequest<DashboardStatsResponse>('/dashboard/stats'),
+    apiRequest<DashboardStatsResponse>('/dashboard/stats', {
+      cache: true,
+      cacheTTL: 1 * 60 * 1000, // 1 minute
+    }),
 
-  getPosts: () => apiRequest<PostListResponse>('/posts'),
+  getPosts: () => apiRequest<PostListResponse>('/posts', {
+    cache: true,
+    cacheTTL: 2 * 60 * 1000, // 2 minutes
+  }),
   
   createPost: (content: string, imageUrl?: string) =>
     apiRequest<PostResponse>('/posts', {
@@ -504,13 +547,21 @@ export const api = {
   getAchievementStats: () =>
     apiRequest<AchievementStatsResponse>('/achievements/stats'),
 
-  getArticles: () => apiRequest<ArticleListResponse>('/articles'),
+  getArticles: () => apiRequest<ArticleListResponse>('/articles', {
+    cache: true,
+    cacheTTL: 5 * 60 * 1000, // 5 minutes
+  }),
   
-  getArticle: (id: string) => apiRequest<ArticleResponse>(`/articles/${id}`),
+  getArticle: (id: string) => apiRequest<ArticleResponse>(`/articles/${id}`, {
+    cache: true,
+    cacheTTL: 10 * 60 * 1000, // 10 minutes
+  }),
 
   getNews: (limit?: number) =>
     apiRequest<NewsResponse>(`/news?limit=${limit || 20}`, {
       requiresAuth: false,
+      cache: true,
+      cacheTTL: 5 * 60 * 1000, // 5 minutes
     }),
 
   refreshNews: () =>
@@ -582,7 +633,11 @@ export const api = {
     if (params?.companySize) {
       queryParams.append('companySize', params.companySize);
     }
-    return apiRequest<{ success: boolean; data: any[]; pagination: any }>(`/jobs?${queryParams.toString()}`);
+    return apiRequest<{ success: boolean; data: any[]; pagination: any }>(`/jobs?${queryParams.toString()}`, {
+      cache: true,
+      cacheTTL: 2 * 60 * 1000, // 2 minutes
+      params: params as Record<string, unknown>,
+    });
   },
 
   getJob: (id: string) =>
@@ -625,4 +680,48 @@ export const api = {
                headers: {}, // Important: do not set Content-Type for FormData
              }),
          },
+
+         // Messages
+         getConversations: () =>
+           apiRequest<ApiResponse<any[]>>('/messages/conversations'),
+
+         getMessages: (userId: string) =>
+           apiRequest<ApiResponse<any[]>>(`/messages/${userId}`),
+
+         sendMessage: (receiverId: string, content: string) =>
+           apiRequest<ApiResponse<any>>('/messages', {
+             method: 'POST',
+             body: JSON.stringify({ receiverId, content }),
+           }),
+
+         // Notifications
+         getNotifications: () =>
+           apiRequest<ApiResponse<any[]>>('/notifications'),
+
+         markNotificationAsRead: (id: string) =>
+           apiRequest<ApiResponse<any>>(`/notifications/${id}/read`, {
+             method: 'PUT',
+           }),
+
+         markAllNotificationsAsRead: () =>
+           apiRequest<ApiResponse<any>>('/notifications/read-all', {
+             method: 'PUT',
+           }),
+
+         deleteNotification: (id: string) =>
+           apiRequest<ApiResponse<any>>(`/notifications/${id}`, {
+             method: 'DELETE',
+           }),
+
+         // Interview Analytics
+         getInterviewAnalytics: () =>
+           apiRequest<ApiResponse<any>>('/interviews/analytics/summary'),
+
+         // Resume History
+         getResumeHistory: (id: string) =>
+           apiRequest<ApiResponse<any>>(`/resumes/${id}/history`),
+
+         // Job Recommendations
+         getJobRecommendations: () =>
+           apiRequest<ApiResponse<any[]>>('/jobs/recommendations'),
        };

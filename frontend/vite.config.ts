@@ -60,10 +60,34 @@ export default defineConfig({
         return false;
       },
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['framer-motion', 'lucide-react'],
-          'pdf-vendor': ['jspdf', 'html2canvas'],
+        manualChunks: (id) => {
+          // More granular code splitting for better caching
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('framer-motion') || id.includes('lucide-react')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('jspdf') || id.includes('html2canvas')) {
+              return 'pdf-vendor';
+            }
+            if (id.includes('zustand')) {
+              return 'state-vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'radix-vendor';
+            }
+            // Other vendor chunks
+            return 'vendor';
+          }
+          // Split large pages into separate chunks
+          if (id.includes('/pages/')) {
+            const pageName = id.split('/pages/')[1]?.split('/')[0];
+            if (pageName && ['Builder', 'Interview', 'Dashboard'].includes(pageName)) {
+              return `page-${pageName.toLowerCase()}`;
+            }
+          }
         },
         // 确保使用相对路径，避免绝对路径问题
         entryFileNames: 'assets/[name]-[hash].js',
@@ -71,10 +95,15 @@ export default defineConfig({
         assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500, // Reduced from 1000 to catch more optimization opportunities
     // 确保源映射不会影响生产构建
     sourcemap: false,
     // 使用默认的 esbuild minifier（更快，无需额外依赖）
     minify: 'esbuild',
+    // Enable compression
+    cssCodeSplit: true,
+    // Optimize chunk loading
+    target: 'esnext',
+    minifyWhitespace: true,
   },
 });

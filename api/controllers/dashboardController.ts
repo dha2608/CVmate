@@ -52,12 +52,14 @@ export const getDashboardStats = async (req: AuthRequest, res: Response, next: N
       Resume.find({ user: userId })
         .select('title atsScore themeConfig.template updatedAt')
         .sort({ updatedAt: -1 })
-        .limit(3),
+        .limit(3)
+        .lean(),
 
       Interview.find({ user: userId })
         .select('persona feedback.score createdAt isCompleted')
         .sort({ createdAt: -1 })
         .limit(3)
+        .lean()
     ]);
 
     // Process Aggregated Data

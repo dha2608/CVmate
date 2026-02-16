@@ -54,7 +54,8 @@ export const getPosts = async (req: AuthRequest, res: Response, next: NextFuncti
         .skip(skip)
         .limit(limit)
         .populate('user', 'name avatar careerGoal location')
-        .populate('comments.user', 'name avatar careerGoal location'),
+        .populate('comments.user', 'name avatar careerGoal location')
+        .lean(), // Use lean() for better performance
       Post.countDocuments(query)
     ]);
     

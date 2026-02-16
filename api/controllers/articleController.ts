@@ -136,10 +136,12 @@ export const getArticles = async (req: Request, res: Response, next: NextFunctio
 
     const [articles, total] = await Promise.all([
       Article.find(query)
+        .select('-content') // Exclude full content for list view
         .populate('author', 'name avatar bio')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(), // Use lean() for better performance
       Article.countDocuments(query),
     ]);
 
@@ -165,7 +167,9 @@ export const getArticleById = async (req: Request, res: Response, next: NextFunc
       id,
       { $inc: { views: 1 } },
       { new: true }
-    ).populate('author', 'name avatar bio role');
+    )
+      .populate('author', 'name avatar bio role')
+      .lean(); // Use lean() for better performance
 
     if (!article) {
       res.status(404).json({ success: false, message: 'Article not found' });

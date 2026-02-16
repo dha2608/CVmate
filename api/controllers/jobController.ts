@@ -88,9 +88,11 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction) =
 
     const [jobs, total] = await Promise.all([
       Job.find(query)
+        .select('-__v') // Exclude version field
         .sort({ postedAt: -1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(), // Use lean() for better performance
       Job.countDocuments(query),
     ]);
 

@@ -180,42 +180,16 @@ const Profile = () => {
       const formDataToSend = new FormData();
       formDataToSend.append('avatar', file);
 
-      const userData = localStorage.getItem('user');
-      const token = userData ? JSON.parse(userData).token : null;
+      // Use the api utility which handles CSRF tokens and credentials
+      const response = await api.uploadAvatar(formDataToSend);
 
-      // Get API base URL - handle both cases: with and without /api
-      let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-      // Remove trailing /api if present to avoid duplication
-      if (apiBaseUrl.endsWith('/api')) {
-        apiBaseUrl = apiBaseUrl.slice(0, -4);
-      }
-      
-      const response = await fetch(`${apiBaseUrl}/api/upload/avatar`, {
-        method: 'POST',
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-          // Don't set Content-Type - browser will set it automatically with boundary for FormData
-        },
-        body: formDataToSend,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { message: errorText || 'Upload failed' };
-        }
-        throw new Error(errorData.message || errorData.error || t('profile.uploadFailed'));
+      if (!response.success) {
+        throw new Error((response as any).message || (response as any).error || t('profile.uploadFailed'));
       }
 
-      const data = await response.json();
-
-      if (data.success && data.data?.url) {
+      if (response.data?.url) {
         // Use normalizeImageUrl to ensure correct URL format
-        const avatarUrl = normalizeImageUrl(data.data.url) || data.data.url;
+        const avatarUrl = normalizeImageUrl(response.data.url) || response.data.url;
         
         // Update immediately for instant feedback (optimistic update)
         const updatedFormData = { ...formData, avatar: avatarUrl };
@@ -302,41 +276,16 @@ const Profile = () => {
       const formDataToSend = new FormData();
       formDataToSend.append('coverPhoto', file);
 
-      const userData = localStorage.getItem('user');
-      const token = userData ? JSON.parse(userData).token : null;
+      // Use the api utility which handles CSRF tokens and credentials
+      const response = await api.uploadCoverPhoto(formDataToSend);
 
-      // Get API base URL - handle both cases: with and without /api
-      let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-      // Remove trailing /api if present to avoid duplication
-      if (apiBaseUrl.endsWith('/api')) {
-        apiBaseUrl = apiBaseUrl.slice(0, -4);
-      }
-      
-      const response = await fetch(`${apiBaseUrl}/api/upload/cover-photo`, {
-        method: 'POST',
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: formDataToSend,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { message: errorText || 'Upload failed' };
-        }
-        throw new Error(errorData.message || errorData.error || t('profile.uploadFailed'));
+      if (!response.success) {
+        throw new Error((response as any).message || (response as any).error || t('profile.uploadFailed'));
       }
 
-      const data = await response.json();
-
-      if (data.success && data.data?.url) {
+      if (response.data?.url) {
         // Use normalizeImageUrl to ensure correct URL format
-        const coverPhotoUrl = normalizeImageUrl(data.data.url) || data.data.url;
+        const coverPhotoUrl = normalizeImageUrl(response.data.url) || response.data.url;
         
         // Update immediately for instant feedback (optimistic update)
         const updatedFormData = { ...formData, coverPhoto: coverPhotoUrl };
@@ -382,7 +331,7 @@ const Profile = () => {
           }, 500);
         }
       } else {
-        throw new Error(data.message || data.error || t('profile.uploadFailed'));
+        throw new Error((response as any).message || (response as any).error || t('profile.uploadFailed'));
       }
     } catch (error: unknown) {
       const errorMessage = getUserFriendlyMessage(error) || t('profile.uploadFailed');

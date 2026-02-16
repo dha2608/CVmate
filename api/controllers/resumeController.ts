@@ -119,7 +119,8 @@ export const getResumes = async (req: AuthRequest, res: Response, next: NextFunc
   try {
     const resumes = await Resume.find({ user: req.user?._id })
       .select('title personalInfo.fullName updatedAt atsScore isPublic')
-      .sort({ updatedAt: -1 });
+      .sort({ updatedAt: -1 })
+      .lean(); // Use lean() for better performance
     res.json({ success: true, data: resumes });
   } catch (error) {
     next(error);
