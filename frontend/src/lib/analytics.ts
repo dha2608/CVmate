@@ -62,11 +62,12 @@ export const trackEvent = async (name: AnalyticsEventName, payload?: AnalyticsPa
         payload: payload || {},
         sessionId,
       }),
-      requiresAuth: true, // Analytics can work with or without auth
+      requiresAuth: false, // Analytics can work with or without auth - changed to false to allow public tracking
     }).catch((error: unknown) => {
       // Silent fail - don't interrupt user experience
-      if (isDev) {
-        console.warn('[analytics] Failed to track event:', error);
+      // Only log 404 errors in dev, ignore others silently
+      if (isDev && error && typeof error === 'object' && 'status' in error && error.status === 404) {
+        console.warn('[analytics] Endpoint not found (404) - backend may not have analytics route:', error);
       }
     });
   } catch (error: unknown) {

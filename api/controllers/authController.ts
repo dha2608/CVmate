@@ -313,19 +313,19 @@ export const getPublicProfile = async (req: Request, res: Response, next: NextFu
     }
 
     sendSuccessResponse(res, {
-      _id: user._id,
-      name: user.name,
-      avatar: user.avatar,
-      bio: user.bio,
-      headline: user.headline,
-      location: user.location,
-      yearsOfExperience: user.yearsOfExperience,
-      currentRole: user.currentRole,
-      industries: user.industries || [],
-      skills: user.skills || [],
-      socialLinks: user.socialLinks || {},
-      careerGoal: user.careerGoal,
-      createdAt: user.createdAt,
+        _id: user._id,
+        name: user.name,
+        avatar: user.avatar,
+        bio: user.bio,
+        headline: user.headline,
+        location: user.location,
+        yearsOfExperience: user.yearsOfExperience,
+        currentRole: user.currentRole,
+        industries: user.industries || [],
+        skills: user.skills || [],
+        socialLinks: user.socialLinks || {},
+        careerGoal: user.careerGoal,
+        createdAt: user.createdAt,
     });
   } catch (error) {
     next(error);

@@ -107,6 +107,17 @@ export const logger = {
   },
 };
 
+// Always log API URL on app start (even in production) for debugging
+if (typeof window !== 'undefined') {
+  console.log('[CVmate] API Base URL:', API_BASE_URL);
+  console.log('[CVmate] VITE_API_URL env:', import.meta.env.VITE_API_URL || 'NOT SET');
+  
+  // Warn if using old URL
+  if (API_BASE_URL.includes('cvmate-kf5p.onrender.com')) {
+    console.warn('[CVmate] ⚠️ WARNING: Using OLD API URL! Please update VITE_API_URL to https://cvmate.onrender.com/api');
+  }
+}
+
 if (isDev && !isProduction) {
   logger.log('🔗 API Base URL:', API_BASE_URL);
 }
