@@ -60,7 +60,8 @@ const resumeTemplateSchema = new Schema<IResumeTemplate>({
   timestamps: true,
 });
 
-resumeTemplateSchema.index({ key: 1 });
+// key field already has unique: true which creates an index automatically
+// resumeTemplateSchema.index({ key: 1 }); // Removed - duplicate of unique index
 resumeTemplateSchema.index({ isPremium: 1 });
 resumeTemplateSchema.index({ tags: 1 });
 
