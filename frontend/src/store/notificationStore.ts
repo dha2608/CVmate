@@ -42,6 +42,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       if (!token) throw new Error('Not authenticated');
 
       const res = await fetch(`${API_URL}/notifications`, {
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -83,6 +84,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       await fetch(`${API_URL}/notifications/${id}/read`, {
         method: 'PUT',
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (error) {
@@ -101,6 +103,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       await fetch(`${API_URL}/notifications/read-all`, {
         method: 'PUT',
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (error) {
@@ -122,6 +125,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       await fetch(`${API_URL}/notifications/${id}`, {
         method: 'DELETE',
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (error) {

@@ -110,6 +110,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       const response = await fetch(`${apiBaseUrl}/api/upload/post-image`, {
         method: 'POST',
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
         },

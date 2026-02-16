@@ -28,6 +28,7 @@ const BlogDetail = () => {
             }
 
             const res = await fetch(`${API_BASE_URL}/articles/${id}`, {
+              credentials: 'include', // Include cookies for cross-origin requests
               headers
             });
             const data = await res.json();

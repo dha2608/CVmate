@@ -59,6 +59,7 @@ export const useBlogStore = create<BlogState>((set) => ({
 
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/articles`, {
         method: 'POST',
+        credentials: 'include', // Include cookies for cross-origin requests
         headers,
         body: JSON.stringify(articleData),
       });

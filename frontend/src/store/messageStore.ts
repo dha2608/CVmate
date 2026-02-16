@@ -40,6 +40,7 @@ export const useMessageStore = create<MessageState>((set) => ({
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/messages/conversations`, {
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -56,6 +57,7 @@ export const useMessageStore = create<MessageState>((set) => ({
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/messages/${userId}`, {
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -75,6 +77,7 @@ export const useMessageStore = create<MessageState>((set) => ({
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/messages`, {
         method: 'POST',
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -98,6 +101,7 @@ export const useMessageStore = create<MessageState>((set) => ({
       const token = localStorage.getItem('token');
       await fetch(`${API_URL}/messages/${userId}/read`, {
         method: 'POST',
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -105,6 +109,7 @@ export const useMessageStore = create<MessageState>((set) => ({
       });
       // Refresh conversations to update unread counts
       const res = await fetch(`${API_URL}/messages/conversations`, {
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();

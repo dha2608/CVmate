@@ -24,6 +24,7 @@ const AuthCallback = () => {
         try {
           const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
           const response = await fetch(`${API_URL}/auth/me`, {
+            credentials: 'include', // Include cookies for cross-origin requests
             headers: {
               Authorization: `Bearer ${token}`,
             },

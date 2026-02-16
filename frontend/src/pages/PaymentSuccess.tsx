@@ -28,6 +28,7 @@ const PaymentSuccess = () => {
         const token = userData ? JSON.parse(userData).token : null;
 
         const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/payment/subscription-status`, {
+          credentials: 'include', // Include cookies for cross-origin requests
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',

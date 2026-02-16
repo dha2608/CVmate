@@ -133,10 +133,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       autoRemove: 'native',
     }) : undefined, // Fallback to MemoryStore if no MongoDB URI
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production', // Must be true in production for HTTPS
       httpOnly: true,
       maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' required for cross-origin in production
     },
   }));
 

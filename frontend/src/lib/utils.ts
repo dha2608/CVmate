@@ -177,7 +177,8 @@ export const apiRequest = async <T = unknown>(
   const response = await fetch(url, {
     ...fetchOptions,
     headers,
-      signal: controller.signal,
+    credentials: 'include', // Always include credentials (cookies) for cross-origin requests
+    signal: controller.signal,
   });
 
     clearTimeout(timeoutId);

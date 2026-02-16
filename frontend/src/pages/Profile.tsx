@@ -192,6 +192,7 @@ const Profile = () => {
       
       const response = await fetch(`${apiBaseUrl}/api/upload/avatar`, {
         method: 'POST',
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
           // Don't set Content-Type - browser will set it automatically with boundary for FormData
@@ -313,6 +314,7 @@ const Profile = () => {
       
       const response = await fetch(`${apiBaseUrl}/api/upload/cover-photo`, {
         method: 'POST',
+        credentials: 'include', // Include cookies for cross-origin requests
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
         },
