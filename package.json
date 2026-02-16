@@ -16,6 +16,7 @@
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "server:dev": "nodemon",
+    "server:start": "cd api && npx tsx -r dotenv/config server.ts",
     "dev": "concurrently \"npm run client:dev\" \"npm run server:dev\"",
     "check-rate-limit": "node api/scripts/reset-rate-limit.js",
     "db:migrate": "node api/scripts/migrate.js",
