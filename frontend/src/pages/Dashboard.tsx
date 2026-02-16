@@ -155,7 +155,15 @@ const Dashboard = () => {
                   ) : (
                     <>
                       <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                        {greeting}, {user.name ? user.name.split(' ')[0] : user?.email?.split('@')[0] || 'User'}!
+                        {greeting}, {(() => {
+                          if (user?.name && typeof user.name === 'string') {
+                            return user.name.split(' ')[0];
+                          }
+                          if (user?.email && typeof user.email === 'string') {
+                            return user.email.split('@')[0];
+                          }
+                          return 'User';
+                        })()}!
                       </h1>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.readyToBoost')}</p>
                     </>
