@@ -192,7 +192,7 @@ export const clearCsrfToken = (): void => {
   csrfTokenCache = null;
   csrfTokenPromise = null;
 };
-interface ApiOptions extends RequestInit {
+interface ApiOptions extends Omit<RequestInit, 'cache'> {
   requiresAuth?: boolean;
   timeout?: number; // Timeout in milliseconds
   cache?: boolean; // Enable caching for GET requests
@@ -203,13 +203,7 @@ interface ApiOptions extends RequestInit {
 const DEFAULT_TIMEOUT = 30000; // 30 seconds default timeout
 const AUTH_TIMEOUT = 15000; // 15 seconds for auth endpoints (login/register)
 
-// Import cache
-let apiCache: typeof import('./apiCache').apiCache;
-if (typeof window !== 'undefined') {
-  import('./apiCache').then(module => {
-    apiCache = module.apiCache;
-  });
-}
+import { apiCache, APICache } from "./apiCache";
 
 export const apiRequest = async <T = unknown>(
   endpoint: string,
@@ -223,7 +217,7 @@ export const apiRequest = async <T = unknown>(
   
   // Check cache for GET requests
   if (method === 'GET' && cache && typeof window !== 'undefined' && apiCache) {
-    const cacheKey = apiCache.constructor.generateKey(endpoint, options.params as Record<string, unknown>);
+    const cacheKey = (apiCache.constructor as typeof APICache).generateKey(endpoint, options.params as Record<string, unknown>);
     const cached = apiCache.get<T>(cacheKey);
     if (cached !== null) {
       if (isDev) {
@@ -329,7 +323,7 @@ export const apiRequest = async <T = unknown>(
   
   // Cache successful GET responses
   if (method === 'GET' && cache && typeof window !== 'undefined' && apiCache) {
-    const cacheKey = apiCache.constructor.generateKey(endpoint, options.params as Record<string, unknown>);
+    const cacheKey = (apiCache.constructor as typeof APICache).generateKey(endpoint, options.params as Record<string, unknown>);
     apiCache.set(cacheKey, data, cacheTTL);
     if (isDev) {
       logger.log('💾 Cached:', endpoint);
