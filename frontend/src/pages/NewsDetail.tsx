@@ -17,7 +17,7 @@ const NewsDetail = () => {
 
   useEffect(() => {
     const loadArticle = async () => {
-      if (!link) return;
+      if (!link) {return;}
       
       setIsLoading(true);
       

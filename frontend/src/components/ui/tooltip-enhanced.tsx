@@ -26,7 +26,7 @@ export const TooltipEnhanced = ({
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   const updatePosition = () => {
-    if (!triggerRef.current || !tooltipRef.current) return;
+    if (!triggerRef.current || !tooltipRef.current) {return;}
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
@@ -62,7 +62,7 @@ export const TooltipEnhanced = ({
   };
 
   const showTooltip = () => {
-    if (disabled) return;
+    if (disabled) {return;}
     timeoutRef.current = setTimeout(() => {
       setIsVisible(true);
       setTimeout(updatePosition, 0);

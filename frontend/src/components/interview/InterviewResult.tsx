@@ -37,14 +37,14 @@ const InterviewResult = () => {
       return polarToCartesian(centerX, centerY, radius, angle);
     });
 
-    if (!points.length) return '';
+    if (!points.length) {return '';}
 
     return points
       .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
       .join(' ') + ' Z';
   }, [scores]);
 
-  if (!feedback) return null;
+  if (!feedback) {return null;}
 
   const overall = feedback.overallScore ?? feedback.confidenceScore ?? feedback.contentScore ?? 0;
 

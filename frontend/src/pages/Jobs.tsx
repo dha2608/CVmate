@@ -84,8 +84,8 @@ const Jobs = () => {
       search: searchTerm || undefined,
       type: selectedType !== 'All' ? selectedType : undefined,
       location: locationFilter || undefined,
-      salaryMin: salaryMin,
-      salaryMax: salaryMax,
+      salaryMin,
+      salaryMax,
       experienceLevel: experienceLevel || undefined,
       companySize: companySize || undefined,
     });

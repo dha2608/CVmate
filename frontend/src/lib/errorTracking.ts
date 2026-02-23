@@ -87,7 +87,7 @@ export const logError = (error: Error, errorInfo?: ErrorInfo): void => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore - Sentry is optional dependency, may not be installed
       import('@sentry/react').catch(() => null).then((Sentry) => {
-        if (!Sentry) return;
+        if (!Sentry) {return;}
         Sentry.captureException(error, {
           contexts: {
             react: {
@@ -118,7 +118,7 @@ export const setUserContext = (userId: string, email?: string, name?: string): v
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - Sentry is optional dependency, may not be installed
     import('@sentry/react').catch(() => null).then((Sentry) => {
-      if (!Sentry) return;
+      if (!Sentry) {return;}
       Sentry.setUser({
         id: userId,
         email,
@@ -136,7 +136,7 @@ export const clearUserContext = (): void => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - Sentry is optional dependency, may not be installed
     import('@sentry/react').catch(() => null).then((Sentry) => {
-      if (!Sentry) return;
+      if (!Sentry) {return;}
       Sentry.setUser(null);
     });
   }
@@ -150,7 +150,7 @@ export const addBreadcrumb = (message: string, category?: string, level?: 'info'
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - Sentry is optional dependency, may not be installed
     import('@sentry/react').catch(() => null).then((Sentry) => {
-      if (!Sentry) return;
+      if (!Sentry) {return;}
       Sentry.addBreadcrumb({
         message,
         category: category || 'default',

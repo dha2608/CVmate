@@ -227,7 +227,7 @@ const MainLayout = ({
                           const img = e.target as HTMLImageElement;
                           img.style.display = 'none';
                           const fallback = img.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
+                          if (fallback) {fallback.style.display = 'flex';}
                         }}
                       />
                     ) : null}
@@ -305,7 +305,7 @@ const MainLayout = ({
                               const img = e.target as HTMLImageElement;
                               img.style.display = 'none';
                               const fallback = img.nextElementSibling as HTMLElement;
-                              if (fallback) fallback.style.display = 'flex';
+                              if (fallback) {fallback.style.display = 'flex';}
                             }}
                           />
                         ) : null}

@@ -21,7 +21,7 @@ const CreatePost = () => {
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {return;}
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -55,7 +55,7 @@ const CreatePost = () => {
   };
 
   const handleUploadImage = async () => {
-    if (!selectedImage) return;
+    if (!selectedImage) {return;}
 
     setIsUploadingImage(true);
     try {

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, memo } from 'react';
+import { useEffect, useState, useMemo, memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
@@ -11,9 +11,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { GlassButton } from '@/components/ui/glass-button';
 import { GlassCard } from '@/components/ui/glass-card';
-import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
-import { CardEnhanced } from '@/components/ui/card-enhanced';
 import ActivityFeed from '@/components/ActivityFeed';
 import { AchievementList } from '@/components/achievements/AchievementBadge';
 import { 
@@ -25,11 +24,8 @@ import {
     Search,
     PenTool,
     ExternalLink,
-    Loader2,
     BarChart3,
-    Target,
-    Award,
-    Calendar
+    Target
 } from 'lucide-react';
 import AnalyticsChart from '@/components/dashboard/AnalyticsChart';
 import AdvancedStats from '@/components/dashboard/AdvancedStats';
@@ -37,13 +33,27 @@ import AdvancedStats from '@/components/dashboard/AdvancedStats';
 const Dashboard = () => {
   const { user } = useAuthStore();
   const { stats, fetchStats, isLoading: statsLoading } = useDashboardStore();
-  const { posts, fetchPosts, isLoading: postsLoading } = useCommunityStore();
+  const { fetchPosts } = useCommunityStore();
   const { articles, fetchArticles, isLoading: articlesLoading } = useBlogStore();
   const { achievements, fetchAchievements } = useAchievementStore();
   const { t } = useI18n();
   const navigate = useNavigate();
   const [greeting, setGreeting] = useState('');
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  const loadData = useCallback(async () => {
+    setIsInitialLoading(true);
+    try {
+      await Promise.allSettled([
+        fetchStats(),
+        fetchPosts(),
+        fetchArticles(),
+        fetchAchievements().catch(() => {})
+      ]);
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, [fetchStats, fetchPosts, fetchArticles, fetchAchievements]);
 
   useEffect(() => {
     if (!user) {
@@ -52,36 +62,21 @@ const Dashboard = () => {
     }
 
     const hour = new Date().getHours();
-    if (hour < 12) setGreeting(t('dashboard.goodMorning'));
-    else if (hour < 18) setGreeting(t('dashboard.goodAfternoon'));
-    else setGreeting(t('dashboard.goodEvening'));
-
-    const loadData = async () => {
-      setIsInitialLoading(true);
-      try {
-        // Use Promise.allSettled to prevent one failure from blocking others
-        await Promise.allSettled([
-          fetchStats(),
-          fetchPosts(),
-          fetchArticles(),
-          fetchAchievements().catch(() => {
-            // Silently fail - achievements are optional
-          })
-        ]);
-      } finally {
-        setIsInitialLoading(false);
-      }
-    };
+    if (hour < 12) {
+      setGreeting(t('dashboard.goodMorning'));
+    } else if (hour < 18) {
+      setGreeting(t('dashboard.goodAfternoon'));
+    } else {
+      setGreeting(t('dashboard.goodEvening'));
+    }
 
     loadData();
-  }, [user, navigate, t, fetchStats, fetchPosts, fetchArticles, fetchAchievements]);
+  }, [user, navigate, t, loadData]);
 
-  if (!user) return null;
-
-  const isLoading = isInitialLoading || statsLoading || articlesLoading;
-
-  // Memoize profile progress calculation
   const profileProgress = useMemo(() => {
+    if (!user) {
+      return 0;
+    }
     const profileSegments = [
       user.onboardingCompleted ? 1 : 0,
       stats.resumesCount > 0 ? 1 : 0,
@@ -89,52 +84,53 @@ const Dashboard = () => {
       stats.postsCount > 0 ? 1 : 0,
     ];
     return (profileSegments.reduce((sum, v) => sum + v, 0) / profileSegments.length) * 100;
-  }, [user.onboardingCompleted, stats.resumesCount, stats.interviewsCount, stats.postsCount]);
+  }, [user, stats.resumesCount, stats.interviewsCount, stats.postsCount]);
 
-  // Memoize next action
   const nextAction = useMemo(() => {
-    const getNextAction = () => {
+    if (!user) {
+      return { title: '', desc: '', cta: '', href: '/' };
+    }
+    
     if (!user.onboardingCompleted) {
       return {
         title: t('dashboard.nextActionOnboarding') || 'Hoàn thành onboarding để cá nhân hoá trải nghiệm',
-        desc:
-          t('dashboard.nextActionOnboardingDesc') ||
-          'Chọn mục tiêu nghề nghiệp để chúng tôi gợi ý CV, interview và jobs phù hợp.',
+        desc: t('dashboard.nextActionOnboardingDesc') || 'Chọn mục tiêu nghề nghiệp để chúng tôi gợi ý CV, interview và jobs phù hợp.',
         cta: t('dashboard.completeOnboarding') || 'Hoàn thành onboarding',
         href: '/onboarding',
       };
     }
+    
     if (stats.resumesCount === 0) {
       return {
         title: t('dashboard.nextActionCreateCV') || 'Tạo CV đầu tiên của bạn',
-        desc:
-          t('dashboard.nextActionCreateCVDesc') ||
-          'Bắt đầu với template ATS-friendly và để AI tối ưu nội dung giúp bạn.',
+        desc: t('dashboard.nextActionCreateCVDesc') || 'Bắt đầu với template ATS-friendly và để AI tối ưu nội dung giúp bạn.',
         cta: t('dashboard.createCV') || 'Tạo CV',
         href: '/builder',
       };
     }
+    
     if (stats.interviewsCount === 0) {
       return {
         title: t('dashboard.nextActionInterview') || 'Luyện phỏng vấn với AI',
-        desc:
-          t('dashboard.nextActionInterviewDesc') ||
-          'Chọn một persona phù hợp và luyện trả lời các câu hỏi phỏng vấn thực tế.',
+        desc: t('dashboard.nextActionInterviewDesc') || 'Chọn một persona phù hợp và luyện trả lời các câu hỏi phỏng vấn thực tế.',
         cta: t('dashboard.startInterview') || 'Bắt đầu interview',
         href: '/interview',
       };
     }
+    
     return {
       title: t('dashboard.nextActionJobs') || 'Khám phá các cơ hội việc làm phù hợp',
-      desc:
-        t('dashboard.nextActionJobsDesc') ||
-        'Dùng CV đã tối ưu để apply vào các job đang tuyển dụng.',
+      desc: t('dashboard.nextActionJobsDesc') || 'Dùng CV đã tối ưu để apply vào các job đang tuyển dụng.',
       cta: t('dashboard.viewJobs') || 'Xem jobs',
       href: '/jobs',
     };
-    };
-    return getNextAction();
-  }, [user.onboardingCompleted, stats.resumesCount, stats.interviewsCount, t]);
+  }, [user, stats.resumesCount, stats.interviewsCount, t]);
+
+  if (!user) {
+    return null;
+  }
+
+  const isLoading = isInitialLoading || statsLoading || articlesLoading;
 
   return (
     <MainLayout>
@@ -155,17 +151,7 @@ const Dashboard = () => {
                   ) : (
                     <>
                       <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                        {greeting}, {(() => {
-                          if (user?.name && typeof user.name === 'string') {
-                            if (user.name && typeof user.name === 'string') {
-                              return user.name.split(' ')[0];
-                            }
-                          }
-                          if (user?.email && typeof user.email === 'string') {
-                            return user.email.split('@')[0];
-                          }
-                          return 'User';
-                        })()}!
+                        {greeting}, {user.name ? user.name.split(' ')[0] : user.email?.split('@')[0] || 'User'}!
                       </h1>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.readyToBoost')}</p>
                     </>
@@ -187,7 +173,6 @@ const Dashboard = () => {
             </div>
          </GlassCard>
 
-         {/* Next Best Action + Profile Progress */}
          <GlassCard className="p-4 sm:p-6" gradient="cyan">
            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
              <div className="space-y-1">
@@ -283,13 +268,9 @@ const Dashboard = () => {
             )}
          </GlassCard>
 
-         {/* Activity Feed */}
          <ActivityFeed limit={3} />
-
-         {/* Advanced Statistics */}
          <AdvancedStats stats={stats} />
 
-         {/* Advanced Analytics */}
          <GlassCard className="p-4 sm:p-6" gradient="blue">
             <div className="flex items-center justify-between mb-4">
                <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">

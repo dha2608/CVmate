@@ -7,7 +7,7 @@ const Admin = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
-  if (!user) return null;
+  if (!user) {return null;}
 
   return (
     <MainLayout>

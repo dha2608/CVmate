@@ -205,9 +205,9 @@ const Builder = () => {
         const details = error.details;
         if (details.errors && Array.isArray(details.errors)) {
           errors.push(...details.errors.map((e: string | { message?: string; path?: string | string[] }) => {
-            if (typeof e === 'string') return e;
-            if (e?.message) return e.message;
-            if (e?.path) return `${Array.isArray(e.path) ? e.path.join('.') : e.path}: ${e.message || 'Invalid'}`;
+            if (typeof e === 'string') {return e;}
+            if (e?.message) {return e.message;}
+            if (e?.path) {return `${Array.isArray(e.path) ? e.path.join('.') : e.path}: ${e.message || 'Invalid'}`;}
             return String(e);
           }));
         }

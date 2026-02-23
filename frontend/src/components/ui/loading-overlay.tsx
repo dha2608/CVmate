@@ -8,7 +8,7 @@ interface LoadingOverlayProps {
 }
 
 export const LoadingOverlay = ({ isLoading, message, className }: LoadingOverlayProps) => {
-  if (!isLoading) return null;
+  if (!isLoading) {return null;}
 
   return (
     <div

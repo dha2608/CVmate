@@ -174,7 +174,7 @@ const Interview = () => {
   };
 
   const handleSend = async () => {
-    if (!input.trim() || status === 'completed') return;
+    if (!input.trim() || status === 'completed') {return;}
     const text = input;
     setInput('');
     await sendUserMessage(text);

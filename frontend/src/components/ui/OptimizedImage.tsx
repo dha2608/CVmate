@@ -26,7 +26,7 @@ const OptimizedImage = ({
 
   // Try to get higher quality image if available
   const getOptimizedSrc = (originalSrc: string) => {
-    if (!originalSrc) return '';
+    if (!originalSrc) {return '';}
     
     // If it's an external URL, try to use image optimization services
     if (originalSrc.startsWith('http')) {
@@ -42,7 +42,7 @@ const OptimizedImage = ({
 
   // Generate srcSet for responsive images if not provided
   const generateSrcSet = (src: string) => {
-    if (srcSet) return srcSet;
+    if (srcSet) {return srcSet;}
     // For local images, you might want to generate different sizes
     // This is a placeholder - implement based on your image service
     return undefined;

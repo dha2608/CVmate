@@ -30,7 +30,7 @@ const Community = () => {
     return () => clearInterval(interval);
   }, [user, navigate, fetchPosts]);
 
-  if (!user) return null;
+  if (!user) {return null;}
 
   return (
     <MainLayout>

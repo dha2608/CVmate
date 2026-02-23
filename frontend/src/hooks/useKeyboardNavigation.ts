@@ -26,7 +26,7 @@ export const useKeyboardNavigation = (options: UseKeyboardNavigationOptions = {}
   } = options;
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {return;}
 
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {

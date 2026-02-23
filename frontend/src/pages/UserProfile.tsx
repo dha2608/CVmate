@@ -35,7 +35,7 @@ const UserProfile = () => {
 
   useEffect(() => {
     const load = async () => {
-      if (!id) return;
+      if (!id) {return;}
       setIsLoading(true);
       setError(null);
       try {
@@ -68,8 +68,8 @@ const UserProfile = () => {
   };
 
   const handleMessage = () => {
-    if (!currentUser || !user) return;
-    if (currentUser._id === user._id) return;
+    if (!currentUser || !user) {return;}
+    if (currentUser._id === user._id) {return;}
     navigate(`/messaging?user=${user._id}`);
   };
 

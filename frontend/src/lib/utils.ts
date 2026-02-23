@@ -46,9 +46,9 @@ export function cn(...inputs: ClassValue[]) {
  * Handles both relative paths (/uploads/...) and full URLs (http://...)
  */
 export const normalizeImageUrl = (url: string | undefined | null): string | null => {
-  if (!url || typeof url !== 'string') return null;
+  if (!url || typeof url !== 'string') {return null;}
   const trimmed = url.trim();
-  if (!trimmed) return null;
+  if (!trimmed) {return null;}
   
   // Already a full URL
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {

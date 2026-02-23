@@ -7,13 +7,15 @@
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // URL validation regex
-const URL_REGEX = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 
 /**
  * Validates email format
  */
 export const validateEmail = (email: string): boolean => {
-  if (!email || typeof email !== 'string') return false;
+  if (!email || typeof email !== 'string') {
+    return false;
+  }
   return EMAIL_REGEX.test(email.trim());
 };
 
@@ -21,9 +23,13 @@ export const validateEmail = (email: string): boolean => {
  * Validates URL format
  */
 export const validateUrl = (url: string): boolean => {
-  if (!url || typeof url !== 'string') return true; // URL is optional
+  if (!url || typeof url !== 'string') {
+    return true;
+  } // URL is optional
   const trimmed = url.trim();
-  if (trimmed === '') return true; // Empty is valid (optional field)
+  if (trimmed === '') {
+    return true;
+  } // Empty is valid (optional field)
   return URL_REGEX.test(trimmed);
 };
 
@@ -31,18 +37,24 @@ export const validateUrl = (url: string): boolean => {
  * Validates phone number (basic validation)
  */
 export const validatePhone = (phone: string): boolean => {
-  if (!phone || typeof phone !== 'string') return true; // Phone is optional
+  if (!phone || typeof phone !== 'string') {
+    return true;
+  } // Phone is optional
   const trimmed = phone.trim();
-  if (trimmed === '') return true; // Empty is valid (optional field)
+  if (trimmed === '') {
+    return true;
+  } // Empty is valid (optional field)
   // Allow digits, spaces, dashes, parentheses, plus sign
-  return /^[\d\s\-\(\)\+]+$/.test(trimmed);
+  return /^[\d\s\-()+]+$/.test(trimmed);
 };
 
 /**
  * Validates required field
  */
 export const validateRequired = (value: string | undefined | null): boolean => {
-  if (value === undefined || value === null) return false;
+  if (value === undefined || value === null) {
+    return false;
+  }
   if (typeof value === 'string') {
     return value.trim().length > 0;
   }
@@ -53,9 +65,13 @@ export const validateRequired = (value: string | undefined | null): boolean => {
  * Validates field is not only numbers (for job titles, names, etc.)
  */
 export const validateNotOnlyNumbers = (value: string): boolean => {
-  if (!value || typeof value !== 'string') return false;
+  if (!value || typeof value !== 'string') {
+    return false;
+  }
   const trimmed = value.trim();
-  if (trimmed === '') return false;
+  if (trimmed === '') {
+    return false;
+  }
   // Check if value consists only of digits
   return !/^\d+$/.test(trimmed);
 };
@@ -64,9 +80,13 @@ export const validateNotOnlyNumbers = (value: string): boolean => {
  * Validates salary format (allows numbers, commas, dots, dashes, spaces, currency symbols)
  */
 export const validateSalary = (salary: string): boolean => {
-  if (!salary || typeof salary !== 'string') return true; // Salary is optional
+  if (!salary || typeof salary !== 'string') {
+    return true;
+  } // Salary is optional
   const trimmed = salary.trim();
-  if (trimmed === '') return true; // Empty is valid (optional field)
+  if (trimmed === '') {
+    return true;
+  } // Empty is valid (optional field)
   // Allow numbers, commas, dots, dashes, spaces, and currency symbols
   return /^[\d\s,.\-€$£¥₹]+$/.test(trimmed);
 };
@@ -79,10 +99,16 @@ export const validateLength = (
   min: number,
   max?: number
 ): boolean => {
-  if (!value || typeof value !== 'string') return false;
+  if (!value || typeof value !== 'string') {
+    return false;
+  }
   const length = value.trim().length;
-  if (length < min) return false;
-  if (max !== undefined && length > max) return false;
+  if (length < min) {
+    return false;
+  }
+  if (max !== undefined && length > max) {
+    return false;
+  }
   return true;
 };
 
@@ -90,9 +116,13 @@ export const validateLength = (
  * Validates date format (basic YYYY-MM-DD or MM/YYYY)
  */
 export const validateDate = (date: string): boolean => {
-  if (!date || typeof date !== 'string') return true; // Date is optional
+  if (!date || typeof date !== 'string') {
+    return true;
+  } // Date is optional
   const trimmed = date.trim();
-  if (trimmed === '') return true; // Empty is valid (optional field)
+  if (trimmed === '') {
+    return true;
+  } // Empty is valid (optional field)
   // Allow various date formats
   return /^(\d{4}-\d{2}-\d{2}|\d{2}\/\d{4}|\d{2}\/\d{2}\/\d{4}|\d{4})$/.test(trimmed);
 };
@@ -108,7 +138,9 @@ export const validateArrayNotEmpty = <T>(arr: T[]): boolean => {
  * Validates no duplicate values in array
  */
 export const validateNoDuplicates = <T>(arr: T[]): boolean => {
-  if (!Array.isArray(arr)) return false;
+  if (!Array.isArray(arr)) {
+    return false;
+  }
   const unique = new Set(arr);
   return unique.size === arr.length;
 };
@@ -276,7 +308,9 @@ export const validatePersonalInfo = (data: PersonalInfoData): { valid: boolean; 
  * Sanitize string input (trim and remove extra spaces)
  */
 export const sanitizeString = (value: string | undefined | null): string => {
-  if (!value || typeof value !== 'string') return '';
+  if (!value || typeof value !== 'string') {
+    return '';
+  }
   return value.trim().replace(/\s+/g, ' ');
 };
 
@@ -284,7 +318,9 @@ export const sanitizeString = (value: string | undefined | null): string => {
  * Sanitize array of strings
  */
 export const sanitizeStringArray = (arr: (string | undefined | null)[]): string[] => {
-  if (!Array.isArray(arr)) return [];
+  if (!Array.isArray(arr)) {
+    return [];
+  }
   return arr
     .map(item => sanitizeString(item))
     .filter(item => item.length > 0);
