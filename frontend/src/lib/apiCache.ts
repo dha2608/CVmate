@@ -9,7 +9,7 @@ interface CacheEntry<T> {
   expiresAt: number;
 }
 
-class APICache {
+export class APICache {
   private cache: Map<string, CacheEntry<unknown>> = new Map();
   private defaultTTL = 5 * 60 * 1000; // 5 minutes default
 
