@@ -157,12 +157,32 @@ export interface Interview {
   user: string;
   persona: PersonaType;
   messages: InterviewMessage[];
+  chatHistory?: InterviewMessage[]; // Compatibility with older/backend naming
+  status?: 'active' | 'completed' | 'idle';
   startedAt: string;
   endedAt?: string;
   feedback?: {
     confidence: number;
     accuracy: number;
     suggestions: string[];
+    // Extended fields that might be present
+    confidenceScore?: number;
+    contentScore?: number;
+    strengths?: string[];
+    improvements?: string[];
+    overallScore?: number;
+    scoresByDimension?: {
+      communication?: number;
+      content?: number;
+      confidence?: number;
+      structure?: number;
+    };
+    perQuestionFeedback?: Array<{
+      question: string;
+      answer: string;
+      score: number;
+      feedback: string;
+    }>;
   };
   createdAt: string;
   updatedAt: string;

@@ -77,23 +77,15 @@ export const useMessageStore = create<MessageState>((set) => ({
 
   markAsRead: async (userId: string) => {
     try {
-      const token = localStorage.getItem('token');
-      await fetch(`${API_URL}/messages/${userId}/read`, {
-        method: 'POST',
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+      // Use the api utility instead of fetch with API_URL
+      await apiRequest(`/messages/${userId}/read`, {
+        method: 'POST'
       });
+      
       // Refresh conversations to update unread counts
-      const res = await fetch(`${API_URL}/messages/conversations`, {
-        credentials: 'include', // Include cookies for cross-origin requests
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        set({ conversations: data.data });
+      const response = await api.getConversations();
+      if (response.success) {
+        set({ conversations: response.data });
       }
     } catch (error) {
       console.error('Failed to mark as read:', error);

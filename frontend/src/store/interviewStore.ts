@@ -82,10 +82,10 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       
       // Map feedback structure
       const feedback: InterviewFeedback | null = interview.feedback ? {
-        confidenceScore: interview.feedback.confidenceScore,
-        contentScore: interview.feedback.contentScore,
+        confidenceScore: (interview.feedback as any).confidenceScore ?? (interview.feedback as any).confidence,
+        contentScore: (interview.feedback as any).contentScore ?? (interview.feedback as any).accuracy,
         suggestions: (() => {
-          const suggestions = interview.feedback.suggestions;
+          const suggestions = (interview.feedback as any).suggestions;
           if (!suggestions) {return undefined;}
           if (Array.isArray(suggestions)) {
             return suggestions.filter(s => s != null).join('\n');
@@ -99,11 +99,11 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
             return undefined;
           }
         })(),
-        strengths: interview.feedback.strengths,
-        improvements: interview.feedback.improvements,
-        overallScore: interview.feedback.overallScore,
-        scoresByDimension: interview.feedback.scoresByDimension,
-        perQuestionFeedback: interview.feedback.perQuestionFeedback,
+        strengths: (interview.feedback as any).strengths,
+        improvements: (interview.feedback as any).improvements,
+        overallScore: (interview.feedback as any).overallScore,
+        scoresByDimension: (interview.feedback as any).scoresByDimension,
+        perQuestionFeedback: (interview.feedback as any).perQuestionFeedback,
       } : null;
       
       set({
@@ -111,7 +111,7 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
         persona: interview.persona,
         messages,
         feedback,
-        status: interview.status || (interview.endedAt ? 'completed' : 'active'),
+        status: (interview as any).status || (interview.endedAt ? 'completed' : 'active'),
         isStarting: false,
       });
     } catch (error: any) {
@@ -221,8 +221,8 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       
       // Map feedback structure
       const feedback: InterviewFeedback | null = interview.feedback ? {
-        confidenceScore: interview.feedback.confidenceScore,
-        contentScore: interview.feedback.contentScore,
+        confidenceScore: (interview.feedback as any).confidenceScore ?? (interview.feedback as any).confidence,
+        contentScore: (interview.feedback as any).contentScore ?? (interview.feedback as any).accuracy,
         suggestions: (() => {
           const suggestions = interview.feedback.suggestions;
           if (!suggestions) {return undefined;}

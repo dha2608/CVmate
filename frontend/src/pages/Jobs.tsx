@@ -49,6 +49,7 @@ const Jobs = () => {
   });
 
   useEffect(() => {
+    // @ts-ignore - fetchJobs expects parameters in some versions of the store
     fetchJobs({ page: 1, limit: 20 });
     fetchBookmarks();
   }, [fetchJobs, fetchBookmarks]);
