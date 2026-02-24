@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, memo, useCallback } from 'react';
+import { lazy, Suspense, useEffect, useState, useMemo, memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
@@ -98,6 +98,25 @@ RecommendationCard.displayName = 'RecommendationCard';
 // Lazy load heavy dashboard modules
 const AnalyticsChart = lazy(() => import('@/components/dashboard/AnalyticsChart'));
 const AdvancedStats = lazy(() => import('@/components/dashboard/AdvancedStats'));
+
+const DashboardModuleLoader = ({ children }: { children: React.ReactNode }) => (
+  <Suspense
+    fallback={
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white/60 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/50 rounded-xl p-4">
+          <Skeleton className="h-5 w-2/3 mb-3" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+        <div className="bg-white/60 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/50 rounded-xl p-4">
+          <Skeleton className="h-5 w-1/2 mb-3" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </div>
+    }
+  >
+    {children}
+  </Suspense>
+);
 
 const Dashboard = () => {
   const user = useAuthStore(state => state.user);
@@ -354,7 +373,9 @@ const Dashboard = () => {
 
          <ActivityFeed limit={3} />
 
-         <AdvancedStats stats={stats} />
+         <DashboardModuleLoader>
+           <AdvancedStats stats={stats} />
+         </DashboardModuleLoader>
 
          <GlassCard className="p-4 sm:p-6" gradient="blue">
             <div className="flex items-center justify-between mb-4">
@@ -364,7 +385,8 @@ const Dashboard = () => {
                </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <AnalyticsChart
+               <DashboardModuleLoader>
+                 <AnalyticsChart
                   title={t('dashboard.activityOverTime')}
                   data={[
                      { label: t('dashboard.thisWeek'), value: stats.interviewsCount || 0 },
@@ -375,6 +397,7 @@ const Dashboard = () => {
                   previousPeriod={Math.max(0, (stats.interviewsCount || 0) - 2)}
                   currentPeriod={stats.interviewsCount || 0}
                />
+               </DashboardModuleLoader>
                <div className="bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-900/20 dark:to-orange-900/20 rounded-lg border border-rose-200 dark:border-rose-800 p-4">
                   <div className="flex items-center gap-3 mb-3">
                      <div className="w-10 h-10 bg-rose-500 dark:bg-rose-600 rounded-lg flex items-center justify-center">
