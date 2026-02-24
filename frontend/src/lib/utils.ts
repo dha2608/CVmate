@@ -116,7 +116,7 @@ export const apiRequest = async <T = any>(
 
   const method = (fetchOptions.method || 'GET').toUpperCase();
   const isMutatingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
-
+  
   const headers: Record<string, string> = {
     ...(fetchOptions.headers as Record<string, string> | undefined),
   };
@@ -142,7 +142,7 @@ export const apiRequest = async <T = any>(
   }
 
   const url = `${API_BASE_URL}${endpoint}`;
-
+  
   if (isDev) {
     logger.log('📤 API Request:', url, { method });
   }
@@ -163,9 +163,9 @@ export const apiRequest = async <T = any>(
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      let errorMessage = 'Request failed';
-      let errorType = 'unknown';
-      let errorDetails: any = undefined;
+        let errorMessage = 'Request failed';
+        let errorType = 'unknown';
+        let errorDetails: any = undefined;
 
       try {
         const error = await response.json();
@@ -193,7 +193,7 @@ export const apiRequest = async <T = any>(
           errorMessage = `HTTP error! status: ${response.status}`;
         }
       }
-
+      
       const error = new Error(errorMessage);
       (error as any).status = response.status;
       (error as any).type = errorType;
@@ -204,14 +204,14 @@ export const apiRequest = async <T = any>(
     return response.json();
   } catch (error: any) {
     clearTimeout(timeoutId);
-
+    
     if (error.name === 'AbortError' || error.name === 'TimeoutError') {
       const timeoutError = new Error('Request timeout. Please check your connection and try again.');
       (timeoutError as any).type = 'timeout';
       (timeoutError as any).status = 408;
       throw timeoutError;
     }
-
+    
     throw error;
   }
 };
