@@ -1,21 +1,17 @@
-import { useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useResumeStore } from '@/store/resumeStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Download, Brain, CheckCircle2, Keyboard, ListTree, Settings2, X, Lightbulb } from 'lucide-react';
-import ExportShare from '@/components/ExportShare';
+import { Brain, Keyboard, Settings2, X, Lightbulb } from 'lucide-react';
 import PersonalForm from '@/components/builder/PersonalForm';
 import ExperienceForm from '@/components/builder/ExperienceForm';
 import EducationForm from '@/components/builder/EducationForm';
 import SkillsForm from '@/components/builder/SkillsForm';
 import ResumePreview from '@/components/builder/ResumePreview';
-import TemplateSelector from '@/components/builder/TemplateSelector';
-import SectionReorder from '@/components/builder/SectionReorder';
 import BuilderSidebar, { type BuilderSection, type BuilderSectionId } from '@/components/builder/BuilderSidebar';
 import BuilderActionsDialog from '@/components/builder/BuilderActionsDialog';
-import AISuggestions from '@/components/builder/AISuggestions';
 import ShortcutsModal from '@/components/builder/ShortcutsModal';
 import AIFeatureNotice from '@/components/AIFeatureNotice';
 import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
@@ -23,7 +19,14 @@ import { api } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 
 const Builder = () => {
-  const { currentResume, resumes, updateField, aiEnhanceText, setResume, setResumes } = useResumeStore();
+  const { currentResume, updateField, aiEnhanceText, setResume } = useResumeStore(
+    (state) => ({
+      currentResume: state.currentResume,
+      updateField: state.updateField,
+      aiEnhanceText: state.aiEnhanceText,
+      setResume: state.setResume,
+    })
+  );
   const [activeTab, setActiveTab] = useState<BuilderSectionId>('personal');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -46,8 +49,7 @@ const Builder = () => {
   const [dismissedHints, setDismissedHints] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  const handleSave = async (retryCount = 0) => {
-    // Frontend validation before submit
+  const handleSave = useCallback(async (retryCount = 0) => {
     const { validatePersonalInfo } = await import('@/utils/validation');
     const personalInfoValidation = validatePersonalInfo({
       fullName: currentResume.personalInfo.fullName || '',
@@ -74,7 +76,6 @@ const Builder = () => {
 
     setSaving(true);
     try {
-      // Filter out fully empty items and block save on partially-filled items that would fail backend validation
       const cleanedExperience = (currentResume.experience || [])
         .filter((exp) => {
           const hasAny =
@@ -133,7 +134,6 @@ const Builder = () => {
         return;
       }
 
-      // Prepare payload with proper structure
       const resumeData = {
         title: (currentResume.title || 'My Resume').trim(),
         personalInfo: {
@@ -149,11 +149,6 @@ const Builder = () => {
         education: cleanedEducation,
         skills: (currentResume.skills || []).map((s) => String(s).trim()).filter(Boolean),
       };
-
-      // Log payload in development for debugging
-      if (import.meta.env.DEV) {
-        console.log('📤 Saving resume payload:', JSON.stringify(resumeData, null, 2));
-      }
 
       let response;
       if (currentResume._id) {
@@ -179,20 +174,9 @@ const Builder = () => {
         });
       }
     } catch (error: any) {
-      // Enhanced error handling with detailed logging
       let errorMessage = 'Failed to save resume';
       const errors: string[] = [];
-      
-      // Log error details for debugging
-      console.error('❌ Save CV Error:', {
-        error,
-        status: error?.status,
-        message: error?.message,
-        details: error?.details,
-        retryCount,
-      });
-      
-      // Check for validation errors from API response
+
       if (error?.details) {
         const details = error.details;
         if (details.errors && Array.isArray(details.errors)) {
@@ -207,8 +191,7 @@ const Builder = () => {
           errorMessage = details.message;
         }
       }
-      
-      // Check for Zod validation errors
+
       if (error?.details?.errors && Array.isArray(error.details.errors)) {
         error.details.errors.forEach((err: any) => {
           if (err.path) {
@@ -218,47 +201,44 @@ const Builder = () => {
           }
         });
       }
-      
+
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
-      // Retry mechanism for network errors (max 2 retries)
+
       const isNetworkError = error?.status === 0 || error?.status >= 500 || error?.message?.includes('fetch');
       if (isNetworkError && retryCount < 2) {
         const { useToastStore } = await import('@/store/toastStore');
         useToastStore.getState().error(`Network error. Retrying... (${retryCount + 1}/2)`);
         setSaving(false);
-        // Wait 1 second before retry
         await new Promise(resolve => setTimeout(resolve, 1000));
         return handleSave(retryCount + 1);
       }
-      
+
       const finalMessage = errors.length 
         ? `${errorMessage}\n\nValidation errors:\n${errors.map(e => `- ${e}`).join('\n')}`
         : errorMessage;
-      
-      // Use toast instead of alert
+
       const { useToastStore } = await import('@/store/toastStore');
       useToastStore.getState().error(finalMessage);
     } finally {
       setSaving(false);
     }
-  };
+  }, [currentResume, setResume]);
 
-  const handleDownload = async () => {
+  const handleDownload = useCallback(async () => {
     try {
-      // Dynamic import để giảm bundle size
-      const { default: jsPDF } = await import('jspdf');
-      const { default: html2canvas } = await import('html2canvas');
-      
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ]);
+
       const element = document.getElementById('resume-preview');
       if (!element) {
         alert('Resume preview not found');
         return;
       }
 
-      // Capture element as canvas
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
@@ -283,8 +263,6 @@ const Builder = () => {
       pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
       pdf.save(`${currentResume.personalInfo.fullName || 'resume'}-CV.pdf`);
     } catch (error) {
-      console.error('PDF generation error:', error);
-      // Fallback to print method
       const printWindow = window.open('', '_blank');
       if (printWindow) {
         const content = document.getElementById('resume-preview')?.innerHTML || '';
@@ -312,9 +290,9 @@ const Builder = () => {
         }, 250);
       }
     }
-  };
+  }, [currentResume.personalInfo.fullName]);
 
-  const handleAIEnhanceSummary = async () => {
+  const handleAIEnhanceSummary = useCallback(async () => {
     if (!currentResume.summary.trim()) {
       const { useToastStore } = await import('@/store/toastStore');
       useToastStore.getState().error('Please enter some text to enhance');
@@ -337,29 +315,26 @@ const Builder = () => {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to enhance text. Please try again.';
-      
-      // Check if it's a configuration error
+
       const isConfigError = errorMessage.toLowerCase().includes('unavailable') || 
                            errorMessage.toLowerCase().includes('api key') || 
                            errorMessage.toLowerCase().includes('not configured');
-      
+
       if (isConfigError) {
-        // Show notice banner for config errors
         setAiError(errorMessage);
       } else {
-        // Use toast for other errors
         const { useToastStore } = await import('@/store/toastStore');
         useToastStore.getState().error(errorMessage);
       }
     } finally {
       setEnhancing(false);
     }
-  };
+  }, [aiEnhanceText, currentResume.summary, updateField]);
 
   const [generateRole, setGenerateRole] = useState<'frontend' | 'backend' | 'fullstack' | 'qa' | 'designer' | 'devops' | 'data' | 'other'>('other');
   const [generateMode, setGenerateMode] = useState<'concise' | 'human'>('concise');
 
-  const handleAIGenerateFull = async () => {
+  const handleAIGenerateFull = useCallback(async () => {
     if (!generatePrompt.trim() && !generateJD.trim()) {
       const { useToastStore } = await import('@/store/toastStore');
       useToastStore.getState().error('Please provide at least a short prompt or job description for AI to work with.');
@@ -377,7 +352,6 @@ const Builder = () => {
         mode: generateMode,
       });
 
-      // Map dữ liệu AI vào resume hiện tại, giữ nguyên title & personalInfo
       setResume({
         ...currentResume,
         summary: data.summary || currentResume.summary,
@@ -401,26 +375,22 @@ const Builder = () => {
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate resume. Please try again.';
-      
-      // Check if it's a configuration error (API key missing)
+
       const isConfigError = errorMessage.toLowerCase().includes('unavailable') || 
                            errorMessage.toLowerCase().includes('api key') || 
                            errorMessage.toLowerCase().includes('not configured');
-      
+
       if (isConfigError) {
-        // Show notice banner instead of toast for config errors
         setAiError(errorMessage);
       } else {
-        // Use toast for other errors
         const { useToastStore } = await import('@/store/toastStore');
         useToastStore.getState().error(errorMessage);
       }
     } finally {
       setIsGeneratingFull(false);
     }
-  };
+  }, [currentResume, generateJD, generateMode, generatePrompt, generateRole, setResume]);
 
-  // Keyboard shortcuts - must be after function definitions
   useKeyboardShortcuts([
     {
       key: 's',
@@ -446,15 +416,15 @@ const Builder = () => {
     },
   ]);
 
-  const tabs = [
+  const tabs = useMemo(() => [
     { id: 'personal', label: 'Personal', icon: '👤' },
     { id: 'summary', label: 'Summary', icon: '📝' },
     { id: 'experience', label: 'Experience', icon: '💼' },
     { id: 'education', label: 'Education', icon: '🎓' },
     { id: 'skills', label: 'Skills', icon: '⚡' },
-  ];
+  ], []);
 
-  const quickPresets = [
+  const quickPresets = useMemo(() => [
     {
       id: 'fresh-grad-it',
       label: 'Fresher IT',
@@ -488,11 +458,10 @@ const Builder = () => {
           ],
         }),
     },
-  ];
+  ], [currentResume, setResume]);
 
   return (
     <div className="flex min-h-screen bg-white overflow-hidden">
-      {/* Sidebar */}
       <BuilderSidebar
         sections={sections}
         activeTab={activeTab}
@@ -509,11 +478,8 @@ const Builder = () => {
         currentResume={currentResume}
       />
 
-      {/* Main */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-gray-50">
-        {/* Editor Side */}
         <div className="w-full lg:w-[45%] xl:w-[42%] flex flex-col border-r border-gray-200 bg-white shadow-sm">
-          {/* Section Header */}
           <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-white to-gray-50/50 sticky top-0 z-10 backdrop-blur-sm bg-white/95">
             <div className="flex items-center justify-between">
               <div>
@@ -542,11 +508,9 @@ const Builder = () => {
               </Button>
             </div>
           </div>
-        
-        {/* Form Content */}
+
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto p-6 space-y-6">
-            {/* Onboarding Hint */}
             {!dismissedHints.includes('welcome') && (
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 relative">
                 <button
@@ -571,7 +535,6 @@ const Builder = () => {
               </div>
             )}
 
-            {/* Forms */}
             {activeTab === 'personal' && <PersonalForm />}
 
             {activeTab === 'summary' && (
@@ -582,8 +545,7 @@ const Builder = () => {
                     onDismiss={() => setAiError(null)}
                   />
                 )}
-                
-                {/* Section Card */}
+
                 <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -613,7 +575,6 @@ const Builder = () => {
                   </p>
                 </div>
 
-                {/* AI Generate Full Resume */}
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100 p-5 space-y-3">
                   {aiError && (aiError.toLowerCase().includes('unavailable') || aiError.toLowerCase().includes('api key') || aiError.toLowerCase().includes('not configured')) && !dismissedHints.includes('ai-unavailable') && (
                     <AIFeatureNotice 
@@ -711,9 +672,7 @@ const Builder = () => {
         </div>
         </div>
 
-      {/* Preview Side */}
       <div className="w-full lg:w-[55%] xl:w-[58%] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden flex flex-col">
-        {/* Preview Header */}
         <div className="px-6 py-4 border-b border-gray-200 bg-white/80 backdrop-blur-sm flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-gray-800">Live Preview</h3>
@@ -731,8 +690,7 @@ const Builder = () => {
             </Button>
           </div>
         </div>
-        
-        {/* Preview Content */}
+
         <div className="flex-1 overflow-y-auto p-6 lg:p-8">
           <div className="w-full max-w-[210mm] mx-auto bg-white shadow-2xl rounded-lg overflow-hidden">
             <ResumePreview template={selectedTemplate} sections={sections} />
@@ -741,7 +699,6 @@ const Builder = () => {
       </div>
       </div>
 
-      {/* Dialogs */}
       <BuilderActionsDialog
         open={showActions}
         onOpenChange={setShowActions}
@@ -762,4 +719,4 @@ const Builder = () => {
   );
 };
 
-export default Builder;
+export default memo(Builder);

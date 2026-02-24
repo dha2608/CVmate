@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 interface Shortcut {
   key: string;
@@ -9,25 +9,36 @@ interface Shortcut {
   description?: string;
 }
 
+const getShortcutKey = (s: Shortcut) => {
+  const mods = `${s.ctrl ? '1' : '0'}${s.shift ? '1' : '0'}${s.alt ? '1' : '0'}`;
+  return `${mods}:${s.key.toLowerCase()}`;
+};
+
 export const useKeyboardShortcuts = (shortcuts: Shortcut[]) => {
+  const actionsByKey = useMemo(() => {
+    const map = new Map<string, () => void>();
+    shortcuts.forEach((s) => {
+      map.set(getShortcutKey(s), s.action);
+    });
+    return map;
+  }, [shortcuts]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      shortcuts.forEach((shortcut) => {
-        const ctrlMatch = shortcut.ctrl ? e.ctrlKey || e.metaKey : !(e.ctrlKey || e.metaKey);
-        const shiftMatch = shortcut.shift ? e.shiftKey : !e.shiftKey;
-        const altMatch = shortcut.alt ? e.altKey : !e.altKey;
-        const keyMatch = e.key.toLowerCase() === shortcut.key.toLowerCase();
+      const ctrlPressed = e.ctrlKey || e.metaKey;
+      const mods = `${ctrlPressed ? '1' : '0'}${e.shiftKey ? '1' : '0'}${e.altKey ? '1' : '0'}`;
+      const key = `${mods}:${e.key.toLowerCase()}`;
 
-        if (ctrlMatch && shiftMatch && altMatch && keyMatch) {
-          e.preventDefault();
-          shortcut.action();
-        }
-      });
+      const action = actionsByKey.get(key);
+      if (!action) {return;}
+
+      e.preventDefault();
+      action();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [shortcuts]);
+  }, [actionsByKey]);
 };
 
 export default useKeyboardShortcuts;
