@@ -181,7 +181,7 @@ const Profile = () => {
       formDataToSend.append('avatar', file);
 
       // Use the api utility which handles CSRF tokens and credentials
-      const response = await api.uploadAvatar(formDataToSend);
+      const response = await api.upload.uploadAvatar(formDataToSend);
 
       if (!response.success) {
         throw new Error((response as any).message || (response as any).error || t('profile.uploadFailed'));
@@ -235,7 +235,7 @@ const Profile = () => {
           }, 500);
         }
       } else {
-        throw new Error(data.message || data.error || t('profile.uploadFailed'));
+        throw new Error((response as any).message || (response as any).error || t('profile.uploadFailed'));
       }
     } catch (error: unknown) {
       const errorMessage = getUserFriendlyMessage(error) || t('profile.uploadFailed');
@@ -277,7 +277,7 @@ const Profile = () => {
       formDataToSend.append('coverPhoto', file);
 
       // Use the api utility which handles CSRF tokens and credentials
-      const response = await api.uploadCoverPhoto(formDataToSend);
+      const response = await api.upload.uploadCoverPhoto(formDataToSend);
 
       if (!response.success) {
         throw new Error((response as any).message || (response as any).error || t('profile.uploadFailed'));
