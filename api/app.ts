@@ -45,6 +45,9 @@ connectDB();
 
 const app: express.Application = express();
 
+// Trust Render's proxy for correct IP detection and secure cookie handling
+app.set('trust proxy', 1);
+
 // Hide tech stack header
 app.disable('x-powered-by');
 
@@ -117,28 +120,28 @@ app.use(sanitizeRequest);
 import { requestTimeout } from './middleware/timeout.js';
 app.use(requestTimeout(30000)); // 30 seconds
 
-// Session for OAuth (only if Google OAuth is configured)
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
-  
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'cvmate-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    store: mongoUri ? MongoStore.create({
-      mongoUrl: mongoUri,
-      ttl: 14 * 24 * 60 * 60, // 14 days
-      autoRemove: 'native',
-    }) : undefined, // Fallback to MemoryStore if no MongoDB URI
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
-      sameSite: 'lax',
-    },
-  }));
+// Session - always enable for CSRF token support
+const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
-  // Initialize Passport
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'cvmate-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  store: mongoUri ? MongoStore.create({
+    mongoUrl: mongoUri,
+    ttl: 14 * 24 * 60 * 60, // 14 days
+    autoRemove: 'native',
+  }) : undefined, // Fallback to MemoryStore if no MongoDB URI
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+    sameSite: 'lax',
+  },
+}));
+
+// Initialize Passport only if Google OAuth is configured
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   app.use(passport.initialize());
   app.use(passport.session());
 }

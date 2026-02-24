@@ -21,8 +21,10 @@ const connectDB = async (): Promise<void> => {
       logger.warn('MongoDB connection lost');
     });
 
+    logger.info('Connecting to MongoDB...');
+
     await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
       maxPoolSize: parseInt(process.env.DB_MAX_POOL_SIZE || '20', 10),
       minPoolSize: parseInt(process.env.DB_MIN_POOL_SIZE || '5', 10),
@@ -33,10 +35,10 @@ const connectDB = async (): Promise<void> => {
       try {
         await mongoose.connection.close();
         logger.info('MongoDB connection closed through app termination');
-        process.exit(0);
       } catch (err) {
         logger.error('MongoDB error closing connection', err);
-        process.exit(1);
+      } finally {
+        process.exit(0);
       }
     };
 
@@ -46,8 +48,13 @@ const connectDB = async (): Promise<void> => {
   } catch (error) {
     if (error instanceof Error) {
       logger.error(`MongoDB critical error: ${error.message}`, error);
+    } else {
+      logger.error('MongoDB critical error', new Error(String(error)));
     }
-    process.exit(1);
+    // Don't hard-exit in managed environments (Render) where logs may be truncated.
+    // Let the process crash naturally if it must, but prefer keeping the server alive
+    // so /api/health can report degraded status.
+    throw error;
   }
 };
 
