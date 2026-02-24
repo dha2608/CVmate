@@ -60,7 +60,6 @@ const resumeTemplateSchema = new Schema<IResumeTemplate>({
   timestamps: true,
 });
 
-resumeTemplateSchema.index({ key: 1 });
 resumeTemplateSchema.index({ isPremium: 1 });
 resumeTemplateSchema.index({ tags: 1 });
 
