@@ -34,8 +34,9 @@ const userOrIpKeyGenerator = (req: AuthRequest): string => {
     return String(req.user._id);
   }
 
-  // Express will respect X-Forwarded-For when `trust proxy` is enabled
-  return req.ip || req.headers['x-forwarded-for']?.toString() || 'unknown';
+  // Use express-rate-limit helper to normalize IPv6 and avoid bypass.
+  // Express will respect X-Forwarded-For when `trust proxy` is enabled.
+  return ipKeyGenerator(req as any);
 };
 
 export const freeUserLimiter = rateLimit({
