@@ -65,8 +65,8 @@ const InterviewDashboard = () => {
     
     setMetrics({
       responseTime: avgResponseTime,
-      speakingPace: speakingPace,
-      confidenceLevel: confidenceLevel,
+      speakingPace,
+      confidenceLevel,
       questionsAnswered: assistantMessages.length,
       averageScore: Math.round((confidenceLevel + (speakingPace > 100 ? 50 : speakingPace / 2)) / 2),
     });

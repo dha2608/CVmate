@@ -47,7 +47,7 @@ const Messaging = () => {
 
   // Auto-refresh messages every 5 seconds for real-time feel
   useEffect(() => {
-    if (!activeConversation) return;
+    if (!activeConversation) {return;}
     const interval = setInterval(() => {
       fetchMessages(activeConversation._id);
     }, 5000);
@@ -55,7 +55,7 @@ const Messaging = () => {
   }, [activeConversation, fetchMessages]);
 
   const handleSend = async () => {
-    if (!inputText.trim() || !activeConversation || isSending) return;
+    if (!inputText.trim() || !activeConversation || isSending) {return;}
     setIsSending(true);
     try {
       await sendMessage(activeConversation._id, inputText);

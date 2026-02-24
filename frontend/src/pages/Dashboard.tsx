@@ -52,9 +52,9 @@ const Dashboard = () => {
     }
 
     const hour = new Date().getHours();
-    if (hour < 12) setGreeting(t('dashboard.goodMorning'));
-    else if (hour < 18) setGreeting(t('dashboard.goodAfternoon'));
-    else setGreeting(t('dashboard.goodEvening'));
+    if (hour < 12) {setGreeting(t('dashboard.goodMorning'));}
+    else if (hour < 18) {setGreeting(t('dashboard.goodAfternoon'));}
+    else {setGreeting(t('dashboard.goodEvening'));}
 
     const loadData = async () => {
       setIsInitialLoading(true);
@@ -73,7 +73,7 @@ const Dashboard = () => {
     loadData();
   }, [user, navigate, t, fetchStats, fetchPosts, fetchArticles, fetchAchievements]);
 
-  if (!user) return null;
+  if (!user) {return null;}
 
   const isLoading = isInitialLoading || statsLoading || articlesLoading;
 

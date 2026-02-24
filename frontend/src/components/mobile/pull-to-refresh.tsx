@@ -28,9 +28,9 @@ export const PullToRefresh = ({
   const springY = useSpring(y, { stiffness: 300, damping: 30 });
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (disabled || isRefreshing) return;
+    if (disabled || isRefreshing) {return;}
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) {return;}
 
     // Only trigger if at the top of the scroll
     if (container.scrollTop === 0 && e.touches[0]) {
@@ -40,7 +40,7 @@ export const PullToRefresh = ({
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isPulling.current || disabled || isRefreshing || !e.touches[0]) return;
+    if (!isPulling.current || disabled || isRefreshing || !e.touches[0]) {return;}
 
     const currentY = e.touches[0].clientY;
     const distance = currentY - (startY.current || 0);
@@ -54,7 +54,7 @@ export const PullToRefresh = ({
   };
 
   const handleTouchEnd = async () => {
-    if (!isPulling.current || disabled || isRefreshing) return;
+    if (!isPulling.current || disabled || isRefreshing) {return;}
 
     isPulling.current = false;
 

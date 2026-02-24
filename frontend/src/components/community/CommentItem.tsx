@@ -6,9 +6,9 @@ import { Heart, Reply, Edit2, Trash2, MoreVertical, X } from 'lucide-react';
 
 // Normalize CDN image URLs
 const normalizeImageUrl = (url: string | undefined | null): string | null => {
-  if (!url || typeof url !== 'string') return null;
+  if (!url || typeof url !== 'string') {return null;}
   const trimmed = url.trim();
-  if (!trimmed) return null;
+  if (!trimmed) {return null;}
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return trimmed;
   }
@@ -65,14 +65,14 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const maxDepth = 2; // Limit reply depth
 
   const handleReply = () => {
-    if (!replyText.trim()) return;
+    if (!replyText.trim()) {return;}
     onReply?.(comment._id, replyText);
     setReplyText('');
     setIsReplying(false);
   };
 
   const handleEdit = () => {
-    if (!editText.trim()) return;
+    if (!editText.trim()) {return;}
     onEdit?.(comment._id, editText);
     setIsEditing(false);
   };

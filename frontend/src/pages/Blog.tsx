@@ -22,10 +22,10 @@ import { RichTextEditor } from '@/components/article/RichTextEditor';
 
 // Normalize CDN image URLs and provide fallback
 const normalizeImageUrl = (url: string | undefined | null): string | null => {
-  if (!url || typeof url !== 'string') return null;
+  if (!url || typeof url !== 'string') {return null;}
   
   const trimmed = url.trim();
-  if (!trimmed) return null;
+  if (!trimmed) {return null;}
   
   // If already a full URL, return as is
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
@@ -117,7 +117,7 @@ const Blog = () => {
     console.log('Draft auto-saved');
   }, []);
 
-  if (!user) return null;
+  if (!user) {return null;}
 
   return (
     <>

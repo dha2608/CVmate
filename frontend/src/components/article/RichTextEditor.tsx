@@ -30,7 +30,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   // Auto-save draft
   useEffect(() => {
-    if (!autoSave || !value.trim()) return;
+    if (!autoSave || !value.trim()) {return;}
     
     const timer = setTimeout(() => {
       const draft = {
@@ -64,7 +64,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   const insertText = useCallback((before: string, after: string = '') => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {return;}
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
@@ -189,7 +189,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   const renderMarkdown = (text: string): string => {
     // Simple markdown to HTML converter
-    let html = text
+    const html = text
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
       .replace(/^### (.+)$/gm, '<h3>$1</h3>')
@@ -256,7 +256,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           accept="image/*"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) handleImageUpload(file);
+            if (file) {handleImageUpload(file);}
           }}
           className="hidden"
         />

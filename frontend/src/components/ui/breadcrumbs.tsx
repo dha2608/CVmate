@@ -17,7 +17,7 @@ export const Breadcrumbs = ({ items, className }: BreadcrumbsProps) => {
 
   // Auto-generate breadcrumbs from path if not provided
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
-    if (items) return items;
+    if (items) {return items;}
 
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const breadcrumbs: BreadcrumbItem[] = [

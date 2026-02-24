@@ -27,7 +27,7 @@ export const SuccessAnimation = ({
     lg: 48
   };
 
-  if (!show) return null;
+  if (!show) {return null;}
 
   return (
     <motion.div
@@ -89,7 +89,7 @@ interface ConfettiProps {
 }
 
 export const Confetti = ({ show, onComplete }: ConfettiProps) => {
-  if (!show) return null;
+  if (!show) {return null;}
 
   const particles = Array.from({ length: 50 }, (_, i) => ({
     id: i,

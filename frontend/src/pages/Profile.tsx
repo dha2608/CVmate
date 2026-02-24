@@ -138,7 +138,7 @@ const Profile = () => {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {return;}
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -237,7 +237,7 @@ const Profile = () => {
 
   const handleCoverPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {return;}
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -337,7 +337,7 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
-    if (!hasChanges) return;
+    if (!hasChanges) {return;}
     
     setIsLoading(true);
 
@@ -390,7 +390,7 @@ const Profile = () => {
     }
   };
 
-  if (!user) return null;
+  if (!user) {return null;}
 
   return (
     <MainLayout>

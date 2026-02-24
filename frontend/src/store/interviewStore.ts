@@ -85,7 +85,7 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
 
   sendUserMessage: async (message: string) => {
     const { interviewId, messages, status } = get();
-    if (!interviewId || status === 'completed') return;
+    if (!interviewId || status === 'completed') {return;}
 
     // Optimistic update: add user message immediately
     const optimisticMessages: InterviewMessage[] = [
@@ -144,14 +144,14 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       set({ 
         error: errorMessage, 
         isSending: false,
-        messages: messages, // Revert to previous messages
+        messages, // Revert to previous messages
       });
     }
   },
 
   endSession: async (retryCount = 0) => {
     const { interviewId, status, endSession: endSessionFn } = get();
-    if (!interviewId || status === 'completed') return;
+    if (!interviewId || status === 'completed') {return;}
 
     set({ isEnding: true, error: null });
     try {

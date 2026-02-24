@@ -39,7 +39,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     set({ isLoading: true });
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('Not authenticated');
+      if (!token) {throw new Error('Not authenticated');}
 
       const res = await fetch(`${API_URL}/notifications`, {
         headers: { Authorization: `Bearer ${token}` },

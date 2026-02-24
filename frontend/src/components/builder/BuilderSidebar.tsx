@@ -92,7 +92,7 @@ const BuilderSidebar = ({
   
   // Calculate real progress based on actual data
   const calculateProgress = () => {
-    if (!currentResume) return 0;
+    if (!currentResume) {return 0;}
     
     let completed = 0;
     const total = visibleSections.length;
@@ -112,7 +112,7 @@ const BuilderSidebar = ({
       const hasComplete = currentResume.experience.some(
         exp => exp.company?.trim() && exp.position?.trim()
       );
-      if (hasComplete) completed++;
+      if (hasComplete) {completed++;}
     }
     
     // Education: has at least one complete entry
@@ -120,7 +120,7 @@ const BuilderSidebar = ({
       const hasComplete = currentResume.education.some(
         edu => edu.institution?.trim() && edu.degree?.trim()
       );
-      if (hasComplete) completed++;
+      if (hasComplete) {completed++;}
     }
     
     // Skills: has at least one skill
@@ -219,7 +219,7 @@ const BuilderSidebar = ({
             
             // Check if section is actually completed
             const isCompleted = (() => {
-              if (!currentResume) return false;
+              if (!currentResume) {return false;}
               switch (s.id) {
                 case 'personal':
                   return !!(currentResume.personalInfo?.fullName?.trim() && currentResume.personalInfo?.email?.trim());

@@ -91,7 +91,7 @@ export const BottomSheet = ({
             </div>
 
             {/* Header */}
-            {(title || true) && (
+            {title && (
               <div className="flex items-center justify-between px-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                 {title && (
                   <h3 id="bottom-sheet-title" className="text-lg font-semibold text-gray-900 dark:text-white">

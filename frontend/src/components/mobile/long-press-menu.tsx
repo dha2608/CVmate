@@ -31,7 +31,7 @@ export const LongPressMenu = ({
   const touchEnd = useRef<{ clientX: number; clientY: number } | null>(null);
 
   const handleLongPressStart = (e: React.TouchEvent | React.MouseEvent) => {
-    if (trigger !== 'longpress') return;
+    if (trigger !== 'longpress') {return;}
 
     const touches = 'touches' in e ? e.touches : null;
     const clientX = touches?.[0]?.clientX ?? ('clientX' in e ? e.clientX : 0);

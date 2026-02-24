@@ -33,7 +33,7 @@ export const OfflineIndicator = () => {
     };
   }, []);
 
-  if (!showIndicator) return null;
+  if (!showIndicator) {return null;}
 
   return (
     <AnimatePresence>

@@ -47,11 +47,11 @@ export const SwipeableCard = ({
       if (offset < 0 && rightActions.length > 0) {
         // Swiped left - show right actions
         x.set(-leftWidth);
-        if (onSwipeLeft) onSwipeLeft();
+        if (onSwipeLeft) {onSwipeLeft();}
       } else if (offset > 0 && leftActions.length > 0) {
         // Swiped right - show left actions
         x.set(rightWidth);
-        if (onSwipeRight) onSwipeRight();
+        if (onSwipeRight) {onSwipeRight();}
       } else {
         x.set(0);
       }

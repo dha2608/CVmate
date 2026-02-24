@@ -197,9 +197,9 @@ const Builder = () => {
         const details = error.details;
         if (details.errors && Array.isArray(details.errors)) {
           errors.push(...details.errors.map((e: any) => {
-            if (typeof e === 'string') return e;
-            if (e?.message) return e.message;
-            if (e?.path) return `${e.path}: ${e.message || 'Invalid'}`;
+            if (typeof e === 'string') {return e;}
+            if (e?.message) {return e.message;}
+            if (e?.path) {return `${e.path}: ${e.message || 'Invalid'}`;}
             return String(e);
           }));
         }

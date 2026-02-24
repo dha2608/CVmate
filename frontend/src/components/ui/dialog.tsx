@@ -32,7 +32,7 @@ export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!open) {return null;}
 
   return (
     <div

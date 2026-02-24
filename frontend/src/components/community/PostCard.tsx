@@ -12,10 +12,10 @@ interface PostCardProps {
 
 // Normalize CDN image URLs and provide fallback
 const normalizeImageUrl = (url: string | undefined | null): string | null => {
-  if (!url || typeof url !== 'string') return null;
+  if (!url || typeof url !== 'string') {return null;}
   
   const trimmed = url.trim();
-  if (!trimmed) return null;
+  if (!trimmed) {return null;}
   
   // If already a full URL, return as is
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
@@ -65,7 +65,7 @@ const PostCardComponent = ({ post }: PostCardProps) => {
       alert('Vui lòng đăng nhập để nhắn tin.');
       return;
     }
-    if (!post.user?._id) return;
+    if (!post.user?._id) {return;}
     setActiveConversation({
       _id: post.user._id,
       name: post.user.name,

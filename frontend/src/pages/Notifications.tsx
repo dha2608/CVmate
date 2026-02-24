@@ -141,9 +141,9 @@ const Notifications = () => {
   };
 
   const filteredNotifications = notifications.filter(notif => {
-    if (filter === 'unread' && notif.isRead) return false;
-    if (filter !== 'all' && filter !== 'unread' && notif.type !== filter) return false;
-    if (searchTerm && !notif.message.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    if (filter === 'unread' && notif.isRead) {return false;}
+    if (filter !== 'all' && filter !== 'unread' && notif.type !== filter) {return false;}
+    if (searchTerm && !notif.message.toLowerCase().includes(searchTerm.toLowerCase())) {return false;}
     return true;
   });
 

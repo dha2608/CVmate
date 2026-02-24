@@ -87,7 +87,7 @@ const Bookmarks = () => {
     setBookmarkItems(prev => prev.filter(item => item.bookmarkId !== bookmarkId));
   };
 
-  if (!user) return null;
+  if (!user) {return null;}
 
   return (
     <MainLayout>
