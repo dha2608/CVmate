@@ -8,6 +8,7 @@ dotenv.config();
 // Validate environment variables
 const validation = validateEnv();
 if (!validation.isValid) {
+  console.error('[ENV VALIDATION FAILED] Missing:', validation.missing);
   logger.error('Missing required environment variables', undefined, { missing: validation.missing });
   process.exit(1);
 }
