@@ -9,13 +9,7 @@ const isAnalyze = process.env.NODE_ENV === 'production' && process.env.VITE_ANAL
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react({
-      babel: {
-        plugins: [
-          'react-dev-locator',
-        ],
-      },
-    }),
+    react(),
     tsconfigPaths(),
   ],
   css: {
