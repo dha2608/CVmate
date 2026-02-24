@@ -10,7 +10,7 @@
     "client:dev": "vite",
     "build:frontend": "cd frontend && npm ci && npm run build",
     "build:backend": "npx tsc -b",
-    "build": "npm run build:frontend && npm run build:backend",
+    "build": "npm run build:frontend && npx tsc -b",
     "analyze": "vite build --mode analyze",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
