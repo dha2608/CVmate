@@ -64,16 +64,68 @@ interface ApiOptions extends RequestInit {
 const DEFAULT_TIMEOUT = 30000; // 30 seconds default timeout
 const AUTH_TIMEOUT = 15000; // 15 seconds for auth endpoints (login/register)
 
+let csrfTokenCache: string | null = null;
+let csrfTokenPromise: Promise<string | null> | null = null;
+
+const getCsrfToken = async (): Promise<string | null> => {
+  if (csrfTokenCache) {
+    return csrfTokenCache;
+  }
+  if (csrfTokenPromise) {
+    return csrfTokenPromise;
+  }
+
+  csrfTokenPromise = (async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/csrf-token`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      if (data?.success && typeof data.csrfToken === 'string') {
+        csrfTokenCache = data.csrfToken;
+        return csrfTokenCache;
+      }
+
+      return null;
+    } catch {
+      return null;
+    } finally {
+      csrfTokenPromise = null;
+    }
+  })();
+
+  return csrfTokenPromise;
+};
+
+const clearCsrfToken = () => {
+  csrfTokenCache = null;
+  csrfTokenPromise = null;
+};
+
 export const apiRequest = async <T = any>(
   endpoint: string,
   options: ApiOptions = {}
 ): Promise<T> => {
   const { requiresAuth = true, timeout, ...fetchOptions } = options;
-  
+
+  const method = (fetchOptions.method || 'GET').toUpperCase();
+  const isMutatingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(fetchOptions.headers as Record<string, string> || {}),
+    ...(fetchOptions.headers as Record<string, string> | undefined),
   };
+
+  // Set JSON content-type by default when body is not FormData
+  const isFormData = typeof FormData !== 'undefined' && fetchOptions.body instanceof FormData;
+  if (!isFormData && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (requiresAuth) {
     const token = getAuthToken();
@@ -82,14 +134,19 @@ export const apiRequest = async <T = any>(
     }
   }
 
-  const url = `${API_BASE_URL}${endpoint}`;
-  
-  // Debug logging (development only)
-  if (isDev) {
-    logger.log('📤 API Request:', url, { method: fetchOptions.method || 'GET' });
+  if (isMutatingRequest) {
+    const csrfToken = await getCsrfToken();
+    if (csrfToken) {
+      headers['x-csrf-token'] = csrfToken;
+    }
   }
 
-  // Create AbortController for timeout
+  const url = `${API_BASE_URL}${endpoint}`;
+
+  if (isDev) {
+    logger.log('📤 API Request:', url, { method });
+  }
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
     controller.abort();
@@ -99,26 +156,31 @@ export const apiRequest = async <T = any>(
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
+      credentials: 'include',
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-        let errorMessage = 'Request failed';
-        let errorType = 'unknown';
-        let errorDetails: any = undefined;
+      let errorMessage = 'Request failed';
+      let errorType = 'unknown';
+      let errorDetails: any = undefined;
+
       try {
         const error = await response.json();
         errorMessage = error.message || error.error || `HTTP error! status: ${response.status}`;
-        errorType = error.type || 'unknown'; // 'server_rate_limit' or 'openai_api_error'
+        errorType = error.type || 'unknown';
         errorDetails = error;
+
+        // If CSRF fails, clear cached token so next request refetches
+        if (response.status === 403 && isMutatingRequest) {
+          clearCsrfToken();
+        }
       } catch {
-        // If JSON parsing fails, use status-based messages
         if (response.status === 503) {
           errorMessage = 'Service temporarily unavailable. Please try again in a few moments.';
         } else if (response.status === 429) {
-          // Check response headers for rate limit info
           const retryAfter = response.headers.get('Retry-After');
           const retryMessage = retryAfter ? ` Please try again after ${retryAfter} seconds.` : ' Please wait a moment and try again.';
           errorMessage = `Rate limit exceeded.${retryMessage}`;
@@ -131,7 +193,7 @@ export const apiRequest = async <T = any>(
           errorMessage = `HTTP error! status: ${response.status}`;
         }
       }
-      
+
       const error = new Error(errorMessage);
       (error as any).status = response.status;
       (error as any).type = errorType;
@@ -142,16 +204,14 @@ export const apiRequest = async <T = any>(
     return response.json();
   } catch (error: any) {
     clearTimeout(timeoutId);
-    
-    // Handle timeout/abort errors
+
     if (error.name === 'AbortError' || error.name === 'TimeoutError') {
       const timeoutError = new Error('Request timeout. Please check your connection and try again.');
       (timeoutError as any).type = 'timeout';
       (timeoutError as any).status = 408;
       throw timeoutError;
     }
-    
-    // Re-throw other errors
+
     throw error;
   }
 };
