@@ -29,6 +29,24 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/1386123c-2287-451b-80f4-d6f4e7719507', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: `log_${Date.now()}_ErrorBoundary`,
+        timestamp: Date.now(),
+        location: 'frontend/src/components/ErrorBoundary.tsx:componentDidCatch',
+        runId: 'pre-fix',
+        hypothesisId: 'H5',
+        message: 'ErrorBoundary caught error',
+        data: {
+          message: error.message,
+          componentStack: errorInfo.componentStack,
+        },
+      }),
+    }).catch(() => {});
+    // #endregion agent log
     this.setState({
       error,
       errorInfo,

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
@@ -53,157 +53,182 @@ const PageLoader = () => (
   </div>
 );
 
-export default function App() {
+const AppShell = () => {
+  const location = useLocation();
   useAuthStore(); // Keep store initialized
 
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/1386123c-2287-451b-80f4-d6f4e7719507', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: `log_${Date.now()}_AppRender`,
+      timestamp: Date.now(),
+      location: 'frontend/src/App.tsx:AppShell',
+      runId: 'pre-fix',
+      hypothesisId: 'H5',
+      message: 'AppShell render',
+      data: { path: location.pathname },
+    }),
+  }).catch(() => {});
+  // #endregion agent log
+
+  return (
+    <>
+      <OfflineIndicator />
+      <Toast />
+      <ScrollToTop />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/cancel" element={<PaymentCancel />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/help" element={<HelpCenter />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/partners" element={<Partners />} />
+          <Route path="/sitemap" element={<Sitemap />} />
+          <Route path="/accessibility" element={<Accessibility />} />
+          <Route 
+            path="/onboarding" 
+            element={
+              <ProtectedRoute>
+                <Onboarding />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/builder" 
+            element={
+              <ProtectedRoute>
+                <Builder />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/interview" 
+            element={
+              <ProtectedRoute>
+                <Interview />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/community" 
+            element={
+              <ProtectedRoute>
+                <Community />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/blog" 
+            element={
+              <ProtectedRoute>
+                <Blog />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/blog/:id" 
+            element={
+              <ProtectedRoute>
+                <BlogDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/news/:link" 
+            element={
+              <ProtectedRoute>
+                <NewsDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/jobs" 
+            element={
+              <ProtectedRoute>
+                <Jobs />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/messaging" 
+            element={
+              <ProtectedRoute>
+                <Messaging />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/notifications" 
+            element={
+              <ProtectedRoute>
+                <Notifications />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/bookmarks" 
+            element={
+              <ProtectedRoute>
+                <Bookmarks />
+              </ProtectedRoute>
+            } 
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            }
+          />
+          <Route 
+            path="/u/:id"
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </>
+  );
+};
+
+export default function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <OfflineIndicator />
-        <Toast />
-        <ScrollToTop />
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/payment/success" element={<PaymentSuccess />} />
-            <Route path="/payment/cancel" element={<PaymentCancel />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/cookie-policy" element={<CookiePolicy />} />
-            <Route path="/help" element={<HelpCenter />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/careers" element={<Careers />} />
-            <Route path="/partners" element={<Partners />} />
-            <Route path="/sitemap" element={<Sitemap />} />
-            <Route path="/accessibility" element={<Accessibility />} />
-            <Route 
-              path="/onboarding" 
-              element={
-                <ProtectedRoute>
-                  <Onboarding />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/builder" 
-              element={
-                <ProtectedRoute>
-                  <Builder />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/interview" 
-              element={
-                <ProtectedRoute>
-                  <Interview />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/community" 
-              element={
-                <ProtectedRoute>
-                  <Community />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/blog" 
-              element={
-                <ProtectedRoute>
-                  <Blog />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/blog/:id" 
-              element={
-                <ProtectedRoute>
-                  <BlogDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/news/:link" 
-              element={
-                <ProtectedRoute>
-                  <NewsDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/jobs" 
-              element={
-                <ProtectedRoute>
-                  <Jobs />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/messaging" 
-              element={
-                <ProtectedRoute>
-                  <Messaging />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/notifications" 
-              element={
-                <ProtectedRoute>
-                  <Notifications />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/bookmarks" 
-              element={
-                <ProtectedRoute>
-                  <Bookmarks />
-                </ProtectedRoute>
-              } 
-            />
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <Admin />
-                </AdminRoute>
-              }
-            />
-            <Route 
-              path="/u/:id"
-              element={
-                <ProtectedRoute>
-                  <UserProfile />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+        <AppShell />
       </Router>
     </ErrorBoundary>
   );

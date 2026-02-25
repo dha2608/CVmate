@@ -144,6 +144,22 @@ const Dashboard = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/1386123c-2287-451b-80f4-d6f4e7719507', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: `log_${Date.now()}_DashboardEffect`,
+        timestamp: Date.now(),
+        location: 'frontend/src/pages/Dashboard.tsx:useEffect',
+        runId: 'pre-fix',
+        hypothesisId: 'H3',
+        message: 'Dashboard effect run',
+        data: { hasUser: !!user },
+      }),
+    }).catch(() => {});
+    // #endregion agent log
+
     if (!user) {
       navigate('/login');
       return;
