@@ -8,10 +8,11 @@ export const chatWithAI = async (req: AuthRequest, res: Response, next: NextFunc
     const { message, conversationHistory = [] } = req.body;
 
     if (!message || typeof message !== 'string' || !message.trim()) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Message is required',
       });
+      return;
     }
 
     // Build context for CV Mate support
@@ -50,7 +51,7 @@ Hãy trả lời bằng tiếng Việt, ngắn gọn và hữu ích.`;
         { role: 'user', content: message },
       ];
 
-      const response = await hf.chatCompletion({
+      const response: any = await hf.chatCompletion({
         model,
         messages,
         max_tokens: 200,

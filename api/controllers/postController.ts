@@ -25,11 +25,12 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
     // Check for write_post achievement
     const postCount = await Post.countDocuments({ user: req.user?._id });
     if (postCount === 1) {
-      await checkAndAwardAchievement(
-        req.user?._id.toString(),
-        'write_post',
-        { postId: post._id.toString() }
-      );
+      const userId = req.user?._id?.toString();
+      if (userId) {
+        await checkAndAwardAchievement(userId, 'write_post', {
+          postId: post._id.toString(),
+        });
+      }
     }
 
     res.status(201).json({ success: true, data: populatedPost });
@@ -86,7 +87,7 @@ export const likePost = async (req: AuthRequest, res: Response, next: NextFuncti
     const index = post.likes.findIndex((id: any) => id.toString() === userId);
 
     if (index === -1) {
-      post.likes.push(req.user?._id);
+      post.likes.push(req.user?._id as Types.ObjectId);
 
       // Tạo notification khi được like (không gửi cho chính mình)
       if (post.user.toString() !== userId) {
@@ -174,7 +175,7 @@ export const likeComment = async (req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    const comment = post.comments.id(req.params.commentId);
+    const comment = (post.comments as any).id(req.params.commentId);
     if (!comment) {
       res.status(404).json({ success: false, message: 'Comment not found' });
       return;
@@ -215,7 +216,7 @@ export const updateComment = async (req: AuthRequest, res: Response, next: NextF
       return;
     }
 
-    const comment = post.comments.id(req.params.commentId);
+    const comment = (post.comments as any).id(req.params.commentId);
     if (!comment) {
       res.status(404).json({ success: false, message: 'Comment not found' });
       return;
@@ -249,7 +250,7 @@ export const deleteComment = async (req: AuthRequest, res: Response, next: NextF
       return;
     }
 
-    const comment = post.comments.id(req.params.commentId);
+    const comment = (post.comments as any).id(req.params.commentId);
     if (!comment) {
       res.status(404).json({ success: false, message: 'Comment not found' });
       return;

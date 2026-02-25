@@ -50,7 +50,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
           return done(null, user);
         } catch (error: any) {
-          return done(error, null);
+          return done(error);
         }
       }
     )

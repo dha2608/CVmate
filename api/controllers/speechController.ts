@@ -25,7 +25,7 @@ export const speechToText = async (req: AuthRequest, res: Response, next: NextFu
     try {
       if (typeof audioData === 'string' && audioData.startsWith('data:')) {
         // Remove data URL prefix
-        const base64Data = audioData.split(',')[1];
+        const base64Data = audioData.split(',')[1] ?? '';
         audioBuffer = Buffer.from(base64Data, 'base64');
       } else if (typeof audioData === 'string') {
         audioBuffer = Buffer.from(audioData, 'base64');

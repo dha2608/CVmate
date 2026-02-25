@@ -75,6 +75,10 @@ export const uploadPostImage = async (req: AuthRequest, res: Response, next: Nex
 export const getFileAsBase64 = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { filename } = req.params;
+    if (!filename) {
+      res.status(400).json({ success: false, message: 'Filename is required' });
+      return;
+    }
     const filePath = path.join(__dirname, '../../uploads', filename);
     
     const fs = await import('fs');

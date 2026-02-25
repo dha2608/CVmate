@@ -81,34 +81,38 @@ app.use(helmet({
 }));
 
 // Middleware
-const allowedOrigins = process.env.FRONTEND_URL 
-  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
   : ['http://localhost:5173'];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Allow Vercel preview URLs (c-vmate-*.vercel.app)
-    if (origin.includes('.vercel.app')) {
-      return callback(null, true);
-    }
-    
-    // Check if origin is in allowed list
-    if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed))) {
-      callback(null, true);
-    } else {
-      // For development, allow localhost
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (origin.includes('.vercel.app')) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.some((allowed) => origin === allowed || origin.startsWith(allowed))) {
+        callback(null, true);
+        return;
+      }
+
       if (process.env.NODE_ENV !== 'production' && origin.includes('localhost')) {
         callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
+        return;
       }
-    }
-  },
-  credentials: true
-}));
+
+      callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  }),
+);
 app.use(requestLogger);
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
@@ -168,7 +172,8 @@ app.use('/uploads', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
   
   // Set CORS headers for static files - allow all origins
@@ -359,7 +364,7 @@ app.get('/api/health', async (req: Request, res: Response) => {
 
   // Check database connection
   try {
-    if (mongoose.connection.readyState === 1) {
+    if (mongoose.connection.readyState === 1 && mongoose.connection.db) {
       await mongoose.connection.db.admin().ping();
       checks.database = { status: 'ok' };
     } else {
@@ -437,7 +442,7 @@ app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
   // Handle AppError instances
   if (error instanceof Error && 'statusCode' in error && (error as any).isOperational) {
     const appError = error as any;
-    return res.status(appError.statusCode).json({
+    res.status(appError.statusCode).json({
       success: false,
       error: appError.message || 'An error occurred',
       code: appError.code,

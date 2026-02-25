@@ -216,17 +216,17 @@ export const updateUserProfile = async (req: AuthRequest, res: Response, next: N
         updatedUser.avatar,
         updatedUser.yearsOfExperience,
         updatedUser.currentRole,
-        updatedUser.skills?.length > 0,
-        updatedUser.industries?.length > 0,
+        (updatedUser.skills?.length ?? 0) > 0,
+        (updatedUser.industries?.length ?? 0) > 0,
       ];
       const completedFields = profileFields.filter(Boolean).length;
       const completionPercentage = (completedFields / profileFields.length) * 100;
 
       if (completionPercentage >= 80) {
-        await checkAndAwardAchievement(
-          req.user?._id.toString(),
-          'complete_profile'
-        );
+        const userId = req.user?._id?.toString();
+        if (userId) {
+          await checkAndAwardAchievement(userId, 'complete_profile');
+        }
       }
 
       res.json({

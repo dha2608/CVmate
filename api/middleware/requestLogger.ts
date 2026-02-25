@@ -1,14 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger.js';
 
-interface RequestWithUser extends Request {
-  user?: { _id?: string };
-}
-
-export const requestLogger = (req: RequestWithUser, res: Response, next: NextFunction): void => {
+export const requestLogger = (req: Request, res: Response, next: NextFunction): void => {
   const start = Date.now();
   const { method, originalUrl } = req;
-  const userId = req.user?._id;
+  const userId = (req as any).user?._id;
   const userAgent = req.get('user-agent');
 
   res.on('finish', () => {

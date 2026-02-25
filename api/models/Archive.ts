@@ -1,6 +1,6 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-export interface IArchive extends Document {
+export interface IArchive {
   collection: string;
   originalId: mongoose.Types.ObjectId;
   data: Record<string, unknown>;

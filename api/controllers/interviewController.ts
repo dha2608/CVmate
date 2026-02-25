@@ -104,10 +104,12 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
     const historyForAI = [
       interview.chatHistory[0],
       ...interview.chatHistory.slice(-10)
-    ].map(msg => ({
-      role: msg.role as 'system' | 'user' | 'assistant',
-      content: msg.content
-    }));
+    ]
+      .filter(Boolean)
+      .map((msg) => ({
+        role: (msg as any).role as 'system' | 'user' | 'assistant',
+        content: (msg as any).content,
+      }));
 
     const model = resolveModel(req, 'chat');
     const startedAt = Date.now();

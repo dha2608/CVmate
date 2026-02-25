@@ -3,7 +3,6 @@ import { Types } from 'mongoose';
 import Job from '../models/Job.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
-import Application from '../models/Application.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
 import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
@@ -171,7 +170,7 @@ export const applyJob = async (req: AuthRequest, res: Response, next: NextFuncti
       return;
     }
 
-    job.applicants.push(req.user?._id);
+    job.applicants.push(req.user?._id as Types.ObjectId);
     await job.save();
 
     // Tạo notification cho người đăng tuyển (nếu khác người apply)

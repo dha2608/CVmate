@@ -1,4 +1,4 @@
-import { Response, NextFunction } from 'express';
+import { type Response, type NextFunction } from 'express';
 import Achievement from '../models/Achievement.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
@@ -14,15 +14,26 @@ export const getUserAchievements = async (req: AuthRequest, res: Response, next:
   }
 };
 
+type AchievementType =
+  | 'first_cv'
+  | 'complete_profile'
+  | 'apply_job'
+  | 'write_post'
+  | 'complete_interview';
+
+type AchievementMetadata = Record<string, unknown>;
+
 export const checkAndAwardAchievement = async (
   userId: string,
-  type: 'first_cv' | 'complete_profile' | 'apply_job' | 'write_post' | 'complete_interview',
-  metadata?: any
+  type: AchievementType,
+  metadata?: AchievementMetadata,
 ): Promise<boolean> => {
   try {
     // Check if already unlocked
     const existing = await Achievement.findOne({ user: userId, type });
-    if (existing) return false;
+    if (existing) {
+      return false;
+    }
 
     // Award achievement
     await Achievement.create({

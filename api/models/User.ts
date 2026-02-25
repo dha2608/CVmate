@@ -37,6 +37,7 @@ export interface IUser extends Document {
   };
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
+  isBanned?: boolean;
   createdAt: Date;
   updatedAt: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
@@ -156,7 +157,11 @@ const userSchema = new Schema<IUser>({
   twoFactorSecret: {
     type: String,
     default: null,
-  }
+  },
+  isBanned: {
+    type: Boolean,
+    default: false,
+  },
 }, { 
   timestamps: true 
 });

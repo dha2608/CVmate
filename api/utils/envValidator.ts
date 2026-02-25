@@ -51,6 +51,8 @@ interface ValidationResult {
   warnings: string[];
 }
 
+const env = process.env as NodeJS.ProcessEnv & Partial<EnvConfig>;
+
 /**
  * Validate required environment variables
  */
@@ -59,8 +61,6 @@ export const validateEnv = (): ValidationResult => {
     'MONGO_URI',
     'JWT_SECRET',
   ];
-
-const env = process.env as NodeJS.ProcessEnv & Partial<EnvConfig>;
 
 const optionalButRecommended: string[] = [
     'HF_API_KEY',

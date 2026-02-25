@@ -90,37 +90,37 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, _ne
   }
 };
 
-interface StripeWebhookRequest extends Request {
-  body: Buffer;
-  headers: {
-    'stripe-signature'?: string;
-    [key: string]: string | undefined;
-  };
-}
-
-export const stripeWebhook = async (req: StripeWebhookRequest, res: Response, _next: NextFunction) => {
-  const sig = req.headers['stripe-signature'];
+export const stripeWebhook = async (req: Request, res: Response, _next: NextFunction) => {
+  const sig = req.headers['stripe-signature'] as string | undefined;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
     logger.error('Stripe webhook secret not configured', new Error('Missing STRIPE_WEBHOOK_SECRET'));
-    return res.status(400).send('Webhook secret not configured');
+    res.status(400).send('Webhook secret not configured');
+    return;
   }
 
   const stripe = getStripe();
   if (!stripe) {
     logger.error('Stripe not initialized for webhook', new Error('Missing STRIPE_SECRET_KEY'));
-    return res.status(503).send('Payment service is not configured');
+    res.status(503).send('Payment service is not configured');
+    return;
   }
 
   let event: Stripe.Event;
 
   try {
+    if (!sig) {
+      logger.error('Missing Stripe-Signature header', new Error('Missing stripe-signature'));
+      res.status(400).send('Missing Stripe-Signature header');
+      return;
+    }
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     logger.error('Webhook signature verification failed', err instanceof Error ? err : new Error(String(err)));
-    return res.status(400).send(`Webhook Error: ${errorMessage}`);
+    res.status(400).send(`Webhook Error: ${errorMessage}`);
+    return;
   }
 
   try {

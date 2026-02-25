@@ -189,12 +189,13 @@ export const validate = <T extends z.ZodTypeAny>(schema: T) => {
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Validation failed',
           message: error.errors[0]?.message || 'Invalid input',
           errors: error.errors,
         });
+        return;
       }
       next(error);
     }

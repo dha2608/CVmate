@@ -79,11 +79,12 @@ export const createResume = async (req: AuthRequest, res: Response, next: NextFu
     // Check for first CV achievement
     const resumeCount = await Resume.countDocuments({ user: req.user?._id });
     if (resumeCount === 1) {
-      await checkAndAwardAchievement(
-        req.user?._id.toString(),
-        'first_cv',
-        { resumeId: resume._id.toString() }
-      );
+      const userId = req.user?._id?.toString();
+      if (userId) {
+        await checkAndAwardAchievement(userId, 'first_cv', {
+          resumeId: resume._id.toString(),
+        });
+      }
     }
 
     res.status(201).json({ success: true, data: resume });

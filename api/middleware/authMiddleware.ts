@@ -1,25 +1,30 @@
-import jwt from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express';
-import User, { IUser } from '../models/User.js';
+import jwt, { type JwtPayload } from 'jsonwebtoken';
+import { type Request, type Response, type NextFunction, type RequestHandler } from 'express';
+import User, { type IUser } from '../models/User.js';
 
-interface DecodedToken {
-  id: string;
-  iat: number;
-  exp: number;
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: IUser;
+  }
 }
 
-export interface AuthRequest extends Request {
-  user?: IUser;
-}
+export type AuthRequest = Request;
 
-export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  let token;
+export const protect: RequestHandler = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  if (authHeader && authHeader.startsWith('Bearer ')) {
     try {
-      token = req.headers.authorization.split(' ')[1];
+      const token = authHeader.split(' ')[1];
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
+      if (!process.env.JWT_SECRET) {
+        res.status(500).json({ success: false, message: 'JWT_SECRET is not configured' });
+        return;
+      }
+
+      const decoded = (jwt as any).verify(token, process.env.JWT_SECRET) as JwtPayload & {
+        id: string;
+      };
 
       const user = await User.findById(decoded.id).select('-password');
 
