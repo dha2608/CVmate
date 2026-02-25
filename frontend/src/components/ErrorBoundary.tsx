@@ -58,7 +58,25 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
 
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    const errorData = {
+      message: error?.message,
+      name: error?.name,
+      stack: error?.stack,
+      componentStack: errorInfo?.componentStack,
+      href: typeof window !== 'undefined' ? window.location.href : '',
+      pathname: typeof window !== 'undefined' ? window.location.pathname : '',
+      timestamp: new Date().toISOString(),
+    };
+
+    console.error('ErrorBoundary caught an error:', errorData);
+
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('__lastErrorBoundary', JSON.stringify(errorData));
+      }
+    }catch {
+      // ignore storage failures
+    }
 
     this.setState({
 

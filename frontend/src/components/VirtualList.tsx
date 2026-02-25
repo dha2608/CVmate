@@ -24,8 +24,9 @@ function VirtualListComponent<T>({ items, itemHeight, overscan = 3, height, getI
         {items.slice(startIndex, endIndex).map((item, index) => {
           const realIndex = startIndex + index;
           const top = realIndex * itemHeight;
+          const key = getItemKey ? getItemKey(item, realIndex) : realIndex;
           return (
-            <div key={realIndex} style={{ position: 'absolute', top, left: 0, right: 0 }}>
+            <div key={key} style={{ position: 'absolute', top, left: 0, right: 0 }}>
               {renderItem(item, realIndex)}
             </div>
           );

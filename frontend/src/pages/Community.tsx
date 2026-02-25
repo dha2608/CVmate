@@ -69,8 +69,9 @@ const Community = () => {
                   items={posts}
                   itemHeight={220}
                   height={600}
+                  getItemKey={(post) => post._id}
                   renderItem={(post) => (
-                    <PostCard key={post._id} post={post} />
+                    <PostCard  post={post} />
                   )}
                 />
                 {posts.length === 0 && (
