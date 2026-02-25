@@ -1,722 +1,125 @@
-import { memo, useCallback, useMemo, useState } from 'react';
-import { useResumeStore } from '@/store/resumeStore';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useNavigate } from 'react-router-dom';
-import { Brain, Keyboard, Settings2, X, Lightbulb } from 'lucide-react';
-import PersonalForm from '@/components/builder/PersonalForm';
-import ExperienceForm from '@/components/builder/ExperienceForm';
-import EducationForm from '@/components/builder/EducationForm';
-import SkillsForm from '@/components/builder/SkillsForm';
-import ResumePreview from '@/components/builder/ResumePreview';
-import BuilderSidebar, { type BuilderSection, type BuilderSectionId } from '@/components/builder/BuilderSidebar';
-import BuilderActionsDialog from '@/components/builder/BuilderActionsDialog';
-import ShortcutsModal from '@/components/builder/ShortcutsModal';
-import AIFeatureNotice from '@/components/AIFeatureNotice';
-import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
-import { api } from '@/lib/utils';
-import { trackEvent } from '@/lib/analytics';
+import { useMemo, useState }from 'react';
+import { useNavigate }from 'react-router-dom';
+import { useResumeStore }from '@/store/resumeStore';
+import { Button }from '@/components/ui/button';
+import { Input }from '@/components/ui/input';
+import { Textarea }from '@/components/ui/textarea';
+import { Save, Download, ArrowLeft, FileText }from 'lucide-react';
 
 const Builder = () => {
-  const { currentResume, updateField, aiEnhanceText, setResume } = useResumeStore(
-    (state) => ({
-      currentResume: state.currentResume,
-      updateField: state.updateField,
-      aiEnhanceText: state.aiEnhanceText,
-      setResume: state.setResume,
-    })
-  );
-  const [activeTab, setActiveTab] = useState<BuilderSectionId>('personal');
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [enhancing, setEnhancing] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState('modern-red');
-  const [sections, setSections] = useState<BuilderSection[]>([
-    { id: 'personal', label: 'Personal Info', visible: true },
-    { id: 'summary', label: 'Summary', visible: true },
-    { id: 'experience', label: 'Experience', visible: true },
-    { id: 'education', label: 'Education', visible: true },
-    { id: 'skills', label: 'Skills', visible: true },
-  ]);
-  const [showShortcuts, setShowShortcuts] = useState(false);
-  const [showActions, setShowActions] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const [isGeneratingFull, setIsGeneratingFull] = useState(false);
-  const [generatePrompt, setGeneratePrompt] = useState('');
-  const [generateJD, setGenerateJD] = useState('');
-  const [dismissedHints, setDismissedHints] = useState<string[]>([]);
   const navigate = useNavigate();
+  const { currentResume, updatePersonalInfo, updateField }= useResumeStore((state) => ({
+    currentResume: state.currentResume,
+    updatePersonalInfo: state.updatePersonalInfo,
+    updateField: state.updateField,
+  }));
 
-  const handleSave = useCallback(async (retryCount = 0) => {
-    const { validatePersonalInfo } = await import('@/utils/validation');
-    const personalInfoValidation = validatePersonalInfo({
-      fullName: currentResume.personalInfo.fullName || '',
-      email: currentResume.personalInfo.email || '',
-      phone: currentResume.personalInfo.phone,
-      address: currentResume.personalInfo.address,
-      linkedin: currentResume.personalInfo.linkedin,
-      website: currentResume.personalInfo.website,
-    });
+  const [saving, setSaving] = useState(false);
 
-    if (!personalInfoValidation.valid) {
-      const { useToastStore } = await import('@/store/toastStore');
-      useToastStore.getState().error(
-        `Please fix the following errors:\n${personalInfoValidation.errors.map(e => `- ${e}`).join('\n')}`
-      );
-      return;
-    }
+  const previewName = useMemo(() => currentResume.personalInfo.fullName || 'YOUR NAME', [currentResume.personalInfo.fullName]);
 
-    if (!currentResume.personalInfo.fullName || !currentResume.personalInfo.email) {
-      const { useToastStore } = await import('@/store/toastStore');
-      useToastStore.getState().error('Please fill in at least your name and email');
-      return;
-    }
-
+  const handleSave = async () => {
     setSaving(true);
     try {
-      const cleanedExperience = (currentResume.experience || [])
-        .filter((exp) => {
-          const hasAny =
-            !!exp.company?.trim() ||
-            !!exp.position?.trim() ||
-            !!exp.startDate?.trim() ||
-            !!exp.endDate?.trim() ||
-            !!exp.description?.trim();
-          return hasAny;
-        })
-        .map((exp) => ({
-          ...exp,
-          company: (exp.company || '').trim(),
-          position: (exp.position || '').trim(),
-          startDate: (exp.startDate || '').trim(),
-          endDate: (exp.endDate || '').trim(),
-          description: (exp.description || '').trim(),
-        }));
-
-      const cleanedEducation = (currentResume.education || [])
-        .filter((edu) => {
-          const hasAny =
-            !!edu.institution?.trim() ||
-            !!edu.degree?.trim() ||
-            !!edu.startDate?.trim() ||
-            !!edu.endDate?.trim() ||
-            !!edu.description?.trim();
-          return hasAny;
-        })
-        .map((edu) => ({
-          ...edu,
-          institution: (edu.institution || '').trim(),
-          degree: (edu.degree || '').trim(),
-          startDate: (edu.startDate || '').trim(),
-          endDate: (edu.endDate || '').trim(),
-          description: (edu.description || '').trim(),
-        }));
-
-      const missingExp = cleanedExperience.findIndex((e) => !e.company || !e.position);
-      if (missingExp >= 0) {
-        const { useToastStore } = await import('@/store/toastStore');
-        useToastStore.getState().error(
-          `Experience #${missingExp + 1} is missing required fields (Company and Position). Please complete or delete it before saving.`
-        );
-        setSaving(false);
-        return;
-      }
-
-      const missingEdu = cleanedEducation.findIndex((e) => !e.institution || !e.degree);
-      if (missingEdu >= 0) {
-        const { useToastStore } = await import('@/store/toastStore');
-        useToastStore.getState().error(
-          `Education #${missingEdu + 1} is missing required fields (Institution and Degree). Please complete or delete it before saving.`
-        );
-        setSaving(false);
-        return;
-      }
-
-      const resumeData = {
-        title: (currentResume.title || 'My Resume').trim(),
-        personalInfo: {
-          fullName: (currentResume.personalInfo.fullName || '').trim(),
-          email: (currentResume.personalInfo.email || '').trim(),
-          phone: (currentResume.personalInfo.phone || '').trim(),
-          address: (currentResume.personalInfo.address || '').trim(),
-          linkedin: (currentResume.personalInfo.linkedin || '').trim(),
-          website: (currentResume.personalInfo.website || '').trim(),
-        },
-        summary: (currentResume.summary || '').trim(),
-        experience: cleanedExperience,
-        education: cleanedEducation,
-        skills: (currentResume.skills || []).map((s) => String(s).trim()).filter(Boolean),
-      };
-
-      let response;
-      if (currentResume._id) {
-        response = await api.updateResume(currentResume._id, resumeData);
-      } else {
-        response = await api.createResume(resumeData);
-        if (response.success && response.data._id) {
-          setResume({ ...currentResume, _id: response.data._id });
-        }
-      }
-
-      if (response.success) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
-        const { useToastStore } = await import('@/store/toastStore');
-        useToastStore.getState().success('CV saved successfully!');
-        trackEvent('cv_saved', {
-          hasId: !!currentResume._id,
-          hasSummary: !!currentResume.summary?.trim(),
-          experienceCount: currentResume.experience.length,
-          educationCount: currentResume.education.length,
-          skillsCount: currentResume.skills.length,
-        });
-      }
-    } catch (error: any) {
-      let errorMessage = 'Failed to save resume';
-      const errors: string[] = [];
-
-      if (error?.details) {
-        const details = error.details;
-        if (details.errors && Array.isArray(details.errors)) {
-          errors.push(...details.errors.map((e: any) => {
-            if (typeof e === 'string') {return e;}
-            if (e?.message) {return e.message;}
-            if (e?.path) {return `${e.path}: ${e.message || 'Invalid'}`;}
-            return String(e);
-          }));
-        }
-        if (details.message) {
-          errorMessage = details.message;
-        }
-      }
-
-      if (error?.details?.errors && Array.isArray(error.details.errors)) {
-        error.details.errors.forEach((err: any) => {
-          if (err.path) {
-            errors.push(`${err.path.join('.')}: ${err.message || 'Invalid'}`);
-          } else {
-            errors.push(err.message || 'Validation error');
-          }
-        });
-      }
-
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      const isNetworkError = error?.status === 0 || error?.status >= 500 || error?.message?.includes('fetch');
-      if (isNetworkError && retryCount < 2) {
-        const { useToastStore } = await import('@/store/toastStore');
-        useToastStore.getState().error(`Network error. Retrying... (${retryCount + 1}/2)`);
-        setSaving(false);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return handleSave(retryCount + 1);
-      }
-
-      const finalMessage = errors.length 
-        ? `${errorMessage}\n\nValidation errors:\n${errors.map(e => `- ${e}`).join('\n')}`
-        : errorMessage;
-
-      const { useToastStore } = await import('@/store/toastStore');
-      useToastStore.getState().error(finalMessage);
-    } finally {
+      // local draft is already persisted via zustand persist
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    }finally {
       setSaving(false);
     }
-  }, [currentResume, setResume]);
+  };
 
-  const handleDownload = useCallback(async () => {
-    try {
-      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-        import('jspdf'),
-        import('html2canvas'),
-      ]);
-
-      const element = document.getElementById('resume-preview');
-      if (!element) {
-        alert('Resume preview not found');
-        return;
-      }
-
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
-
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save(`${currentResume.personalInfo.fullName || 'resume'}-CV.pdf`);
-    } catch (error) {
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        const content = document.getElementById('resume-preview')?.innerHTML || '';
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <title>Resume - ${currentResume.personalInfo.fullName || 'CV'}</title>
-              <style>
-                @media print {
-                  @page { margin: 0; size: A4; }
-                  body { margin: 0; }
-                }
-                body { font-family: 'Inter', sans-serif; }
-                * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-              </style>
-            </head>
-            <body>${content}</body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-          printWindow.print();
-        }, 250);
-      }
-    }
-  }, [currentResume.personalInfo.fullName]);
-
-  const handleAIEnhanceSummary = useCallback(async () => {
-    if (!currentResume.summary.trim()) {
-      const { useToastStore } = await import('@/store/toastStore');
-      useToastStore.getState().error('Please enter some text to enhance');
-      return;
-    }
-
-    setEnhancing(true);
-    setAiError(null);
-    try {
-      const enhanced = await aiEnhanceText(currentResume.summary, 'summary');
-      if (enhanced && enhanced !== currentResume.summary) {
-        updateField('summary', enhanced);
-        const { useToastStore } = await import('@/store/toastStore');
-        useToastStore.getState().success('Summary enhanced successfully!');
-        trackEvent('cv_ai_enhance', {
-          field: 'summary',
-          originalLength: currentResume.summary.length,
-          enhancedLength: enhanced.length,
-        });
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to enhance text. Please try again.';
-
-      const isConfigError = errorMessage.toLowerCase().includes('unavailable') || 
-                           errorMessage.toLowerCase().includes('api key') || 
-                           errorMessage.toLowerCase().includes('not configured');
-
-      if (isConfigError) {
-        setAiError(errorMessage);
-      } else {
-        const { useToastStore } = await import('@/store/toastStore');
-        useToastStore.getState().error(errorMessage);
-      }
-    } finally {
-      setEnhancing(false);
-    }
-  }, [aiEnhanceText, currentResume.summary, updateField]);
-
-  const [generateRole, setGenerateRole] = useState<'frontend' | 'backend' | 'fullstack' | 'qa' | 'designer' | 'devops' | 'data' | 'other'>('other');
-  const [generateMode, setGenerateMode] = useState<'concise' | 'human'>('concise');
-
-  const handleAIGenerateFull = useCallback(async () => {
-    if (!generatePrompt.trim() && !generateJD.trim()) {
-      const { useToastStore } = await import('@/store/toastStore');
-      useToastStore.getState().error('Please provide at least a short prompt or job description for AI to work with.');
-      return;
-    }
-
-    setIsGeneratingFull(true);
-    setAiError(null);
-    try {
-      const { aiGenerateFull } = useResumeStore.getState();
-      const data = await aiGenerateFull({
-        prompt: generatePrompt,
-        jobDescription: generateJD,
-        role: generateRole,
-        mode: generateMode,
-      });
-
-      setResume({
-        ...currentResume,
-        summary: data.summary || currentResume.summary,
-        experience: data.experience?.map((exp, idx) => ({
-          ...exp,
-          id: exp.id || `exp-${Date.now()}-${idx}`,
-        })) || currentResume.experience,
-        education: data.education?.map((edu, idx) => ({
-          ...edu,
-          id: edu.id || `edu-${Date.now()}-${idx}`,
-        })) || currentResume.education,
-        skills: Array.isArray(data.skills) && data.skills.length > 0 ? data.skills : currentResume.skills,
-      });
-
-      const { useToastStore } = await import('@/store/toastStore');
-      useToastStore.getState().success('CV generated successfully!');
-
-      trackEvent('cv_ai_enhance', {
-        field: 'full_resume',
-        hasJD: !!generateJD.trim(),
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate resume. Please try again.';
-
-      const isConfigError = errorMessage.toLowerCase().includes('unavailable') || 
-                           errorMessage.toLowerCase().includes('api key') || 
-                           errorMessage.toLowerCase().includes('not configured');
-
-      if (isConfigError) {
-        setAiError(errorMessage);
-      } else {
-        const { useToastStore } = await import('@/store/toastStore');
-        useToastStore.getState().error(errorMessage);
-      }
-    } finally {
-      setIsGeneratingFull(false);
-    }
-  }, [currentResume, generateJD, generateMode, generatePrompt, generateRole, setResume]);
-
-  useKeyboardShortcuts([
-    {
-      key: 's',
-      ctrl: true,
-      action: () => {
-        if (!currentResume || !currentResume.personalInfo || !currentResume.personalInfo.fullName || !currentResume.personalInfo.email) {
-          return;
-        }
-        handleSave();
-      },
-      description: 'Save resume'
-    },
-    {
-      key: 'd',
-      ctrl: true,
-      action: handleDownload,
-      description: 'Download PDF'
-    },
-    {
-      key: '?',
-      action: () => setShowShortcuts(!showShortcuts),
-      description: 'Show shortcuts'
-    },
-  ]);
-
-  const tabs = useMemo(() => [
-    { id: 'personal', label: 'Personal', icon: '👤' },
-    { id: 'summary', label: 'Summary', icon: '📝' },
-    { id: 'experience', label: 'Experience', icon: '💼' },
-    { id: 'education', label: 'Education', icon: '🎓' },
-    { id: 'skills', label: 'Skills', icon: '⚡' },
-  ], []);
-
-  const quickPresets = useMemo(() => [
-    {
-      id: 'fresh-grad-it',
-      label: 'Fresher IT',
-      description: 'Sinh viên mới ra trường ngành CNTT',
-      apply: () =>
-        setResume({
-          ...currentResume,
-          title: 'Junior Frontend Developer',
-          summary:
-            'Fresh graduate in Computer Science with a strong foundation in JavaScript, React, and modern frontend tooling. Passionate about building clean, accessible user interfaces and eager to learn best practices in production environments.',
-          skills: ['JavaScript', 'TypeScript', 'React', 'HTML/CSS', 'Git', 'REST API'],
-        }),
-    },
-    {
-      id: 'mid-fe',
-      label: 'Mid Frontend',
-      description: '2–4 năm kinh nghiệm Frontend',
-      apply: () =>
-        setResume({
-          ...currentResume,
-          title: 'Frontend Engineer',
-          summary:
-            'Frontend Engineer with 3+ years of experience building scalable web applications using React and TypeScript. Experienced in collaborating with product and design to ship user-centric features with attention to performance and DX.',
-          skills: [
-            'React',
-            'TypeScript',
-            'Next.js',
-            'Node.js',
-            'Tailwind CSS',
-            'Unit Testing',
-          ],
-        }),
-    },
-  ], [currentResume, setResume]);
+  const handleDownload = () => {
+    window.print();
+  };
 
   return (
-    <div className="flex min-h-screen bg-white overflow-hidden">
-      <BuilderSidebar
-        sections={sections}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        mode="power"
-        saved={saved}
-        saving={saving}
-        onSave={handleSave}
-        onDownload={handleDownload}
-        isCollapsed={false}
-        onToggleCollapsed={() => {}}
-        onOpenActions={() => setShowActions(true)}
-        onBack={() => navigate('/dashboard')}
-        currentResume={currentResume}
-      />
-
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-gray-50">
-        <div className="w-full lg:w-[45%] xl:w-[42%] flex flex-col border-r border-gray-200 bg-white shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-white to-gray-50/50 sticky top-0 z-10 backdrop-blur-sm bg-white/95">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-lg font-bold text-jet-black">
-                    {sections.find(s => s.id === activeTab)?.label || 'CV Builder'}
-                  </h2>
-                </div>
-                <p className="text-xs text-gray-500">
-                  {activeTab === 'personal' && 'Add your contact information and basic details'}
-                  {activeTab === 'summary' && 'Write a compelling professional summary (AI can help enhance it)'}
-                  {activeTab === 'experience' && 'Add your work history and professional experience'}
-                  {activeTab === 'education' && 'Include your academic background and qualifications'}
-                  {activeTab === 'skills' && 'List your technical and soft skills'}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowShortcuts(true)}
-                className="text-gray-500 hover:text-gray-700"
-                title="Keyboard shortcuts (?)"
-              >
-                <Keyboard size={16} className="mr-1.5" />
-                <span className="text-xs">?</span>
-              </Button>
-            </div>
-          </div>
-
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-2xl mx-auto p-6 space-y-6">
-            {!dismissedHints.includes('welcome') && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 relative">
-                <button
-                  onClick={() => setDismissedHints([...dismissedHints, 'welcome'])}
-                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
-                >
-                  <X size={16} />
-                </button>
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-blue-500 text-white flex items-center justify-center flex-shrink-0">
-                    <Lightbulb size={16} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-bold text-gray-900 mb-1">Welcome to CV Builder!</h4>
-                    <p className="text-xs text-gray-700 leading-relaxed">
-                      Start by filling in your <strong>Personal Information</strong> on the left. 
-                      Your changes will appear instantly in the <strong>Live Preview</strong> on the right. 
-                      Use the sidebar to navigate between sections, and don't forget to <strong>Save</strong> your work!
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'personal' && <PersonalForm />}
-
-            {activeTab === 'summary' && (
-              <div className="space-y-5 animate-in fade-in duration-300">
-                {aiError && (aiError.toLowerCase().includes('api key') || aiError.toLowerCase().includes('not configured')) && (
-                  <AIFeatureNotice 
-                    feature="AI CV Enhancement" 
-                    onDismiss={() => setAiError(null)}
-                  />
-                )}
-
-                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-base font-bold text-jet-black">Professional Summary</h3>
-                      <p className="text-xs text-gray-500 mt-1">A brief overview of your professional background</p>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={handleAIEnhanceSummary}
-                      disabled={enhancing || !currentResume.summary.trim()}
-                      className="border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white shadow-sm"
-                    >
-                      <Brain size={14} className="mr-1.5" />
-                      {enhancing ? 'Enhancing...' : 'AI Enhance'}
-                    </Button>
-                  </div>
-                  <Textarea
-                    className="w-full min-h-[180px] p-4 border-2 border-gray-200 focus:border-crimson-red rounded-lg text-sm transition-colors"
-                    value={currentResume.summary}
-                    onChange={(e) => updateField('summary', e.target.value)}
-                    placeholder="Write a compelling summary of your professional background, key achievements, and career goals. This will be enhanced by AI to make it more impactful..."
-                  />
-                  <p className="text-xs text-gray-500 mt-3 flex items-center gap-1.5">
-                    <span>💡</span>
-                    <span>Tip: Write bullet points or simple sentences. AI will transform them into professional language.</span>
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100 p-5 space-y-3">
-                  {aiError && (aiError.toLowerCase().includes('unavailable') || aiError.toLowerCase().includes('api key') || aiError.toLowerCase().includes('not configured')) && !dismissedHints.includes('ai-unavailable') && (
-                    <AIFeatureNotice 
-                      feature="AI CV Builder" 
-                      onDismiss={() => {
-                        setDismissedHints([...dismissedHints, 'ai-unavailable']);
-                        setAiError(null);
-                      }}
-                    />
-                  )}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                        <Brain size={16} className="text-purple-600" />
-                        AI CV Builder Pro (Beta)
-                      </h4>
-                      <p className="text-xs text-gray-600 mt-1">
-                        Generate your entire CV with AI assistance
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isGeneratingFull}
-                      onClick={handleAIGenerateFull}
-                      className="border-purple-200 text-purple-700 hover:bg-purple-100 hover:border-purple-300 shadow-sm"
-                    >
-                      {isGeneratingFull ? (
-                        <>
-                          <Brain size={14} className="mr-1.5 animate-pulse" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Brain size={14} className="mr-1.5" />
-                          Generate
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                      <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Role Type</label>
-                      <select
-                        value={generateRole}
-                        onChange={(e) => setGenerateRole(e.target.value as any)}
-                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:border-crimson-red focus:outline-none bg-white"
-                      >
-                        <option value="other">General</option>
-                        <option value="frontend">Frontend</option>
-                        <option value="backend">Backend</option>
-                        <option value="fullstack">Fullstack</option>
-                        <option value="qa">QA/Testing</option>
-                        <option value="designer">UI/UX Designer</option>
-                        <option value="devops">DevOps</option>
-                        <option value="data">Data Science</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-gray-700 mb-1.5 block">Mode</label>
-                      <select
-                        value={generateMode}
-                        onChange={(e) => setGenerateMode(e.target.value as any)}
-                        className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:border-crimson-red focus:outline-none bg-white"
-                      >
-                        <option value="concise">ATS-Optimized (Concise)</option>
-                        <option value="human">Human-Readable</option>
-                      </select>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-600 leading-relaxed mb-2">
-                    Mô tả nhanh về kinh nghiệm, mục tiêu nghề nghiệp và (tuỳ chọn) dán Job Description. AI sẽ gợi ý
-                    Summary, Experience, Education và Skills phù hợp.
-                  </p>
-                  <Textarea
-                    className="w-full min-h-[80px] p-3 border border-gray-200 focus:border-crimson-red rounded-lg text-xs"
-                    value={generatePrompt}
-                    onChange={(e) => setGeneratePrompt(e.target.value)}
-                    placeholder="Ví dụ: 3 năm kinh nghiệm Frontend (React), từng làm ở startup, muốn apply vị trí Frontend Engineer cho sản phẩm B2C..."
-                  />
-                  <Textarea
-                    className="w-full min-h-[80px] p-3 border border-gray-200 focus:border-crimson-red rounded-lg text-xs"
-                    value={generateJD}
-                    onChange={(e) => setGenerateJD(e.target.value)}
-                    placeholder="(Tuỳ chọn) Dán mô tả công việc mà bạn muốn apply để AI align CV sát với JD..."
-                  />
-                </div>
-              </div>
-            )}
-            
-            {activeTab === 'experience' && <ExperienceForm />}
-            {activeTab === 'education' && <EducationForm />}
-            {activeTab === 'skills' && <SkillsForm />}
-          </div>
-        </div>
-        </div>
-
-      <div className="w-full lg:w-[55%] xl:w-[58%] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-gray-200 bg-white/80 backdrop-blur-sm flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-800">Live Preview</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Real-time CV preview</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <h1 className="text-2xl font-black text-gray-900 dark:text-white">CV Builder</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowActions(true)}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              <Settings2 size={16} className="mr-1.5" />
-              <span className="text-xs">Template</span>
+            <Button variant="outline" onClick={handleSave}disabled={saving}>
+              <Save className="w-4 h-4 mr-2" />
+              {saving ? 'Saving...' : 'Save'}
+            </Button>
+            <Button onClick={handleDownload}className="bg-crimson-red hover:bg-fire-red text-white">
+              <Download className="w-4 h-4 mr-2" />
+              Download
             </Button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8">
-          <div className="w-full max-w-[210mm] mx-auto bg-white shadow-2xl rounded-lg overflow-hidden">
-            <ResumePreview template={selectedTemplate} sections={sections} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm space-y-5">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Edit Information</h2>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Full Name</label>
+              <Input
+                value={currentResume.personalInfo.fullName || ''}
+                onChange={(e) => updatePersonalInfo('fullName', e.target.value)}
+                placeholder="Your full name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Email</label>
+              <Input
+                value={currentResume.personalInfo.email || ''}
+                onChange={(e) => updatePersonalInfo('email', e.target.value)}
+                placeholder="you@example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Phone</label>
+              <Input
+                value={currentResume.personalInfo.phone || ''}
+                onChange={(e) => updatePersonalInfo('phone', e.target.value)}
+                placeholder="+84 ..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Summary</label>
+              <Textarea
+                value={currentResume.summary || ''}
+                onChange={(e) => updateField('summary', e.target.value)}
+                placeholder="Write your professional summary..."
+                className="min-h-[160px]"
+              />
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Live Preview
+            </h2>
+
+            <div id="resume-preview" className="rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-900">
+              <h1 className="text-2xl font-black text-gray-900 dark:text-white">{previewName}</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{currentResume.personalInfo.email || 'you@example.com'}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{currentResume.personalInfo.phone || '+84 ...'}</p>
+
+              {(currentResume.summary || '').trim() && (
+                <div className="mt-6">
+                  <h3 className="text-sm uppercase tracking-wider font-bold text-crimson-red mb-2">Summary</h3>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{currentResume.summary}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-      </div>
-
-      <BuilderActionsDialog
-        open={showActions}
-        onOpenChange={setShowActions}
-        selectedTemplate={selectedTemplate}
-        onSelectTemplate={setSelectedTemplate}
-        sections={sections}
-        onReorderSections={setSections}
-        onToggleSectionVisibility={(id) => {
-          setSections((prev) =>
-            prev.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s))
-          );
-        }}
-        onOpenShortcuts={() => setShowShortcuts(true)}
-        quickPresets={quickPresets}
-      />
-      <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   );
 };
 
-export default memo(Builder);
+export default Builder;
