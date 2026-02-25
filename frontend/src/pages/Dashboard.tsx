@@ -7,6 +7,7 @@ import { useCommunityStore } from '@/store/communityStore';
 import { useBlogStore } from '@/store/blogStore';
 import { useAchievementStore } from '@/store/achievementStore';
 import { useI18n } from '@/store/i18nStore';
+import { logger } from '@/lib/logger';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { GlassButton } from '@/components/ui/glass-button';
@@ -155,6 +156,7 @@ const Dashboard = () => {
     else {setGreeting(t('dashboard.goodEvening'));}
 
     const loadData = async () => {
+      const start = performance.now();
       setIsInitialLoading(true);
       try {
         await Promise.all([
@@ -163,6 +165,10 @@ const Dashboard = () => {
           fetchArticles(),
           fetchAchievements()
         ]);
+        const duration = Math.round(performance.now() - start);
+        logger.info('dashboard_loaded', { durationMs: duration });
+      } catch (error) {
+        logger.error('dashboard_load_error', error);
       } finally {
         setIsInitialLoading(false);
       }

@@ -5,6 +5,7 @@ import { Types } from 'mongoose';
 import User, { IUser } from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { checkAndAwardAchievement } from './achievementController.js';
+import logger from '../utils/logger.js';
 
 export const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET as string, {
@@ -28,6 +29,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     const userExists = await User.findOne({ email: normalizedEmail });
 
     if (userExists) {
+      logger.warn('auth_register_user_exists', { email: normalizedEmail });
       res.status(409).json({ success: false, message: 'User already exists' });
       return;
     }
@@ -40,6 +42,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     });
 
     if (user) {
+      logger.info('auth_register_success', { userId: user._id.toString(), email: user.email });
       res.status(201).json({
         success: true,
         data: {
@@ -54,9 +57,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         },
       });
     } else {
+      logger.warn('auth_register_invalid_user_data', { email: normalizedEmail });
       res.status(400).json({ success: false, message: 'Invalid user data' });
     }
   } catch (error) {
+    logger.error('auth_register_error', error);
     next(error);
   }
 };
@@ -84,6 +89,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       const isPasswordValid = await user.matchPassword(password);
       
       if (!isPasswordValid) {
+        logger.warn('auth_login_invalid_password', { email: normalizedEmail });
         res.status(401).json({ success: false, message: 'Invalid email or password' });
         return;
       }
@@ -91,6 +97,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       // If 2FA is enabled, require a valid token to complete login
       if (user.twoFactorEnabled) {
         if (!twoFactorToken) {
+          logger.warn('auth_login_2fa_required', { userId: user._id.toString() });
           res.status(401).json({
             success: false,
             requiresTwoFactor: true,
@@ -102,6 +109,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         // Import lazily to avoid loading otplib unless needed
         const { authenticator } = await import('otplib');
         if (!user.twoFactorSecret || !authenticator.verify({ token: twoFactorToken, secret: user.twoFactorSecret })) {
+          logger.warn('auth_login_2fa_invalid_token', { userId: user._id.toString() });
           res.status(401).json({
             success: false,
             requiresTwoFactor: true,
@@ -111,6 +119,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         }
       }
 
+        logger.info('auth_login_success', { userId: user._id.toString(), email: user.email });
         res.json({
           success: true,
           data: {
@@ -125,9 +134,11 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
           },
         });
     } else {
+      logger.warn('auth_login_user_not_found', { email: normalizedEmail });
       res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
   } catch (error) {
+    logger.error('auth_login_error', error);
     next(error);
   }
 };

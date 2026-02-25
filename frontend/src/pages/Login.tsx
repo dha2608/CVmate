@@ -6,6 +6,7 @@ import { useToastStore } from '@/store/toastStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 const Login = () => {
   const { t } = useI18n();
@@ -26,6 +27,7 @@ const Login = () => {
       const data = await api.login(email, password);
       
       if (data.success) {
+        logger.info('login_success', { email });
         setUser(data.data);
         toast.success(t('toast.loginSuccess'));
         navigate('/dashboard');
@@ -35,7 +37,7 @@ const Login = () => {
         toast.error(errorMsg);
       }
     } catch (err: any) {
-      console.error('❌ Login error:', err);
+      logger.error('login_failed', err);
       let errorMsg = err.message || t('toast.loginFailed');
       
       // Handle timeout errors specifically

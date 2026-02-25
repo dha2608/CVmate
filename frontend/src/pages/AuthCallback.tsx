@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { logger } from '@/lib/logger';
 
 const AuthCallback = () => {
   const [searchParams] = useSearchParams();
@@ -14,7 +15,7 @@ const AuthCallback = () => {
 
     // Handle error from OAuth callback
     if (error) {
-      console.error('OAuth error:', error);
+      logger.error('oauth_callback_error', new Error(String(error)));
       navigate('/login?error=' + error);
       return;
     }
@@ -32,6 +33,7 @@ const AuthCallback = () => {
           const data = await response.json();
 
           if (data.success) {
+            logger.info('oauth_callback_success', { needsOnboarding, hasUser: !!data.data });
             const userData = { ...data.data, token };
             localStorage.setItem('user', JSON.stringify(userData));
             setUser(userData);
@@ -42,10 +44,11 @@ const AuthCallback = () => {
               navigate('/dashboard');
             }
           } else {
+            logger.warn('oauth_callback_fetch_me_failed', { status: response.status });
             navigate('/login');
           }
         } catch (error) {
-          console.error('Failed to fetch user:', error);
+          logger.error('oauth_callback_fetch_me_error', error);
           navigate('/login');
         }
       };
