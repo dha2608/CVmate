@@ -18,3 +18,6 @@
 {"id":"log_1772023069032_AppRender","timestamp":1772023069032,"location":"frontend/src/App.tsx:AppShell","runId":"pre-fix","hypothesisId":"H5","message":"AppShell render","data":{"path":"/login"}}
 {"id":"log_1772023115013_AppRender","timestamp":1772023115013,"location":"frontend/src/App.tsx:AppShell","runId":"pre-fix","hypothesisId":"H5","message":"AppShell render","data":{"path":"/login"}}
 {"id":"log_1772023115014_AppRender","timestamp":1772023115014,"location":"frontend/src/App.tsx:AppShell","runId":"pre-fix","hypothesisId":"H5","message":"AppShell render","data":{"path":"/login"}}
+{"id":"log_1772025987476_auth_init","timestamp":1772025987476,"location":"frontend/src/store/authStore.ts:authStoreInit","runId":"pre-fix","hypothesisId":"H1","message":"Auth store initialized","data":{}}
+{"id":"log_1772025987516_AppRender","timestamp":1772025987516,"location":"frontend/src/App.tsx:AppShell","runId":"pre-fix","hypothesisId":"H5","message":"AppShell render","data":{"path":"/login"}}
+{"id":"log_1772025987516_AppRender","timestamp":1772025987516,"location":"frontend/src/App.tsx:AppShell","runId":"pre-fix","hypothesisId":"H5","message":"AppShell render","data":{"path":"/login"}}

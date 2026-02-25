@@ -152,7 +152,22 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 // CSRF protection: enable after sessions/cookies are configured, before API routes
 // Note: frontend must read token from `/api/csrf-token` and send it back in `x-csrf-token` header for mutating requests.
-app.use(csrfProtection);
+// Skip CSRF for auth login/register and OAuth/payment webhooks where CSRF is not needed
+app.use((req, res, next) => {
+  const path = req.path;
+
+  if (
+    path === '/api/auth/login' ||
+    path === '/api/auth/register' ||
+    path === '/api/auth/google' ||
+    path === '/api/auth/google/callback' ||
+    path === '/api/payment/webhook'
+  ) {
+    return next();
+  }
+
+  return csrfProtection(req, res, next);
+});
 
 // Expose CSRF token for frontend to fetch and cache
 app.get('/api/csrf-token', (req: Request, res: Response) => {
