@@ -70,14 +70,10 @@ const Blog = () => {
   };
 
   useEffect(() => {
-    if (!user) {
-        navigate('/login');
-        return;
-    }
     fetchArticles();
     fetchNews(30); // Fetch more news articles
     fetchBookmarks();
-  }, [user, navigate, fetchArticles, fetchNews, fetchBookmarks]);
+  }, [fetchArticles, fetchNews, fetchBookmarks]);
 
   // Memoize filtered articles for performance
   const filteredArticles = useMemo(() => articles.filter(article => {

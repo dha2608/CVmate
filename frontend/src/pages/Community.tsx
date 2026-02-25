@@ -18,17 +18,13 @@ const Community = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
-        navigate('/login');
-        return;
-    }
     fetchPosts();
     // Real-time polling for new comments and likes (every 15 seconds)
     const interval = setInterval(() => {
       fetchPosts();
     }, 15000);
     return () => clearInterval(interval);
-  }, [user, navigate, fetchPosts]);
+  }, [fetchPosts]);
 
   if (!user) {return null;}
 
