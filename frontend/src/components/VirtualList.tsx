@@ -5,10 +5,11 @@ interface VirtualListProps<T> {
   itemHeight: number;
   overscan?: number;
   height: number | string;
+  getItemKey?: (item: T, index: number) => string | number;
   renderItem: (item: T, index: number) => React.ReactNode;
 }
 
-function VirtualListComponent<T>({ items, itemHeight, overscan = 3, height, renderItem }: VirtualListProps<T>) {
+function VirtualListComponent<T>({ items, itemHeight, overscan = 3, height, getItemKey, renderItem }: VirtualListProps<T>) {
   const [startIndex, endIndex] = useMemo(() => {
     // Simple static window for now; can be extended to listen scrollTop
     const visibleCount = Math.ceil((typeof height === 'number' ? height : 600) / itemHeight) + overscan;
