@@ -11,10 +11,22 @@ createRoot(document.getElementById('root')!).render(
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
+    // Unregister existing service workers to prevent stale cached index/chunks
     navigator.serviceWorker
-      .register('/service-worker.js')
+      .getRegistrations()
+      .then((registrations) => Promise.all(registrations.map((r) => r.unregister())))
       .catch(() => {
-        // Silent fail in case SW cannot be registered
+        // Silent fail
       });
+
+    // Best-effort cleanup of old app caches
+    if ('caches' in window) {
+      caches
+        .keys()
+        .then((keys) => Promise.all(keys.filter((k) => k.startsWith('cvmate-cache')).map((k) => caches.delete(k))))
+        .catch(() => {
+          // Silent fail
+        });
+    }
   });
 }
