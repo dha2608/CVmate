@@ -1,7 +1,18 @@
 import type { ApiResponse } from "@/types/shared";
 import { logger, isDevelopment } from "./logger";
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const resolveApiBaseUrl = () => {
+  const envApiUrl = import.meta.env.VITE_API_URL;
+  if (envApiUrl) return envApiUrl;
+
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
+    return "/api";
+  }
+
+  return "http://localhost:5001/api";
+};
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 if (isDevelopment) {
   logger.log("🔗 API Base URL:", API_BASE_URL);
