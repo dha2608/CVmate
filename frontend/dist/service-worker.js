@@ -24,7 +24,12 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET' || !request.url.startsWith(self.location.origin)) {
+  // Chỉ handle các request điều hướng (HTML document). Để trình duyệt tự xử lý JS/CSS/assets
+  if (
+    request.method !== 'GET' ||
+    !request.url.startsWith(self.location.origin) ||
+    request.mode !== 'navigate'
+  ) {
     return;
   }
 

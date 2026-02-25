@@ -167,7 +167,11 @@ export const api = {
     apiRequest<{ success: boolean; data: any }>("/achievements/stats"),
 
   // Articles & News
-  getArticles: () => apiRequest<{ success: boolean; data: any[] }>("/articles"),
+  getArticles: (options?: { timeout?: number; requiresAuth?: boolean }) =>
+    apiRequest<{ success: boolean; data: any[] }>("/articles", {
+      requiresAuth: options?.requiresAuth ?? false,
+      timeout: options?.timeout,
+    }),
 
   getArticle: (id: string) =>
     apiRequest<{ success: boolean; data: any }>(`/articles/${id}`),

@@ -8,7 +8,7 @@ if (isDevelopment) {
 }
 
 const DEFAULT_TIMEOUT = 30000;
-const AUTH_TIMEOUT = 15000;
+const AUTH_TIMEOUT = 45000;
 
 export interface ApiOptions extends RequestInit {
   requiresAuth?: boolean;
