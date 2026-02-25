@@ -32,22 +32,6 @@ const AuthCallback = () => {
           const data = await response.json();
 
           if (data.success) {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/1386123c-2287-451b-80f4-d6f4e7719507', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                id: `log_${Date.now()}_AuthCallbackSuccess`,
-                timestamp: Date.now(),
-                location: 'frontend/src/pages/AuthCallback.tsx:fetchUser',
-                runId: 'pre-fix',
-                hypothesisId: 'H4',
-                message: 'AuthCallback success before setUser',
-                data: {},
-              }),
-            }).catch(() => {});
-            // #endregion agent log
-
             const userData = { ...data.data, token };
             localStorage.setItem('user', JSON.stringify(userData));
             setUser(userData);

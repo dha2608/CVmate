@@ -26,22 +26,6 @@ const Login = () => {
       const data = await api.login(email, password);
       
       if (data.success) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/1386123c-2287-451b-80f4-d6f4e7719507', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: `log_${Date.now()}_LoginSuccess`,
-            timestamp: Date.now(),
-            location: 'frontend/src/pages/Login.tsx:handleSubmit',
-            runId: 'pre-fix',
-            hypothesisId: 'H4',
-            message: 'Login success before setUser',
-            data: {},
-          }),
-        }).catch(() => {});
-        // #endregion agent log
-
         setUser(data.data);
         toast.success(t('toast.loginSuccess'));
         navigate('/dashboard');

@@ -54,24 +54,7 @@ const PageLoader = () => (
 );
 
 const AppShell = () => {
-  const location = useLocation();
   useAuthStore(); // Keep store initialized
-
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/1386123c-2287-451b-80f4-d6f4e7719507', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id: `log_${Date.now()}_AppRender`,
-      timestamp: Date.now(),
-      location: 'frontend/src/App.tsx:AppShell',
-      runId: 'pre-fix',
-      hypothesisId: 'H5',
-      message: 'AppShell render',
-      data: { path: location.pathname },
-    }),
-  }).catch(() => {});
-  // #endregion agent log
 
   return (
     <>
