@@ -199,45 +199,46 @@ const Builder = () => {
   };
 
   return (
-    <MainLayout layoutMode="narrow" showLeftSidebar={false} showRightSidebar={false}>
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-120px)] min-h-[500px] bg-gray-50 dark:bg-gray-950 relative">
-        {/* Mobile: overlay sidebar */}
-        {sidebarOpen && (
+    <MainLayout layoutMode="full-width" showLeftSidebar={false} showRightSidebar={false}>
+      <div className="max-w-6xl xl:max-w-7xl mx-auto px-2 sm:px-4 lg:px-0">
+        <div className="flex flex-col lg:flex-row h-[calc(100vh-140px)] min-h-[600px] bg-gray-50 dark:bg-gray-950 rounded-xl lg:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 relative">
+          {/* Mobile: overlay sidebar */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+              aria-hidden="true"
+            />
+          )}
           <div
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-            aria-hidden="true"
-          />
-        )}
-        <div
-          className={`fixed lg:relative inset-y-0 left-0 z-40 lg:z-auto w-[280px] lg:w-auto transform transition-transform duration-300 ease-out shadow-xl lg:shadow-none ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-          }`}
-        >
-          <BuilderSidebar
-            sections={sections}
-            activeTab={activeTab}
-            setActiveTab={(id) => {
-              setActiveTab(id);
-              setSidebarOpen(false);
-            }}
-            mode="guided"
-            saved={saved}
-            saving={saving}
-            onSave={handleSave}
-            onDownload={handleDownload}
-            isCollapsed={sidebarOpen ? false : isCollapsed}
-            onToggleCollapsed={() => setIsCollapsed((c) => !c)}
-            onOpenActions={() => setActionsOpen(true)}
-            onBack={() => navigate('/dashboard')}
-            currentResume={currentResume}
-          />
-        </div>
+            className={`fixed lg:relative inset-y-0 left-0 z-40 lg:z-auto w-[280px] lg:w-[300px] transform transition-transform duration-300 ease-out shadow-xl lg:shadow-none ${
+              sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+            }`}
+          >
+            <BuilderSidebar
+              sections={sections}
+              activeTab={activeTab}
+              setActiveTab={(id) => {
+                setActiveTab(id);
+                setSidebarOpen(false);
+              }}
+              mode="guided"
+              saved={saved}
+              saving={saving}
+              onSave={handleSave}
+              onDownload={handleDownload}
+              isCollapsed={sidebarOpen ? false : isCollapsed}
+              onToggleCollapsed={() => setIsCollapsed((c) => !c)}
+              onOpenActions={() => setActionsOpen(true)}
+              onBack={() => navigate('/dashboard')}
+              currentResume={currentResume}
+            />
+          </div>
 
-        {/* Main: form + preview */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+          {/* Main: form + preview */}
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
           {/* Mobile: toggle Edit / Preview */}
-          <div className="flex lg:hidden border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
+            <div className="flex lg:hidden border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
             <button
               type="button"
               onClick={() => setMobileView('form')}
@@ -262,35 +263,36 @@ const Builder = () => {
               <Eye size={18} />
               Preview
             </button>
-          </div>
-
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
-            <div
-              className={`w-full lg:w-1/2 border-r border-gray-200 dark:border-gray-800 overflow-y-auto p-4 sm:p-6 bg-white dark:bg-gray-900 ${
-                mobileView !== 'form' ? 'hidden lg:block' : ''
-              }`}
-            >
-              <div className="lg:hidden flex items-center gap-2 mb-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSidebarOpen(true)}
-                  className="gap-2"
-                >
-                  <Menu size={18} />
-                  Sections
-                </Button>
-              </div>
-              <div className="max-w-xl mx-auto">{renderFormPanel()}</div>
             </div>
 
-            <div
-              className={`w-full lg:w-1/2 overflow-y-auto p-4 sm:p-6 bg-gray-100 dark:bg-gray-900 flex items-start justify-center ${
-                mobileView !== 'preview' ? 'hidden lg:flex' : ''
-              }`}
-            >
-              <div className="w-full max-w-[210mm] shadow-lg bg-white print:shadow-none">
-                <ResumePreview template={selectedTemplate} sections={sections} />
+            <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+              <div
+                className={`w-full lg:w-5/12 border-r border-gray-200 dark:border-gray-800 overflow-y-auto p-4 sm:p-6 bg-white dark:bg-gray-900 ${
+                  mobileView !== 'form' ? 'hidden lg:block' : ''
+                }`}
+              >
+                <div className="lg:hidden flex items-center gap-2 mb-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSidebarOpen(true)}
+                    className="gap-2"
+                  >
+                    <Menu size={18} />
+                    Sections
+                  </Button>
+                </div>
+                <div className="max-w-xl mx-auto">{renderFormPanel()}</div>
+              </div>
+
+              <div
+                className={`w-full lg:w-7/12 overflow-y-auto p-4 sm:p-6 bg-gray-100 dark:bg-gray-900 flex items-start justify-center ${
+                  mobileView !== 'preview' ? 'hidden lg:flex' : ''
+                }`}
+              >
+                <div className="w-full max-w-[210mm] shadow-lg bg-white print:shadow-none">
+                  <ResumePreview template={selectedTemplate} sections={sections} />
+                </div>
               </div>
             </div>
           </div>
