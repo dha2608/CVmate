@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Keyboard, LayoutTemplate, ListTree, Sparkles, X, Zap, Wand2 } from 'lucide-react';
+import { Keyboard, LayoutTemplate, ListTree, Sparkles, X, Zap, Wand2, BarChart3 } from 'lucide-react';
 import TemplateSelector from '@/components/builder/TemplateSelector';
 import SectionReorder from '@/components/builder/SectionReorder';
 import AISuggestions from '@/components/builder/AISuggestions';
@@ -23,6 +22,15 @@ export type AiGeneratePayload = {
   mode?: 'concise' | 'human';
 };
 
+export type AtsAnalysisResult = {
+  score?: number;
+  strengths?: string[];
+  improvements?: string[];
+  summary?: string;
+  missingKeywords?: string[];
+  matchScore?: number;
+};
+
 interface BuilderActionsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -34,6 +42,9 @@ interface BuilderActionsDialogProps {
   onOpenShortcuts: () => void;
   quickPresets?: QuickPreset[];
   onAiGenerate?: (payload: AiGeneratePayload) => Promise<void>;
+  onAtsAnalyze?: (jobDescription: string) => Promise<void>;
+  atsAnalysis?: AtsAnalysisResult | null;
+  atsAnalyzing?: boolean;
 }
 
 const ROLES: { value: AiGeneratePayload['role']; label: string }[] = [
@@ -58,10 +69,14 @@ const BuilderActionsDialog = ({
   onOpenShortcuts,
   quickPresets = [],
   onAiGenerate,
+  onAtsAnalyze,
+  atsAnalysis,
+  atsAnalyzing = false,
 }: BuilderActionsDialogProps) => {
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiRole, setAiRole] = useState<AiGeneratePayload['role']>('fullstack');
   const [aiGenerating, setAiGenerating] = useState(false);
+  const [jobDescription, setJobDescription] = useState('');
 
   const handleAiGenerate = async () => {
     if (!onAiGenerate) return;
@@ -72,6 +87,11 @@ const BuilderActionsDialog = ({
     } finally {
       setAiGenerating(false);
     }
+  };
+
+  const handleAtsAnalyze = async () => {
+    if (!onAtsAnalyze || !jobDescription.trim()) return;
+    await onAtsAnalyze(jobDescription.trim());
   };
 
   return (
@@ -93,7 +113,6 @@ const BuilderActionsDialog = ({
         </div>
 
         <div className="p-4 sm:p-5 space-y-4">
-          {/* Template Selection - Most Important */}
           <div className="rounded-xl border-2 border-gray-200 p-4 bg-gray-50">
             <div className="flex items-center gap-2 mb-3">
               <LayoutTemplate size={18} className="text-crimson-red" />
@@ -105,7 +124,6 @@ const BuilderActionsDialog = ({
             <TemplateSelector selectedTemplate={selectedTemplate} onSelect={onSelectTemplate} />
           </div>
 
-          {/* Quick Start - Only if available */}
           {quickPresets.length > 0 && (
             <div className="rounded-xl border border-gray-200 p-4 bg-white">
               <div className="flex items-center gap-2 mb-3">
@@ -133,7 +151,6 @@ const BuilderActionsDialog = ({
             </div>
           )}
 
-          {/* Sections Management - Collapsible */}
           <details className="rounded-xl border border-gray-200 bg-white overflow-hidden">
             <summary className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -153,7 +170,6 @@ const BuilderActionsDialog = ({
             </div>
           </details>
 
-          {/* AI Generate full CV */}
           {onAiGenerate && (
             <div className="rounded-xl border-2 border-purple-200 p-4 bg-purple-50/50 dark:bg-purple-900/20 dark:border-purple-800">
               <div className="flex items-center gap-2 mb-3">
@@ -193,7 +209,61 @@ const BuilderActionsDialog = ({
             </div>
           )}
 
-          {/* AI Suggestions - Collapsible */}
+          {onAtsAnalyze && (
+            <div className="rounded-xl border-2 border-blue-200 p-4 bg-blue-50/50 dark:bg-blue-900/20 dark:border-blue-800">
+              <div className="flex items-center gap-2 mb-3">
+                <BarChart3 size={18} className="text-blue-600" />
+                <div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-white">ATS Checker</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Paste Job Description to compare with current CV</div>
+                </div>
+              </div>
+
+              <Textarea
+                placeholder="Paste full job description here..."
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                className="min-h-[120px] mb-3 text-sm"
+              />
+
+              <Button
+                type="button"
+                onClick={handleAtsAnalyze}
+                disabled={atsAnalyzing || !jobDescription.trim()}
+                className="w-full sm:w-auto gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <BarChart3 size={16} />
+                {atsAnalyzing ? 'Analyzing…' : 'Analyze ATS Match'}
+              </Button>
+
+              {atsAnalysis && (
+                <div className="mt-4 space-y-3 rounded-lg border border-blue-100 dark:border-blue-800 bg-white/80 dark:bg-gray-900/40 p-3">
+                  <div className="flex flex-wrap gap-4 text-sm font-semibold">
+                    <span className="text-gray-800 dark:text-gray-100">ATS Score: <span className="text-blue-600">{atsAnalysis.score ?? 0}%</span></span>
+                    <span className="text-gray-800 dark:text-gray-100">JD Match: <span className="text-blue-600">{atsAnalysis.matchScore ?? atsAnalysis.score ?? 0}%</span></span>
+                  </div>
+
+                  {atsAnalysis.summary && (
+                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{atsAnalysis.summary}</p>
+                  )}
+
+                  {!!atsAnalysis.missingKeywords?.length && (
+                    <div>
+                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-200 mb-1">Missing keywords</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {atsAnalysis.missingKeywords.map((kw, idx) => (
+                          <span key={`${kw}-${idx}`} className="px-2 py-0.5 rounded-full text-[11px] bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           <details className="rounded-xl border border-gray-200 bg-white dark:bg-gray-800 overflow-hidden">
             <summary className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-center justify-between">
               <div className="flex items-center gap-2">

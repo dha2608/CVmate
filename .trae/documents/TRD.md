@@ -153,15 +153,15 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 
 - `P0`:
   - [completed] T0. Dọn trùng file path gây rủi ro build/routing trên FE.
-  - [pending] T1. Auth + Onboarding flow hoàn chỉnh (email/password + Google OAuth).
-  - [pending] T2. CV Builder MVP (form + template ATS + lưu Resume).
-  - [pending] T3. Export PDF selectable text cho CV.
-  - [pending] T4. AI Enhance cho bullet/section CV.
-  - [pending] T5. Interview Simulator MVP (persona + chat history + feedback cơ bản).
-  - [pending] T6. Dashboard thống kê cơ bản.
+  - [completed] T1. Auth + Onboarding flow hoàn chỉnh (email/password + Google OAuth).
+  - [completed] T2. CV Builder MVP (form + template ATS + lưu Resume).
+  - [completed] T3. Export PDF selectable text cho CV.
+  - [completed] T4. AI Enhance cho bullet/section CV.
+  - [completed] T5. Interview Simulator MVP (persona + chat history + feedback cơ bản).
+  - [completed] T6. Dashboard thống kê cơ bản.
   - [pending] T7. Deploy FE/BE + smoke test acceptance.
 - `P1`:
-  - [pending] T8. ATS Checker (CV vs JD scoring + keyword suggestion).
+  - [completed] T8. ATS Checker (CV vs JD scoring + keyword suggestion).
   - [pending] T9. Community newsfeed + like/comment.
   - [pending] T10. Career Blog + AI Summary.
   - [pending] T11. Hardening security (rate limit free 10 req/day, input sanitize, audit logs).
@@ -234,7 +234,12 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 - `T8` (`P1`) ATS Checker
   - Scope: upload JD, chấm điểm, gợi ý từ khóa thiếu.
   - Acceptance: trả score + actionable suggestions.
-  - Status: `pending`
+  - Cập nhật đã triển khai:
+    - Thêm ATS Checker trong Builder Actions.
+    - User paste JD, gọi API analyze theo CV hiện tại (`resumeId`).
+    - Hiển thị `ATS score`, `JD match`, `summary`, `missing keywords`.
+    - Có loading/error/success state cho luồng phân tích.
+  - Status: `completed`
 
 #### MODULE 3: AI INTERVIEW SIMULATOR
 
@@ -271,14 +276,14 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 
 - Snapshot: `2026-02-27`
 - Tổng task: `15`
-- Completed: `7/15` (46.7%)
+- Completed: `9/15` (60.0%)
 - In Progress: `0/15`
-- Pending: `8/15`
+- Pending: `6/15`
 
 ### 8.4. TASK ĐANG CHẠY TIẾP THEO (NEXT ACTION)
 
-- Chọn `T8 (P1) - ATS Checker (CV vs JD scoring + keyword suggestion)` làm task triển khai kế tiếp.
+- Chọn `T9 (P1) - Community newsfeed + like/comment` làm task triển khai kế tiếp.
 - Lý do:
-  - Tận dụng endpoint phân tích CV đã có nền tảng AI.
-  - Tăng giá trị trực tiếp cho luồng ứng tuyển sau khi đã có Builder + Export.
+  - Store/API Community đã có sẵn, có thể tăng tốc hoàn thiện nhanh.
+  - Tăng engagement sau khi các luồng P0 cốt lõi đã ổn định.
 

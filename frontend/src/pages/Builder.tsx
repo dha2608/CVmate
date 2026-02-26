@@ -4,7 +4,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useResumeStore } from '@/store/resumeStore';
 import BuilderSidebar, { type BuilderSection, type BuilderSectionId } from '@/components/builder/BuilderSidebar';
 import ResumePreview from '@/components/builder/ResumePreview';
-import BuilderActionsDialog from '@/components/builder/BuilderActionsDialog';
+import BuilderActionsDialog, { type AtsAnalysisResult } from '@/components/builder/BuilderActionsDialog';
 import ShortcutsModal from '@/components/builder/ShortcutsModal';
 import PersonalForm from '@/components/builder/PersonalForm';
 import ExperienceForm from '@/components/builder/ExperienceForm';
@@ -84,6 +84,8 @@ const Builder = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
   const [loadingResume, setLoadingResume] = useState(false);
+  const [atsAnalysis, setAtsAnalysis] = useState<AtsAnalysisResult | null>(null);
+  const [atsAnalyzing, setAtsAnalyzing] = useState(false);
 
   const resumeId = searchParams.get('id');
 
@@ -261,6 +263,28 @@ const Builder = () => {
     const { useToastStore } = await import('@/store/toastStore');
     useToastStore.getState().success('CV generated. Review and edit as needed.');
   }, []);
+
+  const handleAtsAnalyze = useCallback(async (jobDescription: string) => {
+    if (!resumeId) {
+      toast.error('Hãy lưu CV trước khi chạy ATS Checker.');
+      return;
+    }
+
+    setAtsAnalyzing(true);
+    try {
+      const response = await api.analyzeResume(resumeId, jobDescription);
+      if (!response.success) {
+        throw new Error('Không thể phân tích ATS');
+      }
+
+      setAtsAnalysis(response.data || null);
+      toast.success('Phân tích ATS hoàn tất.');
+    } catch (error: any) {
+      toast.error(error?.message || 'Không thể phân tích ATS.');
+    } finally {
+      setAtsAnalyzing(false);
+    }
+  }, [resumeId, toast]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -457,6 +481,9 @@ const Builder = () => {
         onOpenShortcuts={handleOpenShortcuts}
         quickPresets={quickPresets}
         onAiGenerate={handleAiGenerate}
+        onAtsAnalyze={handleAtsAnalyze}
+        atsAnalysis={atsAnalysis}
+        atsAnalyzing={atsAnalyzing}
       />
 
       <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
