@@ -4,25 +4,33 @@ import { useResumeStore }from '@/store/resumeStore';
 import { Button }from '@/components/ui/button';
 import { Input }from '@/components/ui/input';
 import { Textarea }from '@/components/ui/textarea';
-import { Save, Download, ArrowLeft, FileText }from 'lucide-react';
+import { ArrowLeft, Save, Download }from 'lucide-react';
 
 const Builder = () => {
   const navigate = useNavigate();
-  const { currentResume, updatePersonalInfo, updateField }= useResumeStore((state) => ({
+  const {
+    currentResume,
+    updatePersonalInfo,
+    updateField,
+    addExperience,
+    removeExperience,
+    updateExperience,
+  }= useResumeStore((state) => ({
     currentResume: state.currentResume,
     updatePersonalInfo: state.updatePersonalInfo,
     updateField: state.updateField,
+    addExperience: state.addExperience,
+    removeExperience: state.removeExperience,
+    updateExperience: state.updateExperience,
   }));
 
   const [saving, setSaving] = useState(false);
 
-  const previewName = useMemo(() => currentResume.personalInfo.fullName || 'YOUR NAME', [currentResume.personalInfo.fullName]);
-
   const handleSave = async () => {
     setSaving(true);
     try {
-      // local draft is already persisted via zustand persist
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // Safe-mode: local store save only (persist middleware already stores data)
+      await new Promise((r) => setTimeout(r, 250));
     }finally {
       setSaving(false);
     }
@@ -32,89 +40,120 @@ const Builder = () => {
     window.print();
   };
 
+  const previewName = currentResume.personalInfo.fullName || 'Your Name';
+
+  const previewContact = useMemo(() => {
+    const p = currentResume.personalInfo;
+    return [p.email, p.phone, p.address].filter(Boolean).join(' • ');
+  }, [currentResume.personalInfo]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <h1 className="text-2xl font-black text-gray-900 dark:text-white">CV Builder</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleSave}disabled={saving}>
-              <Save className="w-4 h-4 mr-2" />
-              {saving ? 'Saving...' : 'Save'}
-            </Button>
-            <Button onClick={handleDownload}className="bg-crimson-red hover:bg-fire-red text-white">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="flex items-center justify-between mb-4">
+          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleDownload}>
               <Download className="w-4 h-4 mr-2" />
               Download
+            </Button>
+            <Button onClick={handleSave}className="bg-crimson-red hover:bg-fire-red text-white">
+              <Save className="w-4 h-4 mr-2" />
+              {saving ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm space-y-5">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Edit Information</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-4">
+            <h2 className="font-bold">Personal Information</h2>
+            <Input
+              placeholder="Full name"
+              value={currentResume.personalInfo.fullName}
+              onChange={(e) => updatePersonalInfo('fullName', e.target.value)}
+            />
+            <Input
+              placeholder="Email"
+              value={currentResume.personalInfo.email}
+              onChange={(e) => updatePersonalInfo('email', e.target.value)}
+            />
+            <Input
+              placeholder="Phone"
+              value={currentResume.personalInfo.phone}
+              onChange={(e) => updatePersonalInfo('phone', e.target.value)}
+            />
+            <Textarea
+              placeholder="Summary"
+              value={currentResume.summary}
+              onChange={(e) => updateField('summary', e.target.value)}
+            />
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Full Name</label>
-              <Input
-                value={currentResume.personalInfo.fullName || ''}
-                onChange={(e) => updatePersonalInfo('fullName', e.target.value)}
-                placeholder="Your full name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Email</label>
-              <Input
-                value={currentResume.personalInfo.email || ''}
-                onChange={(e) => updatePersonalInfo('email', e.target.value)}
-                placeholder="you@example.com"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Phone</label>
-              <Input
-                value={currentResume.personalInfo.phone || ''}
-                onChange={(e) => updatePersonalInfo('phone', e.target.value)}
-                placeholder="+84 ..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Summary</label>
-              <Textarea
-                value={currentResume.summary || ''}
-                onChange={(e) => updateField('summary', e.target.value)}
-                placeholder="Write your professional summary..."
-                className="min-h-[160px]"
-              />
+            <div className="pt-2">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold">Experience</h3>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    addExperience({
+                      id: `exp-${Date.now()}`,
+                      company: '',
+                      position: '',
+                      startDate: '',
+                      endDate: '',
+                      description: '',
+                    })
+                  }
+                >
+                  Add
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {currentResume.experience.map((exp, idx) => (
+                  <div key={exp.id || idx}className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-2">
+                    <Input
+                      placeholder="Company"
+                      value={exp.company}
+                      onChange={(e) => updateExperience(idx, { ...exp, company: e.target.value })}
+                    />
+                    <Input
+                      placeholder="Position"
+                      value={exp.position}
+                      onChange={(e) => updateExperience(idx, { ...exp, position: e.target.value })}
+                    />
+                    <Button size="sm" variant="ghost" onClick={() => removeExperience(idx)}>
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Live Preview
-            </h2>
-
-            <div id="resume-preview" className="rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-900">
-              <h1 className="text-2xl font-black text-gray-900 dark:text-white">{previewName}</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{currentResume.personalInfo.email || 'you@example.com'}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{currentResume.personalInfo.phone || '+84 ...'}</p>
-
-              {(currentResume.summary || '').trim() && (
-                <div className="mt-6">
-                  <h3 className="text-sm uppercase tracking-wider font-bold text-crimson-red mb-2">Summary</h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{currentResume.summary}</p>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+            <h1 className="text-3xl font-black mb-2">{previewName}</h1>
+            <p className="text-sm text-gray-500 mb-4">{previewContact}</p>
+            {currentResume.summary && (
+              <>
+                <h3 className="font-bold text-sm uppercase tracking-wide mb-2">Summary</h3>
+                <p className="text-sm whitespace-pre-wrap mb-4">{currentResume.summary}</p>
+              </>
+            )}
+            {currentResume.experience.length > 0 && (
+              <>
+                <h3 className="font-bold text-sm uppercase tracking-wide mb-2">Experience</h3>
+                <div className="space-y-2">
+                  {currentResume.experience.map((exp, idx) => (
+                    <div key={exp.id || idx}>
+                      <p className="font-semibold">{exp.position || 'Position'}· {exp.company || 'Company'}</p>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
       </div>
