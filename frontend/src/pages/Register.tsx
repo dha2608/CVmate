@@ -36,7 +36,7 @@ const Register = () => {
       if (data.success) {
         setUser(data.data);
         toast.success(t('toast.registerSuccess'));
-        navigate('/dashboard');
+        navigate('/onboarding');
       } else {
         const errorMsg = data.message || t('toast.registerFailed');
         setError(errorMsg);

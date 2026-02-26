@@ -141,3 +141,115 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 
 * UI đúng chuẩn.
 
+---
+
+## 8. TASK BOARD TRIỂN KHAI (BÁM SÁT TRD)
+
+> Quy ước trạng thái: `pending` | `in_progress` | `completed`
+> 
+> Quy ước ưu tiên: `P0` (bắt buộc cho MVP) | `P1` (quan trọng sau MVP) | `P2` (mở rộng)
+
+### 8.1. TRACK TỔNG QUAN
+
+- `P0`:
+  - [completed] T0. Dọn trùng file path gây rủi ro build/routing trên FE.
+  - [pending] T1. Auth + Onboarding flow hoàn chỉnh (email/password + Google OAuth).
+  - [pending] T2. CV Builder MVP (form + template ATS + lưu Resume).
+  - [pending] T3. Export PDF selectable text cho CV.
+  - [pending] T4. AI Enhance cho bullet/section CV.
+  - [pending] T5. Interview Simulator MVP (persona + chat history + feedback cơ bản).
+  - [pending] T6. Dashboard thống kê cơ bản.
+  - [pending] T7. Deploy FE/BE + smoke test acceptance.
+- `P1`:
+  - [pending] T8. ATS Checker (CV vs JD scoring + keyword suggestion).
+  - [pending] T9. Community newsfeed + like/comment.
+  - [pending] T10. Career Blog + AI Summary.
+  - [pending] T11. Hardening security (rate limit free 10 req/day, input sanitize, audit logs).
+- `P2`:
+  - [pending] T12. Speech-to-Text cho Interview.
+  - [pending] T13. Nâng cao UX loading/fallback/error states theo design system.
+  - [pending] T14. SEO nâng cao (meta động sâu, sitemap tối ưu theo route công khai).
+
+### 8.2. CHI TIẾT TASK THEO MODULE
+
+#### MODULE 1: AUTH & USER DASHBOARD
+
+- `T1` (`P0`) Auth + Onboarding
+  - Scope:
+    - Đăng ký/đăng nhập Email-Password.
+    - Google OAuth callback ổn định.
+    - JWT session + refresh flow (nếu có).
+    - Onboarding mục tiêu nghề nghiệp.
+  - Acceptance:
+    - User mới vào onboarding sau đăng ký.
+    - User cũ vào dashboard trực tiếp.
+  - Status: `pending`
+
+- `T6` (`P0`) Dashboard cơ bản
+  - Scope: số lượng CV, phiên phỏng vấn, bài viết lưu.
+  - Acceptance: load dữ liệu đúng theo user đăng nhập.
+  - Status: `pending`
+
+#### MODULE 2: CV MATE BUILDER (CORE)
+
+- `T2` (`P0`) CV Builder MVP
+  - Scope: form thông tin + lưu Resume JSON + template ATS cơ bản.
+  - Acceptance: tạo/sửa/lưu CV thành công.
+  - Status: `pending`
+
+- `T3` (`P0`) Export PDF
+  - Scope: xuất PDF text selectable.
+  - Acceptance: copy text từ PDF được, layout không vỡ.
+  - Status: `pending`
+
+- `T4` (`P0`) AI Enhance
+  - Scope: từ input thô -> văn phong chuyên nghiệp theo context vị trí.
+  - Acceptance: có thể apply output vào section CV.
+  - Status: `pending`
+
+- `T8` (`P1`) ATS Checker
+  - Scope: upload JD, chấm điểm, gợi ý từ khóa thiếu.
+  - Acceptance: trả score + actionable suggestions.
+  - Status: `pending`
+
+#### MODULE 3: AI INTERVIEW SIMULATOR
+
+- `T5` (`P0`) Interview MVP
+  - Scope: persona (Friendly HR/Strict Manager/English Native), chat session, feedback cơ bản.
+  - Acceptance: lưu lịch sử và hiển thị feedback cuối phiên.
+  - Status: `pending`
+
+- `T12` (`P2`) Speech-to-Text
+  - Scope: nhập giọng nói trong phiên phỏng vấn.
+  - Acceptance: chuyển giọng nói thành text ổn định.
+  - Status: `pending`
+
+#### MODULE 4: CỘNG ĐỒNG (SOCIAL HUB)
+
+- `T9` (`P1`) Newsfeed + tương tác
+  - Scope: post, like, comment, share CV che dữ liệu nhạy cảm.
+  - Acceptance: feed realtime gần-thời-gian-thực, tương tác chính xác.
+  - Status: `pending`
+
+#### MODULE 5: CAREER BLOG
+
+- `T10` (`P1`) CMS + AI Summary
+  - Scope: CRUD bài viết admin + tóm tắt bài viết.
+  - Acceptance: bài đăng public hiển thị đúng, summary tạo được.
+  - Status: `pending`
+
+### 8.3. TIẾN ĐỘ HIỆN TẠI
+
+- Snapshot: `2026-02-27`
+- Tổng task: `15`
+- Completed: `1/15` (6.7%)
+- In Progress: `0/15`
+- Pending: `14/15`
+
+### 8.4. TASK ĐANG CHẠY TIẾP THEO (NEXT ACTION)
+
+- Chọn `T1 (P0) - Auth + Onboarding flow` làm task triển khai kế tiếp.
+- Lý do:
+  - Là cửa vào cho toàn bộ module sau (Builder/Interview/Dashboard).
+  - Giảm rủi ro tích hợp state + routing + quyền truy cập sớm.
+

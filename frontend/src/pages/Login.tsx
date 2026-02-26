@@ -30,7 +30,9 @@ const Login = () => {
         logger.info('login_success', { email });
         setUser(data.data);
         toast.success(t('toast.loginSuccess'));
-        navigate('/dashboard');
+
+        const shouldGoOnboarding = !data.data?.onboardingCompleted;
+        navigate(shouldGoOnboarding ? '/onboarding' : '/dashboard');
       } else {
         const errorMsg = (data as any).message || t('login.invalidCredentials');
         setError(errorMsg);
