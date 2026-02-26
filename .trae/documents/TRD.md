@@ -263,7 +263,12 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 - `T9` (`P1`) Newsfeed + tương tác
   - Scope: post, like, comment, share CV che dữ liệu nhạy cảm.
   - Acceptance: feed realtime gần-thời-gian-thực, tương tác chính xác.
-  - Status: `pending`
+  - Cập nhật đã triển khai:
+    - Hoàn thiện store Community cho create post / like post / comment / like comment / edit comment / delete comment.
+    - Bổ sung validate input (trim, chặn rỗng) ở action post/comment.
+    - Bổ sung toast error để UX rõ ràng khi tương tác thất bại.
+    - Cải thiện ổn định khi thao tác like post với rollback state khi lỗi.
+  - Status: `completed`
 
 #### MODULE 5: CAREER BLOG
 
@@ -280,14 +285,14 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 
 - Snapshot: `2026-02-27`
 - Tổng task: `15`
-- Completed: `9/15` (60.0%)
+- Completed: `10/15` (66.7%)
 - In Progress: `0/15`
-- Pending: `6/15`
+- Pending: `5/15`
 
 ### 8.4. TASK ĐANG CHẠY TIẾP THEO (NEXT ACTION)
 
-- Chọn `T9 (P1) - Community newsfeed + like/comment` làm task triển khai kế tiếp.
+- Chọn `T11 (P1) - Hardening security` làm task triển khai kế tiếp.
 - Lý do:
-  - Store/API Community đã có sẵn, có thể tăng tốc hoàn thiện nhanh.
-  - Tăng engagement sau khi các luồng P0 cốt lõi đã ổn định.
+  - Tập trung yêu cầu phi chức năng về bảo mật trước giai đoạn deploy.
+  - Tận dụng middleware rate-limit/sanitize hiện có để khóa acceptance nhanh.
 
