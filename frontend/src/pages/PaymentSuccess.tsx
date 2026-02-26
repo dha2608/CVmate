@@ -23,26 +23,15 @@ const PaymentSuccess = () => {
       }
 
       try {
-        // Verify payment và update user subscription
-        const userData = localStorage.getItem('user');
-        const token = userData ? JSON.parse(userData).token : null;
-
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/payment/subscription-status`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const data = await response.json();
+        const data = await api.getSubscriptionStatus();
         if (data.success) {
-          // Update user trong store
           const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-          if (currentUser.data) {
-            currentUser.data.subscription = data.data;
-            localStorage.setItem('user', JSON.stringify(currentUser));
-            setUser(currentUser.data);
-          }
+          const mergedUser = {
+            ...(currentUser || {}),
+            subscription: data.data,
+          };
+          localStorage.setItem('user', JSON.stringify(mergedUser));
+          setUser(mergedUser as any);
         }
       } catch (err: any) {
         console.error('Payment verification error:', err);
