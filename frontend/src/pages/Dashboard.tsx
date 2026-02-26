@@ -83,17 +83,11 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { t }= useI18n();
 
-  const { stats, isLoading: statsLoading } = useDashboardStore((state) => ({
-    stats: state.stats,
-    isLoading: state.isLoading,
-  }));
-
+  const stats = useDashboardStore((state) => state.stats);
+  const statsLoading = useDashboardStore((state) => state.isLoading);
   const articles = useBlogStore((state) => state.articles);
   const articlesLoading = useBlogStore((state) => state.isLoading);
-
-  const { achievements } = useAchievementStore((state) => ({
-    achievements: state.achievements,
-  }));
+  const achievements = useAchievementStore((state) => state.achievements);
 
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
@@ -104,8 +98,9 @@ const Dashboard = () => {
     return t('dashboard.goodEvening');
   }, [t]);
 
+  const userId = user?.id ?? null;
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
     let mounted = true;
     const loadData = async () => {
       setIsInitialLoading(true);
@@ -121,13 +116,22 @@ const Dashboard = () => {
     };
     loadData();
     return () => { mounted = false; };
-  }, [user]);
+  }, [userId]);
 
   const profileProgress = useMemo(() => {
     if (!user) return 0;
     const arr = [user.onboardingCompleted ? 1 : 0, stats.resumesCount > 0 ? 1 : 0, stats.interviewsCount > 0 ? 1 : 0, stats.postsCount > 0 ? 1 : 0];
     return (arr.reduce((a, b) => a + b, 0) / arr.length) * 100;
   }, [user?.onboardingCompleted, stats.resumesCount, stats.interviewsCount, stats.postsCount]);
+
+  const analyticsData = useMemo(
+    () => [
+      { label: t('dashboard.thisWeek'), value: stats.interviewsCount || 0 },
+      { label: t('dashboard.lastWeek'), value: Math.max(0, (stats.interviewsCount || 0) - 2) },
+      { label: t('dashboard.thisMonth'), value: stats.resumesCount || 0 },
+    ],
+    [t, stats.interviewsCount, stats.resumesCount]
+  );
 
   const handleCommunityClick = useCallback(() => navigate('/community'), [navigate]);
   const handleBuilderClick = useCallback(() => navigate('/builder'), [navigate]);
@@ -210,11 +214,7 @@ const Dashboard = () => {
           <AdvancedStats stats={stats}/>
           <AnalyticsChart
             title={t('dashboard.activityOverTime')}
-            data={[
-              { label: t('dashboard.thisWeek'), value: stats.interviewsCount || 0 },
-              { label: t('dashboard.lastWeek'), value: Math.max(0, (stats.interviewsCount || 0) - 2) },
-              { label: t('dashboard.thisMonth'), value: stats.resumesCount || 0 },
-            ]}
+            data={analyticsData}
             color="bg-blue-500"
             previousPeriod={Math.max(0, (stats.interviewsCount || 0) - 2)}
             currentPeriod={stats.interviewsCount || 0}

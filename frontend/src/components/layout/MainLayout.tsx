@@ -37,7 +37,7 @@ const MainLayout = ({
   const { user, logout } = useAuthStore();
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage, t } = useI18n();
-  const { articles: newsArticles, fetchNews } = useNewsStore();
+  const newsArticles = useNewsStore((state) => state.articles);
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
@@ -78,9 +78,9 @@ const MainLayout = ({
 
   useEffect(() => {
     if (shouldShowRightSidebar && !rightSidebar) {
-      fetchNews(5); // Fetch 5 latest news for sidebar
+      useNewsStore.getState().fetchNews(5);
     }
-  }, [shouldShowRightSidebar, rightSidebar, fetchNews]);
+  }, [shouldShowRightSidebar, rightSidebar]);
 
   useEffect(() => {
     if (!isProfileMenuOpen) {
