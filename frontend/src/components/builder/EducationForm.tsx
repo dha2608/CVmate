@@ -1,25 +1,30 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useResumeStore, type IEducation } from '@/store/resumeStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, Plus, GraduationCap } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Trash2, Plus, GraduationCap, Brain } from 'lucide-react';
 
 interface EducationItemProps {
   edu: IEducation;
   index: number;
+  isEnhancing: boolean;
   onRemove: (index: number) => void;
   onUpdate: (index: number, edu: IEducation) => void;
   onToggleCurrent: (index: number, checked: boolean, currentEdu: IEducation) => void;
+  onEnhance: (index: number, text: string) => void;
 }
 
 const EducationItem = memo(function EducationItem({
   edu,
   index,
+  isEnhancing,
   onRemove,
   onUpdate,
   onToggleCurrent,
+  onEnhance,
 }: EducationItemProps) {
   return (
     <div className="relative bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4 group">
@@ -108,11 +113,24 @@ const EducationItem = memo(function EducationItem({
         </div>
 
         <div className="col-span-2 space-y-2">
-          <Label>Description</Label>
-          <Input
+          <div className="flex justify-between items-center">
+            <Label>Description</Label>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs text-accent gap-1 hover:bg-red-50"
+              onClick={() => onEnhance(index, edu.description || '')}
+              disabled={isEnhancing}
+            >
+              <Brain size={12} />
+              {isEnhancing ? 'Enhancing...' : 'AI Enhance'}
+            </Button>
+          </div>
+          <Textarea
             value={edu.description || ''}
             onChange={(e) => onUpdate(index, { ...edu, description: e.target.value })}
-            placeholder="Achievements, GPA, etc."
+            placeholder="Achievements, GPA, projects, activities..."
+            className="min-h-[96px]"
           />
         </div>
       </div>
@@ -122,6 +140,7 @@ const EducationItem = memo(function EducationItem({
 
 const EducationForm = () => {
   const education = useResumeStore((s) => s.currentResume.education);
+  const [loadingAi, setLoadingAi] = useState<number | null>(null);
 
   const handleAdd = useCallback(() => {
     useResumeStore.getState().addEducation({
@@ -149,19 +168,54 @@ const EducationForm = () => {
     });
   }, []);
 
+  const handleEnhance = useCallback(async (index: number, text: string) => {
+    if (!text?.trim()) {
+      const { useToastStore } = await import('@/store/toastStore');
+      useToastStore.getState().error('Please enter some text to enhance');
+      return;
+    }
+
+    setLoadingAi(index);
+    try {
+      const enhanced = await useResumeStore.getState().aiEnhanceText(text, 'education');
+      if (enhanced && enhanced !== text) {
+        const edu = useResumeStore.getState().currentResume.education[index];
+        if (edu) {
+          useResumeStore.getState().updateEducation(index, {
+            ...edu,
+            id: edu.id || crypto.randomUUID(),
+            description: enhanced,
+          });
+        }
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().success('Education description enhanced successfully!');
+      }
+    } catch (error: any) {
+      const { useToastStore } = await import('@/store/toastStore');
+      const errorMsg = error?.message || 'Failed to enhance text';
+      if (!errorMsg.toLowerCase().includes('unavailable') && !errorMsg.toLowerCase().includes('api key')) {
+        useToastStore.getState().error(errorMsg);
+      }
+    } finally {
+      setLoadingAi(null);
+    }
+  }, []);
+
   const items = useMemo(
     () =>
       education.map((edu, index) => (
         <EducationItem
-          key={edu.id}
+          key={edu.id || index}
           edu={edu}
           index={index}
+          isEnhancing={loadingAi === index}
           onRemove={handleRemove}
           onUpdate={handleUpdate}
           onToggleCurrent={handleCurrentStudyChange}
+          onEnhance={handleEnhance}
         />
       )),
-    [education, handleCurrentStudyChange, handleRemove, handleUpdate]
+    [education, handleCurrentStudyChange, handleEnhance, handleRemove, handleUpdate, loadingAi]
   );
 
   return (

@@ -98,7 +98,7 @@ const Dashboard = () => {
     return t('dashboard.goodEvening');
   }, [t]);
 
-  const userId = user?.id ?? null;
+  const userId = user?._id ?? null;
   useEffect(() => {
     if (!userId) return;
     let mounted = true;

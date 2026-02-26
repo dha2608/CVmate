@@ -213,6 +213,31 @@ const Builder = () => {
           }
         },
       },
+      {
+        id: 'fresh-graduate',
+        label: 'Fresh Graduate',
+        description: 'Starter profile for students/new grads',
+        apply: () => {
+          const store = useResumeStore.getState();
+          store.updatePersonalInfo('fullName', 'Tran Thi B');
+          store.updatePersonalInfo('email', 'tranthib@example.com');
+          store.updatePersonalInfo('phone', '+84 987 654 321');
+          store.updateField('summary', 'Recent graduate eager to apply strong problem-solving, communication, and technical skills in a growth-oriented environment.');
+          if (store.currentResume.education.length === 0) {
+            store.addEducation({
+              id: `edu-${Date.now()}`,
+              institution: 'University of Technology',
+              degree: 'Bachelor of Information Technology',
+              startDate: '2020-09',
+              endDate: '2024-06',
+              description: 'GPA: 3.6/4.0. Participated in software engineering capstone project.',
+            });
+          }
+          if (store.currentResume.skills.length === 0) {
+            store.setSkills(['JavaScript', 'React', 'Node.js', 'SQL', 'Git']);
+          }
+        },
+      },
     ],
     []
   );

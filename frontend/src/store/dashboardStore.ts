@@ -61,8 +61,10 @@ export const useDashboardStore = create<DashboardState>((set) => ({
 
     } catch (error: any) {
       console.error('Dashboard stats fetch error:', error);
-      set({ 
-        error: error.message || 'Failed to load dashboard stats', 
+      set({
+        // fallback an toàn để dashboard vẫn hoạt động
+        stats: { resumesCount: 0, interviewsCount: 0, postsCount: 0, likesReceived: 0 },
+        error: error.message || 'Failed to load dashboard stats',
         isLoading: false,
       });
     }

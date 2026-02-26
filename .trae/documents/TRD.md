@@ -194,7 +194,10 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 - `T6` (`P0`) Dashboard cơ bản
   - Scope: số lượng CV, phiên phỏng vấn, bài viết lưu.
   - Acceptance: load dữ liệu đúng theo user đăng nhập.
-  - Status: `pending`
+  - Cập nhật đã triển khai:
+    - Sửa định danh user trong Dashboard từ `user.id` -> `user._id` để đảm bảo fetch dữ liệu theo đúng user đã đăng nhập.
+    - Giảm rủi ro không load stats do sai khóa định danh.
+  - Status: `completed`
 
 #### MODULE 2: CV MATE BUILDER (CORE)
 
@@ -221,7 +224,12 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 - `T4` (`P0`) AI Enhance
   - Scope: từ input thô -> văn phong chuyên nghiệp theo context vị trí.
   - Acceptance: có thể apply output vào section CV.
-  - Status: `pending`
+  - Cập nhật đã triển khai:
+    - AI Enhance cho `summary` trong Builder.
+    - AI Enhance cho từng item `experience.description`.
+    - AI Enhance cho từng item `education.description`.
+    - Có trạng thái loading theo item + toast success/error để UX rõ ràng.
+  - Status: `completed`
 
 - `T8` (`P1`) ATS Checker
   - Scope: upload JD, chấm điểm, gợi ý từ khóa thiếu.
@@ -233,7 +241,12 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 - `T5` (`P0`) Interview MVP
   - Scope: persona (Friendly HR/Strict Manager/English Native), chat session, feedback cơ bản.
   - Acceptance: lưu lịch sử và hiển thị feedback cuối phiên.
-  - Status: `pending`
+  - Cập nhật đã triển khai:
+    - Persona selector + start session.
+    - Chat theo session với lưu `chatHistory` backend.
+    - End session + feedback (có fallback feedback khi AI lỗi/rate-limit).
+    - Hiển thị interview result + analytics sau phiên.
+  - Status: `completed`
 
 - `T12` (`P2`) Speech-to-Text
   - Scope: nhập giọng nói trong phiên phỏng vấn.
@@ -258,14 +271,14 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 
 - Snapshot: `2026-02-27`
 - Tổng task: `15`
-- Completed: `4/15` (26.7%)
+- Completed: `7/15` (46.7%)
 - In Progress: `0/15`
-- Pending: `11/15`
+- Pending: `8/15`
 
 ### 8.4. TASK ĐANG CHẠY TIẾP THEO (NEXT ACTION)
 
-- Chọn `T4 (P0) - AI Enhance cho CV` làm task triển khai kế tiếp.
+- Chọn `T8 (P1) - ATS Checker (CV vs JD scoring + keyword suggestion)` làm task triển khai kế tiếp.
 - Lý do:
-  - Trực tiếp phục vụ USP “AI Writer” trong TRD.
-  - Tăng chất lượng nội dung CV ngay trên flow Builder đã hoàn thiện.
+  - Tận dụng endpoint phân tích CV đã có nền tảng AI.
+  - Tăng giá trị trực tiếp cho luồng ứng tuyển sau khi đã có Builder + Export.
 
