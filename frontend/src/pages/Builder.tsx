@@ -8,22 +8,7 @@ import { ArrowLeft, Save, Download }from 'lucide-react';
 
 const Builder = () => {
   const navigate = useNavigate();
-  const {
-    currentResume,
-    updatePersonalInfo,
-    updateField,
-    addExperience,
-    removeExperience,
-    updateExperience,
-  }= useResumeStore((state) => ({
-    currentResume: state.currentResume,
-    updatePersonalInfo: state.updatePersonalInfo,
-    updateField: state.updateField,
-    addExperience: state.addExperience,
-    removeExperience: state.removeExperience,
-    updateExperience: state.updateExperience,
-  }));
-
+  const currentResume = useResumeStore((state) => state.currentResume);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -73,22 +58,22 @@ const Builder = () => {
             <Input
               placeholder="Full name"
               value={currentResume.personalInfo.fullName}
-              onChange={(e) => updatePersonalInfo('fullName', e.target.value)}
+              onChange={(e) => useResumeStore.getState().updatePersonalInfo('fullName', e.target.value)}
             />
             <Input
               placeholder="Email"
               value={currentResume.personalInfo.email}
-              onChange={(e) => updatePersonalInfo('email', e.target.value)}
+              onChange={(e) => useResumeStore.getState().updatePersonalInfo('email', e.target.value)}
             />
             <Input
               placeholder="Phone"
               value={currentResume.personalInfo.phone}
-              onChange={(e) => updatePersonalInfo('phone', e.target.value)}
+              onChange={(e) => useResumeStore.getState().updatePersonalInfo('phone', e.target.value)}
             />
             <Textarea
               placeholder="Summary"
               value={currentResume.summary}
-              onChange={(e) => updateField('summary', e.target.value)}
+              onChange={(e) => useResumeStore.getState().updateField('summary', e.target.value)}
             />
 
             <div className="pt-2">
@@ -98,7 +83,7 @@ const Builder = () => {
                   size="sm"
                   variant="outline"
                   onClick={() =>
-                    addExperience({
+                    useResumeStore.getState().addExperience({
                       id: `exp-${Date.now()}`,
                       company: '',
                       position: '',
@@ -117,14 +102,14 @@ const Builder = () => {
                     <Input
                       placeholder="Company"
                       value={exp.company}
-                      onChange={(e) => updateExperience(idx, { ...exp, company: e.target.value })}
+                      onChange={(e) => useResumeStore.getState().updateExperience(idx, { ...exp, company: e.target.value })}
                     />
                     <Input
                       placeholder="Position"
                       value={exp.position}
-                      onChange={(e) => updateExperience(idx, { ...exp, position: e.target.value })}
+                      onChange={(e) => useResumeStore.getState().updateExperience(idx, { ...exp, position: e.target.value })}
                     />
-                    <Button size="sm" variant="ghost" onClick={() => removeExperience(idx)}>
+                    <Button size="sm" variant="ghost" onClick={() => useResumeStore.getState().removeExperience(idx)}>
                       Remove
                     </Button>
                   </div>
