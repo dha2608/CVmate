@@ -170,8 +170,9 @@ const Builder = () => {
   ]);
 
   const handleDownload = useCallback(() => {
+    toast.success('Đang mở hộp thoại in. Hãy chọn "Save as PDF" để tải CV.');
     window.print();
-  }, []);
+  }, [toast]);
 
   const handleReorderSections = useCallback((newSections: BuilderSection[]) => {
     setSections(newSections);

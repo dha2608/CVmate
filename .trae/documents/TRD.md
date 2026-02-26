@@ -211,7 +211,12 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 - `T3` (`P0`) Export PDF
   - Scope: xuất PDF text selectable.
   - Acceptance: copy text từ PDF được, layout không vỡ.
-  - Status: `pending`
+  - Cập nhật đã triển khai:
+    - Dùng cơ chế in trình duyệt (`window.print`) để xuất PDF giữ nguyên text layer.
+    - Thêm print stylesheet A4 để chỉ render vùng `#resume-preview` khi in.
+    - Ẩn toàn bộ UI không liên quan khi in, giữ layout CV ổn định và copy text được.
+    - Bổ sung toast hướng dẫn user chọn `Save as PDF`.
+  - Status: `completed`
 
 - `T4` (`P0`) AI Enhance
   - Scope: từ input thô -> văn phong chuyên nghiệp theo context vị trí.
@@ -253,14 +258,14 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 
 - Snapshot: `2026-02-27`
 - Tổng task: `15`
-- Completed: `3/15` (20.0%)
+- Completed: `4/15` (26.7%)
 - In Progress: `0/15`
-- Pending: `12/15`
+- Pending: `11/15`
 
 ### 8.4. TASK ĐANG CHẠY TIẾP THEO (NEXT ACTION)
 
-- Chọn `T3 (P0) - Export PDF selectable text` làm task triển khai kế tiếp.
+- Chọn `T4 (P0) - AI Enhance cho CV` làm task triển khai kế tiếp.
 - Lý do:
-  - Hoàn thiện luồng giá trị từ tạo CV -> xuất CV để ứng tuyển thực tế.
-  - Là tiêu chí nghiệm thu trực tiếp trong TRD.
+  - Trực tiếp phục vụ USP “AI Writer” trong TRD.
+  - Tăng chất lượng nội dung CV ngay trên flow Builder đã hoàn thiện.
 
