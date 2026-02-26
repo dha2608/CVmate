@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, memo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { useResumeStore } from '@/store/resumeStore';
 import BuilderSidebar, { type BuilderSection, type BuilderSectionId } from '@/components/builder/BuilderSidebar';
@@ -13,6 +13,8 @@ import SkillsForm from '@/components/builder/SkillsForm';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Menu, Eye, Edit3, Brain } from 'lucide-react';
+import { api } from '@/lib/utils';
+import { useToastStore } from '@/store/toastStore';
 
 const SummaryPanel = memo(({ summary, onSummaryChange }: { summary: string; onSummaryChange: (v: string) => void }) => {
   const [enhancing, setEnhancing] = useState(false);
@@ -66,7 +68,10 @@ const INITIAL_SECTIONS: BuilderSection[] = [
 
 const Builder = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const toast = useToastStore();
   const currentResume = useResumeStore((s) => s.currentResume);
+  const setResume = useResumeStore((s) => s.setResume);
 
   const [sections, setSections] = useState<BuilderSection[]>(() => INITIAL_SECTIONS);
   const [activeTab, setActiveTab] = useState<BuilderSectionId>('personal');
@@ -78,17 +83,91 @@ const Builder = () => {
   const [saving, setSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
+  const [loadingResume, setLoadingResume] = useState(false);
+
+  const resumeId = searchParams.get('id');
+
+  const normalizeResumeForStore = useCallback((resumeData: any) => {
+    const safeExperience = Array.isArray(resumeData?.experience) ? resumeData.experience : [];
+    const safeEducation = Array.isArray(resumeData?.education) ? resumeData.education : [];
+
+    return {
+      ...resumeData,
+      personalInfo: {
+        fullName: resumeData?.personalInfo?.fullName || '',
+        email: resumeData?.personalInfo?.email || '',
+        phone: resumeData?.personalInfo?.phone || '',
+        address: resumeData?.personalInfo?.address || '',
+        linkedin: resumeData?.personalInfo?.linkedin || '',
+        website: resumeData?.personalInfo?.website || '',
+      },
+      summary: resumeData?.summary || '',
+      skills: Array.isArray(resumeData?.skills) ? resumeData.skills : [],
+      experience: safeExperience.map((exp: any, index: number) => ({
+        id: exp?.id || exp?._id || `exp-${Date.now()}-${index}`,
+        company: exp?.company || '',
+        position: exp?.position || '',
+        startDate: exp?.startDate || '',
+        endDate: exp?.endDate || '',
+        description: exp?.description || '',
+      })),
+      education: safeEducation.map((edu: any, index: number) => ({
+        id: edu?.id || edu?._id || `edu-${Date.now()}-${index}`,
+        institution: edu?.institution || '',
+        degree: edu?.degree || '',
+        startDate: edu?.startDate || '',
+        endDate: edu?.endDate || '',
+        description: edu?.description || '',
+      })),
+    };
+  }, []);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      await new Promise((r) => setTimeout(r, 250));
+      const payload = {
+        title: currentResume.title || 'Untitled Resume',
+        personalInfo: currentResume.personalInfo,
+        summary: currentResume.summary,
+        experience: currentResume.experience,
+        education: currentResume.education,
+        skills: currentResume.skills,
+      };
+
+      const response = resumeId
+        ? await api.updateResume(resumeId, payload)
+        : await api.createResume(payload);
+
+      if (!response.success || !response.data) {
+        throw new Error('Failed to save resume');
+      }
+
+      const normalized = normalizeResumeForStore(response.data);
+      setResume(normalized);
+
+      if (!resumeId && response.data._id) {
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set('id', response.data._id);
+        setSearchParams(nextParams, { replace: true });
+      }
+
+      toast.success('Lưu CV thành công');
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+    } catch (error: any) {
+      toast.error(error?.message || 'Không thể lưu CV. Vui lòng thử lại.');
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [
+    currentResume,
+    normalizeResumeForStore,
+    resumeId,
+    searchParams,
+    setResume,
+    setSearchParams,
+    toast,
+  ]);
 
   const handleDownload = useCallback(() => {
     window.print();
@@ -175,6 +254,42 @@ const Builder = () => {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [handleSave, handleDownload]);
+
+  useEffect(() => {
+    if (!resumeId) {
+      return;
+    }
+
+    let active = true;
+
+    const loadResume = async () => {
+      setLoadingResume(true);
+      try {
+        const response = await api.getResume(resumeId);
+        if (!active) {
+          return;
+        }
+
+        if (response.success && response.data) {
+          setResume(normalizeResumeForStore(response.data));
+        }
+      } catch (error: any) {
+        if (active) {
+          toast.error(error?.message || 'Không thể tải CV đã lưu.');
+        }
+      } finally {
+        if (active) {
+          setLoadingResume(false);
+        }
+      }
+    };
+
+    loadResume();
+
+    return () => {
+      active = false;
+    };
+  }, [resumeId, normalizeResumeForStore, setResume, toast]);
 
   const renderFormPanel = () => {
     switch (activeTab) {
@@ -282,7 +397,13 @@ const Builder = () => {
                     Sections
                   </Button>
                 </div>
-                <div className="max-w-xl mx-auto">{renderFormPanel()}</div>
+                <div className="max-w-xl mx-auto">
+                  {loadingResume ? (
+                    <div className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Đang tải CV...</div>
+                  ) : (
+                    renderFormPanel()
+                  )}
+                </div>
               </div>
 
               <div

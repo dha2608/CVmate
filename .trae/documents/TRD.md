@@ -201,7 +201,12 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 - `T2` (`P0`) CV Builder MVP
   - Scope: form thông tin + lưu Resume JSON + template ATS cơ bản.
   - Acceptance: tạo/sửa/lưu CV thành công.
-  - Status: `pending`
+  - Cập nhật đã triển khai:
+    - Builder hỗ trợ `create` CV mới và tự gắn `?id=` sau lần lưu đầu.
+    - Builder hỗ trợ `update` CV hiện có khi có `id`.
+    - Mở Builder với `?id=` sẽ load dữ liệu từ backend vào store để chỉnh sửa.
+    - Chuẩn hóa mapping dữ liệu `experience/education` để đồng bộ FE/BE.
+  - Status: `completed`
 
 - `T3` (`P0`) Export PDF
   - Scope: xuất PDF text selectable.
@@ -248,14 +253,14 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 
 - Snapshot: `2026-02-27`
 - Tổng task: `15`
-- Completed: `2/15` (13.3%)
+- Completed: `3/15` (20.0%)
 - In Progress: `0/15`
-- Pending: `13/15`
+- Pending: `12/15`
 
 ### 8.4. TASK ĐANG CHẠY TIẾP THEO (NEXT ACTION)
 
-- Chọn `T2 (P0) - CV Builder MVP` làm task triển khai kế tiếp.
+- Chọn `T3 (P0) - Export PDF selectable text` làm task triển khai kế tiếp.
 - Lý do:
-  - Là core value trực tiếp theo mục tiêu sản phẩm (tạo CV nhanh).
-  - Tận dụng luồng auth/onboarding đã hoàn thiện để triển khai end-to-end tạo/sửa/lưu CV.
+  - Hoàn thiện luồng giá trị từ tạo CV -> xuất CV để ứng tuyển thực tế.
+  - Là tiêu chí nghiệm thu trực tiếp trong TRD.
 
