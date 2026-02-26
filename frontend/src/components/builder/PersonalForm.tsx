@@ -71,10 +71,7 @@ const PersonalField = memo(function PersonalField({ field, value, onChange }: Pe
 });
 
 const PersonalForm = () => {
-  const { personalInfo, updatePersonalInfo } = useResumeStore((s) => ({
-    personalInfo: s.currentResume.personalInfo,
-    updatePersonalInfo: s.updatePersonalInfo,
-  }));
+  const personalInfo = useResumeStore((s) => s.currentResume.personalInfo);
 
   const fields: FieldConfig[] = useMemo(
     () => [
@@ -130,18 +127,15 @@ const PersonalForm = () => {
     []
   );
 
-  const handleChange = useCallback(
-    (key: FieldConfig['key'], rawValue: string) => {
-      let val = rawValue;
-      if ((key === 'linkedin' || key === 'website') && val && !val.startsWith('http')) {
-        if (!val.startsWith('//')) {
-          val = `https://${val}`;
-        }
+  const handleChange = useCallback((key: FieldConfig['key'], rawValue: string) => {
+    let val = rawValue;
+    if ((key === 'linkedin' || key === 'website') && val && !val.startsWith('http')) {
+      if (!val.startsWith('//')) {
+        val = `https://${val}`;
       }
-      updatePersonalInfo(key, val);
-    },
-    [updatePersonalInfo]
-  );
+    }
+    useResumeStore.getState().updatePersonalInfo(key, val);
+  }, []);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">

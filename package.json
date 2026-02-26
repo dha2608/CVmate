@@ -23,6 +23,7 @@
     "check-rate-limit": "node api/scripts/reset-rate-limit.js",
     "db:migrate": "node api/scripts/migrate.js",
     "db:archive": "node api/scripts/archive-old-data.js",
+    "db:seed": "npx tsx api/scripts/seed.ts",
     "code-quality": "npm run lint && npm run format:check && npm run check"
   },
   "dependencies": {

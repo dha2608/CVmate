@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { 
   Home, Users, Briefcase, MessageSquare, Bell, Search, 
   User as UserIcon, LogOut, FileText, Brain, MoreHorizontal, Menu,
-  Sun, Moon, Globe, ExternalLink, Bookmark, Crown
+  Sun, Moon, Globe, ExternalLink, Bookmark, Crown, Shield
 } from 'lucide-react';
 import Footer from '@/components/Footer';
 import SupportChat from '@/components/SupportChat';
@@ -184,7 +184,14 @@ const MainLayout = ({
                 active={isActive('/pricing')} 
                 onClick={() => navigate('/pricing')} 
               />
-              
+              {user?.role === 'admin' && (
+                <NavItem 
+                  icon={<Shield size={18} className="sm:w-5 sm:h-5" />} 
+                  label="Admin" 
+                  active={isActive('/admin')} 
+                  onClick={() => navigate('/admin')} 
+                />
+              )}
               {/* Theme Toggle */}
               <li className="flex items-center justify-center cursor-pointer px-1 sm:px-2">
                 <button

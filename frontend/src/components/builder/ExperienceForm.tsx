@@ -114,77 +114,62 @@ const ExperienceItem = memo(function ExperienceItem({
 });
 
 const ExperienceForm = () => {
-  const { experience, addExperience, updateExperience, removeExperience, aiEnhanceText } = useResumeStore(
-    (s) => ({
-      experience: s.currentResume.experience,
-      addExperience: s.addExperience,
-      updateExperience: s.updateExperience,
-      removeExperience: s.removeExperience,
-      aiEnhanceText: s.aiEnhanceText,
-    })
-  );
-
+  const experience = useResumeStore((s) => s.currentResume.experience);
   const [loadingAi, setLoadingAi] = useState<number | null>(null);
 
   const handleAdd = useCallback(() => {
-    const newExp: IExperience = {
+    useResumeStore.getState().addExperience({
       id: Date.now().toString(),
       company: '',
       position: '',
       startDate: '',
       endDate: '',
       description: '',
-    };
-    addExperience(newExp);
-  }, [addExperience]);
+    });
+  }, []);
 
-  const handleRemove = useCallback((index: number) => removeExperience(index), [removeExperience]);
+  const handleRemove = useCallback((index: number) => {
+    useResumeStore.getState().removeExperience(index);
+  }, []);
 
-  const handleUpdate = useCallback(
-    (index: number, exp: IExperience) => {
-      updateExperience(index, exp);
-    },
-    [updateExperience]
-  );
+  const handleUpdate = useCallback((index: number, exp: IExperience) => {
+    useResumeStore.getState().updateExperience(index, exp);
+  }, []);
 
-  const handleEnhance = useCallback(
-    async (index: number, text: string) => {
-      if (!text?.trim()) {
-        const { useToastStore } = await import('@/store/toastStore');
-        useToastStore.getState().error('Please enter some text to enhance');
-        return;
-      }
-
-      setLoadingAi(index);
-      try {
-        const enhanced = await aiEnhanceText(text, 'experience');
-        if (enhanced && enhanced !== text) {
-          const currentExp = experience[index];
-          if (currentExp) {
-            updateExperience(index, {
-              id: currentExp.id || `exp-${Date.now()}`,
-              company: currentExp.company || '',
-              position: currentExp.position || '',
-              startDate: currentExp.startDate || '',
-              endDate: currentExp.endDate || '',
-              description: enhanced,
-            });
-          }
-          const { useToastStore } = await import('@/store/toastStore');
-          useToastStore.getState().success('Description enhanced successfully!');
+  const handleEnhance = useCallback(async (index: number, text: string) => {
+    if (!text?.trim()) {
+      const { useToastStore } = await import('@/store/toastStore');
+      useToastStore.getState().error('Please enter some text to enhance');
+      return;
+    }
+    setLoadingAi(index);
+    try {
+      const enhanced = await useResumeStore.getState().aiEnhanceText(text, 'experience');
+      if (enhanced && enhanced !== text) {
+        const exp = useResumeStore.getState().currentResume.experience[index];
+        if (exp) {
+          useResumeStore.getState().updateExperience(index, {
+            id: exp.id || `exp-${Date.now()}`,
+            company: exp.company || '',
+            position: exp.position || '',
+            startDate: exp.startDate || '',
+            endDate: exp.endDate || '',
+            description: enhanced,
+          });
         }
-      } catch (error: any) {
         const { useToastStore } = await import('@/store/toastStore');
-        const errorMsg = error?.message || 'Failed to enhance text';
-        if (!errorMsg.toLowerCase().includes('unavailable') && !errorMsg.toLowerCase().includes('api key')) {
-          useToastStore.getState().error(errorMsg);
-        }
-      } finally {
-        setLoadingAi(null);
+        useToastStore.getState().success('Description enhanced successfully!');
       }
-    },
-    [aiEnhanceText, experience, updateExperience]
-  );
+    } catch (error: any) {
+      const { useToastStore } = await import('@/store/toastStore');
+      const errorMsg = error?.message || 'Failed to enhance text';
+      if (!errorMsg.toLowerCase().includes('unavailable') && !errorMsg.toLowerCase().includes('api key')) {
+        useToastStore.getState().error(errorMsg);
+      }
+    } finally {
+      setLoadingAi(null);
+    }
+  }, []);
 
   const items = useMemo(
     () =>

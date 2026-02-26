@@ -121,43 +121,33 @@ const EducationItem = memo(function EducationItem({
 });
 
 const EducationForm = () => {
-  const { education, addEducation, updateEducation, removeEducation } = useResumeStore(
-    (s) => ({
-      education: s.currentResume.education,
-      addEducation: s.addEducation,
-      updateEducation: s.updateEducation,
-      removeEducation: s.removeEducation,
-    })
-  );
+  const education = useResumeStore((s) => s.currentResume.education);
 
   const handleAdd = useCallback(() => {
-    const newEdu: IEducation = {
+    useResumeStore.getState().addEducation({
       id: crypto.randomUUID(),
       institution: '',
       degree: '',
       startDate: '',
       endDate: '',
       description: '',
-    };
-    addEducation(newEdu);
-  }, [addEducation]);
+    });
+  }, []);
 
-  const handleRemove = useCallback((index: number) => removeEducation(index), [removeEducation]);
+  const handleRemove = useCallback((index: number) => {
+    useResumeStore.getState().removeEducation(index);
+  }, []);
 
-  const handleUpdate = useCallback(
-    (index: number, edu: IEducation) => updateEducation(index, edu),
-    [updateEducation]
-  );
+  const handleUpdate = useCallback((index: number, edu: IEducation) => {
+    useResumeStore.getState().updateEducation(index, edu);
+  }, []);
 
-  const handleCurrentStudyChange = useCallback(
-    (index: number, isChecked: boolean, currentEdu: IEducation) => {
-      updateEducation(index, {
-        ...currentEdu,
-        endDate: isChecked ? 'Present' : '',
-      });
-    },
-    [updateEducation]
-  );
+  const handleCurrentStudyChange = useCallback((index: number, isChecked: boolean, currentEdu: IEducation) => {
+    useResumeStore.getState().updateEducation(index, {
+      ...currentEdu,
+      endDate: isChecked ? 'Present' : '',
+    });
+  }, []);
 
   const items = useMemo(
     () =>

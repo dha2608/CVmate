@@ -7,7 +7,7 @@ interface ResumePreviewProps {
 }
 
 const ResumePreview = ({ template = 'modern-red', sections }: ResumePreviewProps) => {
-  const { currentResume } = useResumeStore();
+  const currentResume = useResumeStore((s) => s.currentResume);
   const { personalInfo, summary, experience, education, skills } = currentResume;
 
   const getTemplateStyles = () => {

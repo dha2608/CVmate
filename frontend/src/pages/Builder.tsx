@@ -1,149 +1,189 @@
-import { useMemo, useState }from 'react';
-import { useNavigate }from 'react-router-dom';
-import { useResumeStore }from '@/store/resumeStore';
-import { Button }from '@/components/ui/button';
-import { Input }from '@/components/ui/input';
-import { Textarea }from '@/components/ui/textarea';
-import { ArrowLeft, Save, Download }from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import MainLayout from '@/components/layout/MainLayout';
+import { useResumeStore } from '@/store/resumeStore';
+import BuilderSidebar, { type BuilderSection, type BuilderSectionId } from '@/components/builder/BuilderSidebar';
+import ResumePreview from '@/components/builder/ResumePreview';
+import BuilderActionsDialog from '@/components/builder/BuilderActionsDialog';
+import ShortcutsModal from '@/components/builder/ShortcutsModal';
+import PersonalForm from '@/components/builder/PersonalForm';
+import ExperienceForm from '@/components/builder/ExperienceForm';
+import EducationForm from '@/components/builder/EducationForm';
+import SkillsForm from '@/components/builder/SkillsForm';
+import { Textarea } from '@/components/ui/textarea';
+
+const INITIAL_SECTIONS: BuilderSection[] = [
+  { id: 'personal', label: 'Personal Info', visible: true },
+  { id: 'summary', label: 'Summary', visible: true },
+  { id: 'experience', label: 'Experience', visible: true },
+  { id: 'education', label: 'Education', visible: true },
+  { id: 'skills', label: 'Skills', visible: true },
+];
 
 const Builder = () => {
   const navigate = useNavigate();
-  const currentResume = useResumeStore((state) => state.currentResume);
+  const currentResume = useResumeStore((s) => s.currentResume);
+
+  const [sections, setSections] = useState<BuilderSection[]>(() => INITIAL_SECTIONS);
+  const [activeTab, setActiveTab] = useState<BuilderSectionId>('personal');
+  const [selectedTemplate, setSelectedTemplate] = useState('modern-red');
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      // Safe-mode: local store save only (persist middleware already stores data)
       await new Promise((r) => setTimeout(r, 250));
-    }finally {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
       setSaving(false);
+    }
+  }, []);
+
+  const handleDownload = useCallback(() => {
+    window.print();
+  }, []);
+
+  const handleReorderSections = useCallback((newSections: BuilderSection[]) => {
+    setSections(newSections);
+  }, []);
+
+  const handleToggleSectionVisibility = useCallback((id: string) => {
+    setSections((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s))
+    );
+  }, []);
+
+  const handleOpenShortcuts = useCallback(() => {
+    setActionsOpen(false);
+    setShortcutsOpen(true);
+  }, []);
+
+  const quickPresets = useMemo(
+    () => [
+      {
+        id: 'sample',
+        label: 'Sample data',
+        description: 'Pre-fill with example',
+        apply: () => {
+          const store = useResumeStore.getState();
+          store.updatePersonalInfo('fullName', 'Nguyen Van A');
+          store.updatePersonalInfo('email', 'nguyenvana@example.com');
+          store.updatePersonalInfo('phone', '+84 123 456 789');
+          store.updateField('summary', 'Experienced developer with 5+ years in web technologies.');
+          if (store.currentResume.experience.length === 0) {
+            store.addExperience({
+              id: `exp-${Date.now()}`,
+              company: 'Tech Corp',
+              position: 'Senior Developer',
+              startDate: '2020',
+              endDate: 'Present',
+              description: 'Lead frontend development.',
+            });
+          }
+        },
+      },
+    ],
+    []
+  );
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        setShortcutsOpen((open) => !open);
+      }
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+      if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        handleDownload();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleSave, handleDownload]);
+
+  const renderFormPanel = () => {
+    switch (activeTab) {
+      case 'personal':
+        return <PersonalForm />;
+      case 'summary':
+        return (
+          <div className="space-y-4" data-section="summary">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Professional Summary</h2>
+            <Textarea
+              placeholder="Write a brief summary of your experience and goals..."
+              value={currentResume.summary}
+              onChange={(e) => useResumeStore.getState().updateField('summary', e.target.value)}
+              className="min-h-[160px] resize-y"
+            />
+          </div>
+        );
+      case 'experience':
+        return <ExperienceForm />;
+      case 'education':
+        return <EducationForm />;
+      case 'skills':
+        return <SkillsForm />;
+      default:
+        return null;
     }
   };
 
-  const handleDownload = () => {
-    window.print();
-  };
-
-  const previewName = currentResume.personalInfo.fullName || 'Your Name';
-
-  const previewContact = useMemo(() => {
-    const p = currentResume.personalInfo;
-    return [p.email, p.phone, p.address].filter(Boolean).join(' • ');
-  }, [currentResume.personalInfo]);
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex items-center justify-between mb-4">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleDownload}>
-              <Download className="w-4 h-4 mr-2" />
-              Download
-            </Button>
-            <Button onClick={handleSave}className="bg-crimson-red hover:bg-fire-red text-white">
-              <Save className="w-4 h-4 mr-2" />
-              {saving ? 'Saving...' : 'Save'}
-            </Button>
+    <MainLayout layoutMode="narrow" showLeftSidebar={false} showRightSidebar={false}>
+      <div className="flex h-[calc(100vh-120px)] min-h-[500px] bg-gray-50 dark:bg-gray-950">
+        <BuilderSidebar
+          sections={sections}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          mode="guided"
+          saved={saved}
+          saving={saving}
+          onSave={handleSave}
+          onDownload={handleDownload}
+          isCollapsed={isCollapsed}
+          onToggleCollapsed={() => setIsCollapsed((c) => !c)}
+          onOpenActions={() => setActionsOpen(true)}
+          onBack={() => navigate('/dashboard')}
+          currentResume={currentResume}
+        />
+
+        <div className="flex-1 flex overflow-hidden">
+          <div className="w-1/2 border-r border-gray-200 dark:border-gray-800 overflow-y-auto p-6 bg-white dark:bg-gray-900">
+            <div className="max-w-xl mx-auto">{renderFormPanel()}</div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-4">
-            <h2 className="font-bold">Personal Information</h2>
-            <Input
-              placeholder="Full name"
-              value={currentResume.personalInfo.fullName}
-              onChange={(e) => useResumeStore.getState().updatePersonalInfo('fullName', e.target.value)}
-            />
-            <Input
-              placeholder="Email"
-              value={currentResume.personalInfo.email}
-              onChange={(e) => useResumeStore.getState().updatePersonalInfo('email', e.target.value)}
-            />
-            <Input
-              placeholder="Phone"
-              value={currentResume.personalInfo.phone}
-              onChange={(e) => useResumeStore.getState().updatePersonalInfo('phone', e.target.value)}
-            />
-            <Textarea
-              placeholder="Summary"
-              value={currentResume.summary}
-              onChange={(e) => useResumeStore.getState().updateField('summary', e.target.value)}
-            />
-
-            <div className="pt-2">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">Experience</h3>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    useResumeStore.getState().addExperience({
-                      id: `exp-${Date.now()}`,
-                      company: '',
-                      position: '',
-                      startDate: '',
-                      endDate: '',
-                      description: '',
-                    })
-                  }
-                >
-                  Add
-                </Button>
-              </div>
-              <div className="space-y-2">
-                {currentResume.experience.map((exp, idx) => (
-                  <div key={exp.id || idx}className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-2">
-                    <Input
-                      placeholder="Company"
-                      value={exp.company}
-                      onChange={(e) => useResumeStore.getState().updateExperience(idx, { ...exp, company: e.target.value })}
-                    />
-                    <Input
-                      placeholder="Position"
-                      value={exp.position}
-                      onChange={(e) => useResumeStore.getState().updateExperience(idx, { ...exp, position: e.target.value })}
-                    />
-                    <Button size="sm" variant="ghost" onClick={() => useResumeStore.getState().removeExperience(idx)}>
-                      Remove
-                    </Button>
-                  </div>
-                ))}
-              </div>
+          <div className="w-1/2 overflow-y-auto p-6 bg-gray-100 dark:bg-gray-900 flex items-start justify-center">
+            <div className="w-full max-w-[210mm] shadow-lg">
+              <ResumePreview template={selectedTemplate} sections={sections} />
             </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-            <h1 className="text-3xl font-black mb-2">{previewName}</h1>
-            <p className="text-sm text-gray-500 mb-4">{previewContact}</p>
-            {currentResume.summary && (
-              <>
-                <h3 className="font-bold text-sm uppercase tracking-wide mb-2">Summary</h3>
-                <p className="text-sm whitespace-pre-wrap mb-4">{currentResume.summary}</p>
-              </>
-            )}
-            {currentResume.experience.length > 0 && (
-              <>
-                <h3 className="font-bold text-sm uppercase tracking-wide mb-2">Experience</h3>
-                <div className="space-y-2">
-                  {currentResume.experience.map((exp, idx) => (
-                    <div key={exp.id || idx}>
-                      <p className="font-semibold">{exp.position || 'Position'}· {exp.company || 'Company'}</p>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
-    </div>
+
+      <BuilderActionsDialog
+        open={actionsOpen}
+        onOpenChange={setActionsOpen}
+        selectedTemplate={selectedTemplate}
+        onSelectTemplate={setSelectedTemplate}
+        sections={sections}
+        onReorderSections={handleReorderSections}
+        onToggleSectionVisibility={handleToggleSectionVisibility}
+        onOpenShortcuts={handleOpenShortcuts}
+        quickPresets={quickPresets}
+      />
+
+      <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+    </MainLayout>
   );
 };
 
-export default Builder;
+export default memo(Builder);

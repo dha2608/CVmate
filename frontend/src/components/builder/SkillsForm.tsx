@@ -22,44 +22,32 @@ const SkillChip = memo(function SkillChip({ skill, onRemove }: SkillChipProps) {
 });
 
 const SkillsForm = () => {
-  const { skills, setSkills } = useResumeStore((s) => ({
-    skills: s.currentResume.skills,
-    setSkills: s.setSkills,
-  }));
-
+  const skills = useResumeStore((s) => s.currentResume.skills);
   const [inputValue, setInputValue] = useState('');
 
   const addSkill = useCallback(() => {
     const trimmed = inputValue.trim();
-    if (!trimmed) {
-      return;
-    }
-
-    const validation = validateSkill(trimmed, skills);
-    if (!validation.valid) {
-      return;
-    }
-
-    setSkills([...skills, trimmed]);
+    if (!trimmed) return;
+    const store = useResumeStore.getState();
+    const current = store.currentResume.skills;
+    const validation = validateSkill(trimmed, current);
+    if (!validation.valid) return;
+    store.setSkills([...current, trimmed]);
     setInputValue('');
-  }, [inputValue, setSkills, skills]);
+  }, [inputValue]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addSkill();
-      }
-    },
-    [addSkill]
-  );
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addSkill();
+    }
+  }, [addSkill]);
 
-  const removeSkill = useCallback(
-    (skillToRemove: string) => {
-      setSkills(skills.filter((skill) => skill !== skillToRemove));
-    },
-    [setSkills, skills]
-  );
+  const removeSkill = useCallback((skillToRemove: string) => {
+    const store = useResumeStore.getState();
+    const current = store.currentResume.skills;
+    store.setSkills(current.filter((skill) => skill !== skillToRemove));
+  }, []);
 
   const isDuplicate = useMemo(
     () =>
