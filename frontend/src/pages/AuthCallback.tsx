@@ -23,11 +23,14 @@ const AuthCallback = () => {
     if (token) {
       const fetchUser = async () => {
         try {
-          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-          const response = await fetch(`${API_URL}/auth/me`, {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+          const normalizedApiUrl = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+
+          const response = await fetch(`${normalizedApiUrl}/auth/me`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
+            credentials: 'include',
           });
 
           const data = await response.json();

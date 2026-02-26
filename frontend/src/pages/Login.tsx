@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useI18n } from '@/store/i18nStore';
 import { useToastStore } from '@/store/toastStore';
@@ -16,7 +16,25 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setUser } = useAuthStore();
+
+  useEffect(() => {
+    const oauthError = searchParams.get('error');
+    if (!oauthError) {
+      return;
+    }
+
+    const errorMessageMap: Record<string, string> = {
+      google_auth_failed: 'Google đăng nhập thất bại. Vui lòng thử lại.',
+      google_auth_error: 'Đăng nhập Google gặp lỗi. Vui lòng thử lại.',
+      access_denied: 'Bạn đã từ chối quyền đăng nhập Google.',
+    };
+
+    const message = errorMessageMap[oauthError] || t('toast.loginFailed');
+    setError(message);
+    toast.error(message);
+  }, [searchParams, t, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +43,7 @@ const Login = () => {
 
     try {
       const data = await api.login(email, password);
-      
+
       if (data.success) {
         logger.info('login_success', { email });
         setUser(data.data);
@@ -41,8 +59,7 @@ const Login = () => {
     } catch (err: any) {
       logger.error('login_failed', err);
       let errorMsg = err.message || t('toast.loginFailed');
-      
-      // Handle timeout errors specifically
+
       if (err.type === 'timeout' || err.status === 408) {
         errorMsg = t('toast.requestTimeout') || 'Request timeout. Please check your connection and try again.';
       } else if (err.status === 503) {
@@ -50,7 +67,7 @@ const Login = () => {
       } else if (err.status === 429) {
         errorMsg = 'Too many requests. Please wait a moment and try again.';
       }
-      
+
       setError(errorMsg);
       toast.error(errorMsg);
     } finally {
@@ -61,7 +78,6 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-5xl mx-auto grid gap-10 md:gap-14 md:grid-cols-[minmax(0,1.2fr),minmax(0,1fr)] items-center">
-        {/* Left: marketing copy */}
         <div className="hidden md:block space-y-6">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-crimson-red rounded-2xl text-white font-black text-2xl shadow-lg">
             CV
@@ -88,7 +104,6 @@ const Login = () => {
           </ul>
         </div>
 
-        {/* Right: auth card */}
         <div className="w-full max-w-md mx-auto bg-white dark:bg-gray-900/90 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl shadow-black/5 p-8 space-y-8">
           <div className="md:hidden text-center space-y-3">
             <div className="inline-flex items-center justify-center w-14 h-14 bg-crimson-red rounded-2xl text-white font-black text-2xl shadow-md">
@@ -119,18 +134,18 @@ const Login = () => {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-jet-black dark:text-gray-100">{t('auth.password')}</label>
-              <Input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                required 
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 placeholder="••••••••"
                 autoComplete="current-password"
                 className="h-11 border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:border-crimson-red focus:ring-crimson-red"
               />
             </div>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={loading}
               className="w-full h-11 bg-crimson-red hover:bg-fire-red text-white font-semibold text-base rounded-lg"
             >
@@ -149,8 +164,8 @@ const Login = () => {
             </div>
           </div>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full h-11 border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 font-semibold transition-all text-sm"
             onClick={() => {
               const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';

@@ -183,7 +183,13 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
   - Acceptance:
     - User mới vào onboarding sau đăng ký.
     - User cũ vào dashboard trực tiếp.
-  - Status: `pending`
+  - Cập nhật đã triển khai:
+    - Login điều hướng theo `onboardingCompleted`.
+    - Register luôn vào `/onboarding` sau khi tạo tài khoản.
+    - `ProtectedRoute` chặn truy cập route protected khi chưa onboarding.
+    - OAuth callback normalize `VITE_API_URL` để luôn gọi đúng `/api/auth/me`.
+    - Login hiển thị thông báo lỗi OAuth từ query param `?error=`.
+  - Status: `completed`
 
 - `T6` (`P0`) Dashboard cơ bản
   - Scope: số lượng CV, phiên phỏng vấn, bài viết lưu.
@@ -242,14 +248,14 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 
 - Snapshot: `2026-02-27`
 - Tổng task: `15`
-- Completed: `1/15` (6.7%)
+- Completed: `2/15` (13.3%)
 - In Progress: `0/15`
-- Pending: `14/15`
+- Pending: `13/15`
 
 ### 8.4. TASK ĐANG CHẠY TIẾP THEO (NEXT ACTION)
 
-- Chọn `T1 (P0) - Auth + Onboarding flow` làm task triển khai kế tiếp.
+- Chọn `T2 (P0) - CV Builder MVP` làm task triển khai kế tiếp.
 - Lý do:
-  - Là cửa vào cho toàn bộ module sau (Builder/Interview/Dashboard).
-  - Giảm rủi ro tích hợp state + routing + quyền truy cập sớm.
+  - Là core value trực tiếp theo mục tiêu sản phẩm (tạo CV nhanh).
+  - Tận dụng luồng auth/onboarding đã hoàn thiện để triển khai end-to-end tạo/sửa/lưu CV.
 
