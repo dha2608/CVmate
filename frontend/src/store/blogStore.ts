@@ -32,16 +32,16 @@ export const useBlogStore = create<BlogState>((set) => ({
   error: null,
 
   fetchArticles: async () => {
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     try {
-      const res = await api.getArticles();
+      const res = await api.getArticles({ timeout: 15000 });
       if (res.success) {
         set({ articles: res.data as Article[], isLoading: false });
       } else {
         set({ error: (res as any).message || 'Failed to load articles', isLoading: false });
       }
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ error: error?.message || 'Failed to load articles', isLoading: false, articles: [] });
     }
   },
 

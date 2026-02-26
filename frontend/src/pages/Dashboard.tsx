@@ -83,23 +83,16 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { t }= useI18n();
 
-  const { stats, fetchStats, isLoading: statsLoading }= useDashboardStore((state) => ({
+  const { stats, isLoading: statsLoading } = useDashboardStore((state) => ({
     stats: state.stats,
-    fetchStats: state.fetchStats,
     isLoading: state.isLoading,
   }));
 
-  const { fetchPosts }= useCommunityStore((state) => ({ fetchPosts: state.fetchPosts }));
+  const articles = useBlogStore((state) => state.articles);
+  const articlesLoading = useBlogStore((state) => state.isLoading);
 
-  const { articles, fetchArticles, isLoading: articlesLoading }= useBlogStore((state) => ({
-    articles: state.articles,
-    fetchArticles: state.fetchArticles,
-    isLoading: state.isLoading,
-  }));
-
-  const { achievements, fetchAchievements }= useAchievementStore((state) => ({
+  const { achievements } = useAchievementStore((state) => ({
     achievements: state.achievements,
-    fetchAchievements: state.fetchAchievements,
   }));
 
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -114,21 +107,21 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) return;
     let mounted = true;
-
     const loadData = async () => {
       setIsInitialLoading(true);
       try {
-        await Promise.all([fetchStats(), fetchPosts(), fetchArticles(), fetchAchievements()]);
-      }finally {
+        const { fetchStats: fs } = useDashboardStore.getState();
+        const { fetchPosts: fp } = useCommunityStore.getState();
+        const { fetchArticles: fa } = useBlogStore.getState();
+        const { fetchAchievements: fach } = useAchievementStore.getState();
+        await Promise.all([fs(), fp(), fa(), fach()]);
+      } finally {
         if (mounted) setIsInitialLoading(false);
       }
     };
-
     loadData();
-    return () => {
-      mounted = false;
-    };
-  }, [user, fetchStats, fetchPosts, fetchArticles, fetchAchievements]);
+    return () => { mounted = false; };
+  }, [user]);
 
   const profileProgress = useMemo(() => {
     if (!user) return 0;
