@@ -270,7 +270,11 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
 - `T10` (`P1`) CMS + AI Summary
   - Scope: CRUD bài viết admin + tóm tắt bài viết.
   - Acceptance: bài đăng public hiển thị đúng, summary tạo được.
-  - Status: `pending`
+  - Cập nhật đã triển khai:
+    - Bổ sung form tạo bài viết trong Admin page (title/category/image/content).
+    - Kết nối API `POST /articles` từ frontend.
+    - Backend tự sinh AI summary + tags khi tạo bài viết.
+  - Status: `completed`
 
 ### 8.3. TIẾN ĐỘ HIỆN TẠI
 

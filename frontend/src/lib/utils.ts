@@ -176,6 +176,17 @@ export const api = {
   getArticle: (id: string) =>
     apiRequest<{ success: boolean; data: any }>(`/articles/${id}`),
 
+  createArticle: (payload: {
+    title: string;
+    content: string;
+    category?: string;
+    image?: string;
+  }) =>
+    apiRequest<{ success: boolean; data: any; message?: string }>("/articles", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
   getNews: (limit?: number) =>
     apiRequest<{ success: boolean; data: any[]; count: number }>(
       `/news?limit=${limit || 20}`,
