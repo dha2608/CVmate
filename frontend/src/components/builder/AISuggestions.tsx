@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Brain, Lightbulb, X, Check, Copy } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Brain, Lightbulb, X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useI18n } from '@/store/i18nStore';
+import { useResumeStore } from '@/store/resumeStore';
 
 interface Suggestion {
   id: string;
@@ -9,6 +9,7 @@ interface Suggestion {
   title: string;
   description: string;
   action?: string;
+  aiAction?: 'enhance-summary' | 'optimize-keywords';
 }
 
 interface AISuggestionsProps {
@@ -16,37 +17,54 @@ interface AISuggestionsProps {
 }
 
 const AISuggestions = ({ onApply }: AISuggestionsProps) => {
-  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
   const [suggestions] = useState<Suggestion[]>([
     {
       id: '1',
       type: 'improvement',
       title: 'Enhance Summary',
       description: 'Your summary could be more impactful. Add quantifiable achievements.',
-      action: 'Enhance with AI'
+      action: 'Enhance with AI',
+      aiAction: 'enhance-summary',
     },
     {
       id: '2',
       type: 'addition',
       title: 'Add Skills Section',
       description: 'Consider adding technical skills to highlight your expertise.',
-      action: 'Add Section'
+      action: 'Add Section',
     },
     {
       id: '3',
       type: 'optimization',
       title: 'Optimize Keywords',
       description: 'Add more ATS-friendly keywords to increase visibility.',
-      action: 'Optimize'
+      action: 'Optimize',
+      aiAction: 'optimize-keywords',
     },
   ]);
   const [applied, setApplied] = useState<Set<string>>(new Set());
 
-  const handleApply = (suggestion: Suggestion) => {
-    setApplied(new Set([...applied, suggestion.id]));
+  const handleApply = useCallback(async (suggestion: Suggestion) => {
+    setApplied((prev) => new Set([...prev, suggestion.id]));
     onApply?.(suggestion);
-  };
+
+    if (suggestion.aiAction === 'enhance-summary') {
+      setLoading(suggestion.id);
+      try {
+        const store = useResumeStore.getState();
+        const text = store.currentResume.summary?.trim() || 'Experienced professional seeking new opportunities.';
+        const enhanced = await store.aiEnhanceText(text, 'summary');
+        if (enhanced) store.updateField('summary', enhanced);
+      } catch (e) {
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().error((e as Error)?.message || 'Enhance failed');
+      } finally {
+        setLoading(null);
+      }
+    }
+  }, [onApply]);
 
   const unreadCount = suggestions.filter(s => !applied.has(s.id)).length;
 
@@ -123,9 +141,10 @@ const AISuggestions = ({ onApply }: AISuggestionsProps) => {
                         {!isApplied && suggestion.action && (
                           <button
                             onClick={() => handleApply(suggestion)}
-                            className="w-full mt-2 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
+                            disabled={loading === suggestion.id}
+                            className="w-full mt-2 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-70"
                           >
-                            {suggestion.action}
+                            {loading === suggestion.id ? '…' : suggestion.action}
                           </button>
                         )}
                       </motion.div>

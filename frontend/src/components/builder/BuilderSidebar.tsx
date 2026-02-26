@@ -135,12 +135,12 @@ const BuilderSidebar = ({
 
   return (
     <aside
-      className={`h-full border-r border-gray-200 bg-gradient-to-b from-white to-gray-50/50 flex flex-col ${
+      className={`h-full border-r border-gray-200 dark:border-gray-700 bg-gradient-to-b from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800 flex flex-col ${
         isCollapsed ? 'w-[72px]' : 'w-[280px]'
       } transition-all duration-300 ease-in-out shadow-sm`}
     >
       {/* Header */}
-      <div className="h-16 px-4 flex items-center justify-between border-b border-gray-200 bg-white">
+      <div className="h-16 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         {!isCollapsed && (
           <div className="flex items-center gap-3 min-w-0 flex-1">
             {onBack && (
@@ -191,7 +191,7 @@ const BuilderSidebar = ({
 
       {/* Progress Bar */}
       {!isCollapsed && (
-        <div className="px-4 py-3 border-b border-gray-200 bg-white">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-semibold text-gray-600">Progress</span>
             <span className="text-xs font-bold text-crimson-red">{Math.round(progress)}%</span>
@@ -283,7 +283,7 @@ const BuilderSidebar = ({
       </nav>
 
       {/* Actions */}
-      <div className="border-t border-gray-200 bg-white p-3 space-y-2">
+      <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 space-y-2">
         {!isCollapsed && (
           <div className="px-2 pb-2">
             <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">

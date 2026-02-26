@@ -11,6 +11,50 @@ import ExperienceForm from '@/components/builder/ExperienceForm';
 import EducationForm from '@/components/builder/EducationForm';
 import SkillsForm from '@/components/builder/SkillsForm';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Menu, Eye, Edit3, Brain } from 'lucide-react';
+
+const SummaryPanel = memo(({ summary, onSummaryChange }: { summary: string; onSummaryChange: (v: string) => void }) => {
+  const [enhancing, setEnhancing] = useState(false);
+  const handleAiEnhance = useCallback(async () => {
+    const text = summary?.trim() || 'Experienced professional seeking new opportunities.';
+    setEnhancing(true);
+    try {
+      const enhanced = await useResumeStore.getState().aiEnhanceText(text, 'summary');
+      if (enhanced) onSummaryChange(enhanced);
+    } catch (e) {
+      const { useToastStore } = await import('@/store/toastStore');
+      useToastStore.getState().error((e as Error)?.message || 'Enhance failed');
+    } finally {
+      setEnhancing(false);
+    }
+  }, [summary, onSummaryChange]);
+  return (
+    <div className="space-y-4" data-section="summary">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Professional Summary</h2>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleAiEnhance}
+          disabled={enhancing}
+          className="gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/30"
+        >
+          <Brain size={16} />
+          {enhancing ? 'Enhancing…' : 'AI Enhance'}
+        </Button>
+      </div>
+      <Textarea
+        placeholder="Write a brief summary of your experience and goals..."
+        value={summary}
+        onChange={(e) => onSummaryChange(e.target.value)}
+        className="min-h-[160px] resize-y"
+      />
+    </div>
+  );
+});
+SummaryPanel.displayName = 'SummaryPanel';
 
 const INITIAL_SECTIONS: BuilderSection[] = [
   { id: 'personal', label: 'Personal Info', visible: true },
@@ -32,6 +76,8 @@ const Builder = () => {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -91,6 +137,26 @@ const Builder = () => {
     []
   );
 
+  const handleAiGenerate = useCallback(async (payload: { prompt?: string; jobDescription?: string; role?: string; mode?: string }) => {
+    const store = useResumeStore.getState();
+    const data = await store.aiGenerateFull({
+      prompt: payload.prompt || payload.jobDescription,
+      role: (payload.role as any) || 'fullstack',
+      mode: (payload.mode as 'concise' | 'human') || 'human',
+    });
+    if (!data) return;
+    const current = store.currentResume;
+    store.setResume({
+      ...current,
+      summary: data.summary || current.summary,
+      experience: (data.experience ?? []).map((exp, i) => ({ ...exp, id: exp.id || `exp-${Date.now()}-${i}` })),
+      education: (data.education ?? []).map((edu, i) => ({ ...edu, id: edu.id || `edu-${Date.now()}-${i}` })),
+      skills: data.skills?.length ? data.skills : current.skills,
+    });
+    const { useToastStore } = await import('@/store/toastStore');
+    useToastStore.getState().success('CV generated. Review and edit as needed.');
+  }, []);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
@@ -116,15 +182,10 @@ const Builder = () => {
         return <PersonalForm />;
       case 'summary':
         return (
-          <div className="space-y-4" data-section="summary">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Professional Summary</h2>
-            <Textarea
-              placeholder="Write a brief summary of your experience and goals..."
-              value={currentResume.summary}
-              onChange={(e) => useResumeStore.getState().updateField('summary', e.target.value)}
-              className="min-h-[160px] resize-y"
-            />
-          </div>
+          <SummaryPanel
+            summary={currentResume.summary}
+            onSummaryChange={(v) => useResumeStore.getState().updateField('summary', v)}
+          />
         );
       case 'experience':
         return <ExperienceForm />;
@@ -139,31 +200,98 @@ const Builder = () => {
 
   return (
     <MainLayout layoutMode="narrow" showLeftSidebar={false} showRightSidebar={false}>
-      <div className="flex h-[calc(100vh-120px)] min-h-[500px] bg-gray-50 dark:bg-gray-950">
-        <BuilderSidebar
-          sections={sections}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          mode="guided"
-          saved={saved}
-          saving={saving}
-          onSave={handleSave}
-          onDownload={handleDownload}
-          isCollapsed={isCollapsed}
-          onToggleCollapsed={() => setIsCollapsed((c) => !c)}
-          onOpenActions={() => setActionsOpen(true)}
-          onBack={() => navigate('/dashboard')}
-          currentResume={currentResume}
-        />
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-120px)] min-h-[500px] bg-gray-50 dark:bg-gray-950 relative">
+        {/* Mobile: overlay sidebar */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+        <div
+          className={`fixed lg:relative inset-y-0 left-0 z-40 lg:z-auto w-[280px] lg:w-auto transform transition-transform duration-300 ease-out shadow-xl lg:shadow-none ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          }`}
+        >
+          <BuilderSidebar
+            sections={sections}
+            activeTab={activeTab}
+            setActiveTab={(id) => {
+              setActiveTab(id);
+              setSidebarOpen(false);
+            }}
+            mode="guided"
+            saved={saved}
+            saving={saving}
+            onSave={handleSave}
+            onDownload={handleDownload}
+            isCollapsed={sidebarOpen ? false : isCollapsed}
+            onToggleCollapsed={() => setIsCollapsed((c) => !c)}
+            onOpenActions={() => setActionsOpen(true)}
+            onBack={() => navigate('/dashboard')}
+            currentResume={currentResume}
+          />
+        </div>
 
-        <div className="flex-1 flex overflow-hidden">
-          <div className="w-1/2 border-r border-gray-200 dark:border-gray-800 overflow-y-auto p-6 bg-white dark:bg-gray-900">
-            <div className="max-w-xl mx-auto">{renderFormPanel()}</div>
+        {/* Main: form + preview */}
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+          {/* Mobile: toggle Edit / Preview */}
+          <div className="flex lg:hidden border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
+            <button
+              type="button"
+              onClick={() => setMobileView('form')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium ${
+                mobileView === 'form'
+                  ? 'text-crimson-red border-b-2 border-crimson-red bg-red-50/50 dark:bg-red-900/20'
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}
+            >
+              <Edit3 size={18} />
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileView('preview')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium ${
+                mobileView === 'preview'
+                  ? 'text-crimson-red border-b-2 border-crimson-red bg-red-50/50 dark:bg-red-900/20'
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}
+            >
+              <Eye size={18} />
+              Preview
+            </button>
           </div>
 
-          <div className="w-1/2 overflow-y-auto p-6 bg-gray-100 dark:bg-gray-900 flex items-start justify-center">
-            <div className="w-full max-w-[210mm] shadow-lg">
-              <ResumePreview template={selectedTemplate} sections={sections} />
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+            <div
+              className={`w-full lg:w-1/2 border-r border-gray-200 dark:border-gray-800 overflow-y-auto p-4 sm:p-6 bg-white dark:bg-gray-900 ${
+                mobileView !== 'form' ? 'hidden lg:block' : ''
+              }`}
+            >
+              <div className="lg:hidden flex items-center gap-2 mb-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSidebarOpen(true)}
+                  className="gap-2"
+                >
+                  <Menu size={18} />
+                  Sections
+                </Button>
+              </div>
+              <div className="max-w-xl mx-auto">{renderFormPanel()}</div>
+            </div>
+
+            <div
+              className={`w-full lg:w-1/2 overflow-y-auto p-4 sm:p-6 bg-gray-100 dark:bg-gray-900 flex items-start justify-center ${
+                mobileView !== 'preview' ? 'hidden lg:flex' : ''
+              }`}
+            >
+              <div className="w-full max-w-[210mm] shadow-lg bg-white print:shadow-none">
+                <ResumePreview template={selectedTemplate} sections={sections} />
+              </div>
             </div>
           </div>
         </div>
@@ -179,6 +307,7 @@ const Builder = () => {
         onToggleSectionVisibility={handleToggleSectionVisibility}
         onOpenShortcuts={handleOpenShortcuts}
         quickPresets={quickPresets}
+        onAiGenerate={handleAiGenerate}
       />
 
       <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
