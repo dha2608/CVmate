@@ -54,12 +54,16 @@ const Pricing = () => {
 
   const handleSubscribe = (plan: 'free' | 'premium') => {
     if (plan === 'free') {
-      navigate('/register');
-    } else if (!user) {
-        navigate('/login');
-      } else {
-        navigate('/payment');
-      }
+      navigate(user ? '/dashboard' : '/register');
+      return;
+    }
+
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    navigate('/profile');
   };
 
   return (

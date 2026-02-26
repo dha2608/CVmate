@@ -205,6 +205,26 @@ NEWS_API_KEY=...
 2. Frontend: `https://your-domain.com`
 3. API: `https://your-domain.com/api/*`
 
+## 💳 Stripe Sandbox (Test Mode) Quick Guide
+
+Khi test Stripe ở môi trường sandbox/test mode:
+
+1. Đảm bảo backend có biến môi trường:
+   - `STRIPE_SECRET_KEY=sk_test_...`
+   - `STRIPE_WEBHOOK_SECRET=whsec_...` (nếu dùng webhook)
+2. Frontend/flow nâng cấp phải điều hướng tới checkout session do API trả về.
+3. Dùng thẻ test Stripe phổ biến:
+   - Card number: `4242 4242 4242 4242`
+   - Expiry: bất kỳ ngày tương lai (ví dụ `12/34`)
+   - CVC: bất kỳ 3 số (ví dụ `123`)
+   - ZIP/Postal: bất kỳ (ví dụ `10000`)
+4. Test thất bại thanh toán (tuỳ chọn):
+   - `4000 0000 0000 0002` (generic decline)
+
+Lưu ý:
+- Không dùng thẻ thật trong test mode.
+- Sau khi thanh toán test thành công, kiểm tra redirect về `payment/success` và trạng thái subscription trong profile.
+
 ## 📁 Project Structure
 
 ```

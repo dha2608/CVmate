@@ -366,7 +366,7 @@ const Builder = () => {
   return (
     <MainLayout layoutMode="full-width" showLeftSidebar={false} showRightSidebar={false}>
       <div className="max-w-6xl xl:max-w-7xl mx-auto px-2 sm:px-4 lg:px-0">
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-140px)] min-h-[600px] bg-gray-50 dark:bg-gray-950 rounded-xl lg:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 relative">
+        <div className="flex flex-col lg:flex-row min-h-[600px] bg-gray-50 dark:bg-gray-950 rounded-xl lg:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 relative">
           {/* Mobile: overlay sidebar */}
           {sidebarOpen && (
             <div
@@ -432,7 +432,7 @@ const Builder = () => {
 
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
               <div
-                className={`w-full lg:w-5/12 border-r border-gray-200 dark:border-gray-800 overflow-y-auto p-4 sm:p-6 bg-white dark:bg-gray-900 ${
+                className={`w-full lg:w-5/12 border-r border-gray-200 dark:border-gray-800 p-4 sm:p-6 bg-white dark:bg-gray-900 ${
                   mobileView !== 'form' ? 'hidden lg:block' : ''
                 }`}
               >

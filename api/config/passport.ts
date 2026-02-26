@@ -13,12 +13,23 @@ import logger from '../utils/logger.js';
 
 // Chỉ khởi tạo Google Strategy nếu có đủ env vars
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  const backendBaseUrl =
+    process.env.BACKEND_URL ||
+    process.env.RENDER_EXTERNAL_URL ||
+    'http://localhost:5001';
+  const normalizedBackendBaseUrl = backendBaseUrl.endsWith('/')
+    ? backendBaseUrl.slice(0, -1)
+    : backendBaseUrl;
+  const resolvedCallbackUrl =
+    process.env.GOOGLE_CALLBACK_URL ||
+    `${normalizedBackendBaseUrl}/api/auth/google/callback`;
+
   passport.use(
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback',
+        callbackURL: resolvedCallbackUrl,
       },
       async (accessToken, refreshToken, profile, done) => {
         try {

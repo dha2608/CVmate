@@ -1454,7 +1454,7 @@ const Home = () => {
 
 
 
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate(user ? '/dashboard' : '/register')}
 
 
 

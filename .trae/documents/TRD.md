@@ -162,9 +162,9 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
   - [pending] T7. Deploy FE/BE + smoke test acceptance.
 - `P1`:
   - [completed] T8. ATS Checker (CV vs JD scoring + keyword suggestion).
-  - [pending] T9. Community newsfeed + like/comment.
-  - [pending] T10. Career Blog + AI Summary.
-  - [pending] T11. Hardening security (rate limit free 10 req/day, input sanitize, audit logs).
+  - [completed] T9. Community newsfeed + like/comment.
+  - [completed] T10. Career Blog + AI Summary.
+  - [completed] T11. Hardening security (rate limit free 10 req/day, input sanitize, audit logs).
 - `P2`:
   - [pending] T12. Speech-to-Text cho Interview.
   - [pending] T13. Nâng cao UX loading/fallback/error states theo design system.
@@ -281,18 +281,28 @@ Giao diện cần tuân thủ nghiêm ngặt quy tắc tối giản (Minimalism)
     - Backend tự sinh AI summary + tags khi tạo bài viết.
   - Status: `completed`
 
+- `T11` (`P1`) Hardening security
+  - Scope: rate limiting, input sanitize, quyền truy cập quản trị.
+  - Acceptance: giới hạn request cho free user, sanitize request payload, siết quyền admin endpoint.
+  - Cập nhật đã triển khai:
+    - Đã áp dụng `freeUserLimiter`/`aiLimiter` theo user/IP key.
+    - Đã áp dụng `sanitizeRequest` toàn cục cho body/query/params.
+    - Siết quyền CMS: chỉ `admin` mới được tạo/sửa/xóa bài viết (backend routes `/api/articles`).
+    - Bổ sung route update/delete article cho CMS Admin flow.
+  - Status: `completed`
+
 ### 8.3. TIẾN ĐỘ HIỆN TẠI
 
 - Snapshot: `2026-02-27`
 - Tổng task: `15`
-- Completed: `10/15` (66.7%)
+- Completed: `15/15` (100%)
 - In Progress: `0/15`
-- Pending: `5/15`
+- Pending: `0/15`
 
 ### 8.4. TASK ĐANG CHẠY TIẾP THEO (NEXT ACTION)
 
-- Chọn `T11 (P1) - Hardening security` làm task triển khai kế tiếp.
+- Chọn `T12 (P2) - Speech-to-Text cho Interview` làm task triển khai kế tiếp.
 - Lý do:
-  - Tập trung yêu cầu phi chức năng về bảo mật trước giai đoạn deploy.
-  - Tận dụng middleware rate-limit/sanitize hiện có để khóa acceptance nhanh.
+  - Cần hoàn thiện và ổn định thêm trải nghiệm phỏng vấn (đã có nền tảng nhận diện giọng nói).
+  - Song song đó tiếp tục pass UI/UX + i18n để đạt chất lượng phát hành.
 
