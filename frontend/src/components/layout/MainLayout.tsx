@@ -133,7 +133,7 @@ const MainLayout = ({
       <SkipLinks />
       
       {/* Navbar - Hidden on mobile (md and up only) */}
-      <nav id="navigation" className="hidden md:block glass-navbar sticky top-0 z-50 shadow-sm transition-all duration-300" role="navigation" aria-label="Main navigation">
+      <nav id="navigation" className="hidden md:block glass-nav shadow-sm transition-all duration-300" role="navigation" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-18">
             
