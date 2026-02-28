@@ -140,12 +140,14 @@ const MainLayout = ({
             {/* Logo & Search */}
             <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 flex-1 min-w-0">
               {/* Logo */}
-              <div 
+              <button
+                type="button"
                 className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-red-600 rounded-lg text-white font-black text-base sm:text-xl cursor-pointer hover:bg-red-700 transition-colors flex-shrink-0"
                 onClick={() => navigate('/dashboard')}
+                aria-label="CV Mate home"
               >
                 CV
-              </div>
+              </button>
               
               <div 
                 className="hidden sm:flex items-center bg-gray-100 dark:bg-gray-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full w-full max-w-xs lg:max-w-sm border border-transparent hover:border-red-500 hover:bg-white dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer"
@@ -153,7 +155,7 @@ const MainLayout = ({
               >
                 <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 dark:text-gray-400 mr-2 flex-shrink-0" aria-hidden="true" />
                 <span className="bg-transparent text-xs sm:text-sm w-full text-gray-600 dark:text-gray-300">
-                  {t('common.search')} jobs, articles, posts...
+                  {`${t('common.search')} jobs, articles, posts...`}
                 </span>
               </div>
               <Button
@@ -175,19 +177,19 @@ const MainLayout = ({
               <NavItem icon={<Briefcase size={18} className="sm:w-5 sm:h-5" />} label={t('nav.jobs')} active={isActive('/jobs')} onClick={() => navigate('/jobs')} />
               <NavItem icon={<MessageSquare size={18} className="sm:w-5 sm:h-5" />} label={t('nav.messages')} active={isActive('/messaging')} onClick={() => navigate('/messaging')} />
               <NavItem icon={<Bell size={18} className="sm:w-5 sm:h-5" />} label={t('nav.alerts')} active={isActive('/notifications')} onClick={() => navigate('/notifications')} />
-              <NavItem icon={<Bookmark size={18} className="sm:w-5 sm:h-5" />} label="Bookmarks" active={isActive('/bookmarks')} onClick={() => navigate('/bookmarks')} />
+              <NavItem icon={<Bookmark size={18} className="sm:w-5 sm:h-5" />} label={language === 'vi' ? 'Đánh dấu' : 'Bookmarks'} active={isActive('/bookmarks')} onClick={() => navigate('/bookmarks')} />
               
               {/* Pricing Link */}
               <NavItem 
                 icon={<Crown size={18} className="sm:w-5 sm:h-5" />} 
-                label="Pricing" 
+                label={language === 'vi' ? 'Bảng giá' : 'Pricing'} 
                 active={isActive('/pricing')} 
                 onClick={() => navigate('/pricing')} 
               />
               {user?.role === 'admin' && (
                 <NavItem 
                   icon={<Shield size={18} className="sm:w-5 sm:h-5" />} 
-                  label="Admin" 
+                  label={language === 'vi' ? 'Quản trị' : 'Admin'} 
                   active={isActive('/admin')} 
                   onClick={() => navigate('/admin')} 
                 />
@@ -346,7 +348,7 @@ const MainLayout = ({
                       onClick={() => navigate('/pricing')}
                     >
                       <Brain size={14} className="mr-2" /> 
-                      Go Premium
+                      {language === 'vi' ? 'Nâng cấp Premium' : 'Go Premium'}
                     </Button>
                   </div>
                 </div>
