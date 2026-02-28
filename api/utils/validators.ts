@@ -74,10 +74,17 @@ export const createJobSchema = z.object({
  */
 export const createPostSchema = z.object({
   content: z.string()
-    .min(1, 'Content is required')
     .max(5000, 'Content must be less than 5000 characters')
-    .trim(),
+    .trim()
+    .optional()
+    .or(z.literal('')),
   image: z.string().url().optional().or(z.literal('')),
+}).refine((data) => {
+  const hasContent = typeof data.content === 'string' && data.content.trim().length > 0;
+  const hasImage = typeof data.image === 'string' && data.image.trim().length > 0;
+  return hasContent || hasImage;
+}, {
+  message: 'Content or image is required',
 });
 
 export const commentPostSchema = z.object({

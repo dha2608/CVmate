@@ -1,0 +1,61 @@
+CV MATE - MASTER TASK PROGRESS
+Last Updated: 2026-02-28
+
+Legend:
+- [TODO]
+- [IN_PROGRESS]
+- [DONE]
+- [BLOCKED]
+
+[IN_PROGRESS] 0) Project-wide tracking setup
+  - [DONE] Create single master progress file
+  - [IN_PROGRESS] Keep updating this file after each execution batch
+
+[TODO] 1) Redesign global layout (Task 1)
+  - [TODO] Audit current layout patterns and breakpoints
+  - [TODO] Define new layout architecture (desktop/tablet/mobile)
+  - [TODO] Refactor MainLayout, header/nav, footer, sidebars
+  - [TODO] Validate accessibility and responsive behavior
+
+[TODO] 2) Unify UI/colors (Task 2)
+  - [TODO] Define color tokens and usage rules
+  - [TODO] Normalize Button/Input/Card/Badge/Modal styles
+  - [TODO] Remove local color overrides and use shared variants
+  - [TODO] Cross-page visual consistency pass
+
+[TODO] 3) Subscription upgrade after sandbox payment (Task 3)
+  - [DONE] Add backend endpoint to verify checkout session
+  - [DONE] Add frontend verify flow on PaymentSuccess page
+  - [TODO] Validate end-to-end in deployed environment
+
+[TODO] 4) Runtime issues (Task 4)
+  - [DONE] Zustand import check: source uses `import { create } from 'zustand'`
+  - [DONE] Fix posts 400 for image-only post validation
+  - [DONE] Fix avatar/cover upload response compatibility
+  - [TODO] Verify runtime logs after redeploy
+
+[TODO] 5) Complete Admin page/system (Task 5)
+  - [TODO] Audit current admin routes/components
+  - [TODO] Define complete admin modules (users/content/jobs/payments/moderation)
+  - [TODO] Implement missing modules and permissions
+  - [TODO] Add admin operational actions and safeguards
+
+[TODO] 6) Redesign CV Builder UI/layout (Task 6)
+  - [TODO] Audit current builder information flow
+  - [TODO] Redesign editor/preview/action layout
+  - [TODO] Improve section editing UX and navigation
+  - [TODO] Verify export/preview behaviors
+
+[IN_PROGRESS] 7) Full app VI/EN translation consistency (Task 7)
+  - [DONE] Convert Pricing page to full VI/EN language-aware copy (header, cards, compare table, FAQs, SEO)
+  - [DONE] Convert PaymentSuccess page to VI/EN language-aware copy
+  - [DONE] Convert PaymentCancel page to VI/EN language-aware copy
+  - [IN_PROGRESS] Replace hardcoded strings with i18n keys in high-traffic pages
+  - [TODO] Fill missing keys in both vi/en dictionaries
+  - [TODO] Validate language switch across full app
+
+Execution Log:
+- 2026-02-28 22:36 | DONE | Created `TASK_PROGRESS.txt` master tracker.
+- 2026-02-28 22:44 | DONE | Updated `frontend/src/pages/Pricing.tsx` to support full VI/EN copy switching.
+- 2026-02-28 23:02 | DONE | Updated `frontend/src/pages/PaymentSuccess.tsx` with VI/EN language-aware copy.
+- 2026-02-28 23:05 | DONE | Updated `frontend/src/pages/PaymentCancel.tsx` with VI/EN language-aware copy.
