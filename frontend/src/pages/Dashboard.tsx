@@ -29,7 +29,7 @@ const QuickActionCard = memo(({ icon, title, desc, color, onClick }: any) => (
     <div className="p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm group-hover:scale-110 transition-transform duration-300">{icon}</div>
     <div className="min-w-0 w-full">
       <h3 className="font-bold text-gray-800 dark:text-white text-xs sm:text-sm truncate">{title}</h3>
-      <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{desc}</p>
+      <p className="text-[10px] sm:text-xs text-gray-700 dark:text-gray-300 mt-0.5 line-clamp-2">{desc}</p>
     </div>
   </motion.div>
 ));
@@ -160,7 +160,7 @@ const Dashboard = () => {
                 </>
               )}
             </div>
-            <Button variant="ghost" size="icon" className="rounded-full bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400"><Search size={18}/></Button>
+            <Button variant="ghost" size="icon" className="rounded-full bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400" aria-label={t('common.search')}><Search size={18}/></Button>
           </div>
           <div onClick={handleCommunityClick}className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200/50 dark:border-gray-600/50">
             <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 shadow-sm border border-gray-100 dark:border-gray-600"><PenTool size={18}/></div>

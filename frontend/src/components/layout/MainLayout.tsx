@@ -152,7 +152,7 @@ const MainLayout = ({
                 onClick={() => setIsSearchModalOpen(true)}
               >
                 <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 dark:text-gray-400 mr-2 flex-shrink-0" aria-hidden="true" />
-                <span className="bg-transparent text-xs sm:text-sm w-full text-gray-400 dark:text-gray-500">
+                <span className="bg-transparent text-xs sm:text-sm w-full text-gray-600 dark:text-gray-300">
                   {t('common.search')} jobs, articles, posts...
                 </span>
               </div>
@@ -208,10 +208,10 @@ const MainLayout = ({
                 <button
                   onClick={toggleLanguage}
                   className="p-1.5 sm:p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-1"
-                  aria-label="Toggle language"
+                  aria-label={`Toggle language (${language === 'vi' ? 'VI' : 'EN'})`}
                 >
                   <Globe size={16} className="sm:w-[18px] sm:h-[18px]" />
-                  <span className="hidden sm:inline text-xs font-medium">{language === 'vi' ? 'VI' : 'EN'}</span>
+                  <span className="text-xs font-medium">{language === 'vi' ? 'VI' : 'EN'}</span>
                 </button>
               </li>
               
@@ -372,6 +372,7 @@ const MainLayout = ({
                         size="sm"
                         onClick={() => navigate('/blog')}
                         className="text-gray-400 hover:text-gray-900 dark:hover:text-white h-8 w-8 p-0"
+                        aria-label={t('dashboard.viewAll')}
                       >
                         <MoreHorizontal size={16} />
                       </Button>
@@ -435,40 +436,35 @@ const MainLayout = ({
 };
 
 const NavItem = ({ icon, label, active, onClick, badge }: { icon: any, label: string, active: boolean, onClick?: () => void; badge?: number }) => (
-  <li 
-    className={`relative flex flex-col items-center justify-center cursor-pointer px-1 sm:px-2 md:px-3 lg:px-4 h-full transition-all duration-200 group ${active ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-    onClick={onClick}
-    title={label}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onClick?.();
-      }
-    }}
-    aria-label={label}
-    aria-current={active ? 'page' : undefined}
-  >
-    {active && (
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 h-[3px] bg-red-600 dark:bg-red-400"
-        layoutId="activeIndicator"
-        initial={false}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-      />
-    )}
-    <div className={`p-1 sm:p-1.5 rounded-md group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors relative ${active ? 'bg-red-50 dark:bg-red-900/20' : ''}`}>
-      <div className="relative">
-        {icon}
-        {badge && badge > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-crimson-red text-white text-[10px] rounded-full flex items-center justify-center font-bold">
-            {badge > 9 ? '9+' : badge}
-          </span>
-        )}
+  <li className="h-full">
+    <button
+      type="button"
+      className={`relative flex flex-col items-center justify-center cursor-pointer px-1 sm:px-2 md:px-3 lg:px-4 h-full transition-all duration-200 group ${active ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      aria-current={active ? 'page' : undefined}
+    >
+      {active && (
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-[3px] bg-red-600 dark:bg-red-400"
+          layoutId="activeIndicator"
+          initial={false}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        />
+      )}
+      <div className={`p-1 sm:p-1.5 rounded-md group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors relative ${active ? 'bg-red-50 dark:bg-red-900/20' : ''}`}>
+        <div className="relative">
+          {icon}
+          {badge && badge > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-crimson-red text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+              {badge > 9 ? '9+' : badge}
+            </span>
+          )}
+        </div>
       </div>
-    </div>
-    <span className="text-[9px] sm:text-[10px] font-medium hidden sm:block mt-0.5 sm:mt-1 truncate max-w-[60px]">{label}</span>
+      <span className="text-[9px] sm:text-[10px] font-medium hidden sm:block mt-0.5 sm:mt-1 truncate max-w-[60px]">{label}</span>
+    </button>
   </li>
 );
 

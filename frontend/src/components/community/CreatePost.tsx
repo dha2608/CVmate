@@ -143,7 +143,7 @@ const CreatePost = () => {
           <Button
             type="submit"
             disabled={isLoading || isUploadingImage || (!content.trim() && !selectedImage)}
-            className="bg-crimson-red hover:bg-fire-red text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading || isUploadingImage ? (
               <>

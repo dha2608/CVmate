@@ -215,6 +215,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onClick={handleBold}
           className="h-8 w-8 p-0"
           title="Bold"
+          aria-label="Bold"
         >
           <Bold size={16} />
         </Button>
@@ -225,6 +226,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onClick={handleItalic}
           className="h-8 w-8 p-0"
           title="Italic"
+          aria-label="Italic"
         >
           <Italic size={16} />
         </Button>
@@ -235,6 +237,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onClick={handleList}
           className="h-8 w-8 p-0"
           title="List"
+          aria-label="List"
         >
           <List size={16} />
         </Button>
@@ -247,6 +250,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           disabled={isUploading}
           className="h-8 w-8 p-0"
           title="Insert Image"
+          aria-label="Insert Image"
         >
           {isUploading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
         </Button>

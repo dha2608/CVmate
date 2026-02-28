@@ -4,7 +4,6 @@ import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
 import { Heart, Reply, Edit2, Trash2, MoreVertical, X } from 'lucide-react';
 
-// Normalize CDN image URLs
 const normalizeImageUrl = (url: string | undefined | null): string | null => {
   if (!url || typeof url !== 'string') {return null;}
   const trimmed = url.trim();
@@ -58,11 +57,15 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const [editText, setEditText] = useState(comment.text);
   const [showMenu, setShowMenu] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-  
-  const normalizedAvatar = normalizeImageUrl(comment.user?.avatar);
-  const isLiked = comment.likes?.includes(user?._id || '');
-  const isOwner = comment.user._id === user?._id;
-  const maxDepth = 2; // Limit reply depth
+
+  const commentUser = comment?.user ?? null;
+  const commentUserId = commentUser?._id;
+  const commentUserName = commentUser?.name?.trim() || 'Người dùng';
+  const normalizedAvatar = normalizeImageUrl(commentUser?.avatar);
+
+  const isLiked = Array.isArray(comment.likes) ? comment.likes.includes(user?._id || '') : false;
+  const isOwner = commentUserId === user?._id;
+  const maxDepth = 2;
 
   const handleReply = () => {
     if (!replyText.trim()) {return;}
@@ -90,45 +93,45 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
   const handleMention = (username: string) => {
     if (isReplying) {
-      setReplyText(prev => prev + `@${username} `);
+      setReplyText((prev) => prev + `@${username} `);
     }
   };
 
   return (
-    <div id={`comment-${comment._id}`} className={`${depth > 0 ? 'ml-6 border-l-2 border-gray-200 pl-3' : ''}`}>
+    <div id={`comment-${comment._id}`} className={`${depth > 0 ? 'ml-6 border-l-2 border-gray-200 dark:border-gray-700 pl-3' : ''}`}>
       <div className="flex gap-2 group">
         <button
-          onClick={() => comment.user._id && navigate(`/u/${comment.user._id}`)}
-          className="h-8 w-8 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-xs overflow-hidden hover:ring-2 hover:ring-crimson-red transition-all"
+          onClick={() => commentUserId && navigate(`/u/${commentUserId}`)}
+          className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 flex items-center justify-center text-xs overflow-hidden hover:ring-2 hover:ring-crimson-red transition-all"
         >
           {normalizedAvatar && !avatarError ? (
             <img
               src={normalizedAvatar}
               className="h-full w-full rounded-full object-cover"
-              alt={comment.user.name}
+              alt={commentUserName}
               onError={() => setAvatarError(true)}
               loading="lazy"
             />
           ) : (
-            <span>{comment.user.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+            <span>{commentUserName?.charAt(0)?.toUpperCase() || 'U'}</span>
           )}
         </button>
-        
+
         <div className="flex-1 min-w-0">
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2.5 relative">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2.5 relative border border-gray-100 dark:border-gray-700">
             <div className="flex items-start justify-between mb-1">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => comment.user._id && navigate(`/u/${comment.user._id}`)}
+                  onClick={() => commentUserId && navigate(`/u/${commentUserId}`)}
                   className="text-xs font-bold text-gray-900 dark:text-white hover:text-crimson-red transition-colors"
                 >
-                  {comment.user.name}
+                  {commentUserName}
                 </button>
-                <span className="text-[10px] text-gray-400">
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">
                   {new Date(comment.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              
+
               {isOwner && (
                 <div className="relative">
                   <button
@@ -137,7 +140,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                   >
                     <MoreVertical size={14} />
                   </button>
-                  
+
                   {showMenu && (
                     <div className="absolute right-0 top-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-[120px]">
                       <button
@@ -162,7 +165,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 </div>
               )}
             </div>
-            
+
             {isEditing ? (
               <div className="space-y-2">
                 <textarea
@@ -208,29 +211,29 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 })}
               </p>
             )}
-            
+
             <div className="flex items-center gap-4 mt-2">
               <button
                 onClick={handleLike}
                 className={`flex items-center gap-1 text-xs transition-colors ${
                   isLiked
-                    ? 'text-red-600 dark:text-red-400'
-                    : 'text-gray-500 hover:text-red-600 dark:hover:text-red-400'
+                    ? 'text-crimson-red'
+                    : 'text-gray-500 hover:text-crimson-red dark:hover:text-red-400'
                 }`}
               >
                 <Heart size={12} className={isLiked ? 'fill-current' : ''} />
                 <span>{comment.likes?.length || 0}</span>
               </button>
-              
+
               {depth < maxDepth && (
                 <button
                   onClick={() => {
                     setIsReplying(!isReplying);
                     if (!isReplying) {
-                      handleMention(comment.user.name);
+                      handleMention(commentUserName);
                     }
                   }}
-                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-crimson-red dark:hover:text-red-300"
                 >
                   <Reply size={12} />
                   Reply
@@ -238,13 +241,13 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               )}
             </div>
           </div>
-          
+
           {isReplying && (
             <div className="mt-2 space-y-2">
               <textarea
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder={`Reply to ${comment.user.name}...`}
+                placeholder={`Reply to ${commentUserName}...`}
                 className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded text-sm resize-none"
                 rows={2}
                 autoFocus
@@ -269,8 +272,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           )}
         </div>
       </div>
-      
-      {/* Render replies */}
+
       {comment.replies && comment.replies.length > 0 && (
         <div className="mt-2 space-y-2">
           {comment.replies.map((reply) => (
