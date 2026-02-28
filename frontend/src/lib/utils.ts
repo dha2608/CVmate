@@ -299,6 +299,91 @@ export const api = {
       method: "POST",
     }),
 
+  // Admin
+  getAdminOverview: () =>
+    apiRequest<{ success: boolean; data: any }>("/admin/overview"),
+
+  getAdminUsers: (params?: { page?: number; limit?: number; search?: string }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append("page", String(params.page));
+    if (params?.limit) queryParams.append("limit", String(params.limit));
+    if (params?.search) queryParams.append("search", params.search);
+    return apiRequest<{ success: boolean; data: any[]; pagination: any }>(`/admin/users?${queryParams.toString()}`);
+  },
+
+  updateAdminUserRole: (userId: string, role: "user" | "admin") =>
+    apiRequest<{ success: boolean; data: any }>(`/admin/users/${userId}/role`, {
+      method: "PUT",
+      body: JSON.stringify({ role }),
+    }),
+
+  updateAdminUserSubscription: (
+    userId: string,
+    payload: { plan: "free" | "premium"; status: "active" | "cancelled" | "expired"; endDate?: string }
+  ) =>
+    apiRequest<{ success: boolean; data: any }>(`/admin/users/${userId}/subscription`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+
+  banAdminUser: (userId: string) =>
+    apiRequest<{ success: boolean; message: string }>(`/admin/users/${userId}/ban`, {
+      method: "PUT",
+    }),
+
+  unbanAdminUser: (userId: string) =>
+    apiRequest<{ success: boolean; message: string }>(`/admin/users/${userId}/unban`, {
+      method: "PUT",
+    }),
+
+  getAdminPosts: (params?: { page?: number; limit?: number; status?: string }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append("page", String(params.page));
+    if (params?.limit) queryParams.append("limit", String(params.limit));
+    if (params?.status) queryParams.append("status", params.status);
+    return apiRequest<{ success: boolean; data: any[]; pagination: any }>(`/admin/posts?${queryParams.toString()}`);
+  },
+
+  updateAdminPostStatus: (postId: string, status: "pending" | "approved" | "rejected", reason?: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/admin/posts/${postId}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status, reason }),
+    }),
+
+  deleteAdminPost: (postId: string) =>
+    apiRequest<{ success: boolean; message: string }>(`/admin/posts/${postId}`, {
+      method: "DELETE",
+    }),
+
+  getAdminArticles: (params?: { page?: number; limit?: number }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append("page", String(params.page));
+    if (params?.limit) queryParams.append("limit", String(params.limit));
+    return apiRequest<{ success: boolean; data: any[]; pagination: any }>(`/admin/articles?${queryParams.toString()}`);
+  },
+
+  toggleAdminArticlePublish: (articleId: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/admin/articles/${articleId}/toggle-publish`, {
+      method: "PUT",
+    }),
+
+  deleteAdminArticle: (articleId: string) =>
+    apiRequest<{ success: boolean; message: string }>(`/admin/articles/${articleId}`, {
+      method: "DELETE",
+    }),
+
+  getAdminJobs: (params?: { page?: number; limit?: number }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append("page", String(params.page));
+    if (params?.limit) queryParams.append("limit", String(params.limit));
+    return apiRequest<{ success: boolean; data: any[]; pagination: any }>(`/admin/jobs?${queryParams.toString()}`);
+  },
+
+  deleteAdminJob: (jobId: string) =>
+    apiRequest<{ success: boolean; message: string }>(`/admin/jobs/${jobId}`, {
+      method: "DELETE",
+    }),
+
   // Chat / AI
   chatWithAI: (
     message: string,
