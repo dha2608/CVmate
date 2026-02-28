@@ -163,11 +163,10 @@ const Profile = () => {
       formDataToSend.append('avatar', file);
 
       const response = await api.upload.uploadAvatar(formDataToSend);
-      if (!response.success || !response.data?.avatar) {
+      const avatarUrl = (response.data as any)?.avatar || (response.data as any)?.url;
+      if (!response.success || !avatarUrl) {
         throw new Error(t('profile.uploadFailed'));
       }
-
-      const avatarUrl = response.data.avatar;
       const avatarUrlWithTimestamp = avatarUrl + (avatarUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
       const updatedFormData = { ...formData, avatar: avatarUrlWithTimestamp };
       setFormData(updatedFormData);
@@ -207,11 +206,10 @@ const Profile = () => {
       formDataToSend.append('coverPhoto', file);
 
       const response = await api.upload.uploadCoverPhoto(formDataToSend);
-      if (!response.success || !response.data?.coverPhoto) {
+      const coverPhotoUrl = (response.data as any)?.coverPhoto || (response.data as any)?.url;
+      if (!response.success || !coverPhotoUrl) {
         throw new Error(t('profile.uploadFailed'));
       }
-
-      const coverPhotoUrl = response.data.coverPhoto;
       const updatedFormData = { ...formData, coverPhoto: coverPhotoUrl };
       setFormData(updatedFormData);
       setOriginalData(updatedFormData);

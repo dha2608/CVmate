@@ -231,14 +231,14 @@ export const authApi = {
 
 export const uploadApi = {
   uploadAvatar: (formData: FormData) =>
-    apiRequest<ApiResponse<{ avatar: string }>>("/upload/avatar", {
+    apiRequest<ApiResponse<{ avatar?: string; url?: string }>>("/upload/avatar", {
       method: "POST",
       body: formData,
       headers: {},
     }),
 
   uploadCoverPhoto: (formData: FormData) =>
-    apiRequest<ApiResponse<{ coverPhoto: string }>>("/upload/cover-photo", {
+    apiRequest<ApiResponse<{ coverPhoto?: string; url?: string }>>("/upload/cover-photo", {
       method: "POST",
       body: formData,
       headers: {},

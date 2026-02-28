@@ -210,6 +210,15 @@ export const api = {
       method: "POST",
     }),
 
+  verifyCheckoutSession: (sessionId: string) =>
+    apiRequest<{
+      success: boolean;
+      data: { plan: string; status: string; endDate?: string };
+    }>("/payment/verify-checkout-session", {
+      method: "POST",
+      body: JSON.stringify({ sessionId }),
+    }),
+
   getSubscriptionStatus: () =>
     apiRequest<{
       success: boolean;

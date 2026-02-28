@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware.js';
-import { 
-  createCheckoutSession, 
-  stripeWebhook, 
-  getSubscriptionStatus, 
+import {
+  createCheckoutSession,
+  stripeWebhook,
+  verifyCheckoutSession,
+  getSubscriptionStatus,
   cancelSubscription,
   createPayPalOrder,
-  capturePayPalPayment
+  capturePayPalPayment,
 } from '../controllers/paymentController.js';
 import express from 'express';
 
@@ -14,6 +15,7 @@ const router = Router();
 
 router.post('/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 router.post('/create-checkout-session', protect, createCheckoutSession);
+router.post('/verify-checkout-session', protect, verifyCheckoutSession);
 router.get('/subscription-status', protect, getSubscriptionStatus);
 router.post('/cancel-subscription', protect, cancelSubscription);
 router.post('/paypal/create-order', protect, createPayPalOrder);

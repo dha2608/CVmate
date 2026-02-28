@@ -23,19 +23,17 @@ const PaymentSuccess = () => {
       }
 
       try {
-        const data = await api.getSubscriptionStatus();
-        if (data.success) {
-          const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-          const mergedUser = {
-            ...(currentUser || {}),
-            subscription: data.data,
-          };
-          localStorage.setItem('user', JSON.stringify(mergedUser));
-          setUser(mergedUser as any);
+        const verifyData = await api.verifyCheckoutSession(sessionId);
+        if (verifyData.success) {
+          const me = await api.getMe();
+          if (me.success) {
+            localStorage.setItem('user', JSON.stringify(me.data));
+            setUser(me.data as any);
+          }
         }
       } catch (err: any) {
         console.error('Payment verification error:', err);
-        setError('Failed to verify payment');
+        setError(err?.message || 'Failed to verify payment');
       } finally {
         setLoading(false);
       }

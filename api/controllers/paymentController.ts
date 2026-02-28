@@ -18,6 +18,27 @@ const getStripe = (): Stripe | null => {
   });
 };
 
+const activatePremiumSubscription = async (
+  user: any,
+  payload: {
+    paymentMethod: 'card' | 'paypal';
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+    endDate?: Date;
+  }
+) => {
+  user.subscription = {
+    plan: 'premium',
+    status: 'active',
+    startDate: new Date(),
+    endDate: payload.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    paymentMethod: payload.paymentMethod,
+    stripeCustomerId: payload.stripeCustomerId,
+    stripeSubscriptionId: payload.stripeSubscriptionId,
+  };
+  await user.save();
+};
+
 export const createCheckoutSession = async (req: AuthRequest, res: Response, _next: NextFunction) => {
   try {
     const stripe = getStripe();
@@ -137,16 +158,12 @@ export const stripeWebhook = async (req: Request, res: Response, _next: NextFunc
               ? subscription.current_period_end
               : Date.now() / 1000 + 30 * 24 * 60 * 60;
 
-            user.subscription = {
-              plan: 'premium',
-              status: 'active',
-              startDate: new Date(),
-              endDate: new Date(periodEnd * 1000),
+            await activatePremiumSubscription(user, {
               paymentMethod: 'card',
               stripeCustomerId: session.customer as string,
               stripeSubscriptionId: subscription.id,
-            };
-            await user.save();
+              endDate: new Date(periodEnd * 1000),
+            });
           }
         }
         break;
@@ -186,6 +203,63 @@ export const stripeWebhook = async (req: Request, res: Response, _next: NextFunc
       eventType: event.type,
     });
     res.status(500).json({ error: 'Webhook handler failed' });
+  }
+};
+
+export const verifyCheckoutSession = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  try {
+    const stripe = getStripe();
+    if (!stripe) {
+      res.status(503).json({ success: false, message: 'Payment service is not configured' });
+      return;
+    }
+
+    const { sessionId } = req.body;
+    if (!sessionId) {
+      res.status(400).json({ success: false, message: 'sessionId is required' });
+      return;
+    }
+
+    const user = await User.findById(req.user?._id);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const isPaid = session.payment_status === 'paid' || session.status === 'complete';
+
+    if (!isPaid || !session.subscription) {
+      res.status(400).json({ success: false, message: 'Checkout session is not completed' });
+      return;
+    }
+
+    const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+    const periodEnd = typeof (subscription as any).current_period_end === 'number'
+      ? (subscription as any).current_period_end
+      : Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+
+    await activatePremiumSubscription(user, {
+      paymentMethod: 'card',
+      stripeCustomerId: (session.customer as string) || user.subscription?.stripeCustomerId,
+      stripeSubscriptionId: subscription.id,
+      endDate: new Date(periodEnd * 1000),
+    });
+
+    res.json({
+      success: true,
+      data: {
+        plan: user.subscription?.plan || 'free',
+        status: user.subscription?.status || 'active',
+        endDate: user.subscription?.endDate,
+      },
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to verify checkout session';
+    logger.error('Verify checkout session error', error instanceof Error ? error : new Error(String(error)), {
+      userId: req.user?._id,
+    });
+    res.status(500).json({ success: false, message: errorMessage });
   }
 };
 
@@ -304,14 +378,10 @@ export const capturePayPalPayment = async (req: AuthRequest, res: Response, _nex
       return;
     }
 
-    user.subscription = {
-      plan: 'premium',
-      status: 'active',
-      startDate: new Date(),
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    await activatePremiumSubscription(user, {
       paymentMethod: 'paypal',
-    };
-    await user.save();
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
 
     logger.info('PayPal payment captured successfully', { userId: user._id, orderId });
 
