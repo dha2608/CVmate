@@ -443,6 +443,9 @@ const translations: Record<Language, Translations> = {
       imageUrl: 'URL ảnh (tùy chọn)',
       all: 'Tất cả',
       backTo: 'Quay lại',
+      uploadImage: 'Tải ảnh lên',
+      imageSelected: 'Đã chọn ảnh',
+      uploading: 'Đang tải ảnh...',
     },
     profile: {
       title: 'Hồ sơ',
@@ -857,6 +860,9 @@ const translations: Record<Language, Translations> = {
       imageUrl: 'Image URL (optional)',
       all: 'All',
       backTo: 'Back to',
+      uploadImage: 'Upload image',
+      imageSelected: 'Image selected',
+      uploading: 'Uploading image...',
     },
     profile: {
       title: 'Profile',

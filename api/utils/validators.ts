@@ -78,7 +78,11 @@ export const createPostSchema = z.object({
     .trim()
     .optional()
     .or(z.literal('')),
-  image: z.string().url().optional().or(z.literal('')),
+  // Allow both absolute and relative URLs for images (e.g. /uploads/filename.jpg)
+  image: z.string()
+    .trim()
+    .optional()
+    .or(z.literal('')),
 }).refine((data) => {
   const hasContent = typeof data.content === 'string' && data.content.trim().length > 0;
   const hasImage = typeof data.image === 'string' && data.image.trim().length > 0;

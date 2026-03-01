@@ -16,7 +16,36 @@ export const getConversations = async (req: AuthRequest, res: Response, next: Ne
 
     const users = await User.find({ _id: { $in: distinctUserIds } }).select('name avatar email');
 
-    res.json({ success: true, data: users });
+    // Tính unread count cho từng cuộc hội thoại
+    const conversations = await Promise.all(
+      users.map(async (u) => {
+        const unreadCount = await Message.countDocuments({
+          sender: u._id,
+          receiver: currentUserId,
+          readAt: { $exists: false },
+        });
+
+        const lastMessage = await Message.findOne({
+          $or: [
+            { sender: currentUserId, receiver: u._id },
+            { sender: u._id, receiver: currentUserId },
+          ],
+        })
+          .sort({ createdAt: -1 })
+          .lean();
+
+        return {
+          _id: u._id,
+          name: u.name,
+          avatar: u.avatar,
+          email: u.email,
+          unreadCount,
+          lastMessage: lastMessage?.content || '',
+        };
+      })
+    );
+
+    res.json({ success: true, data: conversations });
   } catch (error) {
     next(error);
   }
@@ -76,10 +105,37 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
     const message = await Message.create({
       sender: req.user?._id,
       receiver: receiverId,
-      content
+      content,
     });
 
     res.status(201).json({ success: true, data: message });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const markConversationRead = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { userId } = req.params;
+    const currentUserId = req.user?._id;
+
+    if (!currentUserId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    await Message.updateMany(
+      {
+        sender: userId,
+        receiver: currentUserId,
+        readAt: { $exists: false },
+      },
+      {
+        $set: { readAt: new Date() },
+      }
+    );
+
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }

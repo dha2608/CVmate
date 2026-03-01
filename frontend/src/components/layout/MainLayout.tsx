@@ -197,7 +197,7 @@ const MainLayout = ({
               </Button>
             </div>
 
-            <ul className="flex items-center gap-0.5 sm:gap-1 md:gap-2 h-full flex-shrink-0 overflow-x-auto">
+            <ul className="flex items-center gap-0.5 sm:gap-1 md:gap-2 h-full flex-shrink-0">
               <NavItem icon={<Home size={18} className="sm:w-5 sm:h-5" />} label={t('nav.home')} active={isActive('/dashboard')} onClick={() => navigate('/dashboard')} />
               <NavItem icon={<Users size={18} className="sm:w-5 sm:h-5" />} label={t('nav.community')} active={isActive('/community')} onClick={() => navigate('/community')} />
               <NavItem icon={<FileText size={18} className="sm:w-5 sm:h-5" />} label={t('nav.blog')} active={isActive('/blog')} onClick={() => navigate('/blog')} />

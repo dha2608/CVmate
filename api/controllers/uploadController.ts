@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import User from '../models/User.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,12 +16,23 @@ export const uploadAvatar = async (req: AuthRequest, res: Response, next: NextFu
 
     const fileUrl = `/uploads/${req.file.filename}`;
 
+    let updatedUser = null;
+    if (req.user?._id) {
+      updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        { avatar: fileUrl },
+        { new: true, runValidators: false }
+      ).select('name email avatar coverPhoto subscription');
+    }
+
     res.json({
       success: true,
       data: {
         url: fileUrl,
+        avatar: fileUrl,
         filename: req.file.filename,
-        size: req.file.size
+        size: req.file.size,
+        user: updatedUser,
       }
     });
   } catch (error: any) {
@@ -37,12 +49,23 @@ export const uploadCoverPhoto = async (req: AuthRequest, res: Response, next: Ne
 
     const fileUrl = `/uploads/${req.file.filename}`;
 
+    let updatedUser = null;
+    if (req.user?._id) {
+      updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        { coverPhoto: fileUrl },
+        { new: true, runValidators: false }
+      ).select('name email avatar coverPhoto subscription');
+    }
+
     res.json({
       success: true,
       data: {
         url: fileUrl,
+        coverPhoto: fileUrl,
         filename: req.file.filename,
-        size: req.file.size
+        size: req.file.size,
+        user: updatedUser,
       }
     });
   } catch (error: any) {
