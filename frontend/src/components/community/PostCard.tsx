@@ -80,7 +80,7 @@ const PostCardComponent = ({ post }: PostCardProps) => {
   };
 
   return (
-    <div id={`post-${post?._id || 'unknown'}`} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 mb-4">
+    <div id={`post-${post?._id || 'unknown'}`} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-4 relative z-0">
       <div className="flex items-center mb-3">
         <button
           className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold overflow-hidden focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-crimson-red"

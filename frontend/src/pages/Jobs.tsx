@@ -320,7 +320,7 @@ const Jobs = () => {
 
       rightSidebar={
 
-        <div className="glass-card bg-white/90 dark:bg-gray-800/90 p-4 sm:p-5 sticky top-20 space-y-4">
+        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-5 sticky top-20 space-y-4 hover:shadow-md transition-shadow">
 
           <div>
 
@@ -418,7 +418,7 @@ const Jobs = () => {
 
     >
 
-      <div className="glass-card bg-white/90 dark:bg-gray-800/90 mb-6">
+      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 mb-6 hover:shadow-md transition-shadow">
 
         <h1 className="text-heading-2 mb-6">{t('jobs.findDreamJob')}</h1>
 
@@ -940,7 +940,7 @@ const Jobs = () => {
 
                 transition={{ duration: 0.2, delay: index * 0.02 }}
 
-                className="glass-card bg-white/90 dark:bg-gray-800/90 hover:shadow-xl transition-all duration-300 cursor-pointer mb-4"
+                className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer mb-4 p-4 sm:p-5"
 
               >
 

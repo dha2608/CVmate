@@ -9,8 +9,6 @@ import { useBookmarkStore } from '@/store/bookmarkStore';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { GlassButton } from '@/components/ui/glass-button';
-import { GlassCard } from '@/components/ui/glass-card';
 import { Input } from '@/components/ui/input';
 import { GlassInput } from '@/components/ui/glass-input';
 import BookmarkButton from '@/components/BookmarkButton';
@@ -124,7 +122,7 @@ const Blog = () => {
       <MainLayout
         rightSidebar={
             <div className="space-y-4 sticky top-20 animate-fade-in">
-                <GlassCard className="p-4" gradient="purple">
+                <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                       {t('blog.writingGoodArticle')}
                     </h3>
@@ -134,18 +132,18 @@ const Blog = () => {
                         <li>{t('blog.addCoverImage')}</li>
                         <li>{t('blog.keepConcise')}</li>
                     </ul>
-                    <GlassButton 
+                    <Button 
                         onClick={() => setShowCreate(!showCreate)} 
                         className="w-full mt-4"
                         variant="outline"
                     >
                         {showCreate ? t('blog.cancel') : t('blog.writeArticle')}
-                    </GlassButton>
-                </GlassCard>
+                    </Button>
+                </div>
             </div>
         }
       >
-        <GlassCard className="p-4 sm:p-6 mb-6" gradient="cyan">
+        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 mb-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
                 <div>
                     <h1 className="text-3xl font-black text-jet-black dark:text-white mb-2">{t('blog.title')}</h1>
@@ -242,10 +240,10 @@ const Blog = () => {
                     {t('blog.communityArticles')} ({filteredArticles.length})
                 </button>
             </div>
-        </GlassCard>
+        </div>
 
         {showCreate && (
-            <GlassCard className="p-6 mb-6" gradient="pink">
+            <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-6 mb-6 hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-2 mb-4 text-gray-900 dark:text-white font-semibold border-b dark:border-gray-700 pb-2">
                     <PenTool size={18} />
                     <h2>{t('blog.createNewArticle')}</h2>
@@ -299,7 +297,7 @@ const Blog = () => {
                         <Button type="submit" className="bg-accent hover:bg-red-700 text-white">{t('blog.publish')}</Button>
                     </div>
                 </form>
-            </GlassCard>
+            </div>
         )}
 
         {/* News Tab */}
@@ -332,7 +330,7 @@ const Blog = () => {
                         ))}
                     </div>
                 ) : newsArticles.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                         <Newspaper className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
                         <p className="text-gray-600 dark:text-gray-400">{t('blog.noNewsAvailable')}</p>
                     </div>
@@ -345,7 +343,7 @@ const Blog = () => {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.4, delay: index * 0.05 }}
-                                    className="glass-card bg-white/90 dark:bg-gray-800/90 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col"
+                                    className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer group flex flex-col"
                                     onClick={() => navigate(`/news/${encodeURIComponent(article.link)}`)}
                                 >
                                     {article.image && (
@@ -419,7 +417,7 @@ const Blog = () => {
                 ) : (
                     <div className="space-y-6">
                         {articles.length === 0 ? (
-                            <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
                                 <PenTool className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
                                 <p className="text-gray-600 dark:text-gray-400 mb-4">{t('blog.noArticlesYet')}</p>
                                 <Button onClick={() => setShowCreate(true)} className="bg-crimson-red hover:bg-fire-red text-white">
@@ -434,7 +432,7 @@ const Blog = () => {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.4, delay: index * 0.05 }}
-                                        className="glass-card bg-white/90 dark:bg-gray-800/90 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                                        className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           navigate(`/blog/${article._id}`);

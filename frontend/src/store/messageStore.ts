@@ -73,6 +73,10 @@ export const useMessageStore = create<MessageState>((set) => ({
   sendMessage: async (receiverId: string, content: string) => {
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
       const res = await fetch(`${API_URL}/messages`, {
         method: 'POST',
         headers: {
@@ -81,14 +85,28 @@ export const useMessageStore = create<MessageState>((set) => ({
         },
         body: JSON.stringify({ receiverId, content }),
       });
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+        throw new Error(errorData.message || `Failed to send message: ${res.status}`);
+      }
+      
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.data) {
         set((state) => ({ messages: [...state.messages, data.data] }));
+        // Refresh conversations to update lastMessage
+        const convRes = await fetch(`${API_URL}/messages/conversations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const convData = await convRes.json();
+        if (convData.success) {
+          set({ conversations: convData.data });
+        }
       } else {
         throw new Error(data.message || 'Failed to send message');
       }
     } catch (error: any) {
-      console.error(error);
+      console.error('sendMessage error:', error);
       throw error;
     }
   },

@@ -243,9 +243,9 @@ const Pricing = () => {
                 </ul>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="card-base relative border-2 border-crimson-red dark:border-red-500 shadow-xl scale-105">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-gradient-to-r from-crimson-red to-fire-red text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg flex items-center gap-2">
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="card-base relative border-2 border-crimson-red dark:border-red-500">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <span className="bg-gradient-to-r from-crimson-red to-fire-red text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-2">
                     <Crown className="w-4 h-4" />
                     {copy.popular}
                   </span>

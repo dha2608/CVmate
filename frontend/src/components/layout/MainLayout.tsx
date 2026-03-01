@@ -15,13 +15,13 @@ import {
   LogOut,
   FileText,
   Brain,
-  MoreHorizontal,
   Sun,
   Moon,
   Globe,
   Bookmark,
   Crown,
   Shield,
+  MoreHorizontal,
 } from 'lucide-react';
 import Footer from '@/components/Footer';
 import SupportChat from '@/components/SupportChat';
@@ -137,27 +137,6 @@ const MainLayout = ({
     }
   };
 
-  const rightUtilityItems = [
-    {
-      icon: <Bookmark size={18} className="sm:w-5 sm:h-5" />,
-      label: language === 'vi' ? 'Đánh dấu' : 'Bookmarks',
-      path: '/bookmarks',
-    },
-    {
-      icon: <Crown size={18} className="sm:w-5 sm:h-5" />,
-      label: language === 'vi' ? 'Bảng giá' : 'Pricing',
-      path: '/pricing',
-    },
-    ...(user?.role === 'admin'
-      ? [
-          {
-            icon: <Shield size={18} className="sm:w-5 sm:h-5" />,
-            label: language === 'vi' ? 'Quản trị' : 'Admin',
-            path: '/admin',
-          },
-        ]
-      : []),
-  ];
 
   return (
     <div className={`min-h-screen font-sans transition-colors duration-300 ease-in-out flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-[#F8F9FA] text-slate-900'}`}>
@@ -204,31 +183,11 @@ const MainLayout = ({
               <NavItem icon={<Briefcase size={18} className="sm:w-5 sm:h-5" />} label={t('nav.jobs')} active={isActive('/jobs')} onClick={() => navigate('/jobs')} />
               <NavItem icon={<MessageSquare size={18} className="sm:w-5 sm:h-5" />} label={t('nav.messages')} active={isActive('/messaging')} onClick={() => navigate('/messaging')} />
               <NavItem icon={<Bell size={18} className="sm:w-5 sm:h-5" />} label={t('nav.alerts')} active={isActive('/notifications')} onClick={() => navigate('/notifications')} />
-
-              <li className="relative h-full group">
-                <button
-                  type="button"
-                  className="relative flex flex-col items-center justify-center px-1 sm:px-2 md:px-3 h-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                  aria-label={language === 'vi' ? 'Tiện ích khác' : 'More utilities'}
-                >
-                  <MoreHorizontal size={18} className="sm:w-5 sm:h-5" />
-                  <span className="text-[9px] sm:text-[10px] font-medium hidden sm:block mt-1">{language === 'vi' ? 'Khác' : 'More'}</span>
-                </button>
-
-                <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                  {rightUtilityItems.map((item) => (
-                    <button
-                      key={item.path}
-                      type="button"
-                      onClick={() => navigate(item.path)}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      {item.icon}
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </li>
+              <NavItem icon={<Bookmark size={18} className="sm:w-5 sm:h-5" />} label={language === 'vi' ? 'Đánh dấu' : 'Bookmarks'} active={isActive('/bookmarks')} onClick={() => navigate('/bookmarks')} />
+              <NavItem icon={<Crown size={18} className="sm:w-5 sm:h-5" />} label={language === 'vi' ? 'Bảng giá' : 'Pricing'} active={isActive('/pricing')} onClick={() => navigate('/pricing')} />
+              {user?.role === 'admin' && (
+                <NavItem icon={<Shield size={18} className="sm:w-5 sm:h-5" />} label={language === 'vi' ? 'Quản trị' : 'Admin'} active={isActive('/admin')} onClick={() => navigate('/admin')} />
+              )}
 
               <li className="flex items-center justify-center px-1 sm:px-2">
                 <button
