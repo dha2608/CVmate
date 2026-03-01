@@ -120,3 +120,9 @@ export const confirmDialog = (options: ConfirmDialogOptions): Promise<string | b
     }
   });
 };
+
+export const useConfirmDialog = () => {
+  return useCallback((options: ConfirmDialogOptions): Promise<string | boolean> => {
+    return confirmDialog(options);
+  }, []);
+};

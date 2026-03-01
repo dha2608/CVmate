@@ -43,9 +43,9 @@ const SupportChat = () => {
 
     try {
       const conversationHistory = messages.slice(-10).map((msg) => ({
-        type: msg.type,
-        text: msg.text,
-      }));
+          type: msg.type,
+          text: msg.text,
+        }));
 
       const response = await api.chatWithAI(userMessageText, conversationHistory);
 
@@ -66,7 +66,7 @@ const SupportChat = () => {
       const errorMessage =
         error.message ||
         'Xin lỗi, tôi gặp sự cố. Vui lòng thử lại sau hoặc gửi email đến support@cvmate.com.';
-
+      
       setMessages((prev) => [
         ...prev,
         {
@@ -75,7 +75,7 @@ const SupportChat = () => {
           time: new Date(),
         },
       ]);
-
+      
       toast.error('Không thể kết nối với AI. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);

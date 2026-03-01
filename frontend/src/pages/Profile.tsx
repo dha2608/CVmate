@@ -180,7 +180,7 @@ const Profile = () => {
       if (!response.success || !avatarUrl) {
         throw new Error(t('profile.uploadFailed'));
       }
-      
+
       // Use the response data directly instead of calling getMe() to avoid potential auth issues
       const resolvedAvatar = resolveAssetUrl(avatarUrl);
       const updatedFormData = { ...formData, avatar: resolvedAvatar };
@@ -235,7 +235,7 @@ const Profile = () => {
       if (!response.success || !coverPhotoUrl) {
         throw new Error(t('profile.uploadFailed'));
       }
-      
+
       // Use the response data directly instead of calling getMe() to avoid potential auth issues
       const resolvedCoverPhoto = resolveAssetUrl(coverPhotoUrl);
       const updatedFormData = { ...formData, coverPhoto: resolvedCoverPhoto };
