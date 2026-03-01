@@ -78,7 +78,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
             const articleResponse = await api.getArticles();
             if (articleResponse.success && articleResponse.data) {
               articleResponse.data
-                .filter((article: any) => 
+                .filter((article: any) =>
                   article.title?.toLowerCase().includes(query.toLowerCase()) ||
                   article.content?.toLowerCase().includes(query.toLowerCase())
                 )
@@ -104,7 +104,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
             const postsResponse = await api.getPosts();
             if (postsResponse.success && postsResponse.data) {
               postsResponse.data
-                .filter((post: any) => 
+                .filter((post: any) =>
                   post.content?.toLowerCase().includes(query.toLowerCase())
                 )
                 .slice(0, 5)
@@ -151,26 +151,19 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
     }
   };
 
+  // Pure helpers — outside component to prevent recreation on every render
   const getResultIcon = (type: SearchResult['type']) => {
     switch (type) {
-      case 'job':
-        return <Briefcase className="w-4 h-4" />;
-      case 'article':
-        return <FileText className="w-4 h-4" />;
-      case 'post':
-        return <MessageSquare className="w-4 h-4" />;
+      case 'job': return <Briefcase className="w-4 h-4" />;
+      case 'article': return <FileText className="w-4 h-4" />;
+      case 'post': return <MessageSquare className="w-4 h-4" />;
     }
   };
 
-  const getResultColor = (type: SearchResult['type']) => {
-    switch (type) {
-      case 'job':
-        return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20';
-      case 'article':
-        return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20';
-      case 'post':
-        return 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20';
-    }
+  const RESULT_COLORS: Record<SearchResult['type'], string> = {
+    job: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20',
+    article: 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20',
+    post: 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20',
   };
 
   return (
@@ -190,7 +183,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
               <X className="w-4 h-4" />
             </Button>
           </div>
-          
+
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
             <Input
@@ -215,16 +208,15 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                 variant={activeTab === tab ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setActiveTab(tab)}
-                className={`text-xs ${
-                  activeTab === tab
-                    ? 'bg-crimson-red hover:bg-fire-red text-white'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
+                className={`text-xs ${activeTab === tab
+                  ? 'bg-crimson-red hover:bg-fire-red text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
               >
-                {tab === 'all' ? t('common.all') : 
-                 tab === 'jobs' ? t('nav.jobs') :
-                 tab === 'articles' ? t('nav.blog') :
-                 t('nav.community')}
+                {tab === 'all' ? t('common.all') :
+                  tab === 'jobs' ? t('nav.jobs') :
+                    tab === 'articles' ? t('nav.blog') :
+                      t('nav.community')}
               </Button>
             ))}
           </div>
@@ -264,7 +256,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                   onClick={() => handleResultClick(result)}
                   className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors group"
                 >
-                  <div className={`p-2 rounded-lg ${getResultColor(result.type)} flex-shrink-0`}>
+                  <div className={`p-2 rounded-lg ${RESULT_COLORS[result.type]} flex-shrink-0`}>
                     {getResultIcon(result.type)}
                   </div>
                   <div className="flex-1 min-w-0">

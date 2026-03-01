@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18n } from '@/store/i18nStore';
 import { useToastStore } from '@/store/toastStore';
@@ -20,6 +20,20 @@ const resolveAssetUrl = (url?: string) => {
   return `${origin}${normalized}`;
 };
 
+type FormData = {
+  name: string; avatar: string; coverPhoto: string; email: string; role: string;
+  bio: string; headline: string; location: string; yearsOfExperience: string | '';
+  currentRole: string; industries: string; skills: string;
+  linkedin: string; github: string; portfolio: string; isPublicProfile: boolean;
+};
+
+const EMPTY_FORM: FormData = {
+  name: '', avatar: '', coverPhoto: '', email: '', role: '',
+  bio: '', headline: '', location: '', yearsOfExperience: '',
+  currentRole: '', industries: '', skills: '',
+  linkedin: '', github: '', portfolio: '', isPublicProfile: true,
+};
+
 const Profile = () => {
   const { user, setUser } = useAuthStore();
   const { t } = useI18n();
@@ -34,49 +48,24 @@ const Profile = () => {
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe');
 
-  const [formData, setFormData] = useState({
-    name: '',
-    avatar: '',
-    coverPhoto: '',
-    email: '',
-    role: '',
-    bio: '',
-    headline: '',
-    location: '',
-    yearsOfExperience: '' as string | '',
-    currentRole: '',
-    industries: '',
-    skills: '',
-    linkedin: '',
-    github: '',
-    portfolio: '',
-    isPublicProfile: true,
-  });
-  const [originalData, setOriginalData] = useState({
-    name: '',
-    avatar: '',
-    coverPhoto: '',
-    email: '',
-    role: '',
-    bio: '',
-    headline: '',
-    location: '',
-    yearsOfExperience: '' as string | '',
-    currentRole: '',
-    industries: '',
-    skills: '',
-    linkedin: '',
-    github: '',
-    portfolio: '',
-    isPublicProfile: true,
-  });
+  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+  const [originalData, setOriginalData] = useState<FormData>(EMPTY_FORM);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverPhotoInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
 
-  const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
+  // Fast shallow field comparison — avoids JSON.stringify on every keystroke
+  const hasChanges = useMemo(() => {
+    const keys = Object.keys(formData) as (keyof FormData)[];
+    return keys.some((k) => formData[k] !== originalData[k]);
+  }, [formData, originalData]);
+
+  // Generic field updater — single stable callback for all Input onChange
+  const handleFieldChange = useCallback((field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+  }, []);
 
   useEffect(() => {
     if (hasChanges) {
