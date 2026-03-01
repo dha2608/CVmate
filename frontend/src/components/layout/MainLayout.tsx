@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useI18n } from '@/store/i18nStore';
+import { useNewsStore } from '@/store/newsStore';
 import { Button } from '@/components/ui/button';
 import {
   Home,
