@@ -174,7 +174,7 @@ const Pricing = () => {
     },
   };
 
-  const handleSubscribe = (plan: 'free' | 'premium') => {
+  const handleSubscribe = async (plan: 'free' | 'premium') => {
     if (plan === 'free') {
       navigate(user ? '/dashboard' : '/register');
       return;
@@ -185,7 +185,8 @@ const Pricing = () => {
       return;
     }
 
-    navigate('/profile');
+    // Navigate to profile with billing cycle parameter
+    navigate(`/profile?billing=${billingCycle}`);
   };
 
   return (

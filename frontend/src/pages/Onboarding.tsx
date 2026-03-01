@@ -5,16 +5,18 @@ import { Button } from '@/components/ui/button';
 import { api } from '@/lib/utils';
 import SEOHead from '@/components/SEOHead';
 import { Briefcase, GraduationCap, ArrowRight } from 'lucide-react';
+import { useToastStore } from '@/store/toastStore';
 
 const Onboarding = () => {
   const [selectedGoal, setSelectedGoal] = useState<'new-job' | 'internship' | 'career-switch' | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setUser, user } = useAuthStore();
+  const toast = useToastStore();
 
   const handleSubmit = async () => {
     if (!selectedGoal) {
-      alert('Vui lòng chọn mục tiêu của bạn');
+      toast.error('Vui lòng chọn mục tiêu của bạn');
       return;
     }
 
@@ -27,10 +29,11 @@ const Onboarding = () => {
         if (user) {
           setUser({ ...user, onboardingCompleted: true, careerGoal: selectedGoal });
         }
+        toast.success('Đã cập nhật mục tiêu của bạn');
         navigate('/dashboard');
       }
     } catch (error: any) {
-      alert('Có lỗi xảy ra: ' + (error.message || 'Unknown error'));
+      toast.error('Có lỗi xảy ra: ' + (error.message || 'Unknown error'));
     } finally {
       setLoading(false);
     }

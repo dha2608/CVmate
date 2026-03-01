@@ -48,6 +48,30 @@ const ResumePreview = ({ template = 'modern-red', sections }: ResumePreviewProps
           accentColor: 'text-gray-900',
           sectionBorder: 'border-gray-300'
         };
+      case 'elegant-green':
+        return {
+          headerBorder: 'border-green-600',
+          accentColor: 'text-green-600',
+          sectionBorder: 'border-green-200'
+        };
+      case 'bold-orange':
+        return {
+          headerBorder: 'border-orange-500',
+          accentColor: 'text-orange-500',
+          sectionBorder: 'border-orange-200'
+        };
+      case 'professional-teal':
+        return {
+          headerBorder: 'border-teal-600',
+          accentColor: 'text-teal-600',
+          sectionBorder: 'border-teal-200'
+        };
+      case 'minimal-gray':
+        return {
+          headerBorder: 'border-slate-700',
+          accentColor: 'text-slate-700',
+          sectionBorder: 'border-slate-300'
+        };
       default:
         return {
           headerBorder: 'border-gray-900',

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
 import { Heart, Reply, Edit2, Trash2, MoreVertical, X } from 'lucide-react';
+import { useConfirmDialog } from '@/components/ui/confirm-dialog';
 
 const normalizeImageUrl = (url: string | undefined | null): string | null => {
   if (!url || typeof url !== 'string') {return null;}
@@ -80,8 +81,17 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     setIsEditing(false);
   };
 
-  const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this comment?')) {
+  const confirmDialog = useConfirmDialog();
+  
+  const handleDelete = async () => {
+    const confirmed = await confirmDialog({
+      title: 'Delete Comment',
+      description: 'Are you sure you want to delete this comment?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+    });
+    if (confirmed) {
       onDelete?.(comment._id);
     }
     setShowMenu(false);

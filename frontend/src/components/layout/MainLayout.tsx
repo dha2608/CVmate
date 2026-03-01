@@ -221,7 +221,7 @@ const MainLayout = ({
                   >
                     {user?.avatar?.trim() ? (
                       <img
-                        src={user.avatar}
+                        src={resolveAssetUrl(user.avatar)}
                         alt="Profile"
                         className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
                         onError={(e) => {

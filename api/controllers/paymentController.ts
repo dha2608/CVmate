@@ -25,13 +25,19 @@ const activatePremiumSubscription = async (
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
     endDate?: Date;
+    billingCycle?: 'monthly' | 'yearly';
   }
 ) => {
+  const billingCycle = payload.billingCycle || 'monthly';
+  const endDateOffset = billingCycle === 'yearly' 
+    ? 365 * 24 * 60 * 60 * 1000 
+    : 30 * 24 * 60 * 60 * 1000;
+  
   user.subscription = {
     plan: 'premium',
     status: 'active',
     startDate: new Date(),
-    endDate: payload.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    endDate: payload.endDate || new Date(Date.now() + endDateOffset),
     paymentMethod: payload.paymentMethod,
     stripeCustomerId: payload.stripeCustomerId,
     stripeSubscriptionId: payload.stripeSubscriptionId,
@@ -52,6 +58,14 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, _ne
       res.status(404).json({ success: false, message: 'User not found' });
       return;
     }
+
+    const { billingCycle = 'monthly' } = req.body;
+    const isYearly = billingCycle === 'yearly';
+    
+    // Pricing: monthly = 199000 VND (~$8), yearly = 1990000 VND (~$80) - save ~17%
+    const unitAmount = isYearly ? 8000 : 800; // $80 for yearly, $8 for monthly (in cents)
+    const interval = isYearly ? 'year' : 'month';
+    const endDateOffset = isYearly ? 365 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
 
     let customerId = user.subscription?.stripeCustomerId;
     if (!customerId) {
@@ -77,11 +91,13 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, _ne
             currency: 'usd',
             product_data: {
               name: 'CV Mate Premium',
-              description: 'Unlimited AI features, priority support, and more',
+              description: isYearly 
+                ? 'Unlimited AI features, priority support, and more (Yearly)' 
+                : 'Unlimited AI features, priority support, and more (Monthly)',
             },
-            unit_amount: 999,
+            unit_amount: unitAmount,
             recurring: {
-              interval: 'month',
+              interval: interval,
             },
           },
           quantity: 1,
@@ -92,6 +108,7 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, _ne
       cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/cancel`,
       metadata: {
         userId: user._id.toString(),
+        billingCycle: billingCycle,
       },
     });
 
@@ -158,11 +175,13 @@ export const stripeWebhook = async (req: Request, res: Response, _next: NextFunc
               ? subscription.current_period_end
               : Date.now() / 1000 + 30 * 24 * 60 * 60;
 
+            const billingCycle = session.metadata?.billingCycle || 'monthly';
             await activatePremiumSubscription(user, {
               paymentMethod: 'card',
               stripeCustomerId: session.customer as string,
               stripeSubscriptionId: subscription.id,
               endDate: new Date(periodEnd * 1000),
+              billingCycle: billingCycle as 'monthly' | 'yearly',
             });
           }
         }
@@ -239,11 +258,13 @@ export const verifyCheckoutSession = async (req: AuthRequest, res: Response, _ne
       ? (subscription as any).current_period_end
       : Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
 
+    const billingCycle = session.metadata?.billingCycle || 'monthly';
     await activatePremiumSubscription(user, {
       paymentMethod: 'card',
       stripeCustomerId: (session.customer as string) || user.subscription?.stripeCustomerId,
       stripeSubscriptionId: subscription.id,
       endDate: new Date(periodEnd * 1000),
+      billingCycle: billingCycle as 'monthly' | 'yearly',
     });
 
     res.json({

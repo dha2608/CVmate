@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout, { resolveAssetUrl } from '@/components/layout/MainLayout';
 import { apiRequest } from '@/lib/utils';
-import { Loader2, Briefcase, Users, FileText, MapPin, Link2, MessageCircle } from 'lucide-react';
+import { Loader2, Briefcase, Users, FileText, MapPin, Link2, MessageCircle, Zap } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useToastStore } from '@/store/toastStore';
 
 interface PublicUser {
   _id: string;
@@ -29,6 +30,7 @@ const UserProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuthStore();
+  const toast = useToastStore();
   const [user, setUser] = useState<PublicUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,9 +63,9 @@ const UserProfile = () => {
     try {
       const url = window.location.href;
       await navigator.clipboard.writeText(url);
-      alert('Đã copy link hồ sơ vào clipboard');
+      toast.success('Đã copy link hồ sơ vào clipboard');
     } catch {
-      alert('Không thể copy link. Vui lòng copy thủ công.');
+      toast.error('Không thể copy link. Vui lòng copy thủ công.');
     }
   };
 
@@ -110,7 +112,17 @@ const UserProfile = () => {
     <MainLayout>
       <div className="max-w-4xl mx-auto py-6 sm:py-8 lg:py-10 px-2 sm:px-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="h-28 sm:h-32 bg-gradient-to-r from-indigo-500 to-purple-600" />
+          <div 
+            className="h-32 sm:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative"
+            style={coverPhotoUrl ? { 
+              backgroundImage: `url(${coverPhotoUrl})`, 
+              backgroundSize: 'cover', 
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            } : {}}
+          >
+            {coverPhotoUrl && <div className="absolute inset-0 bg-black/20" />}
+          </div>
           <div className="px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-14 pb-6 sm:pb-8">
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -146,8 +158,24 @@ const UserProfile = () => {
                     {user.headline}
                   </p>
                 )}
+                {(user.yearsOfExperience || user.currentRole) && (
+                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    {user.yearsOfExperience && (
+                      <span className="inline-flex items-center gap-1">
+                        <Briefcase className="w-3 h-3" />
+                        {user.yearsOfExperience} năm kinh nghiệm
+                      </span>
+                    )}
+                    {user.currentRole && (
+                      <span className="inline-flex items-center gap-1">
+                        <span>•</span>
+                        {user.currentRole}
+                      </span>
+                    )}
+                  </div>
+                )}
                 {user.bio && (
-                  <p className="mt-2 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                  <p className="mt-2 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
                     {user.bio}
                   </p>
                 )}
@@ -202,19 +230,48 @@ const UserProfile = () => {
               </div>
             </div>
 
+            {/* Experience & Role Info */}
+            {(user.yearsOfExperience || user.currentRole) && (
+              <div className="mt-6 bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
+                  <Briefcase className="w-4 h-4" />
+                  Thông tin nghề nghiệp
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {user.yearsOfExperience && (
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Kinh nghiệm</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {user.yearsOfExperience} {user.yearsOfExperience === 1 ? 'năm' : 'năm'}
+                      </p>
+                    </div>
+                  )}
+                  {user.currentRole && (
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Vị trí hiện tại</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {user.currentRole}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Skills & industries */}
             {(skills.length > 0 || industries.length > 0) && (
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {skills.length > 0 && (
-                  <div>
-                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">
+                  <div className="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
+                      <Zap className="w-4 h-4" />
                       Kỹ năng
                     </h2>
                     <div className="flex flex-wrap gap-1.5">
                       {skills.map((skill) => (
                         <span
                           key={skill}
-                          className="px-2 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-[11px] sm:text-xs text-indigo-700 dark:text-indigo-200"
+                          className="px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-xs text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800"
                         >
                           {skill}
                         </span>
@@ -223,15 +280,16 @@ const UserProfile = () => {
                   </div>
                 )}
                 {industries.length > 0 && (
-                  <div>
-                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">
+                  <div className="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
+                      <Briefcase className="w-4 h-4" />
                       Ngành / Lĩnh vực
                     </h2>
                     <div className="flex flex-wrap gap-1.5">
                       {industries.map((ind) => (
                         <span
                           key={ind}
-                          className="px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-[11px] sm:text-xs text-gray-800 dark:text-gray-100"
+                          className="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-xs text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-600"
                         >
                           {ind}
                         </span>

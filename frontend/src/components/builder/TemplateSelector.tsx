@@ -61,6 +61,38 @@ const templates: Template[] = [
     category: 'modern',
     color: 'bg-gray-900'
   },
+  {
+    id: 'elegant-green',
+    name: 'Elegant Green',
+    description: 'Thanh lịch với màu xanh lá',
+    preview: 'bg-gradient-to-br from-green-50 to-emerald-100',
+    category: 'classic',
+    color: 'bg-green-600'
+  },
+  {
+    id: 'bold-orange',
+    name: 'Bold Orange',
+    description: 'Năng động và tự tin',
+    preview: 'bg-gradient-to-br from-orange-50 to-amber-100',
+    category: 'creative',
+    color: 'bg-orange-500'
+  },
+  {
+    id: 'professional-teal',
+    name: 'Professional Teal',
+    description: 'Chuyên nghiệp với màu xanh ngọc',
+    preview: 'bg-gradient-to-br from-teal-50 to-cyan-100',
+    category: 'modern',
+    color: 'bg-teal-600'
+  },
+  {
+    id: 'minimal-gray',
+    name: 'Minimal Gray',
+    description: 'Tối giản, phù hợp mọi ngành nghề',
+    preview: 'bg-gradient-to-br from-slate-50 to-gray-100',
+    category: 'minimal',
+    color: 'bg-slate-700'
+  },
 ];
 
 interface TemplateSelectorProps {

@@ -6,6 +6,7 @@ import BuilderSidebar, { type BuilderSection, type BuilderSectionId } from '@/co
 import ResumePreview from '@/components/builder/ResumePreview';
 import BuilderActionsDialog, { type AtsAnalysisResult } from '@/components/builder/BuilderActionsDialog';
 import ShortcutsModal from '@/components/builder/ShortcutsModal';
+import BuilderTour from '@/components/builder/BuilderTour';
 import PersonalForm from '@/components/builder/PersonalForm';
 import ExperienceForm from '@/components/builder/ExperienceForm';
 import EducationForm from '@/components/builder/EducationForm';
@@ -101,6 +102,7 @@ const Builder = () => {
   const [atsAnalysis, setAtsAnalysis] = useState<AtsAnalysisResult | null>(null);
   const [atsAnalyzing, setAtsAnalyzing] = useState(false);
   const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showTour, setShowTour] = useState(false);
 
   const resumeId = searchParams.get('id');
 
@@ -428,6 +430,17 @@ const Builder = () => {
                       {resumeId ? 'Editing resume' : 'Create your professional resume'}
                     </p>
                   </div>
+                  {!resumeId && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowTour(true)}
+                      className="hidden sm:flex gap-2 text-xs"
+                    >
+                      <Brain size={14} />
+                      Take Tour
+                    </Button>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <AnimatePresence>
@@ -448,6 +461,7 @@ const Builder = () => {
                     size="sm"
                     onClick={() => setActionsOpen(true)}
                     className="hidden sm:flex gap-2"
+                    data-tour="actions"
                   >
                     <Settings2 size={16} />
                     Settings
@@ -475,7 +489,7 @@ const Builder = () => {
             </div>
           </div>
 
-          <div className="flex h-[calc(100vh-4rem)]">
+          <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
             {/* Sidebar */}
             <AnimatePresence>
               {(sidebarOpen || window.innerWidth >= 1024) && (
@@ -493,24 +507,26 @@ const Builder = () => {
                       onClick={() => setSidebarOpen(false)}
                     />
                   )}
-                  <BuilderSidebar
-                    sections={sections}
-                    activeTab={activeTab}
-                    setActiveTab={(id) => {
-                      setActiveTab(id);
-                      setSidebarOpen(false);
-                    }}
-                    mode="guided"
-                    saved={saved}
-                    saving={saving}
-                    onSave={() => handleSave()}
-                    onDownload={handleDownload}
-                    isCollapsed={isCollapsed}
-                    onToggleCollapsed={() => setIsCollapsed((c) => !c)}
-                    onOpenActions={() => setActionsOpen(true)}
-                    onBack={() => navigate('/dashboard')}
-                    currentResume={currentResume}
-                  />
+                  <div data-tour="sidebar">
+                    <BuilderSidebar
+                      sections={sections}
+                      activeTab={activeTab}
+                      setActiveTab={(id) => {
+                        setActiveTab(id);
+                        setSidebarOpen(false);
+                      }}
+                      mode="guided"
+                      saved={saved}
+                      saving={saving}
+                      onSave={() => handleSave()}
+                      onDownload={handleDownload}
+                      isCollapsed={isCollapsed}
+                      onToggleCollapsed={() => setIsCollapsed((c) => !c)}
+                      onOpenActions={() => setActionsOpen(true)}
+                      onBack={() => navigate('/dashboard')}
+                      currentResume={currentResume}
+                    />
+                  </div>
                 </motion.aside>
               )}
             </AnimatePresence>
@@ -547,11 +563,12 @@ const Builder = () => {
 
               {/* Form Panel */}
               <div
-                className={`w-full lg:w-2/5 xl:w-5/12 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-y-auto ${
+                className={`w-full lg:w-2/5 xl:w-5/12 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 ${
                   mobileView !== 'form' ? 'hidden lg:block' : ''
                 }`}
+                data-tour="form"
               >
-                <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
+                <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 h-full overflow-y-auto">
                   {loadingResume ? (
                     <div className="flex items-center justify-center py-20">
                       <div className="text-center">
@@ -574,9 +591,10 @@ const Builder = () => {
 
               {/* Preview Panel */}
               <div
-                className={`w-full lg:w-3/5 xl:w-7/12 overflow-y-auto bg-gray-100 dark:bg-gray-950 flex items-start justify-center p-4 sm:p-6 lg:p-8 ${
+                className={`w-full lg:w-3/5 xl:w-7/12 bg-gray-100 dark:bg-gray-950 flex items-start justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto ${
                   mobileView !== 'preview' ? 'hidden lg:flex' : ''
                 }`}
+                data-tour="preview"
               >
                 <div className="w-full max-w-[210mm] shadow-2xl bg-white print:shadow-none rounded-lg overflow-hidden">
                   <ResumePreview template={selectedTemplate} sections={sections} />
@@ -604,6 +622,7 @@ const Builder = () => {
       />
 
       <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <BuilderTour isOpen={showTour} onClose={() => setShowTour(false)} />
     </MainLayout>
   );
 };

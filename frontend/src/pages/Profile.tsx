@@ -131,7 +131,11 @@ const Profile = () => {
   const handleUpgradeToPremium = async () => {
     setLoadingSubscription(true);
     try {
-      const response = await api.createCheckoutSession();
+      // Get billing cycle from URL params or default to monthly
+      const urlParams = new URLSearchParams(window.location.search);
+      const billingCycle = urlParams.get('billing') || 'monthly';
+      
+      const response = await api.createCheckoutSession(billingCycle as 'monthly' | 'yearly');
       if (response.success && response.data.url) {
         window.location.href = response.data.url;
       }
@@ -333,12 +337,13 @@ const Profile = () => {
           <div
             className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative group/cover overflow-visible"
             style={{
-              backgroundImage: formData.coverPhoto ? `url(${formData.coverPhoto}?t=${Date.now()})` : undefined,
+              backgroundImage: formData.coverPhoto?.trim() ? `url(${resolveAssetUrl(formData.coverPhoto)}?t=${Date.now()})` : undefined,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
             }}
           >
-            {formData.coverPhoto && <div className="absolute inset-0 bg-black/20" />}
+            {formData.coverPhoto?.trim() && <div className="absolute inset-0 bg-black/20" />}
             <button
               onClick={() => coverPhotoInputRef.current?.click()}
               disabled={uploadingCover}

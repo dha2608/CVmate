@@ -63,7 +63,12 @@ const CreatePost = () => {
         if (!uploadResponse.success || !uploadResponse.data?.url) {
           throw new Error(uploadResponse.message || 'Failed to upload image');
         }
-        finalImageUrl = uploadResponse.data.url;
+        // Normalize URL - ensure it's a relative path starting with /uploads/
+        let imageUrl = uploadResponse.data.url;
+        if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://') && !imageUrl.startsWith('/uploads/')) {
+          imageUrl = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+        }
+        finalImageUrl = imageUrl;
       }
 
       setIsLoading(true);

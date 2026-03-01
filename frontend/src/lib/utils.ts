@@ -202,12 +202,13 @@ export const api = {
     }),
 
   // Payments
-  createCheckoutSession: () =>
+  createCheckoutSession: (billingCycle: 'monthly' | 'yearly' = 'monthly') =>
     apiRequest<{
       success: boolean;
       data: { sessionId: string; url: string };
     }>("/payment/create-checkout-session", {
       method: "POST",
+      body: JSON.stringify({ billingCycle }),
     }),
 
   verifyCheckoutSession: (sessionId: string) =>
