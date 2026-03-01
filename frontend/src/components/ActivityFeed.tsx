@@ -30,30 +30,66 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
   }, [activities, limit]);
 
   useEffect(() => {
-    // Simulate fetching activities from localStorage or API
-    const loadActivities = () => {
+    const loadActivities = async () => {
       setIsLoading(true);
       
-      // Get from localStorage (in a real app, this would come from API)
-      const storedActivities = localStorage.getItem('recentActivities');
-      let parsedActivities: Activity[] = [];
-      
-      if (storedActivities) {
-        try {
-          parsedActivities = JSON.parse(storedActivities).map((a: any) => ({
-            ...a,
-            timestamp: new Date(a.timestamp),
+      try {
+        // Try to fetch from API first
+        const { api } = await import('@/lib/utils');
+        const response = await api.getActivities?.();
+        
+        if (response?.success && response?.data) {
+          const apiActivities: Activity[] = response.data.map((a: any) => ({
+            id: a._id || a.id,
+            type: a.type || 'post',
+            action: a.action || a.title || 'Activity',
+            title: a.title || a.description || '',
+            timestamp: new Date(a.timestamp || a.createdAt),
+            link: a.link || a.url,
           }));
-        } catch (error) {
-          console.error('Failed to parse activities:', error);
+          
+          // Sort by timestamp (newest first)
+          apiActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+          setActivities(apiActivities.slice(0, limit));
+        } else {
+          // Fallback to localStorage
+          const storedActivities = localStorage.getItem('recentActivities');
+          let parsedActivities: Activity[] = [];
+          
+          if (storedActivities) {
+            try {
+              parsedActivities = JSON.parse(storedActivities).map((a: any) => ({
+                ...a,
+                timestamp: new Date(a.timestamp),
+              }));
+            } catch (error) {
+              console.error('Failed to parse activities:', error);
+            }
+          }
+          
+          // Sort by timestamp (newest first)
+          parsedActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+          setActivities(parsedActivities.slice(0, limit));
         }
+      } catch (error) {
+        console.error('Failed to load activities:', error);
+        // Fallback to localStorage on error
+        const storedActivities = localStorage.getItem('recentActivities');
+        if (storedActivities) {
+          try {
+            const parsedActivities = JSON.parse(storedActivities).map((a: any) => ({
+              ...a,
+              timestamp: new Date(a.timestamp),
+            }));
+            parsedActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+            setActivities(parsedActivities.slice(0, limit));
+          } catch (e) {
+            console.error('Failed to parse activities:', e);
+          }
+        }
+      } finally {
+        setIsLoading(false);
       }
-      
-      // Sort by timestamp (newest first)
-      parsedActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-      
-      setActivities(parsedActivities.slice(0, limit));
-      setIsLoading(false);
     };
 
     loadActivities();

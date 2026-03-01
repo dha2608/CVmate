@@ -5,6 +5,7 @@ import { apiRequest } from '@/lib/utils';
 import { Loader2, Briefcase, Users, FileText, MapPin, Link2, MessageCircle, Zap } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
+import ActivityFeed from '@/components/ActivityFeed';
 
 interface PublicUser {
   _id: string;
@@ -112,9 +113,9 @@ const UserProfile = () => {
   return (
     <MainLayout>
       <div className="max-w-4xl mx-auto py-6 sm:py-8 lg:py-10 px-2 sm:px-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative">
           <div 
-            className="h-32 sm:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative"
+            className="h-32 sm:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative overflow-hidden rounded-t-xl"
             style={coverPhotoUrl ? { 
               backgroundImage: `url(${coverPhotoUrl})`, 
               backgroundSize: 'cover', 
@@ -124,7 +125,7 @@ const UserProfile = () => {
           >
             {coverPhotoUrl && <div className="absolute inset-0 bg-black/20" />}
           </div>
-          <div className="px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-14 pb-6 sm:pb-8">
+          <div className="px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-14 pb-6 sm:pb-8 relative z-10">
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
                 {user.avatar ? (
@@ -344,6 +345,11 @@ const UserProfile = () => {
                 </div>
               </div>
             )}
+
+            {/* Recent Activity */}
+            <div className="mt-6">
+              <ActivityFeed limit={5} showHeader={true} />
+            </div>
           </div>
         </div>
       </div>

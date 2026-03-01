@@ -315,7 +315,7 @@ export const getPublicProfile = async (req: Request, res: Response, next: NextFu
   try {
     const { id } = req.params;
 
-    const user = await User.findById(id).select('name avatar bio headline location yearsOfExperience currentRole industries skills socialLinks isPublicProfile careerGoal createdAt');
+    const user = await User.findById(id).select('name avatar coverPhoto bio headline location yearsOfExperience currentRole industries skills socialLinks isPublicProfile careerGoal createdAt');
 
     if (!user || user.isPublicProfile === false) {
       res.status(404).json({ success: false, message: 'User not found' });
@@ -328,6 +328,7 @@ export const getPublicProfile = async (req: Request, res: Response, next: NextFu
         _id: user._id,
         name: user.name,
         avatar: user.avatar,
+        coverPhoto: user.coverPhoto,
         bio: user.bio,
         headline: user.headline,
         location: user.location,

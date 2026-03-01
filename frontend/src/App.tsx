@@ -44,6 +44,7 @@ const Sitemap = lazy(() => import("@/pages/Sitemap"));
 const Accessibility = lazy(() => import("@/pages/Accessibility"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const UserProfile = lazy(() => import("@/pages/UserProfile"));
+const Settings = lazy(() => import("@/pages/Settings"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -152,6 +153,14 @@ const AppShell = () => {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/settings" 
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             } 
           />
