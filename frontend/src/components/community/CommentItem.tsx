@@ -57,7 +57,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const [editText, setEditText] = useState(comment.text);
   const [showMenu, setShowMenu] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-
+  
   const commentUser = comment?.user ?? null;
   const commentUserId = commentUser?._id;
   const commentUserName = commentUser?.name?.trim() || 'Người dùng';
@@ -116,7 +116,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
             <span>{commentUserName?.charAt(0)?.toUpperCase() || 'U'}</span>
           )}
         </button>
-
+        
         <div className="flex-1 min-w-0">
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2.5 relative border border-gray-100 dark:border-gray-700">
             <div className="flex items-start justify-between mb-1">
@@ -131,7 +131,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                   {new Date(comment.createdAt).toLocaleDateString()}
                 </span>
               </div>
-
+              
               {isOwner && (
                 <div className="relative">
                   <button
@@ -140,7 +140,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                   >
                     <MoreVertical size={14} />
                   </button>
-
+                  
                   {showMenu && (
                     <div className="absolute right-0 top-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-[120px]">
                       <button
@@ -165,7 +165,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 </div>
               )}
             </div>
-
+            
             {isEditing ? (
               <div className="space-y-2">
                 <textarea
@@ -211,7 +211,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 })}
               </p>
             )}
-
+            
             <div className="flex items-center gap-4 mt-2">
               <button
                 onClick={handleLike}
@@ -224,7 +224,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 <Heart size={12} className={isLiked ? 'fill-current' : ''} />
                 <span>{comment.likes?.length || 0}</span>
               </button>
-
+              
               {depth < maxDepth && (
                 <button
                   onClick={() => {
@@ -241,7 +241,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               )}
             </div>
           </div>
-
+          
           {isReplying && (
             <div className="mt-2 space-y-2">
               <textarea
@@ -272,7 +272,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           )}
         </div>
       </div>
-
+      
       {comment.replies && comment.replies.length > 0 && (
         <div className="mt-2 space-y-2">
           {comment.replies.map((reply) => (
