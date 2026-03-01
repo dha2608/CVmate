@@ -39,15 +39,32 @@ export const useMessageStore = create<MessageState>((set) => ({
   fetchConversations: async () => {
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
       const res = await fetch(`${API_URL}/messages/conversations`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
+      
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          console.error('Authentication failed');
+          localStorage.removeItem('token');
+          return;
+        }
+        throw new Error(`HTTP ${res.status}`);
+      }
+      
       const data = await res.json();
       if (data.success) {
         set({ conversations: data.data });
       }
     } catch (error) {
-      console.error(error);
+      console.error('fetchConversations error:', error);
     }
   },
 
@@ -55,9 +72,29 @@ export const useMessageStore = create<MessageState>((set) => ({
     set({ isLoading: true });
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        set({ isLoading: false });
+        return;
+      }
+      
       const res = await fetch(`${API_URL}/messages/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
+      
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          console.error('Authentication failed');
+          localStorage.removeItem('token');
+          set({ isLoading: false });
+          return;
+        }
+        throw new Error(`HTTP ${res.status}`);
+      }
+      
       const data = await res.json();
       if (data.success) {
         set({ messages: data.data, isLoading: false });
@@ -65,7 +102,7 @@ export const useMessageStore = create<MessageState>((set) => ({
         set({ isLoading: false });
       }
     } catch (error) {
-      console.error(error);
+      console.error('fetchMessages error:', error);
       set({ isLoading: false });
     }
   },
@@ -114,20 +151,41 @@ export const useMessageStore = create<MessageState>((set) => ({
   markAsRead: async (userId: string) => {
     try {
       const token = localStorage.getItem('token');
-      await fetch(`${API_URL}/messages/${userId}/read`, {
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+      
+      const res = await fetch(`${API_URL}/messages/${userId}/read`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
+      
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          console.error('Authentication failed');
+          localStorage.removeItem('token');
+          return;
+        }
+        throw new Error(`HTTP ${res.status}`);
+      }
+      
       // Refresh conversations to update unread counts
-      const res = await fetch(`${API_URL}/messages/conversations`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const convRes = await fetch(`${API_URL}/messages/conversations`, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
-      const data = await res.json();
-      if (data.success) {
-        set({ conversations: data.data });
+      
+      if (convRes.ok) {
+        const data = await convRes.json();
+        if (data.success) {
+          set({ conversations: data.data });
+        }
       }
     } catch (error) {
       console.error('Failed to mark as read:', error);

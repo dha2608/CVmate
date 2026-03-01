@@ -59,9 +59,18 @@ export const getPosts = async (req: AuthRequest, res: Response, next: NextFuncti
       Post.countDocuments(query)
     ]);
     
+    // Sort posts: posts with images first, then by createdAt
+    const sortedPosts = posts.sort((a, b) => {
+      const aHasImage = a.image && a.image.trim().length > 0;
+      const bHasImage = b.image && b.image.trim().length > 0;
+      if (aHasImage && !bHasImage) return -1;
+      if (!aHasImage && bHasImage) return 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    
     res.json({ 
       success: true, 
-      data: posts,
+      data: sortedPosts,
       pagination: {
         page,
         limit,

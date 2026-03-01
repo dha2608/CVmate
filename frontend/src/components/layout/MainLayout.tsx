@@ -40,7 +40,7 @@ interface MainLayoutProps {
   showRightSidebar?: boolean;
 }
 
-const resolveAssetUrl = (url?: string) => {
+export const resolveAssetUrl = (url?: string) => {
   if (!url) return '';
   if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';

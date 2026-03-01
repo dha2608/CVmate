@@ -176,13 +176,24 @@ const Profile = () => {
       if (!response.success || !avatarUrl) {
         throw new Error(t('profile.uploadFailed'));
       }
-      const avatarUrlWithTimestamp = avatarUrl + (avatarUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
-      const updatedFormData = { ...formData, avatar: avatarUrlWithTimestamp };
-      setFormData(updatedFormData);
-      setOriginalData({ ...updatedFormData, avatar: avatarUrl });
-
-      if (user) {
-        setUser({ ...user, avatar: resolveAssetUrl(avatarUrl) });
+      
+      // Refresh user data from API to ensure consistency
+      const meResponse = await api.getMe();
+      if (meResponse.success && meResponse.data) {
+        setUser(meResponse.data as any);
+        const resolvedAvatar = resolveAssetUrl(meResponse.data.avatar || avatarUrl);
+        const updatedFormData = { ...formData, avatar: resolvedAvatar };
+        setFormData(updatedFormData);
+        setOriginalData({ ...updatedFormData, avatar: resolvedAvatar });
+      } else {
+        // Fallback if getMe fails
+        const resolvedAvatar = resolveAssetUrl(avatarUrl);
+        const updatedFormData = { ...formData, avatar: resolvedAvatar };
+        setFormData(updatedFormData);
+        setOriginalData({ ...updatedFormData, avatar: resolvedAvatar });
+        if (user) {
+          setUser({ ...user, avatar: resolvedAvatar });
+        }
       }
 
       toast.success(t('profile.avatarUploaded'));
@@ -219,12 +230,24 @@ const Profile = () => {
       if (!response.success || !coverPhotoUrl) {
         throw new Error(t('profile.uploadFailed'));
       }
-      const updatedFormData = { ...formData, coverPhoto: resolveAssetUrl(coverPhotoUrl) };
-      setFormData(updatedFormData);
-      setOriginalData(updatedFormData);
-
-      if (user) {
-        setUser({ ...user, coverPhoto: resolveAssetUrl(coverPhotoUrl) } as any);
+      
+      // Refresh user data from API to ensure consistency
+      const meResponse = await api.getMe();
+      if (meResponse.success && meResponse.data) {
+        setUser(meResponse.data as any);
+        const resolvedCoverPhoto = resolveAssetUrl((meResponse.data as any).coverPhoto || coverPhotoUrl);
+        const updatedFormData = { ...formData, coverPhoto: resolvedCoverPhoto };
+        setFormData(updatedFormData);
+        setOriginalData(updatedFormData);
+      } else {
+        // Fallback if getMe fails
+        const resolvedCoverPhoto = resolveAssetUrl(coverPhotoUrl);
+        const updatedFormData = { ...formData, coverPhoto: resolvedCoverPhoto };
+        setFormData(updatedFormData);
+        setOriginalData(updatedFormData);
+        if (user) {
+          setUser({ ...user, coverPhoto: resolvedCoverPhoto } as any);
+        }
       }
 
       toast.success('Ảnh bìa đã được tải lên');

@@ -125,13 +125,15 @@ const PostCardComponent = ({ post }: PostCardProps) => {
 
       <p className="text-gray-800 dark:text-gray-100 mb-3 whitespace-pre-wrap">{post?.content || ''}</p>
       {normalizedPostImage && !imageError && (
-        <img 
-          src={normalizedPostImage} 
-          alt="Post content" 
-          className="w-full h-auto rounded-lg mb-3 object-cover max-h-96" 
-          loading="lazy"
-          onError={() => setImageError(true)}
-        />
+        <div className="w-full mb-3 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+          <img 
+            src={normalizedPostImage} 
+            alt="Post content" 
+            className="w-full h-auto object-contain max-h-[500px] mx-auto" 
+            loading="lazy"
+            onError={() => setImageError(true)}
+          />
+        </div>
       )}
 
       <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-2">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import MainLayout from '@/components/layout/MainLayout';
+import MainLayout, { resolveAssetUrl } from '@/components/layout/MainLayout';
 import { apiRequest } from '@/lib/utils';
 import { Loader2, Briefcase, Users, FileText, MapPin, Link2, MessageCircle } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
@@ -115,7 +115,7 @@ const UserProfile = () => {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
                 {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                  <img src={resolveAssetUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-xl sm:text-2xl font-bold text-indigo-600">
                     {user.name.charAt(0).toUpperCase()}
