@@ -6,6 +6,7 @@ import { useToastStore } from '@/store/toastStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useConfirmDialog } from '@/components/ui/confirm-dialog';
 import { 
   User, 
   Bell, 
@@ -30,6 +31,7 @@ const Settings = () => {
   const { theme, toggleTheme } = useTheme();
   const toast = useToastStore();
   const navigate = useNavigate();
+  const confirmDialog = useConfirmDialog();
 
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications' | 'privacy' | 'account'>('profile');
   const [loading, setLoading] = useState(false);
@@ -515,8 +517,14 @@ const Settings = () => {
                         </p>
                         <Button
                           variant="destructive"
-                          onClick={() => {
-                            if (window.confirm(t('settings.confirmDeleteAccount') || 'Are you sure you want to delete your account? This action cannot be undone.'))) {
+                          onClick={async () => {
+                            const confirmed = await confirmDialog({
+                              title: t('settings.deleteAccount') || 'Delete Account',
+                              message: t('settings.confirmDeleteAccount') || 'Are you sure you want to delete your account? This action cannot be undone.',
+                              confirmText: t('settings.delete') || 'Delete',
+                              cancelText: t('settings.cancel') || 'Cancel',
+                            });
+                            if (confirmed) {
                               toast.error(t('settings.deleteAccountNotImplemented') || 'Account deletion is not yet implemented');
                             }
                           }}
