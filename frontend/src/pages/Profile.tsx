@@ -11,6 +11,15 @@ import { User, Mail, Camera, Save, X, Loader2, Shield, Crown, CreditCard, MapPin
 import { api } from '@/lib/utils';
 import PayPalButton from '@/components/PayPalButton';
 
+const resolveAssetUrl = (url?: string) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+  const origin = apiBase.replace(/\/api\/?$/, '');
+  const normalized = url.startsWith('/') ? url : `/${url}`;
+  return `${origin}${normalized}`;
+};
+
 const Profile = () => {
   const { user, setUser } = useAuthStore();
   const { t } = useI18n();
@@ -77,14 +86,14 @@ const Profile = () => {
     }
   }, [hasChanges, setDirty, clearDirty]);
 
-  const currentAvatar = (formData.avatar?.trim() || user?.avatar?.trim() || '').trim();
+  const currentAvatar = resolveAssetUrl((formData.avatar?.trim() || user?.avatar?.trim() || '').trim());
 
   useEffect(() => {
     if (user) {
       const initialData = {
         name: user.name || '',
         avatar: user.avatar || '',
-        coverPhoto: (user as any).coverPhoto || '',
+        coverPhoto: resolveAssetUrl((user as any).coverPhoto || ''),
         email: user.email || '',
         role: user.role || 'user',
         bio: user.bio || '',
@@ -173,7 +182,7 @@ const Profile = () => {
       setOriginalData({ ...updatedFormData, avatar: avatarUrl });
 
       if (user) {
-        setUser({ ...user, avatar: avatarUrl });
+        setUser({ ...user, avatar: resolveAssetUrl(avatarUrl) });
       }
 
       toast.success(t('profile.avatarUploaded'));
@@ -210,12 +219,12 @@ const Profile = () => {
       if (!response.success || !coverPhotoUrl) {
         throw new Error(t('profile.uploadFailed'));
       }
-      const updatedFormData = { ...formData, coverPhoto: coverPhotoUrl };
+      const updatedFormData = { ...formData, coverPhoto: resolveAssetUrl(coverPhotoUrl) };
       setFormData(updatedFormData);
       setOriginalData(updatedFormData);
 
       if (user) {
-        setUser({ ...user, coverPhoto: coverPhotoUrl } as any);
+        setUser({ ...user, coverPhoto: resolveAssetUrl(coverPhotoUrl) } as any);
       }
 
       toast.success('Ảnh bìa đã được tải lên');

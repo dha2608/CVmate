@@ -47,16 +47,16 @@ const Pricing = () => {
   const features = {
     free: isVi
       ? [
-          { name: 'Tạo CV cơ bản', included: true },
-          { name: '1 CV template', included: true },
-          { name: 'Xuất PDF', included: true },
-          { name: 'Lưu CV không giới hạn', included: true },
-          { name: 'AI Interview Practice', included: false },
-          { name: 'AI CV Enhancement', included: false },
-          { name: 'AI Job Matching', included: false },
-          { name: 'Nhiều CV templates', included: false },
-          { name: 'Priority Support', included: false },
-          { name: 'Advanced Analytics', included: false },
+      { name: 'Tạo CV cơ bản', included: true },
+      { name: '1 CV template', included: true },
+      { name: 'Xuất PDF', included: true },
+      { name: 'Lưu CV không giới hạn', included: true },
+      { name: 'AI Interview Practice', included: false },
+      { name: 'AI CV Enhancement', included: false },
+      { name: 'AI Job Matching', included: false },
+      { name: 'Nhiều CV templates', included: false },
+      { name: 'Priority Support', included: false },
+      { name: 'Advanced Analytics', included: false },
         ]
       : [
           { name: 'Basic CV creation', included: true },
@@ -72,16 +72,16 @@ const Pricing = () => {
         ],
     premium: isVi
       ? [
-          { name: 'Tất cả tính năng Free', included: true },
-          { name: 'AI Interview Practice', included: true },
-          { name: 'AI CV Enhancement', included: true },
-          { name: 'AI Job Matching', included: true },
-          { name: '10+ CV templates', included: true },
-          { name: 'Priority Support', included: true },
-          { name: 'Advanced Analytics', included: true },
-          { name: 'Export nhiều định dạng', included: true },
-          { name: 'Custom branding', included: true },
-          { name: 'Unlimited AI suggestions', included: true },
+      { name: 'Tất cả tính năng Free', included: true },
+      { name: 'AI Interview Practice', included: true },
+      { name: 'AI CV Enhancement', included: true },
+      { name: 'AI Job Matching', included: true },
+      { name: '10+ CV templates', included: true },
+      { name: 'Priority Support', included: true },
+      { name: 'Advanced Analytics', included: true },
+      { name: 'Export nhiều định dạng', included: true },
+      { name: 'Custom branding', included: true },
+      { name: 'Unlimited AI suggestions', included: true },
         ]
       : [
           { name: 'Everything in Free', included: true },
@@ -94,7 +94,7 @@ const Pricing = () => {
           { name: 'Multi-format export', included: true },
           { name: 'Custom branding', included: true },
           { name: 'Unlimited AI suggestions', included: true },
-        ],
+    ],
   };
 
   const compareRows = isVi
