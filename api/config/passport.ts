@@ -19,6 +19,18 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     process.env.GOOGLE_CALLBACK_URL ||
     `${normalizedBackendBaseUrl}/api/auth/google/callback`;
 
+  logger.info('🔐 Google OAuth Configuration:', {
+    backendBaseUrl: normalizedBackendBaseUrl,
+    resolvedCallbackUrl,
+    hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+    hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+  });
+
+  if (!resolvedCallbackUrl.startsWith('http://') && !resolvedCallbackUrl.startsWith('https://')) {
+    logger.error('❌ Invalid GOOGLE_CALLBACK_URL format. Must be a full URL (http:// or https://)');
+    throw new Error('GOOGLE_CALLBACK_URL must be a full URL');
+  }
+
   passport.use(
     new GoogleStrategy(
       {
