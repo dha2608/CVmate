@@ -3,7 +3,7 @@ import { useResumeStore, type IExperience } from '@/store/resumeStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Brain, Plus } from 'lucide-react';
+import { Trash2, Brain, Plus, Briefcase } from 'lucide-react';
 
 interface ExperienceItemProps {
   exp: IExperience;
@@ -23,91 +23,94 @@ const ExperienceItem = memo(function ExperienceItem({
   onEnhance,
 }: ExperienceItemProps) {
   return (
-    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 space-y-4 relative group">
+    <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 space-y-4 relative group hover:shadow-md transition-shadow">
       <Button
         variant="ghost"
         size="icon"
-        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-3 right-3 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
         onClick={() => onRemove(index)}
       >
         <Trash2 size={18} />
       </Button>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-gray-500">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
             Company <span className="text-red-500">*</span>
           </label>
           <Input
             value={exp.company}
             onChange={(e) => onUpdate(index, { ...exp, company: e.target.value })}
-            placeholder="Company Name"
-            className={`bg-white ${!exp.company?.trim() ? 'border-amber-300' : ''}`}
+            placeholder="e.g. Google, Microsoft"
+            className={`bg-white dark:bg-gray-900 dark:border-gray-700 ${!exp.company?.trim() ? 'border-amber-300 dark:border-amber-600' : ''}`}
           />
           {!exp.company?.trim() && (
-            <p className="text-xs text-amber-600">Required field</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">Required field</p>
           )}
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-gray-500">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
             Position <span className="text-red-500">*</span>
           </label>
           <Input
             value={exp.position}
             onChange={(e) => onUpdate(index, { ...exp, position: e.target.value })}
-            placeholder="Job Title"
-            className={`bg-white ${!exp.position?.trim() ? 'border-amber-300' : ''}`}
+            placeholder="e.g. Senior Software Engineer"
+            className={`bg-white dark:bg-gray-900 dark:border-gray-700 ${!exp.position?.trim() ? 'border-amber-300 dark:border-amber-600' : ''}`}
           />
           {!exp.position?.trim() && (
-            <p className="text-xs text-amber-600">Required field</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">Required field</p>
           )}
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-gray-500">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
             Start Date
           </label>
           <Input
             value={exp.startDate}
             onChange={(e) => onUpdate(index, { ...exp, startDate: e.target.value })}
-            placeholder="MM/YYYY"
-            className="bg-white"
+            placeholder="MM/YYYY or YYYY"
+            className="bg-white dark:bg-gray-900 dark:border-gray-700"
           />
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-medium uppercase text-gray-500">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
             End Date
           </label>
           <Input
             value={exp.endDate}
             onChange={(e) => onUpdate(index, { ...exp, endDate: e.target.value })}
-            placeholder="MM/YYYY or Present"
-            className="bg-white"
+            placeholder="MM/YYYY, YYYY, or Present"
+            className="bg-white dark:bg-gray-900 dark:border-gray-700"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <label className="text-xs font-medium uppercase text-gray-500">
-            Description
+        <div className="flex flex-wrap justify-between items-center gap-2">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Description & Achievements
           </label>
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 text-xs text-accent gap-1 hover:bg-red-50"
+            className="h-7 text-xs text-purple-700 dark:text-purple-300 gap-1.5 hover:bg-purple-50 dark:hover:bg-purple-900/30 border border-purple-200 dark:border-purple-800"
             onClick={() => onEnhance(index, exp.description)}
             disabled={isEnhancing}
           >
-            <Brain size={12} />
+            <Brain size={14} className={isEnhancing ? 'animate-spin' : ''} />
             {isEnhancing ? 'Enhancing...' : 'AI Enhance'}
           </Button>
         </div>
         <Textarea
           value={exp.description}
           onChange={(e) => onUpdate(index, { ...exp, description: e.target.value })}
-          placeholder="• Achieved X by doing Y..."
-          className="bg-white min-h-[100px]"
+          placeholder="• Led a team of 5 developers to deliver a new feature that increased user engagement by 30%&#10;• Optimized database queries reducing response time by 40%&#10;• Implemented CI/CD pipeline reducing deployment time by 50%"
+          className="bg-white dark:bg-gray-900 dark:border-gray-700 min-h-[120px] text-sm"
         />
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Use bullet points to highlight your achievements and responsibilities
+        </p>
       </div>
     </div>
   );
@@ -189,18 +192,44 @@ const ExperienceForm = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <h3 className="text-lg font-medium flex justify-between items-center">
-        Work Experience
-        <Button size="sm" onClick={handleAdd} className="gap-2">
-          <Plus size={16} /> Add Position
-        </Button>
-      </h3>
+      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Work Experience</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              List your professional work history, starting with your most recent position
+            </p>
+          </div>
+          <Button 
+            size="sm" 
+            onClick={handleAdd} 
+            className="gap-2 bg-gradient-to-r from-crimson-red to-fire-red hover:from-fire-red hover:to-crimson-red text-white shadow-md"
+          >
+            <Plus size={16} /> Add Position
+          </Button>
+        </div>
+      </div>
 
-      {items}
+      <div className="space-y-4">
+        {items}
+      </div>
 
       {experience.length === 0 && (
-        <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
-          No experience added yet. Click "Add Position" to start.
+        <div className="bg-gray-50 dark:bg-gray-800/50 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-12 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <Briefcase className="w-8 h-8 text-gray-400 dark:text-gray-600" />
+          </div>
+          <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No experience added yet</h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Start building your professional profile by adding your work experience
+          </p>
+          <Button 
+            size="sm" 
+            onClick={handleAdd} 
+            className="gap-2 bg-gradient-to-r from-crimson-red to-fire-red hover:from-fire-red hover:to-crimson-red text-white"
+          >
+            <Plus size={16} /> Add Your First Position
+          </Button>
         </div>
       )}
     </div>

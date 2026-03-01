@@ -61,15 +61,15 @@ const ResumePreview = ({ template = 'modern-red', sections }: ResumePreviewProps
 
   const renderHeader = () => (
     <header className={`border-b-2 ${styles.headerBorder} pb-6 mb-6`}>
-      <h1 className={`text-4xl font-bold ${styles.accentColor} uppercase tracking-wide mb-2`}>
+      <h1 className={`text-4xl font-bold ${styles.accentColor} uppercase tracking-wide mb-3`}>
         {personalInfo.fullName || 'YOUR NAME'}
       </h1>
-      <div className="flex flex-wrap gap-3 text-gray-600 text-xs mt-3">
-        {personalInfo.email && <span>{personalInfo.email}</span>}
-        {personalInfo.phone && <span>• {personalInfo.phone}</span>}
-        {personalInfo.address && <span>• {personalInfo.address}</span>}
-        {personalInfo.linkedin && <span>• {personalInfo.linkedin}</span>}
-        {personalInfo.website && <span>• {personalInfo.website}</span>}
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-gray-600 dark:text-gray-400 text-xs mt-3">
+        {personalInfo.email && <span className="flex items-center gap-1">{personalInfo.email}</span>}
+        {personalInfo.phone && <span className="flex items-center gap-1">• {personalInfo.phone}</span>}
+        {personalInfo.address && <span className="flex items-center gap-1">• {personalInfo.address}</span>}
+        {personalInfo.linkedin && <span className="flex items-center gap-1">• {personalInfo.linkedin}</span>}
+        {personalInfo.website && <span className="flex items-center gap-1">• {personalInfo.website}</span>}
       </div>
     </header>
   );
@@ -81,29 +81,32 @@ const ResumePreview = ({ template = 'modern-red', sections }: ResumePreviewProps
       case 'summary':
         return summary ? (
           <section className="mb-6" key="summary">
-            <h2 className={`text-sm font-bold ${styles.accentColor} uppercase border-b ${styles.sectionBorder} mb-3 pb-1 tracking-wider`}>
+            <h2 className={`text-sm font-bold ${styles.accentColor} uppercase border-b ${styles.sectionBorder} mb-3 pb-1.5 tracking-wider`}>
               Professional Summary
             </h2>
-            <p className="text-gray-700 whitespace-pre-line text-justify">{summary}</p>
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line text-justify leading-relaxed">{summary}</p>
           </section>
         ) : null;
       case 'experience':
         return experience && experience.length > 0 ? (
           <section className="mb-6" key="experience">
-            <h2 className={`text-sm font-bold ${styles.accentColor} uppercase border-b ${styles.sectionBorder} mb-4 pb-1 tracking-wider`}>Experience</h2>
-            <div className="space-y-4">
+            <h2 className={`text-sm font-bold ${styles.accentColor} uppercase border-b ${styles.sectionBorder} mb-4 pb-1.5 tracking-wider`}>Experience</h2>
+            <div className="space-y-5">
               {experience.map((exp, i) => (
-                <div key={i}>
-                  <div className="flex justify-between items-baseline mb-1">
-                    <h3 className="font-bold text-gray-800 text-base">{exp.position}</h3>
-                    <span className="text-xs text-gray-500 font-medium whitespace-nowrap">
-                      {exp.startDate} - {exp.endDate}
+                <div key={i} className="relative pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                  <div className="absolute -left-[7px] top-1.5 w-3 h-3 rounded-full bg-crimson-red dark:bg-red-500" />
+                  <div className="flex flex-wrap justify-between items-baseline mb-1 gap-2">
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base">{exp.position || 'Position'}</h3>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">
+                      {exp.startDate || 'Start'} {exp.endDate ? `- ${exp.endDate}` : ''}
                     </span>
                   </div>
-                  <div className="text-sm font-semibold text-gray-700 mb-2">{exp.company}</div>
-                  <p className="text-gray-600 whitespace-pre-line text-justify text-xs leading-5">
-                    {exp.description}
-                  </p>
+                  <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{exp.company || 'Company'}</div>
+                  {exp.description && (
+                    <p className="text-gray-600 dark:text-gray-400 whitespace-pre-line text-justify text-xs leading-relaxed">
+                      {exp.description}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -112,17 +115,23 @@ const ResumePreview = ({ template = 'modern-red', sections }: ResumePreviewProps
       case 'education':
         return education && education.length > 0 ? (
           <section className="mb-6" key="education">
-            <h2 className={`text-sm font-bold ${styles.accentColor} uppercase border-b ${styles.sectionBorder} mb-4 pb-1 tracking-wider`}>Education</h2>
-            <div className="space-y-3">
+            <h2 className={`text-sm font-bold ${styles.accentColor} uppercase border-b ${styles.sectionBorder} mb-4 pb-1.5 tracking-wider`}>Education</h2>
+            <div className="space-y-4">
               {education.map((edu, i) => (
-                <div key={i}>
-                  <div className="flex justify-between items-baseline mb-1">
-                    <h3 className="font-bold text-gray-800">{edu.institution}</h3>
-                    <span className="text-xs text-gray-500 font-medium whitespace-nowrap">
-                      {edu.startDate} - {edu.endDate}
+                <div key={i} className="relative pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                  <div className="absolute -left-[7px] top-1.5 w-3 h-3 rounded-full bg-blue-500 dark:bg-blue-400" />
+                  <div className="flex flex-wrap justify-between items-baseline mb-1 gap-2">
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100">{edu.institution || 'Institution'}</h3>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">
+                      {edu.startDate || 'Start'} {edu.endDate ? `- ${edu.endDate}` : ''}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-600 italic">{edu.degree}</div>
+                  <div className="text-sm text-gray-700 dark:text-gray-300 font-medium mb-1">{edu.degree || 'Degree'}</div>
+                  {edu.description && (
+                    <p className="text-xs text-gray-600 dark:text-gray-400 whitespace-pre-line leading-relaxed mt-1">
+                      {edu.description}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -131,10 +140,10 @@ const ResumePreview = ({ template = 'modern-red', sections }: ResumePreviewProps
       case 'skills':
         return skills && skills.length > 0 ? (
           <section className="mb-6" key="skills">
-            <h2 className={`text-sm font-bold ${styles.accentColor} uppercase border-b ${styles.sectionBorder} mb-3 pb-1 tracking-wider`}>Skills</h2>
+            <h2 className={`text-sm font-bold ${styles.accentColor} uppercase border-b ${styles.sectionBorder} mb-3 pb-1.5 tracking-wider`}>Skills</h2>
             <div className="flex flex-wrap gap-2">
               {skills.map((skill, i) => (
-                <span key={i} className="text-xs font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                <span key={i} className="text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-full">
                   {skill}
                 </span>
               ))}
@@ -264,7 +273,7 @@ const ResumePreview = ({ template = 'modern-red', sections }: ResumePreviewProps
   return (
     <motion.div 
       id="resume-preview" 
-      className="bg-white shadow-xl w-full max-w-[210mm] min-h-[297mm] p-[20mm] text-sm leading-relaxed text-gray-800 mx-auto print:shadow-none print:w-full print:h-auto print:p-0 print:m-0"
+      className="bg-white dark:bg-gray-900 shadow-xl w-full max-w-[210mm] min-h-[297mm] p-[20mm] text-sm leading-relaxed text-gray-800 dark:text-gray-200 mx-auto print:shadow-none print:w-full print:h-auto print:p-0 print:m-0 print:bg-white print:text-black"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}

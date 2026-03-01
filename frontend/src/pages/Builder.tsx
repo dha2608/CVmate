@@ -12,9 +12,10 @@ import EducationForm from '@/components/builder/EducationForm';
 import SkillsForm from '@/components/builder/SkillsForm';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Menu, Eye, Edit3, Brain } from 'lucide-react';
+import { Menu, Eye, Edit3, Brain, Save, Download, Settings2, CheckCircle2 } from 'lucide-react';
 import { api } from '@/lib/utils';
 import { useToastStore } from '@/store/toastStore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const SummaryPanel = memo(({ summary, onSummaryChange }: { summary: string; onSummaryChange: (v: string) => void }) => {
   const [enhancing, setEnhancing] = useState(false);
@@ -32,27 +33,40 @@ const SummaryPanel = memo(({ summary, onSummaryChange }: { summary: string; onSu
     }
   }, [summary, onSummaryChange]);
   return (
-    <div className="space-y-4" data-section="summary">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Professional Summary</h2>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleAiEnhance}
-          disabled={enhancing}
-          className="gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/30"
-        >
-          <Brain size={16} />
-          {enhancing ? 'Enhancing…' : 'AI Enhance'}
-        </Button>
+    <div className="space-y-6 animate-in fade-in duration-300" data-section="summary">
+      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Professional Summary</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Write a compelling summary that highlights your key strengths and career goals
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleAiEnhance}
+            disabled={enhancing}
+            className="gap-2 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+          >
+            <Brain size={16} className={enhancing ? 'animate-spin' : ''} />
+            {enhancing ? 'Enhancing…' : 'AI Enhance'}
+          </Button>
+        </div>
+        <Textarea
+          placeholder="Example: Experienced software engineer with 5+ years of expertise in full-stack development. Proven track record of delivering scalable web applications using React, Node.js, and cloud technologies. Passionate about clean code, agile methodologies, and mentoring junior developers..."
+          value={summary}
+          onChange={(e) => onSummaryChange(e.target.value)}
+          className="min-h-[180px] resize-y text-sm"
+        />
+        <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <span>{summary.length} characters</span>
+          <span className={summary.length > 500 ? 'text-amber-600' : ''}>
+            Recommended: 100-500 characters
+          </span>
+        </div>
       </div>
-      <Textarea
-        placeholder="Write a brief summary of your experience and goals..."
-        value={summary}
-        onChange={(e) => onSummaryChange(e.target.value)}
-        className="min-h-[160px] resize-y"
-      />
     </div>
   );
 });
@@ -86,6 +100,7 @@ const Builder = () => {
   const [loadingResume, setLoadingResume] = useState(false);
   const [atsAnalysis, setAtsAnalysis] = useState<AtsAnalysisResult | null>(null);
   const [atsAnalyzing, setAtsAnalyzing] = useState(false);
+  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
 
   const resumeId = searchParams.get('id');
 
@@ -124,8 +139,29 @@ const Builder = () => {
     };
   }, []);
 
-  const handleSave = useCallback(async () => {
-    setSaving(true);
+  // Auto-save functionality
+  useEffect(() => {
+    if (autoSaveTimer) {
+      clearTimeout(autoSaveTimer);
+    }
+
+    const timer = setTimeout(() => {
+      if (resumeId && currentResume.personalInfo?.fullName && currentResume.personalInfo?.email) {
+        handleSave(true); // Silent auto-save
+      }
+    }, 3000); // Auto-save after 3 seconds of inactivity
+
+    setAutoSaveTimer(timer);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [currentResume, resumeId, handleSave]);
+
+  const handleSave = useCallback(async (silent = false) => {
+    if (!silent) {
+      setSaving(true);
+    }
     try {
       const payload = {
         title: currentResume.title || 'Untitled Resume',
@@ -153,13 +189,19 @@ const Builder = () => {
         setSearchParams(nextParams, { replace: true });
       }
 
-      toast.success('Lưu CV thành công');
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      if (!silent) {
+        toast.success('CV saved successfully');
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
     } catch (error: any) {
-      toast.error(error?.message || 'Không thể lưu CV. Vui lòng thử lại.');
+      if (!silent) {
+        toast.error(error?.message || 'Failed to save CV. Please try again.');
+      }
     } finally {
-      setSaving(false);
+      if (!silent) {
+        setSaving(false);
+      }
     }
   }, [
     currentResume,
@@ -172,7 +214,7 @@ const Builder = () => {
   ]);
 
   const handleDownload = useCallback(() => {
-    toast.success('Đang mở hộp thoại in. Hãy chọn "Save as PDF" để tải CV.');
+    toast.success('Opening print dialog. Select "Save as PDF" to download your CV.');
     window.print();
   }, [toast]);
 
@@ -266,7 +308,7 @@ const Builder = () => {
 
   const handleAtsAnalyze = useCallback(async (jobDescription: string) => {
     if (!resumeId) {
-      toast.error('Hãy lưu CV trước khi chạy ATS Checker.');
+      toast.error('Please save your CV first before running ATS Checker.');
       return;
     }
 
@@ -274,13 +316,13 @@ const Builder = () => {
     try {
       const response = await api.analyzeResume(resumeId, jobDescription);
       if (!response.success) {
-        throw new Error('Không thể phân tích ATS');
+        throw new Error('Failed to analyze ATS');
       }
 
       setAtsAnalysis(response.data || null);
-      toast.success('Phân tích ATS hoàn tất.');
+      toast.success('ATS analysis completed.');
     } catch (error: any) {
-      toast.error(error?.message || 'Không thể phân tích ATS.');
+      toast.error(error?.message || 'Failed to analyze ATS.');
     } finally {
       setAtsAnalyzing(false);
     }
@@ -325,7 +367,7 @@ const Builder = () => {
         }
       } catch (error: any) {
         if (active) {
-          toast.error(error?.message || 'Không thể tải CV đã lưu.');
+          toast.error(error?.message || 'Failed to load saved CV.');
         }
       } finally {
         if (active) {
@@ -365,103 +407,178 @@ const Builder = () => {
 
   return (
     <MainLayout layoutMode="full-width" showLeftSidebar={false} showRightSidebar={false}>
-      <div className="max-w-6xl xl:max-w-7xl mx-auto px-2 sm:px-4 lg:px-0">
-        <div className="flex flex-col lg:flex-row min-h-[600px] bg-gray-50 dark:bg-gray-950 rounded-xl lg:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 relative">
-          {/* Mobile: overlay sidebar */}
-          {sidebarOpen && (
-            <div
-              className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-              onClick={() => setSidebarOpen(false)}
-              aria-hidden="true"
-            />
-          )}
-          <div
-            className={`fixed lg:relative inset-y-0 left-0 z-40 lg:z-auto w-[280px] lg:w-[300px] transform transition-transform duration-300 ease-out shadow-xl lg:shadow-none ${
-              sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-            }`}
-          >
-            <BuilderSidebar
-              sections={sections}
-              activeTab={activeTab}
-              setActiveTab={(id) => {
-                setActiveTab(id);
-                setSidebarOpen(false);
-              }}
-              mode="guided"
-              saved={saved}
-              saving={saving}
-              onSave={handleSave}
-              onDownload={handleDownload}
-              isCollapsed={sidebarOpen ? false : isCollapsed}
-              onToggleCollapsed={() => setIsCollapsed((c) => !c)}
-              onOpenActions={() => setActionsOpen(true)}
-              onBack={() => navigate('/dashboard')}
-              currentResume={currentResume}
-            />
-          </div>
-
-          {/* Main: form + preview */}
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
-          {/* Mobile: toggle Edit / Preview */}
-            <div className="flex lg:hidden border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
-            <button
-              type="button"
-              onClick={() => setMobileView('form')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium ${
-                mobileView === 'form'
-                  ? 'text-crimson-red border-b-2 border-crimson-red bg-red-50/50 dark:bg-red-900/20'
-                  : 'text-gray-500 dark:text-gray-400'
-              }`}
-            >
-              <Edit3 size={18} />
-              Edit
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileView('preview')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium ${
-                mobileView === 'preview'
-                  ? 'text-crimson-red border-b-2 border-crimson-red bg-red-50/50 dark:bg-red-900/20'
-                  : 'text-gray-500 dark:text-gray-400'
-              }`}
-            >
-              <Eye size={18} />
-              Preview
-            </button>
-            </div>
-
-            <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
-              <div
-                className={`w-full lg:w-5/12 border-r border-gray-200 dark:border-gray-800 p-4 sm:p-6 bg-white dark:bg-gray-900 ${
-                  mobileView !== 'form' ? 'hidden lg:block' : ''
-                }`}
-              >
-                <div className="lg:hidden flex items-center gap-2 mb-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="max-w-[1920px] mx-auto">
+          {/* Top Bar */}
+          <div className="sticky top-0 z-20 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+            <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-16">
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="lg:hidden"
+                  >
+                    <Menu size={20} />
+                  </Button>
+                  <div>
+                    <h1 className="text-lg font-bold text-gray-900 dark:text-white">CV Builder</h1>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {resumeId ? 'Editing resume' : 'Create your professional resume'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <AnimatePresence>
+                    {saved && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400"
+                      >
+                        <CheckCircle2 size={16} />
+                        <span>Saved</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSidebarOpen(true)}
+                    onClick={() => setActionsOpen(true)}
+                    className="hidden sm:flex gap-2"
+                  >
+                    <Settings2 size={16} />
+                    Settings
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSave()}
+                    disabled={saving}
                     className="gap-2"
                   >
-                    <Menu size={18} />
-                    Sections
+                    <Save size={16} className={saving ? 'animate-spin' : ''} />
+                    {saving ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleDownload}
+                    className="bg-gradient-to-r from-crimson-red to-fire-red hover:from-fire-red hover:to-crimson-red text-white gap-2"
+                  >
+                    <Download size={16} />
+                    <span className="hidden sm:inline">Download PDF</span>
                   </Button>
                 </div>
-                <div className="max-w-xl mx-auto">
+              </div>
+            </div>
+          </div>
+
+          <div className="flex h-[calc(100vh-4rem)]">
+            {/* Sidebar */}
+            <AnimatePresence>
+              {(sidebarOpen || window.innerWidth >= 1024) && (
+                <motion.aside
+                  initial={window.innerWidth < 1024 ? { x: -300 } : false}
+                  animate={{ x: 0 }}
+                  exit={window.innerWidth < 1024 ? { x: -300 } : false}
+                  className={`fixed lg:relative inset-y-0 left-0 z-30 lg:z-auto w-[280px] lg:w-[300px] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 ${
+                    sidebarOpen ? 'block' : 'hidden lg:block'
+                  }`}
+                >
+                  {sidebarOpen && window.innerWidth < 1024 && (
+                    <div
+                      className="fixed inset-0 bg-black/50 z-[-1] lg:hidden"
+                      onClick={() => setSidebarOpen(false)}
+                    />
+                  )}
+                  <BuilderSidebar
+                    sections={sections}
+                    activeTab={activeTab}
+                    setActiveTab={(id) => {
+                      setActiveTab(id);
+                      setSidebarOpen(false);
+                    }}
+                    mode="guided"
+                    saved={saved}
+                    saving={saving}
+                    onSave={() => handleSave()}
+                    onDownload={handleDownload}
+                    isCollapsed={isCollapsed}
+                    onToggleCollapsed={() => setIsCollapsed((c) => !c)}
+                    onOpenActions={() => setActionsOpen(true)}
+                    onBack={() => navigate('/dashboard')}
+                    currentResume={currentResume}
+                  />
+                </motion.aside>
+              )}
+            </AnimatePresence>
+
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+              {/* Mobile Toggle */}
+              <div className="flex lg:hidden border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <button
+                  type="button"
+                  onClick={() => setMobileView('form')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
+                    mobileView === 'form'
+                      ? 'text-crimson-red border-b-2 border-crimson-red bg-red-50/50 dark:bg-red-900/20'
+                      : 'text-gray-500 dark:text-gray-400'
+                  }`}
+                >
+                  <Edit3 size={18} />
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileView('preview')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
+                    mobileView === 'preview'
+                      ? 'text-crimson-red border-b-2 border-crimson-red bg-red-50/50 dark:bg-red-900/20'
+                      : 'text-gray-500 dark:text-gray-400'
+                  }`}
+                >
+                  <Eye size={18} />
+                  Preview
+                </button>
+              </div>
+
+              {/* Form Panel */}
+              <div
+                className={`w-full lg:w-2/5 xl:w-5/12 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-y-auto ${
+                  mobileView !== 'form' ? 'hidden lg:block' : ''
+                }`}
+              >
+                <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
                   {loadingResume ? (
-                    <div className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Đang tải CV...</div>
+                    <div className="flex items-center justify-center py-20">
+                      <div className="text-center">
+                        <div className="w-12 h-12 border-4 border-crimson-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Loading CV...</p>
+                      </div>
+                    </div>
                   ) : (
-                    renderFormPanel()
+                    <motion.div
+                      key={activeTab}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {renderFormPanel()}
+                    </motion.div>
                   )}
                 </div>
               </div>
 
+              {/* Preview Panel */}
               <div
-                className={`w-full lg:w-7/12 overflow-y-auto p-4 sm:p-6 bg-gray-100 dark:bg-gray-900 flex items-start justify-center ${
+                className={`w-full lg:w-3/5 xl:w-7/12 overflow-y-auto bg-gray-100 dark:bg-gray-950 flex items-start justify-center p-4 sm:p-6 lg:p-8 ${
                   mobileView !== 'preview' ? 'hidden lg:flex' : ''
                 }`}
               >
-                <div className="w-full max-w-[210mm] shadow-lg bg-white print:shadow-none">
+                <div className="w-full max-w-[210mm] shadow-2xl bg-white print:shadow-none rounded-lg overflow-hidden">
                   <ResumePreview template={selectedTemplate} sections={sections} />
                 </div>
               </div>

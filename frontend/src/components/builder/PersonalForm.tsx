@@ -139,21 +139,21 @@ const PersonalForm = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-4">
-        <div className="flex items-start gap-3">
-          <div className="h-10 w-10 rounded-lg bg-blue-500 text-white flex items-center justify-center flex-shrink-0">
-            <User size={20} />
+      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <div className="flex items-start gap-4">
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-md">
+            <User size={24} />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-gray-900 mb-1">Personal Information</h3>
-            <p className="text-xs text-gray-600 leading-relaxed">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Personal Information</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
               Start by filling in your basic contact information. This will appear at the top of your CV.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {fields.map((field) => (
             <PersonalField
@@ -165,15 +165,17 @@ const PersonalForm = () => {
           ))}
         </div>
 
-        <div className="mt-6 pt-5 border-t border-gray-200">
-          <div className="flex items-center justify-between">
+        <div className="mt-6 pt-5 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div
-                className={`h-2 w-2 rounded-full ${
-                  personalInfo.fullName && personalInfo.email ? 'bg-green-500' : 'bg-gray-300'
+                className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                  personalInfo.fullName && personalInfo.email 
+                    ? 'bg-green-500 animate-pulse' 
+                    : 'bg-gray-300 dark:bg-gray-600'
                 }`}
               />
-              <span className="text-xs text-gray-600">
+              <span className="text-xs text-gray-600 dark:text-gray-400">
                 {personalInfo.fullName && personalInfo.email
                   ? '✓ Basic information complete'
                   : 'Fill in at least name and email to continue'}
@@ -185,7 +187,7 @@ const PersonalForm = () => {
                   const nextSection = document.querySelector('[data-section="summary"]');
                   nextSection?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="text-xs text-crimson-red hover:text-fire-red font-medium"
+                className="text-xs text-crimson-red hover:text-fire-red font-medium transition-colors"
               >
                 Next: Summary →
               </button>
