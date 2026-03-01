@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Response, NextFunction } from 'express';
 import Message from '../models/Message.js';
 import User from '../models/User.js';
@@ -7,43 +8,88 @@ export const getConversations = async (req: AuthRequest, res: Response, next: Ne
   try {
     const currentUserId = req.user?._id;
 
-    const sent = await Message.find({ sender: currentUserId }).distinct('receiver');
-    const received = await Message.find({ receiver: currentUserId }).distinct('sender');
+    if (!currentUserId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
 
-    const distinctUserIds = [
-      ...new Set([...sent, ...received].map((id) => id.toString()))
-    ];
+    const currentUserObjectId = new mongoose.Types.ObjectId(currentUserId);
 
-    const users = await User.find({ _id: { $in: distinctUserIds } }).select('name avatar email');
-
-    // Tính unread count cho từng cuộc hội thoại
-    const conversations = await Promise.all(
-      users.map(async (u) => {
-        const unreadCount = await Message.countDocuments({
-          sender: u._id,
-          receiver: currentUserId,
-          readAt: { $exists: false },
-        });
-
-        const lastMessage = await Message.findOne({
+    const conversations = await Message.aggregate([
+      {
+        $match: {
           $or: [
-            { sender: currentUserId, receiver: u._id },
-            { sender: u._id, receiver: currentUserId },
+            { sender: currentUserObjectId },
+            { receiver: currentUserObjectId },
           ],
-        })
-          .sort({ createdAt: -1 })
-          .lean();
-
-        return {
-          _id: u._id,
-          name: u.name,
-          avatar: u.avatar,
-          email: u.email,
-          unreadCount,
-          lastMessage: lastMessage?.content || '',
-        };
-      })
-    );
+        },
+      },
+      {
+        $addFields: {
+          otherUserId: {
+            $cond: [
+              { $eq: ['$sender', currentUserObjectId] },
+              '$receiver',
+              '$sender',
+            ],
+          },
+        },
+      },
+      // Sort ascending so $last gives us the latest message
+      {
+        $sort: { createdAt: 1 },
+      },
+      {
+        $group: {
+          _id: '$otherUserId',
+          lastMessage: { $last: '$content' },
+          lastMessageAt: { $last: '$createdAt' },
+          unreadCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ['$receiver', currentUserObjectId] },
+                    {
+                      $or: [
+                        { $eq: ['$readAt', null] },
+                        { $not: ['$readAt'] },
+                      ],
+                    },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      },
+      {
+        $sort: { lastMessageAt: -1 },
+      },
+      {
+        $lookup: {
+          from: User.collection.name,
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $project: {
+          _id: '$user._id',
+          name: '$user.name',
+          avatar: '$user.avatar',
+          email: '$user.email',
+          unreadCount: 1,
+          lastMessage: { $ifNull: ['$lastMessage', ''] },
+        },
+      },
+    ]);
 
     res.json({ success: true, data: conversations });
   } catch (error) {

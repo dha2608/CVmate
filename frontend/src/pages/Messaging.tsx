@@ -15,18 +15,16 @@ const Messaging = () => {
   const { t } = useI18n();
   const toast = useToastStore();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { 
-    conversations, 
-    activeConversation, 
-    messages, 
-    isLoading,
-    isTyping,
-    fetchConversations, 
-    fetchMessages, 
-    sendMessage, 
-    setActiveConversation,
-    markAsRead
-  } = useMessageStore();
+  const conversations = useMessageStore((state) => state.conversations);
+  const activeConversation = useMessageStore((state) => state.activeConversation);
+  const messages = useMessageStore((state) => state.messages);
+  const isLoading = useMessageStore((state) => state.isLoading);
+  const isTyping = useMessageStore((state) => state.isTyping);
+  const fetchConversations = useMessageStore((state) => state.fetchConversations);
+  const fetchMessages = useMessageStore((state) => state.fetchMessages);
+  const sendMessage = useMessageStore((state) => state.sendMessage);
+  const setActiveConversation = useMessageStore((state) => state.setActiveConversation);
+  const markAsRead = useMessageStore((state) => state.markAsRead);
   
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -70,12 +68,13 @@ const Messaging = () => {
     }
   }, [searchParams, conversations, setActiveConversation, setSearchParams]);
 
+  const activeConversationId = activeConversation?._id;
+
   useEffect(() => {
-    if (activeConversation) {
-        fetchMessages(activeConversation._id);
-        markAsRead(activeConversation._id);
-    }
-  }, [activeConversation, fetchMessages, markAsRead]);
+    if (!activeConversationId) return;
+    fetchMessages(activeConversationId);
+    markAsRead(activeConversationId);
+  }, [activeConversationId, fetchMessages, markAsRead]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -83,12 +82,12 @@ const Messaging = () => {
 
   // Auto-refresh messages every 5 seconds for real-time feel
   useEffect(() => {
-    if (!activeConversation) {return;}
+    if (!activeConversationId) return;
     const interval = setInterval(() => {
-      fetchMessages(activeConversation._id);
+      fetchMessages(activeConversationId);
     }, 5000);
     return () => clearInterval(interval);
-  }, [activeConversation, fetchMessages]);
+  }, [activeConversationId, fetchMessages]);
 
   const handleSend = async () => {
     if (!inputText.trim() || !activeConversation || isSending) {return;}

@@ -57,8 +57,6 @@ const PageLoader = () => (
 );
 
 const AppShell = () => {
-  useAuthStore(); // Keep store initialized
-
   return (
     <>
       <OfflineIndicator />

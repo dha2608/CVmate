@@ -5,40 +5,54 @@ export interface IMessage extends Document {
   receiver: mongoose.Types.ObjectId;
   content: string;
   read: boolean;
+  /**
+   * Timestamp when the message was read.
+   * Prefer this over the boolean flag for querying unread messages efficiently.
+   */
+  readAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const messageSchema = new Schema<IMessage>({
-  sender: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true
+const messageSchema = new Schema<IMessage>(
+  {
+    sender: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
+    receiver: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
+    content: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    read: {
+      type: Boolean,
+      default: false,
+    },
+    readAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
   },
-  receiver: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true
+  {
+    timestamps: true,
   },
-  content: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  read: {
-    type: Boolean,
-    default: false
-  }
-}, {
-  timestamps: true
-});
+);
 
 messageSchema.index({ sender: 1, receiver: 1, createdAt: 1 });
 messageSchema.index({ receiver: 1, sender: 1, createdAt: 1 });
 // Optimize “latest messages” queries used by pagination (sort desc then reverse in controller)
 messageSchema.index({ sender: 1, receiver: 1, createdAt: -1 });
 messageSchema.index({ receiver: 1, sender: 1, createdAt: -1 });
+messageSchema.index({ receiver: 1, readAt: 1 });
 
 export default mongoose.model<IMessage>('Message', messageSchema);

@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useI18n } from '@/store/i18nStore';
-import { useNewsStore } from '@/store/newsStore';
 import { Button } from '@/components/ui/button';
 import {
   Home,
@@ -61,7 +60,6 @@ const MainLayout = ({
   const { user, logout } = useAuthStore();
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage, t } = useI18n();
-  const newsArticles = useNewsStore((state) => state.articles);
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
@@ -95,12 +93,6 @@ const MainLayout = ({
 
   const finalLayoutMode = layoutMode === 'default' ? getLayoutMode() : layoutMode;
   const isPremium = user?.subscription?.plan === 'premium' && user?.subscription?.status === 'active';
-
-  useEffect(() => {
-    if (shouldShowRightSidebar && !rightSidebar) {
-      useNewsStore.getState().fetchNews(5);
-    }
-  }, [shouldShowRightSidebar, rightSidebar]);
 
   useEffect(() => {
     if (!isProfileMenuOpen) return;
@@ -240,8 +232,9 @@ const MainLayout = ({
                   </button>
 
                   <div
-                    className={`absolute top-full right-0 mt-2 sm:mt-3 w-48 sm:w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-200 z-50 ${isProfileMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2 pointer-events-none'
-                      }`}
+                    className={`absolute top-full right-0 mt-2 sm:mt-3 w-48 sm:w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-200 z-50 ${
+                      isProfileMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2 pointer-events-none'
+                    }`}
                     role="menu"
                     aria-orientation="vertical"
                     tabIndex={-1}
@@ -268,6 +261,18 @@ const MainLayout = ({
                       onClick={() => {
                         setIsProfileMenuOpen(false);
                         navigate('/settings');
+                      }}
+                      role="menuitem"
+                    >
+                      <Settings2 className="w-4 h-4 mr-2" />
+                      {t('nav.settings') || 'Settings'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        navigate('/profile');
                       }}
                       role="menuitem"
                     >
@@ -336,10 +341,10 @@ const MainLayout = ({
                           ? user.careerGoal === 'new-job'
                             ? 'Job Seeker'
                             : user.careerGoal === 'internship'
-                              ? 'Intern'
-                              : user.careerGoal === 'career-switch'
-                                ? 'Career Switcher'
-                                : 'Professional'
+                            ? 'Intern'
+                            : user.careerGoal === 'career-switch'
+                            ? 'Career Switcher'
+                            : 'Professional'
                           : 'Professional'}
                       </p>
                     </div>
@@ -411,47 +416,7 @@ const MainLayout = ({
 
             {shouldShowRightSidebar && (
               <div className="hidden lg:block lg:col-span-3">
-                {rightSidebar || (
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6 sticky top-20 lg:top-24 max-h-[calc(100vh-7rem)] overflow-y-auto mb-6">
-                    <div className="flex justify-between items-center mb-4 lg:mb-6">
-                      <h3 className="font-bold text-sm lg:text-base text-gray-900 dark:text-white border-l-4 border-red-600 dark:border-red-500 pl-2 lg:pl-3">
-                        {t('blog.latestNews')}
-                      </h3>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate('/blog')}
-                        className="text-gray-400 hover:text-gray-900 dark:hover:text-white h-8 w-8 p-0"
-                        aria-label={t('dashboard.viewAll')}
-                      >
-                        <MoreHorizontal size={16} />
-                      </Button>
-                    </div>
-                    {newsArticles.length > 0 ? (
-                      <>
-                        <ul className="space-y-3 lg:space-y-4">
-                          {newsArticles.slice(0, 4).map((article, index) => (
-                            <NewsItem
-                              key={`${article.link}-${index}`}
-                              title={article.title}
-                              time={new Date(article.pubDate).toLocaleDateString()}
-                              link={article.link}
-                            />
-                          ))}
-                        </ul>
-                        <Button
-                          variant="link"
-                          className="mt-3 lg:mt-4 w-full text-zinc-900 dark:text-zinc-100 font-bold hover:text-red-600 dark:hover:text-red-400 p-0 decoration-2 text-sm"
-                          onClick={() => navigate('/blog')}
-                        >
-                          {t('dashboard.viewAll')}
-                        </Button>
-                      </>
-                    ) : (
-                      <div className="text-center py-6 lg:py-8 text-gray-500 dark:text-gray-400 text-xs lg:text-sm">{t('blog.noNewsAvailable')}</div>
-                    )}
-                  </div>
-                )}
+                {rightSidebar || <NewsSidebar />}
               </div>
             )}
           </div>
@@ -477,8 +442,9 @@ const NavItem = ({ icon, label, active, onClick, badge }: { icon: any; label: st
   <li className="h-full">
     <button
       type="button"
-      className={`relative flex flex-col items-center justify-center cursor-pointer px-1 sm:px-2 md:px-3 h-full transition-all duration-200 group ${active ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-        }`}
+      className={`relative flex flex-col items-center justify-center cursor-pointer px-1 sm:px-2 md:px-3 h-full transition-all duration-200 group ${
+        active ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+      }`}
       onClick={onClick}
       title={label}
       aria-label={label}
@@ -507,25 +473,71 @@ const NavItem = ({ icon, label, active, onClick, badge }: { icon: any; label: st
   </li>
 );
 
-const NewsItem = ({ title, time, link }: { title: string; time: string; link?: string }) => {
+const NewsSidebar = () => {
   const navigate = useNavigate();
+  const { t } = useI18n();
+  const newsArticles = useNewsStore((state) => state.articles);
+
+  useEffect(() => {
+    if (!newsArticles.length) {
+      useNewsStore.getState().fetchNews(5);
+    }
+  }, [newsArticles.length]);
 
   return (
-    <li
-      className="cursor-pointer group p-2 -mx-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-      onClick={() => {
-        if (link) {
-          navigate(`/news/${encodeURIComponent(link)}`);
-        }
-      }}
-    >
-      <h4 className="font-semibold text-xs lg:text-sm text-gray-800 dark:text-gray-200 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors leading-snug line-clamp-2">
-        {title}
-      </h4>
-      <div className="flex items-center gap-2 mt-1.5">
-        <p className="text-[10px] lg:text-xs text-gray-400 dark:text-gray-500">{time}</p>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6 sticky top-20 lg:top-24 max-h-[calc(100vh-7rem)] overflow-y-auto mb-6">
+      <div className="flex justify-between items-center mb-4 lg:mb-6">
+        <h3 className="font-bold text-sm lg:text-base text-gray-900 dark:text-white border-l-4 border-red-600 dark:border-red-500 pl-2 lg:pl-3">
+          {t('blog.latestNews')}
+        </h3>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/blog')}
+          className="text-gray-400 hover:text-gray-900 dark:hover:text-white h-8 w-8 p-0"
+          aria-label={t('dashboard.viewAll')}
+        >
+          <MoreHorizontal size={16} />
+        </Button>
       </div>
-    </li>
+      {newsArticles.length > 0 ? (
+        <>
+          <ul className="space-y-3 lg:space-y-4">
+            {newsArticles.slice(0, 4).map((article, index) => (
+              <li
+                key={`${article.link}-${index}`}
+                className="cursor-pointer group p-2 -mx-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                onClick={() => {
+                  if (article.link) {
+                    navigate(`/news/${encodeURIComponent(article.link)}`);
+                  }
+                }}
+              >
+                <h4 className="font-semibold text-xs lg:text-sm text-gray-800 dark:text-gray-200 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors leading-snug line-clamp-2">
+                  {article.title}
+                </h4>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <p className="text-[10px] lg:text-xs text-gray-400 dark:text-gray-500">
+                    {new Date(article.pubDate).toLocaleDateString()}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <Button
+            variant="link"
+            className="mt-3 lg:mt-4 w-full text-zinc-900 dark:text-zinc-100 font-bold hover:text-red-600 dark:hover:text-red-400 p-0 decoration-2 text-sm"
+            onClick={() => navigate('/blog')}
+          >
+            {t('dashboard.viewAll')}
+          </Button>
+        </>
+      ) : (
+        <div className="text-center py-6 lg:py-8 text-gray-500 dark:text-gray-400 text-xs lg:text-sm">
+          {t('blog.noNewsAvailable')}
+        </div>
+      )}
+    </div>
   );
 };
 
