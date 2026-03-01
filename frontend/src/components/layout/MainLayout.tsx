@@ -240,9 +240,8 @@ const MainLayout = ({
                   </button>
 
                   <div
-                    className={`absolute top-full right-0 mt-2 sm:mt-3 w-48 sm:w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-200 z-50 ${
-                      isProfileMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2 pointer-events-none'
-                    }`}
+                    className={`absolute top-full right-0 mt-2 sm:mt-3 w-48 sm:w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-200 z-50 ${isProfileMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2 pointer-events-none'
+                      }`}
                     role="menu"
                     aria-orientation="vertical"
                     tabIndex={-1}
@@ -269,18 +268,6 @@ const MainLayout = ({
                       onClick={() => {
                         setIsProfileMenuOpen(false);
                         navigate('/settings');
-                      }}
-                      role="menuitem"
-                    >
-                      <Settings2 className="w-4 h-4 mr-2" />
-                      {t('nav.settings') || 'Settings'}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        navigate('/profile');
                       }}
                       role="menuitem"
                     >
@@ -349,10 +336,10 @@ const MainLayout = ({
                           ? user.careerGoal === 'new-job'
                             ? 'Job Seeker'
                             : user.careerGoal === 'internship'
-                            ? 'Intern'
-                            : user.careerGoal === 'career-switch'
-                            ? 'Career Switcher'
-                            : 'Professional'
+                              ? 'Intern'
+                              : user.careerGoal === 'career-switch'
+                                ? 'Career Switcher'
+                                : 'Professional'
                           : 'Professional'}
                       </p>
                     </div>
@@ -490,9 +477,8 @@ const NavItem = ({ icon, label, active, onClick, badge }: { icon: any; label: st
   <li className="h-full">
     <button
       type="button"
-      className={`relative flex flex-col items-center justify-center cursor-pointer px-1 sm:px-2 md:px-3 h-full transition-all duration-200 group ${
-        active ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-      }`}
+      className={`relative flex flex-col items-center justify-center cursor-pointer px-1 sm:px-2 md:px-3 h-full transition-all duration-200 group ${active ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+        }`}
       onClick={onClick}
       title={label}
       aria-label={label}

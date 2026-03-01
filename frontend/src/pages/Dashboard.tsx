@@ -1,20 +1,20 @@
-import { lazy, Suspense, useEffect, useMemo, useState, memo, useCallback }from 'react';
-import { useNavigate }from 'react-router-dom';
-import { motion }from 'framer-motion';
-import { useAuthStore }from '@/store/authStore';
-import { useDashboardStore }from '@/store/dashboardStore';
-import { useCommunityStore }from '@/store/communityStore';
-import { useBlogStore }from '@/store/blogStore';
-import { useAchievementStore }from '@/store/achievementStore';
-import { useI18n }from '@/store/i18nStore';
+import { lazy, Suspense, useEffect, useMemo, useState, memo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useAuthStore } from '@/store/authStore';
+import { useDashboardStore } from '@/store/dashboardStore';
+import { useCommunityStore } from '@/store/communityStore';
+import { useBlogStore } from '@/store/blogStore';
+import { useAchievementStore } from '@/store/achievementStore';
+import { useI18n } from '@/store/i18nStore';
 import MainLayout from '@/components/layout/MainLayout';
-import { Button }from '@/components/ui/button';
-import { GlassButton }from '@/components/ui/glass-button';
-import { GlassCard }from '@/components/ui/glass-card';
-import { Skeleton }from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { GlassButton } from '@/components/ui/glass-button';
+import { GlassCard } from '@/components/ui/glass-card';
+import { Skeleton } from '@/components/ui/skeleton';
 import ActivityFeed from '@/components/ActivityFeed';
-import { AchievementList }from '@/components/achievements/AchievementBadge';
-import { FileText, MessageSquare, Plus, Video, TrendingUp, Search, PenTool, ExternalLink, BarChart3, Target }from 'lucide-react';
+import { AchievementList } from '@/components/achievements/AchievementBadge';
+import { FileText, MessageSquare, Plus, Video, TrendingUp, Search, PenTool, ExternalLink, BarChart3, Target } from 'lucide-react';
 
 const AnalyticsChart = lazy(() => import('@/components/dashboard/AnalyticsChart'));
 const AdvancedStats = lazy(() => import('@/components/dashboard/AdvancedStats'));
@@ -22,7 +22,7 @@ const AdvancedStats = lazy(() => import('@/components/dashboard/AdvancedStats'))
 const QuickActionCard = memo(({ icon, title, desc, color, onClick }: any) => (
   <motion.div
     onClick={onClick}
-    className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-300 cursor-pointer group flex flex-col items-center text-center gap-2 ${color}dark:border-gray-700 hover:shadow-md`}
+    className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-300 cursor-pointer group flex flex-col items-center text-center gap-2 ${color} dark:border-gray-700 hover:shadow-md`}
     whileHover={{ scale: 1.02, y: -2 }}
     whileTap={{ scale: 0.98 }}
   >
@@ -36,15 +36,15 @@ const QuickActionCard = memo(({ icon, title, desc, color, onClick }: any) => (
 QuickActionCard.displayName = 'QuickActionCard';
 
 const StatItem = memo(({ label, value, color }: any) => (
-  <motion.div className="text-center" initial={{ opacity: 0, scale: 0.8 }}animate={{ opacity: 1, scale: 1 }}transition={{ duration: 0.3 }}>
-    <div className={`text-2xl sm:text-3xl font-black ${color}mb-1`}>{value}</div>
+  <motion.div className="text-center" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
+    <div className={`text-2xl sm:text-3xl font-black ${color} mb-1`}>{value}</div>
     <div className="text-[10px] sm:text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{label}</div>
   </motion.div>
 ));
 StatItem.displayName = 'StatItem';
 
 const RecommendationCard = memo(({ image, title, author, views, desc, onClick }: any) => {
-  const { t }= useI18n();
+  const { t } = useI18n();
   return (
     <motion.div
       className="glass-card bg-white/5 dark:bg-gray-800/30 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-sm cursor-pointer flex gap-3 sm:gap-4 items-start group"
@@ -54,7 +54,7 @@ const RecommendationCard = memo(({ image, title, author, views, desc, onClick }:
     >
       <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700 border border-gray-100 dark:border-gray-600">
         {image ? (
-          <img src={image}alt={title}className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+          <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900">
             <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400 dark:text-indigo-500" />
@@ -70,7 +70,7 @@ const RecommendationCard = memo(({ image, title, author, views, desc, onClick }:
         </div>
         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">{desc}</p>
         <div className="mt-2 flex items-center gap-1 text-[10px] sm:text-xs text-rose-500 dark:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          {t('home.readMore')}<ExternalLink size={10}className="sm:w-3 sm:h-3" />
+          {t('home.readMore')}<ExternalLink size={10} className="sm:w-3 sm:h-3" />
         </div>
       </div>
     </motion.div>
@@ -81,7 +81,7 @@ RecommendationCard.displayName = 'RecommendationCard';
 const Dashboard = () => {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
-  const { t }= useI18n();
+  const { t } = useI18n();
 
   const stats = useDashboardStore((state) => state.stats);
   const statsLoading = useDashboardStore((state) => state.isLoading);
@@ -144,7 +144,7 @@ const Dashboard = () => {
 
   return (
     <MainLayout>
-      <motion.div className="space-y-6" initial={{ opacity: 0, y: 20 }}animate={{ opacity: 1, y: 0 }}>
+      <motion.div className="space-y-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-5 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
@@ -160,10 +160,10 @@ const Dashboard = () => {
                 </>
               )}
             </div>
-            <Button variant="ghost" size="icon" className="rounded-full bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 shadow-sm hover:shadow-md transition-shadow" aria-label={t('common.search')}><Search size={18}/></Button>
+            <Button variant="ghost" size="icon" className="rounded-full bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 shadow-sm hover:shadow-md transition-shadow" aria-label={t('common.search')}><Search size={18} /></Button>
           </div>
           <div onClick={handleCommunityClick} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-700/50 rounded-lg cursor-pointer hover:shadow-md transition-shadow border border-gray-200/50 dark:border-gray-600/50">
-            <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 shadow-sm border border-gray-100 dark:border-gray-600"><PenTool size={18}/></div>
+            <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 shadow-sm border border-gray-100 dark:border-gray-600"><PenTool size={18} /></div>
             <span className="text-gray-500 dark:text-gray-400 text-sm font-medium flex-1">{t('dashboard.startPost')}</span>
           </div>
         </div>
@@ -178,7 +178,7 @@ const Dashboard = () => {
             <div className="flex items-center gap-4 w-full md:w-auto">
               <div className="flex flex-col items-start">
                 <span className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">{t('dashboard.profileCompletion') || 'Profile completion'}</span>
-                <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"><div className="h-2 bg-crimson-red rounded-full" style={{ width: `${Math.round(profileProgress)}%` }}/></div>
+                <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"><div className="h-2 bg-crimson-red rounded-full" style={{ width: `${Math.round(profileProgress)}%` }} /></div>
                 <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mt-1">{Math.round(profileProgress)}%</span>
               </div>
               <GlassButton size="sm" variant="pink" onClick={handleBuilderClick}>{t('dashboard.createCV') || 'Tạo CV'}</GlassButton>
@@ -187,10 +187,10 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
-          <QuickActionCard icon={<FileText className="text-blue-600" size={24}/>}title={t('dashboard.createCV')}desc={t('dashboard.atsFriendly')}color="bg-blue-50 hover:bg-blue-100/80 border-blue-100" onClick={handleBuilderClick}/>
-          <QuickActionCard icon={<Video className="text-green-600" size={24}/>}title={t('dashboard.interview')}desc={t('dashboard.practiceAI')}color="bg-green-50 hover:bg-green-100/80 border-green-100" onClick={handleInterviewClick}/>
-          <QuickActionCard icon={<MessageSquare className="text-orange-600" size={24}/>}title={t('dashboard.community')}desc={t('dashboard.getAdvice')}color="bg-orange-50 hover:bg-orange-100/80 border-orange-100" onClick={handleCommunityClick}/>
-          <QuickActionCard icon={<Plus className="text-rose-600" size={24}/>}title={t('dashboard.article')}desc={t('dashboard.shareKnowledge')}color="bg-rose-50 hover:bg-rose-100/80 border-rose-100" onClick={handleBlogClick}/>
+          <QuickActionCard icon={<FileText className="text-blue-600" size={24} />} title={t('dashboard.createCV')} desc={t('dashboard.atsFriendly')} color="bg-blue-50 hover:bg-blue-100/80 border-blue-100" onClick={handleBuilderClick} />
+          <QuickActionCard icon={<Video className="text-green-600" size={24} />} title={t('dashboard.interview')} desc={t('dashboard.practiceAI')} color="bg-green-50 hover:bg-green-100/80 border-green-100" onClick={handleInterviewClick} />
+          <QuickActionCard icon={<MessageSquare className="text-orange-600" size={24} />} title={t('dashboard.community')} desc={t('dashboard.getAdvice')} color="bg-orange-50 hover:bg-orange-100/80 border-orange-100" onClick={handleCommunityClick} />
+          <QuickActionCard icon={<Plus className="text-rose-600" size={24} />} title={t('dashboard.article')} desc={t('dashboard.shareKnowledge')} color="bg-rose-50 hover:bg-rose-100/80 border-rose-100" onClick={handleBlogClick} />
         </div>
 
         <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow">
@@ -208,10 +208,10 @@ const Dashboard = () => {
           )}
         </div>
 
-        <ActivityFeed limit={3}/>
+        <ActivityFeed limit={3} />
 
         <Suspense fallback={<Skeleton className="h-40 w-full" />}>
-          <AdvancedStats stats={stats}/>
+          <AdvancedStats stats={stats} />
           <AnalyticsChart
             title={t('dashboard.activityOverTime')}
             data={analyticsData}
