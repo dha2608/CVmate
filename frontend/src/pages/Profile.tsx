@@ -134,7 +134,7 @@ const Profile = () => {
       // Get billing cycle from URL params or default to monthly
       const urlParams = new URLSearchParams(window.location.search);
       const billingCycle = urlParams.get('billing') || 'monthly';
-      
+
       const response = await api.createCheckoutSession(billingCycle as 'monthly' | 'yearly');
       if (response.success && response.data.url) {
         window.location.href = response.data.url;
@@ -189,23 +189,9 @@ const Profile = () => {
       if (user) {
         setUser({ ...user, avatar: resolvedAvatar });
       }
-      
+
       // Optionally refresh user data silently in background without affecting UI
-      try {
-        const meResponse = await api.getMe();
-        if (meResponse.success && meResponse.data) {
-          const userData = meResponse.data as any;
-          // Ensure token is preserved
-          if (userData.token) {
-            localStorage.setItem('token', userData.token);
-          }
-          localStorage.setItem('user', JSON.stringify(userData));
-          setUser(userData);
-        }
-      } catch (err) {
-        // Silent fail - we already updated from upload response
-        console.warn('Background user refresh failed:', err);
-      }
+
 
       toast.success(t('profile.avatarUploaded'));
     } catch (error: any) {
@@ -250,23 +236,23 @@ const Profile = () => {
       if (user) {
         setUser({ ...user, coverPhoto: resolvedCoverPhoto } as any);
       }
-      
+
       // Optionally refresh user data silently in background without affecting UI
-      try {
-        const meResponse = await api.getMe();
-        if (meResponse.success && meResponse.data) {
-          const userData = meResponse.data as any;
-          // Ensure token is preserved
-          if (userData.token) {
-            localStorage.setItem('token', userData.token);
-          }
-          localStorage.setItem('user', JSON.stringify(userData));
-          setUser(userData);
-        }
-      } catch (err) {
-        // Silent fail - we already updated from upload response
-        console.warn('Background user refresh failed:', err);
-      }
+      // try {
+      //   const meResponse = await api.getMe();
+      //   if (meResponse.success && meResponse.data) {
+      //     const userData = meResponse.data as any;
+      //     // Ensure token is preserved
+      //     if (userData.token) {
+      //       localStorage.setItem('token', userData.token);
+      //     }
+      //     localStorage.setItem('user', JSON.stringify(userData));
+      //     setUser(userData);
+      //   }
+      // } catch (err) {
+      //   // Silent fail - we already updated from upload response
+      //   console.warn('Background user refresh failed:', err);
+      // }
 
       toast.success('Ảnh bìa đã được tải lên');
     } catch (error: any) {
@@ -325,8 +311,19 @@ const Profile = () => {
       }
 
       const updatedUser = response.data;
-      setUser(updatedUser);
-      setOriginalData({ ...formData, avatar: updatedUser.avatar || formData.avatar });
+
+      // Giữ lại token cũ để không bị logout
+      setUser({
+        ...user!,
+        ...updatedUser,
+        token: user!.token
+      });
+
+      setOriginalData({
+        ...formData,
+        avatar: updatedUser.avatar || formData.avatar
+      });
+
       clearDirty();
 
       toast.success(t('toast.profileUpdated'));
@@ -700,14 +697,12 @@ const Profile = () => {
                   role="switch"
                   aria-checked={formData.isPublicProfile}
                   onClick={() => setFormData((f) => ({ ...f, isPublicProfile: !f.isPublicProfile }))}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                    formData.isPublicProfile ? 'bg-green-500 dark:bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${formData.isPublicProfile ? 'bg-green-500 dark:bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${
-                      formData.isPublicProfile ? 'translate-x-6' : 'translate-x-1'
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${formData.isPublicProfile ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                   />
                 </button>
               </div>
