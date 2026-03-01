@@ -8,6 +8,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { OfflineIndicator } from "@/components/mobile";
 import { Loader2 } from "lucide-react";
 import ScrollToTop from "@/components/ScrollToTop";
+import { ConfirmDialogProvider } from "@/components/ui/confirm-dialog";
 
 // Lazy load pages for better performance
 const Home = lazy(() => import("@/pages/Home"));
@@ -60,6 +61,7 @@ const AppShell = () => {
     <>
       <OfflineIndicator />
       <Toast />
+      <ConfirmDialogProvider />
       <ScrollToTop />
       <Suspense fallback={<PageLoader />}>
         <Routes>

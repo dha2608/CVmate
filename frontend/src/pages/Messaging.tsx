@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMessageStore } from '@/store/messageStore';
 import { useAuthStore } from '@/store/authStore';
 import { useI18n } from '@/store/i18nStore';
@@ -7,11 +8,13 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, MessageSquare, Check, CheckCheck, Loader2 } from 'lucide-react';
+import { apiRequest } from '@/lib/utils';
 
 const Messaging = () => {
   const { user } = useAuthStore();
   const { t } = useI18n();
   const toast = useToastStore();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { 
     conversations, 
     activeConversation, 
@@ -33,6 +36,39 @@ const Messaging = () => {
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
+
+  // Handle user query param to auto-select conversation
+  useEffect(() => {
+    const userIdParam = searchParams.get('user');
+    if (userIdParam && conversations.length > 0) {
+      const foundConv = conversations.find(c => c._id === userIdParam);
+      if (foundConv) {
+        setActiveConversation(foundConv);
+        setSearchParams({}, { replace: true }); // Clear query param
+      } else {
+        // User not in conversations yet - fetch user info and create conversation
+        const loadUserAndCreateConv = async () => {
+          try {
+            const res = await apiRequest<{ success: boolean; data: any }>(`/auth/users/${userIdParam}/public`, {
+              method: 'GET',
+              requiresAuth: true,
+            });
+            if (res.success && res.data) {
+              setActiveConversation({
+                _id: res.data._id,
+                name: res.data.name,
+                avatar: res.data.avatar,
+              });
+              setSearchParams({}, { replace: true }); // Clear query param
+            }
+          } catch (error) {
+            console.error('Failed to load user:', error);
+          }
+        };
+        loadUserAndCreateConv();
+      }
+    }
+  }, [searchParams, conversations, setActiveConversation, setSearchParams]);
 
   useEffect(() => {
     if (activeConversation) {

@@ -19,11 +19,7 @@ const Community = () => {
 
   useEffect(() => {
     fetchPosts();
-    // Real-time polling for new comments and likes (every 15 seconds)
-    const interval = setInterval(() => {
-      fetchPosts();
-    }, 15000);
-    return () => clearInterval(interval);
+    // Removed auto-reload - posts will refresh when user interacts (like, comment, create new post)
   }, [fetchPosts]);
 
   if (!user) {return null;}

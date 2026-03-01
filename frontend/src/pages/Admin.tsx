@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/utils';
 import { useToastStore } from '@/store/toastStore';
+import { confirmDialog } from '@/components/ui/confirm-dialog';
 
 type AdminTab = 'overview' | 'users' | 'posts' | 'articles' | 'jobs';
 
@@ -175,7 +176,21 @@ const Admin = () => {
 
   const handlePostStatus = async (postId: string, status: 'pending' | 'approved' | 'rejected') => {
     try {
-      const reason = status === 'rejected' ? prompt('Reason for rejection (optional):') || '' : undefined;
+      let reason: string | undefined = undefined;
+      if (status === 'rejected') {
+        const input = await confirmDialog({
+          message: 'Reason for rejection (optional):',
+          title: 'Reject Post',
+          confirmText: 'Reject',
+          cancelText: 'Cancel',
+          variant: 'destructive',
+          requireInput: true,
+          inputPlaceholder: 'Enter reason (optional)',
+          inputLabel: 'Rejection Reason',
+        });
+        if (input === false) return; // User cancelled
+        reason = typeof input === 'string' ? input : undefined;
+      }
       await api.updateAdminPostStatus(postId, status, reason);
       await loadPosts();
       await loadOverview();
@@ -186,7 +201,14 @@ const Admin = () => {
   };
 
   const handleDeletePost = async (postId: string) => {
-    if (!confirm('Delete this post permanently?')) return;
+    const confirmed = await confirmDialog({
+      message: 'Delete this post permanently? This action cannot be undone.',
+      title: 'Delete Post',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     try {
       await api.deleteAdminPost(postId);
       await loadPosts();
@@ -208,7 +230,14 @@ const Admin = () => {
   };
 
   const handleDeleteArticle = async (articleId: string) => {
-    if (!confirm('Delete this article permanently?')) return;
+    const confirmed = await confirmDialog({
+      message: 'Delete this article permanently? This action cannot be undone.',
+      title: 'Delete Article',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     try {
       await api.deleteAdminArticle(articleId);
       await loadArticles();
@@ -220,7 +249,14 @@ const Admin = () => {
   };
 
   const handleDeleteJob = async (jobId: string) => {
-    if (!confirm('Delete this job permanently?')) return;
+    const confirmed = await confirmDialog({
+      message: 'Delete this job permanently? This action cannot be undone.',
+      title: 'Delete Job',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     try {
       await api.deleteAdminJob(jobId);
       await loadJobs();

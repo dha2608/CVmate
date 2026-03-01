@@ -91,3 +91,37 @@ export const DialogTitle = React.forwardRef<HTMLHeadingElement, DialogTitleProps
   }
 );
 DialogTitle.displayName = "DialogTitle";
+
+interface DialogDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {
+  children: React.ReactNode;
+}
+
+export const DialogDescription = React.forwardRef<HTMLParagraphElement, DialogDescriptionProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <p
+        ref={ref}
+        className={cn("text-sm text-gray-500 dark:text-gray-400", className)}
+        {...props}
+      />
+    );
+  }
+);
+DialogDescription.displayName = "DialogDescription";
+
+interface DialogFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+}
+
+export const DialogFooter = React.forwardRef<HTMLDivElement, DialogFooterProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-4", className)}
+        {...props}
+      />
+    );
+  }
+);
+DialogFooter.displayName = "DialogFooter";

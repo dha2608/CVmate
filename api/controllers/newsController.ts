@@ -4,6 +4,13 @@ import logger from '../utils/logger.js';
 
 export const getNews = async (req: Request, res: Response, _next: NextFunction) => {
   try {
+    // Set CORS headers explicitly for news endpoint
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+    
     const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string, 10) || 20));
     const offset = (page - 1) * limit;
@@ -22,6 +29,14 @@ export const getNews = async (req: Request, res: Response, _next: NextFunction) 
   } catch (error: unknown) {
     // getCachedNews should return fallback articles, but if it still throws, return empty array
     logger.error('Error fetching news', error instanceof Error ? error : new Error(String(error)));
+    
+    // Set CORS headers even on error
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+    
     res.json({
       success: true,
       data: [],
