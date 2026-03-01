@@ -11,16 +11,16 @@ Legend:
   - [DONE] Create single master progress file
   - [IN_PROGRESS] Keep updating this file after each execution batch
 
-[TODO] 1) Redesign global layout (Task 1)
-  - [TODO] Audit current layout patterns and breakpoints
-  - [TODO] Define new layout architecture (desktop/tablet/mobile)
-  - [TODO] Refactor MainLayout, header/nav, footer, sidebars
+[IN_PROGRESS] 1) Redesign global layout (Task 1)
+  - [DONE] Audit current layout patterns and breakpoints
+  - [IN_PROGRESS] Define new layout architecture (desktop/tablet/mobile)
+  - [IN_PROGRESS] Refactor MainLayout, header/nav, footer, sidebars
   - [TODO] Validate accessibility and responsive behavior
 
-[TODO] 2) Unify UI/colors (Task 2)
-  - [TODO] Define color tokens and usage rules
-  - [TODO] Normalize Button/Input/Card/Badge/Modal styles
-  - [TODO] Remove local color overrides and use shared variants
+[IN_PROGRESS] 2) Unify UI/colors (Task 2)
+  - [IN_PROGRESS] Define color tokens and usage rules
+  - [IN_PROGRESS] Normalize Button/Input/Card/Badge/Modal styles
+  - [IN_PROGRESS] Remove local color overrides and use shared variants
   - [TODO] Cross-page visual consistency pass
 
 [TODO] 3) Subscription upgrade after sandbox payment (Task 3)
@@ -50,6 +50,7 @@ Legend:
   - [DONE] Convert Pricing page to full VI/EN language-aware copy (header, cards, compare table, FAQs, SEO)
   - [DONE] Convert PaymentSuccess page to VI/EN language-aware copy
   - [DONE] Convert PaymentCancel page to VI/EN language-aware copy
+  - [DONE] Improve MainLayout + BottomNav mixed-language labels (bookmarks/pricing/admin/profile)
   - [IN_PROGRESS] Replace hardcoded strings with i18n keys in high-traffic pages
   - [TODO] Fill missing keys in both vi/en dictionaries
   - [TODO] Validate language switch across full app
@@ -59,3 +60,4 @@ Execution Log:
 - 2026-02-28 22:44 | DONE | Updated `frontend/src/pages/Pricing.tsx` to support full VI/EN copy switching.
 - 2026-02-28 23:02 | DONE | Updated `frontend/src/pages/PaymentSuccess.tsx` with VI/EN language-aware copy.
 - 2026-02-28 23:05 | DONE | Updated `frontend/src/pages/PaymentCancel.tsx` with VI/EN language-aware copy.
+- 2026-02-28 23:20 | DONE | Improved `MainLayout` nav labels and `BottomNav` i18n + mobile visual polish.
