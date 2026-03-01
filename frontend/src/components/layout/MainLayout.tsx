@@ -22,6 +22,8 @@ import {
   Crown,
   Shield,
   MoreHorizontal,
+  User,
+  Settings2,
 } from 'lucide-react';
 import Footer from '@/components/Footer';
 import SupportChat from '@/components/SupportChat';
@@ -251,6 +253,31 @@ const MainLayout = ({
                     </div>
                     <Button
                       variant="ghost"
+                      className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        navigate('/profile');
+                      }}
+                      role="menuitem"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      {t('nav.profile') || 'Profile'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        navigate('/profile');
+                      }}
+                      role="menuitem"
+                    >
+                      <Settings2 className="w-4 h-4 mr-2" />
+                      {t('nav.settings') || 'Settings'}
+                    </Button>
+                    <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+                    <Button
+                      variant="ghost"
                       className="w-full justify-start text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-colors text-sm"
                       onClick={() => {
                         setIsProfileMenuOpen(false);
@@ -316,16 +343,26 @@ const MainLayout = ({
                     </div>
                   </div>
 
-                  {!isPremium && (
+                  <div className="space-y-2">
                     <Button
                       variant="outline"
                       className="w-full text-xs py-2"
-                      onClick={() => navigate('/pricing')}
+                      onClick={() => navigate('/profile')}
                     >
-                      <Brain size={12} className="mr-1.5" />
-                      {language === 'vi' ? 'Nâng cấp Premium' : 'Go Premium'}
+                      <User size={12} className="mr-1.5" />
+                      {language === 'vi' ? 'Xem hồ sơ' : 'View Profile'}
                     </Button>
-                  )}
+                    {!isPremium && (
+                      <Button
+                        variant="outline"
+                        className="w-full text-xs py-2 border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white"
+                        onClick={() => navigate('/pricing')}
+                      >
+                        <Brain size={12} className="mr-1.5" />
+                        {language === 'vi' ? 'Nâng cấp Premium' : 'Go Premium'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

@@ -215,10 +215,55 @@ const Builder = () => {
     };
   }, [currentResume, resumeId, handleSave]);
 
-  const handleDownload = useCallback(() => {
-    toast.success('Opening print dialog. Select "Save as PDF" to download your CV.');
-    window.print();
-  }, [toast]);
+  const handleDownload = useCallback(async () => {
+    const previewElement = document.getElementById('resume-preview');
+    if (!previewElement) {
+      toast.error('CV preview not found');
+      return;
+    }
+
+    try {
+      // Use html2canvas and jspdf to generate PDF
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
+
+      toast.success('Generating PDF...');
+      
+      const canvas = await html2canvas(previewElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const fileName = `CV_${currentResume.personalInfo?.fullName || 'Resume'}_${new Date().getTime()}.pdf`;
+      pdf.save(fileName);
+      toast.success('PDF downloaded successfully');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      // Fallback to print
+      toast.success('Opening print dialog. Select "Save as PDF" to download your CV.');
+      window.print();
+    }
+  }, [toast, currentResume]);
 
   const handleReorderSections = useCallback((newSections: BuilderSection[]) => {
     setSections(newSections);

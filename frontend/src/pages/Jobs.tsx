@@ -940,7 +940,9 @@ const Jobs = () => {
 
                 transition={{ duration: 0.2, delay: index * 0.02 }}
 
-                className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer mb-4 p-4 sm:p-5"
+                className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow mb-4 p-4 sm:p-5"
+
+                onClick={() => navigate(`/jobs/${job._id}`)}
 
               >
 

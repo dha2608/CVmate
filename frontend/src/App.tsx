@@ -22,6 +22,7 @@ const Blog = lazy(() => import("@/pages/Blog"));
 const BlogDetail = lazy(() => import("@/pages/BlogDetail"));
 const NewsDetail = lazy(() => import("@/pages/NewsDetail"));
 const Jobs = lazy(() => import("@/pages/Jobs"));
+const JobDetail = lazy(() => import("@/pages/JobDetail"));
 const Messaging = lazy(() => import("@/pages/Messaging"));
 const Notifications = lazy(() => import("@/pages/Notifications"));
 const Profile = lazy(() => import("@/pages/Profile"));
@@ -159,6 +160,14 @@ const AppShell = () => {
             element={
               <ProtectedRoute>
                 <Jobs />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/jobs/:id" 
+            element={
+              <ProtectedRoute>
+                <JobDetail />
               </ProtectedRoute>
             } 
           />

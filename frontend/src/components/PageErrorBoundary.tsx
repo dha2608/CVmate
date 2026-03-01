@@ -102,7 +102,12 @@ class PageErrorBoundary extends Component<Props, State> {
                 </Button>
                 <Button
                   onClick={() => {
-                    window.location.href = '/';
+                    const user = localStorage.getItem('user');
+                    if (user) {
+                      window.location.href = '/dashboard';
+                    } else {
+                      window.location.href = '/';
+                    }
                   }}
                   className="flex-1 bg-crimson-red hover:bg-fire-red text-white"
                 >

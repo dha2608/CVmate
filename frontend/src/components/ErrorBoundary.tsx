@@ -145,9 +145,12 @@ class ErrorBoundary extends Component<Props, State> {
 const ErrorFallback = ({ error, onReset }: { error: Error | null; onReset: () => void }) => {
 
   const handleGoHome = () => {
-
-    window.location.href = '/';
-
+    const user = localStorage.getItem('user');
+    if (user) {
+      window.location.href = '/dashboard';
+    } else {
+      window.location.href = '/';
+    }
   };
 
 

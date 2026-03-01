@@ -43,9 +43,14 @@ const PaymentSuccess = () => {
         const verifyData = await api.verifyCheckoutSession(sessionId);
         if (verifyData.success) {
           const me = await api.getMe();
-          if (me.success) {
-            localStorage.setItem('user', JSON.stringify(me.data));
-            setUser(me.data as any);
+          if (me.success && me.data) {
+            // Ensure token is preserved
+            const userData = me.data as any;
+            if (userData.token) {
+              localStorage.setItem('token', userData.token);
+            }
+            localStorage.setItem('user', JSON.stringify(userData));
+            setUser(userData);
           }
         }
       } catch (err: any) {

@@ -250,7 +250,7 @@ const BuilderSidebar = ({
                 key={s.id}
                 type="button"
                 onClick={() => setActiveTab(s.id)}
-                className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 ${
+                className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} rounded-xl ${isCollapsed ? 'px-2 py-2' : 'px-3 py-2.5'} text-sm transition-all duration-200 ${
                   isActive
                     ? 'bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 text-crimson-red dark:text-red-400 border-2 border-red-200 dark:border-red-800 shadow-sm'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-2 border-transparent'
@@ -259,16 +259,16 @@ const BuilderSidebar = ({
               >
                 <span className="flex-shrink-0 relative">
                   {isActive ? (
-                    <div className="h-8 w-8 rounded-lg bg-crimson-red text-white flex items-center justify-center shadow-md">
-                      <Icon size={16} />
+                    <div className={`${isCollapsed ? 'h-10 w-10' : 'h-8 w-8'} rounded-lg bg-crimson-red text-white flex items-center justify-center shadow-md`}>
+                      <Icon size={isCollapsed ? 18 : 16} />
                     </div>
                   ) : isCompleted ? (
-                    <div className="h-8 w-8 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
-                      <CheckCircle2 size={16} />
+                    <div className={`${isCollapsed ? 'h-10 w-10' : 'h-8 w-8'} rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center`}>
+                      <CheckCircle2 size={isCollapsed ? 18 : 16} />
                     </div>
                   ) : (
-                    <div className="h-8 w-8 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 flex items-center justify-center">
-                      <Icon size={16} />
+                    <div className={`${isCollapsed ? 'h-10 w-10' : 'h-8 w-8'} rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 flex items-center justify-center`}>
+                      <Icon size={isCollapsed ? 18 : 16} />
                     </div>
                   )}
                 </span>

@@ -43,7 +43,7 @@ const UserProfile = () => {
       try {
         const res = await apiRequest<{ success: boolean; data: PublicUser }>(`/auth/users/${id}/public`, {
           method: 'GET',
-          requiresAuth: true,
+          requiresAuth: false,
         });
         if (res.success) {
           setUser(res.data);
@@ -107,6 +107,7 @@ const UserProfile = () => {
 
   const skills = user.skills || [];
   const industries = user.industries || [];
+  const coverPhotoUrl = user.coverPhoto ? resolveAssetUrl(user.coverPhoto) : null;
 
   return (
     <MainLayout>

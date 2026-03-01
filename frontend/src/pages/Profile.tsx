@@ -194,7 +194,13 @@ const Profile = () => {
       try {
         const meResponse = await api.getMe();
         if (meResponse.success && meResponse.data) {
-          setUser(meResponse.data as any);
+          const userData = meResponse.data as any;
+          // Ensure token is preserved
+          if (userData.token) {
+            localStorage.setItem('token', userData.token);
+          }
+          localStorage.setItem('user', JSON.stringify(userData));
+          setUser(userData);
         }
       } catch (err) {
         // Silent fail - we already updated from upload response
@@ -249,7 +255,13 @@ const Profile = () => {
       try {
         const meResponse = await api.getMe();
         if (meResponse.success && meResponse.data) {
-          setUser(meResponse.data as any);
+          const userData = meResponse.data as any;
+          // Ensure token is preserved
+          if (userData.token) {
+            localStorage.setItem('token', userData.token);
+          }
+          localStorage.setItem('user', JSON.stringify(userData));
+          setUser(userData);
         }
       } catch (err) {
         // Silent fail - we already updated from upload response
