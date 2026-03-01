@@ -145,8 +145,8 @@ const Dashboard = () => {
   return (
     <MainLayout>
       <motion.div className="space-y-6" initial={{ opacity: 0, y: 20 }}animate={{ opacity: 1, y: 0 }}>
-        <GlassCard className="p-4 sm:p-6" gradient="purple">
-          <div className="flex items-center justify-between gap-4 mb-4 sm:mb-6">
+        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-5 space-y-4">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               {isLoading ? (
                 <>
@@ -160,19 +160,19 @@ const Dashboard = () => {
                 </>
               )}
             </div>
-            <Button variant="ghost" size="icon" className="rounded-full bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400" aria-label={t('common.search')}><Search size={18}/></Button>
+            <Button variant="ghost" size="icon" className="rounded-full bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 shadow-sm hover:shadow-md transition-shadow" aria-label={t('common.search')}><Search size={18}/></Button>
           </div>
-          <div onClick={handleCommunityClick}className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200/50 dark:border-gray-600/50">
+          <div onClick={handleCommunityClick} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-700/50 rounded-lg cursor-pointer hover:shadow-md transition-shadow border border-gray-200/50 dark:border-gray-600/50">
             <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 shadow-sm border border-gray-100 dark:border-gray-600"><PenTool size={18}/></div>
             <span className="text-gray-500 dark:text-gray-400 text-sm font-medium flex-1">{t('dashboard.startPost')}</span>
           </div>
-        </GlassCard>
+        </div>
 
-        <GlassCard className="p-4 sm:p-6" gradient="cyan">
+        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide flex items-center gap-1"><Target size={14}className="text-crimson-red" />{t('dashboard.nextBestAction') || 'Next best action'}</p>
-              <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{t('dashboard.nextActionCreateCV') || 'Tạo CV đầu tiên của bạn'}</h2>
+            <div className="flex-1">
+              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide flex items-center gap-1 mb-1"><Target size={14} className="text-crimson-red" />{t('dashboard.nextBestAction') || 'Next best action'}</p>
+              <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-1">{t('dashboard.nextActionCreateCV') || 'Tạo CV đầu tiên của bạn'}</h2>
               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.nextActionCreateCVDesc') || 'Bắt đầu với template ATS-friendly và để AI tối ưu nội dung giúp bạn.'}</p>
             </div>
             <div className="flex items-center gap-4 w-full md:w-auto">
@@ -184,7 +184,7 @@ const Dashboard = () => {
               <GlassButton size="sm" variant="pink" onClick={handleBuilderClick}>{t('dashboard.createCV') || 'Tạo CV'}</GlassButton>
             </div>
           </div>
-        </GlassCard>
+        </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
           <QuickActionCard icon={<FileText className="text-blue-600" size={24}/>}title={t('dashboard.createCV')}desc={t('dashboard.atsFriendly')}color="bg-blue-50 hover:bg-blue-100/80 border-blue-100" onClick={handleBuilderClick}/>
@@ -193,20 +193,20 @@ const Dashboard = () => {
           <QuickActionCard icon={<Plus className="text-rose-600" size={24}/>}title={t('dashboard.article')}desc={t('dashboard.shareKnowledge')}color="bg-rose-50 hover:bg-rose-100/80 border-rose-100" onClick={handleBlogClick}/>
         </div>
 
-        <GlassCard className="p-4 sm:p-6" gradient="pink">
-          <h2 className="text-heading-3 mb-6 flex items-center gap-2"><TrendingUp size={20}className="text-crimson-red" />{t('dashboard.yourActivity')}</h2>
+        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow">
+          <h2 className="text-heading-3 mb-6 flex items-center gap-2"><TrendingUp size={20} className="text-crimson-red" />{t('dashboard.yourActivity')}</h2>
           {isLoading ? (
             <div className="grid grid-cols-3 gap-4 sm:gap-6">
-              {[1, 2, 3].map((i) => (<div key={i}className="text-center"><Skeleton className="mb-2 h-10 w-full rounded-lg" /><Skeleton className="mx-auto h-4 w-4/5" /></div>))}
+              {[1, 2, 3].map((i) => (<div key={i} className="text-center"><Skeleton className="mb-2 h-10 w-full rounded-lg" /><Skeleton className="mx-auto h-4 w-4/5" /></div>))}
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-4 sm:gap-6 divide-x divide-gray-100 dark:divide-gray-700">
-              <StatItem label={t('dashboard.cvsCreated')}value={stats.resumesCount || 0}color="text-blue-600 dark:text-blue-400" />
-              <StatItem label={t('dashboard.interviews')}value={stats.interviewsCount || 0}color="text-green-600 dark:text-green-400" />
-              <StatItem label={t('dashboard.postViews')}value={stats.postsCount || 0}color="text-orange-600 dark:text-orange-400" />
+              <StatItem label={t('dashboard.cvsCreated')} value={stats.resumesCount || 0} color="text-blue-600 dark:text-blue-400" />
+              <StatItem label={t('dashboard.interviews')} value={stats.interviewsCount || 0} color="text-green-600 dark:text-green-400" />
+              <StatItem label={t('dashboard.postViews')} value={stats.postsCount || 0} color="text-orange-600 dark:text-orange-400" />
             </div>
           )}
-        </GlassCard>
+        </div>
 
         <ActivityFeed limit={3}/>
 
