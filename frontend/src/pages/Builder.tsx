@@ -139,25 +139,6 @@ const Builder = () => {
     };
   }, []);
 
-  // Auto-save functionality
-  useEffect(() => {
-    if (autoSaveTimer) {
-      clearTimeout(autoSaveTimer);
-    }
-
-    const timer = setTimeout(() => {
-      if (resumeId && currentResume.personalInfo?.fullName && currentResume.personalInfo?.email) {
-        handleSave(true); // Silent auto-save
-      }
-    }, 3000); // Auto-save after 3 seconds of inactivity
-
-    setAutoSaveTimer(timer);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [currentResume, resumeId, handleSave]);
-
   const handleSave = useCallback(async (silent = false) => {
     if (!silent) {
       setSaving(true);
@@ -212,6 +193,25 @@ const Builder = () => {
     setSearchParams,
     toast,
   ]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (autoSaveTimer) {
+      clearTimeout(autoSaveTimer);
+    }
+
+    const timer = setTimeout(() => {
+      if (resumeId && currentResume.personalInfo?.fullName && currentResume.personalInfo?.email) {
+        handleSave(true); // Silent auto-save
+      }
+    }, 3000); // Auto-save after 3 seconds of inactivity
+
+    setAutoSaveTimer(timer);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [currentResume, resumeId, handleSave]);
 
   const handleDownload = useCallback(() => {
     toast.success('Opening print dialog. Select "Save as PDF" to download your CV.');

@@ -19,7 +19,16 @@ function VirtualListComponent<T>({ items, itemHeight, overscan = 3, height, getI
   const totalHeight = items.length * itemHeight;
 
   return (
-    <div style={{ height, overflowY: 'auto', position: 'relative' }}>
+    <div 
+      style={{ 
+        height, 
+        overflowY: 'auto', 
+        position: 'relative',
+        scrollbarWidth: 'none', // Firefox
+        msOverflowStyle: 'none', // IE/Edge
+      }}
+      className="[&::-webkit-scrollbar]:hidden" // Chrome/Safari
+    >
       <div style={{ height: totalHeight, position: 'relative' }}>
         {items.slice(startIndex, endIndex).map((item, index) => {
           const realIndex = startIndex + index;

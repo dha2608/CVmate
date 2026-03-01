@@ -60,7 +60,7 @@ const Community = () => {
                 ))}
             </div>
         ) : (
-            <div className="space-y-4 animate-fade-in">
+            <div className="space-y-4 animate-fade-in overflow-hidden">
                 <VirtualList
                   items={posts}
                   itemHeight={220}

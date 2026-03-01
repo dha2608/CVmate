@@ -38,7 +38,20 @@ export const useMessageStore = create<MessageState>((set) => ({
 
   fetchConversations: async () => {
     try {
-      const token = localStorage.getItem('token');
+      // Try to get token from localStorage directly first
+      let token = localStorage.getItem('token');
+      // If not found, try to get from user object
+      if (!token) {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            token = user?.token || null;
+          } catch {
+            // Ignore parse error
+          }
+        }
+      }
       if (!token) {
         console.error('No token found');
         return;
@@ -71,7 +84,20 @@ export const useMessageStore = create<MessageState>((set) => ({
   fetchMessages: async (userId: string) => {
     set({ isLoading: true });
     try {
-      const token = localStorage.getItem('token');
+      // Try to get token from localStorage directly first
+      let token = localStorage.getItem('token');
+      // If not found, try to get from user object
+      if (!token) {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            token = user?.token || null;
+          } catch {
+            // Ignore parse error
+          }
+        }
+      }
       if (!token) {
         console.error('No token found');
         set({ isLoading: false });
@@ -109,7 +135,20 @@ export const useMessageStore = create<MessageState>((set) => ({
 
   sendMessage: async (receiverId: string, content: string) => {
     try {
-      const token = localStorage.getItem('token');
+      // Try to get token from localStorage directly first
+      let token = localStorage.getItem('token');
+      // If not found, try to get from user object
+      if (!token) {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            token = user?.token || null;
+          } catch {
+            // Ignore parse error
+          }
+        }
+      }
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -150,7 +189,20 @@ export const useMessageStore = create<MessageState>((set) => ({
 
   markAsRead: async (userId: string) => {
     try {
-      const token = localStorage.getItem('token');
+      // Try to get token from localStorage directly first
+      let token = localStorage.getItem('token');
+      // If not found, try to get from user object
+      if (!token) {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            token = user?.token || null;
+          } catch {
+            // Ignore parse error
+          }
+        }
+      }
       if (!token) {
         console.error('No token found');
         return;
