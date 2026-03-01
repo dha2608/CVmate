@@ -59,7 +59,7 @@ const Admin = () => {
 
     const load = async () => {
       setLoading(true);
-      try {
+    try {
         await Promise.all([
           loadOverview(),
           loadUsers(),
@@ -265,10 +265,10 @@ const Admin = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 sm:p-6 lg:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
-                <Shield size={20} />
-              </div>
-              <div>
+            <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
+              <Shield size={20} />
+            </div>
+            <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Admin Management Console</h1>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Manage users, content, jobs, subscriptions, and moderation actions.</p>
               </div>
@@ -281,7 +281,7 @@ const Admin = () => {
           </div>
 
           {tabHeader}
-        </div>
+              </div>
 
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -297,7 +297,7 @@ const Admin = () => {
         )}
 
         {activeTab === 'users' && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 sm:p-6 lg:p-8 space-y-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 sm:p-6 lg:p-8 space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <Input
                 value={userSearch}
@@ -353,7 +353,7 @@ const Admin = () => {
 
         {activeTab === 'posts' && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 sm:p-6 lg:p-8 space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
               {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
                 <button
                   key={status}
@@ -368,29 +368,54 @@ const Admin = () => {
               ))}
             </div>
 
-            <div className="space-y-3">
-              {posts.map((p) => (
-                <div key={p._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-gray-900 dark:text-white">{p.user?.name || 'Unknown user'}</div>
-                      <div className="text-xs text-gray-500">{new Date(p.createdAt).toLocaleString()}</div>
-                      <p className="text-sm mt-2 text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{p.content}</p>
-                      {p.rejectedReason && (
-                        <p className="text-xs text-red-600 mt-1">Reason: {p.rejectedReason}</p>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-2 justify-end">
-                      <Button size="sm" variant="outline" onClick={() => handlePostStatus(p._id, 'approved')}>Approve</Button>
-                      <Button size="sm" variant="outline" onClick={() => handlePostStatus(p._id, 'pending')}>Set Pending</Button>
-                      <Button size="sm" variant="secondary" onClick={() => handlePostStatus(p._id, 'rejected')}>Reject</Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleDeletePost(p._id)}>
-                        <Trash2 size={14} className="mr-1" /> Delete
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3">User</th>
+                    <th className="text-left py-3">Content</th>
+                    <th className="text-left py-3">Status</th>
+                    <th className="text-left py-3">Created</th>
+                    <th className="text-right py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {posts.map((p) => (
+                    <tr key={p._id} className="border-b border-gray-100 dark:border-gray-700/60">
+                      <td className="py-3">
+                        <div className="font-semibold text-gray-900 dark:text-white">{p.user?.name || 'Unknown user'}</div>
+                        <div className="text-xs text-gray-500">{p.user?.email || ''}</div>
+                      </td>
+                      <td className="py-3 max-w-md">
+                        <p className="text-sm text-gray-700 dark:text-gray-200 line-clamp-2">{p.content || '(No content)'}</p>
+                        {p.rejectedReason && (
+                          <p className="text-xs text-red-600 mt-1">Reason: {p.rejectedReason}</p>
+                        )}
+                      </td>
+                      <td className="py-3">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          p.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                          p.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                        }`}>
+                          {p.status || 'pending'}
+                        </span>
+                      </td>
+                      <td className="py-3 text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString()}</td>
+                      <td className="py-3">
+                        <div className="flex justify-end flex-wrap gap-2">
+                          <Button size="sm" variant="outline" onClick={() => handlePostStatus(p._id, 'approved')}>Approve</Button>
+                          <Button size="sm" variant="outline" onClick={() => handlePostStatus(p._id, 'pending')}>Pending</Button>
+                          <Button size="sm" variant="secondary" onClick={() => handlePostStatus(p._id, 'rejected')}>Reject</Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleDeletePost(p._id)}>
+                            <Trash2 size={14} className="mr-1" /> Delete
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
@@ -459,7 +484,7 @@ const Admin = () => {
                         <div className="flex justify-end gap-2">
                           <Button size="sm" variant="destructive" onClick={() => handleDeleteJob(j._id)}>
                             <Trash2 size={14} className="mr-1" /> Delete
-                          </Button>
+            </Button>
                         </div>
                       </td>
                     </tr>
