@@ -314,9 +314,12 @@ const MainLayout = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
             {shouldShowLeftSidebar && (
               <div className="hidden lg:block lg:col-span-3">
-                <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 sticky top-20 lg:top-24 mb-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-full border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center shadow-sm flex-shrink-0">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow p-5 sticky top-20 lg:top-24 mb-6">
+                  {/* Profile Header */}
+                  <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="w-14 h-14 rounded-full border-[3px] border-crimson-red dark:border-red-500 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center shadow-md flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+                      onClick={() => navigate('/profile')}
+                    >
                       {user?.avatar?.trim() ? (
                         <img
                           src={resolveAssetUrl(user.avatar)}
@@ -330,18 +333,18 @@ const MainLayout = ({
                           }}
                         />
                       ) : null}
-                      <span className={`text-lg font-black text-zinc-900 dark:text-white ${user?.avatar?.trim() ? 'hidden' : 'flex'}`}>
+                      <span className={`text-xl font-black text-crimson-red dark:text-red-400 ${user?.avatar?.trim() ? 'hidden' : 'flex'}`}>
                         {user?.name?.charAt(0)?.toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3
-                        className="font-bold text-sm text-gray-900 dark:text-white hover:text-red-600 dark:hover:text-red-400 cursor-pointer transition-colors truncate"
+                        className="font-bold text-sm text-gray-900 dark:text-white hover:text-crimson-red dark:hover:text-red-400 cursor-pointer transition-colors truncate mb-0.5"
                         onClick={() => navigate('/profile')}
                       >
                         {user?.name}
                       </h3>
-                      <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                         {user?.careerGoal
                           ? user.careerGoal === 'new-job'
                             ? 'Job Seeker'
@@ -355,25 +358,61 @@ const MainLayout = ({
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  {/* Quick Actions */}
+                  <div className="space-y-2 mb-4">
                     <Button
                       variant="outline"
-                      className="w-full text-xs py-2"
+                      className="w-full text-xs py-2.5 justify-start border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                       onClick={() => navigate('/profile')}
                     >
-                      <User size={12} className="mr-1.5" />
+                      <User size={14} className="mr-2" />
                       {language === 'vi' ? 'Xem hồ sơ' : 'View Profile'}
                     </Button>
-                    {!isPremium && (
-                      <Button
-                        variant="outline"
-                        className="w-full text-xs py-2 border-crimson-red text-crimson-red hover:bg-crimson-red hover:text-white"
-                        onClick={() => navigate('/pricing')}
-                      >
-                        <Brain size={12} className="mr-1.5" />
-                        {language === 'vi' ? 'Nâng cấp Premium' : 'Go Premium'}
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      className="w-full text-xs py-2.5 justify-start border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      onClick={() => navigate('/settings')}
+                    >
+                      <Settings2 size={14} className="mr-2" />
+                      {language === 'vi' ? 'Cài đặt' : 'Settings'}
+                    </Button>
+                  </div>
+
+                  {/* Premium CTA */}
+                  {!isPremium && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <div className="bg-gradient-to-r from-crimson-red to-fire-red rounded-lg p-3 text-white">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Crown size={16} className="text-yellow-300" />
+                          <span className="text-xs font-bold">Premium</span>
+                        </div>
+                        <p className="text-[10px] mb-2 opacity-90">
+                          {language === 'vi' ? 'Mở khóa tất cả tính năng AI' : 'Unlock all AI features'}
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full text-xs py-1.5 bg-white/20 hover:bg-white/30 border-white/30 text-white"
+                          onClick={() => navigate('/pricing')}
+                        >
+                          {language === 'vi' ? 'Nâng cấp ngay' : 'Upgrade Now'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quick Stats */}
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="grid grid-cols-2 gap-2 text-center">
+                      <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                        <p className="text-xs font-bold text-gray-900 dark:text-white">CV</p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Resumes</p>
+                      </div>
+                      <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                        <p className="text-xs font-bold text-gray-900 dark:text-white">Jobs</p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Applied</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

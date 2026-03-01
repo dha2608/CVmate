@@ -11,6 +11,7 @@ interface PublicUser {
   _id: string;
   name: string;
   avatar?: string;
+  coverPhoto?: string;
   bio?: string;
   headline?: string;
   location?: string;
@@ -113,145 +114,166 @@ const UserProfile = () => {
   return (
     <MainLayout>
       <div className="max-w-4xl mx-auto py-6 sm:py-8 lg:py-10 px-2 sm:px-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+          {/* Cover Photo with proper aspect ratio and positioning */}
           <div 
-            className="h-32 sm:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative overflow-hidden rounded-t-xl"
+            className="h-48 sm:h-56 md:h-64 bg-gradient-to-r from-indigo-500 to-purple-600 relative overflow-hidden rounded-t-xl"
             style={coverPhotoUrl ? { 
               backgroundImage: `url(${coverPhotoUrl})`, 
               backgroundSize: 'cover', 
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat',
+              objectFit: 'cover'
             } : {}}
           >
-            {coverPhotoUrl && <div className="absolute inset-0 bg-black/20" />}
+            {coverPhotoUrl && <div className="absolute inset-0 bg-black/10" />}
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white dark:from-gray-800 to-transparent" />
           </div>
-          <div className="px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-14 pb-6 sm:pb-8 relative z-10">
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+          
+          {/* Header with shadow separator */}
+          <div className="px-4 sm:px-6 lg:px-8 pt-4 pb-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm relative z-10">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+              {/* Avatar with thicker white border */}
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-[6px] sm:border-8 border-white dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl overflow-hidden flex-shrink-0 flex items-center justify-center -mt-16 sm:-mt-20 relative z-20">
                 {user.avatar ? (
                   <img src={resolveAssetUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-xl sm:text-2xl font-bold text-indigo-600">
+                  <span className="text-2xl sm:text-3xl font-bold text-indigo-600 dark:text-indigo-400">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                  {user.name}
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-[11px] sm:text-xs font-medium text-indigo-700 dark:text-indigo-300">
-                    {careerLabel}
-                  </span>
-                  {user.location && (
-                    <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
-                      <MapPin className="w-3 h-3" /> {user.location}
-                    </span>
-                  )}
-                  {createdDate && (
-                    <span className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-500">
-                      • Tham gia từ {createdDate}
-                    </span>
-                  )}
-                </p>
-                {user.headline && (
-                  <p className="mt-1 text-sm text-gray-800 dark:text-gray-200 font-medium">
-                    {user.headline}
-                  </p>
-                )}
-                {(user.yearsOfExperience || user.currentRole) && (
-                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    {user.yearsOfExperience && (
-                      <span className="inline-flex items-center gap-1">
-                        <Briefcase className="w-3 h-3" />
-                        {user.yearsOfExperience} năm kinh nghiệm
+              
+              {/* User Info Section */}
+              <div className="flex-1 min-w-0 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                      {user.name}
+                    </h1>
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                        {careerLabel}
                       </span>
+                      {user.location && (
+                        <span className="inline-flex items-center gap-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                          <MapPin className="w-3.5 h-3.5" /> {user.location}
+                        </span>
+                      )}
+                      {createdDate && (
+                        <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-500">
+                          • Tham gia từ {createdDate}
+                        </span>
+                      )}
+                    </div>
+                    {user.headline && (
+                      <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 font-medium mb-3">
+                        {user.headline}
+                      </p>
                     )}
-                    {user.currentRole && (
-                      <span className="inline-flex items-center gap-1">
-                        <span>•</span>
-                        {user.currentRole}
-                      </span>
+                    {(user.yearsOfExperience || user.currentRole) && (
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                        {user.yearsOfExperience && (
+                          <span className="inline-flex items-center gap-1.5">
+                            <Briefcase className="w-4 h-4" />
+                            {user.yearsOfExperience} năm kinh nghiệm
+                          </span>
+                        )}
+                        {user.currentRole && (
+                          <span className="inline-flex items-center gap-1">
+                            <span>•</span>
+                            {user.currentRole}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
+                  
+                  {/* Action Buttons - aligned with top of info */}
+                  <div className="flex flex-row sm:flex-col gap-2 items-start sm:items-end flex-shrink-0">
+                    <button
+                      onClick={handleCopyLink}
+                      className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shadow-sm"
+                    >
+                      <Link2 className="w-4 h-4 mr-1.5" />
+                      Copy link
+                    </button>
+                    {currentUser && currentUser._id !== user._id && (
+                      <button
+                        onClick={handleMessage}
+                        className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-crimson-red text-white hover:bg-fire-red transition-colors shadow-sm"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-1.5" />
+                        Nhắn tin
+                      </button>
+                    )}
+                  </div>
+                </div>
+                
                 {user.bio && (
-                  <p className="mt-2 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                    {user.bio}
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col gap-2 items-stretch sm:items-end w-full sm:w-auto">
-                <button
-                  onClick={handleCopyLink}
-                  className="inline-flex items-center justify-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                >
-                  <Link2 className="w-3.5 h-3.5 mr-1" />
-                  Copy profile link
-                </button>
-                {currentUser && currentUser._id !== user._id && (
-                  <button
-                    onClick={handleMessage}
-                    className="inline-flex items-center justify-center px-3 py-1.5 rounded-full text-xs font-medium bg-crimson-red text-white hover:bg-fire-red transition-colors"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5 mr-1" />
-                    Nhắn tin
-                  </button>
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                      {user.bio}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
+          </div>
+          
+          {/* Content Section */}
+          <div className="px-4 sm:px-6 lg:px-8 py-6">
 
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg border border-gray-200 dark:border-gray-700 p-3 flex items-center gap-2 text-xs sm:text-sm">
-                <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
-                  <FileText size={16} />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex items-start gap-3 hover:shadow-md transition-shadow">
+                <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex-shrink-0">
+                  <FileText size={18} />
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-800 dark:text-gray-100">CV & Bài viết</p>
-                  <p className="text-gray-500 dark:text-gray-400 text-[11px]">Xem các nội dung công khai của {user.name}</p>
-                </div>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg border border-gray-200 dark:border-gray-700 p-3 flex items-center gap-2 text-xs sm:text-sm">
-                <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400">
-                  <Briefcase size={16} />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800 dark:text-gray-100">Hoạt động nghề nghiệp</p>
-                  <p className="text-gray-500 dark:text-gray-400 text-[11px]">Theo dõi các bài đăng và job liên quan</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white mb-1">CV & Bài viết</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">Xem các nội dung công khai của {user.name}</p>
                 </div>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg border border-gray-200 dark:border-gray-700 p-3 flex items-center gap-2 text-xs sm:text-sm">
-                <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400">
-                  <Users size={16} />
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex items-start gap-3 hover:shadow-md transition-shadow">
+                <div className="p-2.5 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex-shrink-0">
+                  <Briefcase size={18} />
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-800 dark:text-gray-100">Kết nối</p>
-                  <p className="text-gray-500 dark:text-gray-400 text-[11px]">Dùng DM trong Community để trò chuyện</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white mb-1">Hoạt động nghề nghiệp</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">Theo dõi các bài đăng và job liên quan</p>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex items-start gap-3 hover:shadow-md transition-shadow">
+                <div className="p-2.5 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex-shrink-0">
+                  <Users size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white mb-1">Kết nối</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">Dùng DM trong Community để trò chuyện</p>
                 </div>
               </div>
             </div>
 
             {/* Experience & Role Info */}
             {(user.yearsOfExperience || user.currentRole) && (
-              <div className="mt-6 bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
-                  <Briefcase className="w-4 h-4" />
+              <div className="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-sm">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-crimson-red dark:text-red-400" />
                   Thông tin nghề nghiệp
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {user.yearsOfExperience && (
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Kinh nghiệm</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Kinh nghiệm</p>
+                      <p className="text-base font-semibold text-gray-900 dark:text-white">
                         {user.yearsOfExperience} {user.yearsOfExperience === 1 ? 'năm' : 'năm'}
                       </p>
                     </div>
                   )}
                   {user.currentRole && (
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Vị trí hiện tại</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Vị trí hiện tại</p>
+                      <p className="text-base font-semibold text-gray-900 dark:text-white">
                         {user.currentRole}
                       </p>
                     </div>
@@ -262,18 +284,18 @@ const UserProfile = () => {
 
             {/* Skills & industries */}
             {(skills.length > 0 || industries.length > 0) && (
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {skills.length > 0 && (
-                  <div className="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
-                      <Zap className="w-4 h-4" />
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-sm">
+                    <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-crimson-red dark:text-red-400" />
                       Kỹ năng
                     </h2>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {skills.map((skill) => (
                         <span
                           key={skill}
-                          className="px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-xs text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800"
+                          className="px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-sm font-medium text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800"
                         >
                           {skill}
                         </span>
@@ -282,16 +304,16 @@ const UserProfile = () => {
                   </div>
                 )}
                 {industries.length > 0 && (
-                  <div className="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
-                      <Briefcase className="w-4 h-4" />
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-sm">
+                    <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Briefcase className="w-5 h-5 text-crimson-red dark:text-red-400" />
                       Ngành / Lĩnh vực
                     </h2>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {industries.map((ind) => (
                         <span
                           key={ind}
-                          className="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-xs text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-600"
+                          className="px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-sm font-medium text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-600"
                         >
                           {ind}
                         </span>
@@ -304,19 +326,19 @@ const UserProfile = () => {
 
             {/* Social links */}
             {user.socialLinks && (user.socialLinks.linkedin || user.socialLinks.github || user.socialLinks.portfolio) && (
-              <div className="mt-6">
-                <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">
+              <div className="mb-6">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">
                   Liên kết
                 </h2>
-                <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
+                <div className="flex flex-wrap gap-2">
                   {user.socialLinks.linkedin && (
                     <a
                       href={user.socialLinks.linkedin}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                      className="inline-flex items-center px-4 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors border border-blue-200 dark:border-blue-800"
                     >
-                      <Link2 className="w-3.5 h-3.5 mr-1" />
+                      <Link2 className="w-4 h-4 mr-1.5" />
                       LinkedIn
                     </a>
                   )}
@@ -325,9 +347,9 @@ const UserProfile = () => {
                       href={user.socialLinks.github}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                      className="inline-flex items-center px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors border border-gray-200 dark:border-gray-600"
                     >
-                      <Link2 className="w-3.5 h-3.5 mr-1" />
+                      <Link2 className="w-4 h-4 mr-1.5" />
                       GitHub
                     </a>
                   )}
@@ -336,9 +358,9 @@ const UserProfile = () => {
                       href={user.socialLinks.portfolio}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
+                      className="inline-flex items-center px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-900 transition-colors border border-green-200 dark:border-green-800"
                     >
-                      <Link2 className="w-3.5 h-3.5 mr-1" />
+                      <Link2 className="w-4 h-4 mr-1.5" />
                       Portfolio
                     </a>
                   )}
@@ -347,7 +369,7 @@ const UserProfile = () => {
             )}
 
             {/* Recent Activity */}
-            <div className="mt-6">
+            <div className="mb-6">
               <ActivityFeed limit={5} showHeader={true} />
             </div>
           </div>
