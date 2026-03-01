@@ -708,7 +708,7 @@ const Jobs = () => {
 
                     <Input
 
-                      placeholder={t('jobs.jobTitlePlaceholder') || 'Job Title (e.g., Frontend Engineer)'}
+                      placeholder={t('jobs.jobTitlePlaceholder')}
 
                       value={jobForm.title}
 
@@ -722,7 +722,7 @@ const Jobs = () => {
 
                     <Input
 
-                      placeholder={t('jobs.companyPlaceholder') || 'Company Name'}
+                      placeholder={t('jobs.companyPlaceholder')}
 
                       value={jobForm.company}
 
@@ -736,7 +736,7 @@ const Jobs = () => {
 
                     <Input
 
-                      placeholder={t('jobs.locationPlaceholder') || 'Location (or Remote)'}
+                      placeholder={t('jobs.locationPlaceholder')}
 
                       value={jobForm.location}
 
@@ -774,7 +774,7 @@ const Jobs = () => {
 
                   <Input
 
-                    placeholder={t('jobs.salaryPlaceholder') || 'Salary (optional, e.g., 30-40M or $2000-$3000)'}
+                    placeholder={t('jobs.salaryPlaceholder')}
 
                     value={jobForm.salary}
 
@@ -794,7 +794,7 @@ const Jobs = () => {
 
                     rows={3}
 
-                    placeholder={t('jobs.descriptionPlaceholder') || 'Job Description'}
+                    placeholder={t('jobs.descriptionPlaceholder')}
 
                     value={jobForm.description}
 
@@ -812,7 +812,7 @@ const Jobs = () => {
 
                     rows={3}
 
-                    placeholder={t('jobs.requirementsPlaceholder') || 'Requirements (one per line)'}
+                    placeholder={t('jobs.requirementsPlaceholder')}
 
                     value={jobForm.requirements}
 
