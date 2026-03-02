@@ -10,6 +10,13 @@ declare module 'express-serve-static-core' {
 
 export type AuthRequest = Request;
 
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  throw new Error(
+    `JWT_SECRET is not configured or is too short (minimum 32 characters). Current length: ${JWT_SECRET?.length || 0}`
+  );
+}
+
 export const protect: RequestHandler = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -17,12 +24,7 @@ export const protect: RequestHandler = async (req, res, next) => {
     try {
       const token = authHeader.split(' ')[1];
 
-      if (!process.env.JWT_SECRET) {
-        res.status(500).json({ success: false, message: 'JWT_SECRET is not configured' });
-        return;
-      }
-
-      const decoded = (jwt as any).verify(token, process.env.JWT_SECRET) as JwtPayload & {
+      const decoded = (jwt as any).verify(token, JWT_SECRET) as JwtPayload & {
         id: string;
       };
 
@@ -30,6 +32,11 @@ export const protect: RequestHandler = async (req, res, next) => {
 
       if (!user) {
         res.status(401).json({ success: false, message: 'Not authorized, user not found' });
+        return;
+      }
+
+      if (user.isBanned) {
+        res.status(403).json({ success: false, message: 'Account has been banned' });
         return;
       }
 

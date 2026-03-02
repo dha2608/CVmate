@@ -1,7 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -43,138 +42,150 @@ export interface IUser extends Document {
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
 
-const userSchema = new Schema<IUser>({
-  name: { 
-    type: String, 
-    required: true,
-    trim: true 
-  },
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true,
-    trim: true,
-    lowercase: true
-  },
-  password: { 
-    type: String, 
-    required(this: IUser) {
-      return !this.googleId;
-    }
-  },
-  googleId: {
-    type: String,
-    sparse: true,
-    unique: true
-  },
-  avatar: { 
-    type: String, 
-    default: '' 
-  },
-  coverPhoto: {
-    type: String,
-    default: ''
-  },
-  role: { 
-    type: String, 
-    enum: ['user', 'admin'], 
-    default: 'user' 
-  },
-  bio: { 
-    type: String, 
-    default: '' 
-  },
-  headline: {
-    type: String,
-    trim: true,
-    default: '',
-  },
-  location: {
-    type: String,
-    trim: true,
-    default: '',
-  },
-  yearsOfExperience: {
-    type: Number,
-    min: 0,
-  },
-  currentRole: {
-    type: String,
-    trim: true,
-    default: '',
-  },
-  industries: [{
-    type: String,
-    trim: true,
-  }],
-  skills: [{
-    type: String,
-    trim: true,
-  }],
-  socialLinks: {
-    linkedin: { type: String, trim: true },
-    github: { type: String, trim: true },
-    portfolio: { type: String, trim: true },
-  },
-  isPublicProfile: {
-    type: Boolean,
-    default: true,
-  },
-  cv_list: [{ 
-    type: Schema.Types.ObjectId, 
-    ref: 'Resume' 
-  }],
-  onboardingCompleted: {
-    type: Boolean,
-    default: false
-  },
-  careerGoal: {
-    type: String,
-    enum: ['new-job', 'internship', 'career-switch'],
-    default: null
-  },
-  subscription: {
-    plan: {
+const userSchema = new Schema<IUser>(
+  {
+    name: {
       type: String,
-      enum: ['free', 'premium'],
-      default: 'free'
+      required: true,
+      trim: true,
     },
-    status: {
+    email: {
       type: String,
-      enum: ['active', 'cancelled', 'expired'],
-      default: 'active'
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
     },
-    startDate: Date,
-    endDate: Date,
-    paymentMethod: String,
-    stripeCustomerId: String,
-    stripeSubscriptionId: String
+    password: {
+      type: String,
+      required(this: IUser) {
+        return !this.googleId;
+      },
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
+    avatar: {
+      type: String,
+      default: '',
+    },
+    coverPhoto: {
+      type: String,
+      default: '',
+    },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
+    bio: {
+      type: String,
+      default: '',
+    },
+    headline: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    location: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    yearsOfExperience: {
+      type: Number,
+      min: 0,
+    },
+    currentRole: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    industries: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    skills: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    socialLinks: {
+      linkedin: { type: String, trim: true },
+      github: { type: String, trim: true },
+      portfolio: { type: String, trim: true },
+    },
+    isPublicProfile: {
+      type: Boolean,
+      default: true,
+    },
+    cv_list: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Resume',
+      },
+    ],
+    onboardingCompleted: {
+      type: Boolean,
+      default: false,
+    },
+    careerGoal: {
+      type: String,
+      enum: ['new-job', 'internship', 'career-switch'],
+      default: null,
+    },
+    subscription: {
+      plan: {
+        type: String,
+        enum: ['free', 'premium'],
+        default: 'free',
+      },
+      status: {
+        type: String,
+        enum: ['active', 'cancelled', 'expired'],
+        default: 'active',
+      },
+      startDate: Date,
+      endDate: Date,
+      paymentMethod: String,
+      stripeCustomerId: String,
+      stripeSubscriptionId: String,
+    },
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    twoFactorSecret: {
+      type: String,
+      default: null,
+    },
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
   },
-  twoFactorEnabled: {
-    type: Boolean,
-    default: false,
-  },
-  twoFactorSecret: {
-    type: String,
-    default: null,
-  },
-  isBanned: {
-    type: Boolean,
-    default: false,
-  },
-}, { 
-  timestamps: true 
-});
+  {
+    timestamps: true,
+  }
+);
 
 // Indexes for performance
-// Note: email and googleId already have unique: true in schema definition above
+userSchema.index({ email: 1 });
+userSchema.index({ googleId: 1 });
 userSchema.index({ 'subscription.plan': 1, 'subscription.status': 1 });
 userSchema.index({ isPublicProfile: 1 });
+userSchema.index({ isBanned: 1 });
+userSchema.index({ role: 1 });
+userSchema.index({ createdAt: -1 });
 
-
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password') || !this.password) {
-    return next(); 
+    return next();
   }
 
   try {
@@ -186,7 +197,7 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-userSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
+userSchema.methods.matchPassword = async function (enteredPassword: string): Promise<boolean> {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

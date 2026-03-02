@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import User, { IUser } from '../models/User.js';
@@ -13,18 +12,11 @@ export const generateToken = (id: string) => {
   });
 };
 
-
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Validation is handled by middleware
     const { name, email, password } = req.body;
 
-    // Validation is now handled by middleware, but keep as fallback
-    if (!name || !email || !password) {
-      res.status(400).json({ success: false, message: 'Please provide all required fields' });
-      return;
-    }
-
-    // Normalize email to lowercase for consistent lookup
     const normalizedEmail = email.toLowerCase().trim();
     const userExists = await User.findOne({ email: normalizedEmail });
 
@@ -34,11 +26,10 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    // Password will be hashed automatically by User model's pre('save') hook
     const user = await User.create({
       name,
       email: normalizedEmail,
-      password, // Pass plain password, pre('save') hook will hash it
+      password,
     });
 
     if (user) {
@@ -68,26 +59,19 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
 export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Validation is handled by middleware
     const { email, password, twoFactorToken } = req.body as {
-      email?: string;
-      password?: string;
+      email: string;
+      password: string;
       twoFactorToken?: string;
     };
 
-    // Validation is now handled by middleware, but keep as fallback
-    if (!email || !password) {
-      res.status(400).json({ success: false, message: 'Please provide email and password' });
-      return;
-    }
-
-    // Normalize email to lowercase for consistent lookup
     const normalizedEmail = email.toLowerCase().trim();
     const user = await User.findOne({ email: normalizedEmail });
 
     if (user && user.password) {
-      // Use the model's matchPassword method for consistency
       const isPasswordValid = await user.matchPassword(password);
-      
+
       if (!isPasswordValid) {
         logger.warn('auth_login_invalid_password', { email: normalizedEmail });
         res.status(401).json({ success: false, message: 'Invalid email or password' });
@@ -108,7 +92,10 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
         // Import lazily to avoid loading otplib unless needed
         const { authenticator } = await import('otplib');
-        if (!user.twoFactorSecret || !authenticator.verify({ token: twoFactorToken, secret: user.twoFactorSecret })) {
+        if (
+          !user.twoFactorSecret ||
+          !authenticator.verify({ token: twoFactorToken, secret: user.twoFactorSecret })
+        ) {
           logger.warn('auth_login_2fa_invalid_token', { userId: user._id.toString() });
           res.status(401).json({
             success: false,
@@ -119,20 +106,20 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         }
       }
 
-        logger.info('auth_login_success', { userId: user._id.toString(), email: user.email });
-        res.json({
-          success: true,
-          data: {
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-            role: user.role,
-            onboardingCompleted: user.onboardingCompleted,
-            careerGoal: user.careerGoal,
-            token: generateToken((user._id as Types.ObjectId).toString()),
-          },
-        });
+      logger.info('auth_login_success', { userId: user._id.toString(), email: user.email });
+      res.json({
+        success: true,
+        data: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+          role: user.role,
+          onboardingCompleted: user.onboardingCompleted,
+          careerGoal: user.careerGoal,
+          token: generateToken((user._id as Types.ObjectId).toString()),
+        },
+      });
     } else {
       logger.warn('auth_login_user_not_found', { email: normalizedEmail });
       res.status(401).json({ success: false, message: 'Invalid email or password' });
@@ -146,7 +133,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 export const googleAuthCallback = async (req: Request, res: Response, _next: NextFunction) => {
   try {
     const user = req.user as IUser | undefined;
-    
+
     if (!user) {
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
       // Redirect to frontend with error
@@ -155,9 +142,11 @@ export const googleAuthCallback = async (req: Request, res: Response, _next: Nex
     }
 
     const token = generateToken((user._id as Types.ObjectId).toString());
-    
+
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(`${frontendUrl}/auth/callback?token=${token}&onboarding=${!user.onboardingCompleted}`);
+    res.redirect(
+      `${frontendUrl}/auth/callback?token=${token}&onboarding=${!user.onboardingCompleted}`
+    );
   } catch (_error) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     // Redirect to frontend with error instead of crashing
@@ -168,7 +157,7 @@ export const googleAuthCallback = async (req: Request, res: Response, _next: Nex
 export const getMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const user = await User.findById(req.user?._id).select('-password');
-    
+
     if (!user) {
       res.status(404).json({ success: false, message: 'User not found' });
       return;
@@ -185,13 +174,33 @@ export const updateUserProfile = async (req: AuthRequest, res: Response, next: N
     const user = await User.findById(req.user?._id);
 
     if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
-      user.bio = req.body.bio !== undefined ? req.body.bio : user.bio;
-      user.headline = req.body.headline !== undefined ? req.body.headline : user.headline;
-      user.location = req.body.location !== undefined ? req.body.location : user.location;
-      user.yearsOfExperience = req.body.yearsOfExperience ?? user.yearsOfExperience;
-      user.currentRole = req.body.currentRole !== undefined ? req.body.currentRole : user.currentRole;
+      // Handle password update through model to trigger pre-save hook
+      if (req.body.password) {
+        user.password = req.body.password;
+      }
+
+      // Update other fields
+      if (req.body.name) {
+        user.name = req.body.name;
+      }
+      if (req.body.email) {
+        user.email = req.body.email.toLowerCase().trim();
+      }
+      if (req.body.bio !== undefined) {
+        user.bio = req.body.bio;
+      }
+      if (req.body.headline !== undefined) {
+        user.headline = req.body.headline;
+      }
+      if (req.body.location !== undefined) {
+        user.location = req.body.location;
+      }
+      if (req.body.yearsOfExperience !== undefined) {
+        user.yearsOfExperience = req.body.yearsOfExperience;
+      }
+      if (req.body.currentRole !== undefined) {
+        user.currentRole = req.body.currentRole;
+      }
       if (Array.isArray(req.body.industries)) {
         user.industries = req.body.industries;
       }
@@ -207,12 +216,11 @@ export const updateUserProfile = async (req: AuthRequest, res: Response, next: N
       if (typeof req.body.isPublicProfile === 'boolean') {
         user.isPublicProfile = req.body.isPublicProfile;
       }
-      user.avatar = req.body.avatar !== undefined ? req.body.avatar : user.avatar;
-      user.coverPhoto = req.body.coverPhoto !== undefined ? req.body.coverPhoto : user.coverPhoto;
-
-      if (req.body.password) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(req.body.password, salt);
+      if (req.body.avatar !== undefined) {
+        user.avatar = req.body.avatar;
+      }
+      if (req.body.coverPhoto !== undefined) {
+        user.coverPhoto = req.body.coverPhoto;
       }
 
       const updatedUser = await user.save();
@@ -276,9 +284,9 @@ export const completeOnboarding = async (req: AuthRequest, res: Response, next: 
     const { careerGoal } = req.body;
 
     if (!careerGoal || !['new-job', 'internship', 'career-switch'].includes(careerGoal)) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'Invalid career goal. Must be: new-job, internship, or career-switch' 
+      res.status(400).json({
+        success: false,
+        message: 'Invalid career goal. Must be: new-job, internship, or career-switch',
       });
       return;
     }
@@ -315,7 +323,9 @@ export const getPublicProfile = async (req: Request, res: Response, next: NextFu
   try {
     const { id } = req.params;
 
-    const user = await User.findById(id).select('name avatar coverPhoto bio headline location yearsOfExperience currentRole industries skills socialLinks isPublicProfile careerGoal createdAt');
+    const user = await User.findById(id).select(
+      'name avatar coverPhoto bio headline location yearsOfExperience currentRole industries skills socialLinks isPublicProfile careerGoal createdAt'
+    );
 
     if (!user || user.isPublicProfile === false) {
       res.status(404).json({ success: false, message: 'User not found' });

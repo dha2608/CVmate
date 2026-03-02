@@ -51,73 +51,82 @@ app.set('trust proxy', 1);
 // Hide tech stack header
 app.disable('x-powered-by');
 
-// Security Headers - Disable CSP for images to allow cross-origin, but keep strong defaults
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:", "http:", "*"], // Allow all images
-      connectSrc: ["'self'", "https:", "http:"],
-      fontSrc: ["'self'", "data:"],
+// Security Headers
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'", 'https:'],
+        fontSrc: ["'self'", 'data:'],
+      },
     },
-  },
-  crossOriginEmbedderPolicy: false, // Allow embedding for PDF generation
-  crossOriginResourcePolicy: false, // Disable CORP to allow cross-origin images
-  referrerPolicy: {
-    policy: 'same-origin',
-  },
-  frameguard: {
-    action: 'deny',
-  },
-  hsts: process.env.NODE_ENV === 'production'
-    ? {
-        maxAge: 15552000, // 180 days
-        includeSubDomains: true,
-        preload: false,
-      }
-    : false,
-}));
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'same-origin' },
+    referrerPolicy: {
+      policy: 'strict-origin-when-cross-origin',
+    },
+    frameguard: {
+      action: 'deny',
+    },
+    hsts:
+      process.env.NODE_ENV === 'production'
+        ? {
+            maxAge: 15552000,
+            includeSubDomains: true,
+            preload: false,
+          }
+        : false,
+  })
+);
 
-// Middleware
+// CORS configuration
 const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
   : ['http://localhost:5173'];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
 
-      if (origin.includes('.vercel.app')) {
-        callback(null, true);
-        return;
-      }
+    // Check if origin is in allowed list
+    if (allowedOrigins.some((allowed) => origin === allowed || origin.startsWith(allowed))) {
+      callback(null, true);
+      return;
+    }
 
-      if (allowedOrigins.some((allowed) => origin === allowed || origin.startsWith(allowed))) {
-        callback(null, true);
-        return;
-      }
+    // Allow Vercel preview deployments
+    if (origin.includes('.vercel.app') || origin.includes('.now.sh')) {
+      callback(null, true);
+      return;
+    }
 
-      if (process.env.NODE_ENV !== 'production' && origin.includes('localhost')) {
-        callback(null, true);
-        return;
-      }
+    // In development, allow localhost origins
+    if (process.env.NODE_ENV !== 'production' && origin.includes('localhost')) {
+      callback(null, true);
+      return;
+    }
 
-      callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-  }),
-);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(requestLogger);
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(cookieParser(process.env.COOKIE_SECRET || process.env.SESSION_SECRET || 'cvmate-cookie-secret'));
+app.use(
+  cookieParser(process.env.COOKIE_SECRET || process.env.SESSION_SECRET || 'cvmate-cookie-secret')
+);
 app.use(sanitizeRequest);
 
 // Request timeout middleware
@@ -125,24 +134,28 @@ import { requestTimeout } from './middleware/timeout.js';
 app.use(requestTimeout(30000)); // 30 seconds
 
 // Session - always enable for CSRF token support
-  const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
-  
-  app.use(session({
+const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+
+app.use(
+  session({
     secret: process.env.SESSION_SECRET || 'cvmate-secret-key',
     resave: false,
     saveUninitialized: false,
-    store: mongoUri ? MongoStore.create({
-      mongoUrl: mongoUri,
-      ttl: 14 * 24 * 60 * 60, // 14 days
-      autoRemove: 'native',
-    }) : undefined, // Fallback to MemoryStore if no MongoDB URI
+    store: mongoUri
+      ? MongoStore.create({
+          mongoUrl: mongoUri,
+          ttl: 14 * 24 * 60 * 60, // 14 days
+          autoRemove: 'native',
+        })
+      : undefined, // Fallback to MemoryStore if no MongoDB URI
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
       sameSite: 'lax',
     },
-  }));
+  })
+);
 
 // Initialize Passport only if Google OAuth is configured
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -177,36 +190,44 @@ app.get('/api/csrf-token', (req: Request, res: Response) => {
   });
 });
 
-// Serve uploaded files statically with CORS headers
-// IMPORTANT: This must be BEFORE API routes to handle static file requests
+// Serve uploaded files statically with restricted CORS
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-app.use('/uploads', (req, res, next) => {
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.status(200).end();
-    return;
-  }
-  
-  // Set CORS headers for static files - allow all origins
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type');
-  // Explicitly remove CORP header that blocks cross-origin
-  res.removeHeader('Cross-Origin-Resource-Policy');
-  res.removeHeader('Cross-Origin-Embedder-Policy');
-  next();
-}, express.static(path.join(__dirname, '../uploads'), {
-  setHeaders: (res, filePath) => {
-    // Ensure CORS headers are set
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    // Don't set CORP - it blocks cross-origin
-  }
-}));
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    if (req.method === 'OPTIONS') {
+      const origin = req.headers.origin;
+      if (
+        origin &&
+        allowedOrigins.some((allowed) => origin === allowed || origin.startsWith(allowed))
+      ) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+      }
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.status(200).end();
+      return;
+    }
+
+    const origin = req.headers.origin;
+    if (
+      origin &&
+      allowedOrigins.some((allowed) => origin === allowed || origin.startsWith(allowed))
+    ) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type');
+    next();
+  },
+  express.static(path.join(__dirname, '../uploads'), {
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    },
+  })
+);
 
 /**
  * API Routes
@@ -290,11 +311,7 @@ app.get('/', (req: Request, res: Response) => {
         },
         articles: {
           base: '/api/articles',
-          routes: [
-            'GET /api/articles',
-            'POST /api/articles',
-            'GET /api/articles/:id',
-          ],
+          routes: ['GET /api/articles', 'POST /api/articles', 'GET /api/articles/:id'],
         },
         jobs: {
           base: '/api/jobs',
@@ -324,23 +341,15 @@ app.get('/', (req: Request, res: Response) => {
         },
         dashboard: {
           base: '/api/dashboard',
-          routes: [
-            'GET /api/dashboard/stats',
-          ],
+          routes: ['GET /api/dashboard/stats'],
         },
         speech: {
           base: '/api/speech',
-          routes: [
-            'POST /api/speech/transcribe',
-            'GET /api/speech/instructions',
-          ],
+          routes: ['POST /api/speech/transcribe', 'GET /api/speech/instructions'],
         },
         news: {
           base: '/api/news',
-          routes: [
-            'GET /api/news',
-            'POST /api/news/refresh',
-          ],
+          routes: ['GET /api/news', 'POST /api/news/refresh'],
         },
         upload: {
           base: '/api/upload',
@@ -387,7 +396,10 @@ app.get('/api/health', async (req: Request, res: Response) => {
       allHealthy = false;
     }
   } catch (error) {
-    checks.database = { status: 'error', message: error instanceof Error ? error.message : 'Unknown error' };
+    checks.database = {
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    };
     allHealthy = false;
     logger.warn('Health check: Database connection failed', { error });
   }
@@ -407,7 +419,7 @@ app.get('/api/health', async (req: Request, res: Response) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const uploadsDir = path.join(__dirname, '../uploads');
-    
+
     if (fs.existsSync(uploadsDir)) {
       checks.storage = { status: 'ok' };
     } else {
@@ -445,15 +457,19 @@ app.use((req: Request, res: Response) => {
  */
 app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
   const isDev = process.env.NODE_ENV !== 'production';
-  
+
   // Log error
-  logger.error(`Error ${req.method} ${req.path}`, error instanceof Error ? error : new Error(String(error)), {
-    method: req.method,
-    path: req.path,
-    statusCode: (error as any).statusCode || 500,
-    code: (error as any).code,
-  });
-  
+  logger.error(
+    `Error ${req.method} ${req.path}`,
+    error instanceof Error ? error : new Error(String(error)),
+    {
+      method: req.method,
+      path: req.path,
+      statusCode: (error as any).statusCode || 500,
+      code: (error as any).code,
+    }
+  );
+
   // Handle AppError instances
   if (error instanceof Error && 'statusCode' in error && (error as any).isOperational) {
     const appError = error as any;
@@ -464,14 +480,12 @@ app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
       ...(isDev && appError.details && { details: appError.details }),
     });
   }
-  
+
   // Handle unknown errors
   const statusCode = (error as any).statusCode || 500;
   res.status(statusCode).json({
     success: false,
-    error: isDev 
-      ? ((error as any).message || 'Server internal error')
-      : 'Server internal error',
+    error: isDev ? (error as any).message || 'Server internal error' : 'Server internal error',
     ...(isDev && { stack: (error as any).stack }),
   });
 });
