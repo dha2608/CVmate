@@ -1,11 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import Job from '../models/Job.js';
+import JobAlert from '../models/JobAlert.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
-import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
+import {
+  getHFOrThrow,
+  resolveModel,
+  buildCacheKey,
+  getCachedOrRun,
+  logAIUsage,
+} from '../utils/aiClient.js';
 import { sendJobApplicationEmail } from '../utils/emailService.js';
 import { checkAndAwardAchievement } from './achievementController.js';
 
@@ -15,7 +22,8 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction) =
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    const { search, type, location, salaryMin, salaryMax, experienceLevel, companySize } = req.query;
+    const { search, type, location, salaryMin, salaryMax, experienceLevel, companySize } =
+      req.query;
     const query: any = {};
 
     if (search) {
@@ -39,7 +47,7 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction) =
       const salaryConditions: any[] = [];
       const min = salaryMin ? parseInt(salaryMin as string) : 0;
       const max = salaryMax ? parseInt(salaryMax as string) : Number.MAX_SAFE_INTEGER;
-      
+
       // Job's salary range overlaps with requested range if:
       // - job has salaryMin and salaryMax: (job.salaryMin <= max && job.salaryMax >= min)
       // - job only has salaryMin: (job.salaryMin <= max)
@@ -51,26 +59,26 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction) =
           {
             $and: [
               { salaryMin: { $exists: true, $lte: max } },
-              { salaryMax: { $exists: true, $gte: min } }
-            ]
+              { salaryMax: { $exists: true, $gte: min } },
+            ],
           },
-          { 
+          {
             $and: [
               { salaryMin: { $exists: true } },
               { salaryMax: { $exists: false } },
-              { salaryMin: { $lte: max } }
-            ]
+              { salaryMin: { $lte: max } },
+            ],
           },
-          { 
+          {
             $and: [
               { salaryMin: { $exists: false } },
               { salaryMax: { $exists: true } },
-              { salaryMax: { $gte: min } }
-            ]
-          }
-        ]
+              { salaryMax: { $gte: min } },
+            ],
+          },
+        ],
       });
-      
+
       if (!query.$and) {
         query.$and = [];
       }
@@ -86,10 +94,7 @@ export const getJobs = async (req: Request, res: Response, next: NextFunction) =
     }
 
     const [jobs, total] = await Promise.all([
-      Job.find(query)
-        .sort({ postedAt: -1 })
-        .skip(skip)
-        .limit(limit),
+      Job.find(query).sort({ postedAt: -1 }).skip(skip).limit(limit),
       Job.countDocuments(query),
     ]);
 
@@ -123,6 +128,80 @@ export const getJobById = async (req: Request, res: Response, next: NextFunction
   }
 };
 
+/**
+ * Check all active job alerts against a newly created job.
+ * Creates notifications + broadcasts via SSE for matching users.
+ */
+async function checkJobAlerts(job: any): Promise<void> {
+  const alerts = await JobAlert.find({ active: true }).lean();
+  if (!alerts.length) return;
+
+  const matchingUserIds = new Set<string>();
+
+  for (const alert of alerts) {
+    const f = alert.filters;
+    const userId = alert.user.toString();
+
+    // Skip if job poster is the alert owner
+    if (job.postedBy?.toString() === userId) continue;
+
+    // Check each filter criterion
+    if (f.type && f.type !== job.type) continue;
+    if (f.experienceLevel && f.experienceLevel !== job.experienceLevel) continue;
+    if (f.companySize && f.companySize !== job.companySize) continue;
+
+    if (f.location && job.location) {
+      if (!job.location.toLowerCase().includes(f.location.toLowerCase())) continue;
+    }
+
+    if (f.salaryMin && job.salaryMax && job.salaryMax < f.salaryMin) continue;
+    if (f.salaryMax && job.salaryMin && job.salaryMin > f.salaryMax) continue;
+
+    if (f.search) {
+      const searchLower = f.search.toLowerCase();
+      const matchesSearch =
+        job.title?.toLowerCase().includes(searchLower) ||
+        job.company?.toLowerCase().includes(searchLower) ||
+        job.description?.toLowerCase().includes(searchLower);
+      if (!matchesSearch) continue;
+    }
+
+    // All filters passed — this alert matches
+    if (!matchingUserIds.has(userId)) {
+      matchingUserIds.add(userId);
+
+      // Update alert stats
+      JobAlert.updateOne(
+        { _id: alert._id },
+        { $inc: { matchCount: 1 }, $set: { lastNotifiedAt: new Date() } }
+      ).catch(() => {});
+    }
+  }
+
+  if (matchingUserIds.size === 0) return;
+
+  // Create notifications for all matching users
+  const notifications = Array.from(matchingUserIds).map((userId) => ({
+    recipient: userId,
+    type: 'job' as const,
+    message: `New job matching your alert: ${job.title} at ${job.company}`,
+    link: `/jobs/${job._id}`,
+    relatedId: job._id.toString(),
+  }));
+
+  const created = await Notification.insertMany(notifications);
+
+  // Broadcast via SSE (dynamic import to avoid circular deps)
+  try {
+    const { broadcastNotification } = await import('./notificationController.js');
+    for (const notif of created) {
+      broadcastNotification(notif.recipient.toString(), notif);
+    }
+  } catch {
+    // SSE broadcast is best-effort
+  }
+}
+
 export const createJob = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { title, company, location, type, description, salary, requirements } = req.body;
@@ -145,6 +224,9 @@ export const createJob = async (req: AuthRequest, res: Response, next: NextFunct
     });
 
     res.status(201).json({ success: true, data: job });
+
+    // Fire-and-forget: check job alerts for matching users
+    checkJobAlerts(job).catch((err) => logger.error('Job alert check failed:', err));
   } catch (error) {
     next(error);
   }
@@ -161,9 +243,7 @@ export const applyJob = async (req: AuthRequest, res: Response, next: NextFuncti
 
     const userId = (req.user?._id as Types.ObjectId).toString();
 
-    const hasApplied = job.applicants.some(
-      (applicantId: any) => applicantId.toString() === userId
-    );
+    const hasApplied = job.applicants.some((applicantId: any) => applicantId.toString() === userId);
 
     if (hasApplied) {
       res.status(400).json({ success: false, message: 'You have already applied for this job' });
@@ -208,7 +288,11 @@ export const applyJob = async (req: AuthRequest, res: Response, next: NextFuncti
   }
 };
 
-export const getJobRecommendations = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const getJobRecommendations = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?._id as Types.ObjectId | undefined;
     if (!userId) {
@@ -216,7 +300,9 @@ export const getJobRecommendations = async (req: AuthRequest, res: Response, nex
       return;
     }
 
-    const user = await User.findById(userId).select('skills industries currentRole careerGoal location');
+    const user = await User.findById(userId).select(
+      'skills industries currentRole careerGoal location'
+    );
     if (!user) {
       res.status(404).json({ success: false, message: 'User not found' });
       return;
@@ -226,7 +312,9 @@ export const getJobRecommendations = async (req: AuthRequest, res: Response, nex
     const jobs = await Job.find({})
       .sort({ postedAt: -1 })
       .limit(50)
-      .select('title company location type description skills experienceLevel salaryMin salaryMax companySize');
+      .select(
+        'title company location type description skills experienceLevel salaryMin salaryMax companySize'
+      );
 
     if (!jobs.length) {
       res.json({ success: true, data: [] });
@@ -242,7 +330,7 @@ export const getJobRecommendations = async (req: AuthRequest, res: Response, nex
         careerGoal: user.careerGoal || '',
         location: user.location || '',
       },
-      jobs: jobs.map(j => ({
+      jobs: jobs.map((j) => ({
         id: j._id.toString(),
         title: j.title,
         company: j.company,
@@ -285,10 +373,10 @@ User profile:
 `;
 
         const jobsText = payload.jobs
-          .map(job => {
+          .map((job) => {
             const salary =
               job.salaryMin || job.salaryMax
-                ? `Salary range: ${job.salaryMin ?? '?'} - ${job.salaryMax ?? '?'}` 
+                ? `Salary range: ${job.salaryMin ?? '?'} - ${job.salaryMax ?? '?'}`
                 : 'Salary: N/A';
             return `Job ID: ${job.id}
 Title: ${job.title}
@@ -335,8 +423,11 @@ Please pick the 10 best matching jobs (or fewer if there are not enough), based 
 
       const idSet = new Set(recommendedIds);
       const recommendedJobs = jobs
-        .filter(job => idSet.has(job._id.toString()))
-        .sort((a, b) => recommendedIds.indexOf(a._id.toString()) - recommendedIds.indexOf(b._id.toString()));
+        .filter((job) => idSet.has(job._id.toString()))
+        .sort(
+          (a, b) =>
+            recommendedIds.indexOf(a._id.toString()) - recommendedIds.indexOf(b._id.toString())
+        );
 
       const durationMs = Date.now() - startedAt;
       logAIUsage({
