@@ -49,3 +49,36 @@ export const protect: RequestHandler = async (req, res, next) => {
     res.status(401).json({ success: false, message: 'Not authorized, no token' });
   }
 };
+
+/**
+ * SSE-compatible auth middleware.
+ * Reads token from query param `token` since EventSource API cannot set headers.
+ */
+export const protectSSE: RequestHandler = async (req, res, next) => {
+  const token = req.query.token as string;
+
+  if (!token) {
+    res.status(401).json({ success: false, message: 'Not authorized, no token' });
+    return;
+  }
+
+  try {
+    const decoded = (jwt as any).verify(token, JWT_SECRET) as JwtPayload & { id: string };
+    const user = await User.findById(decoded.id).select('-password');
+
+    if (!user) {
+      res.status(401).json({ success: false, message: 'Not authorized, user not found' });
+      return;
+    }
+
+    if (user.isBanned) {
+      res.status(403).json({ success: false, message: 'Account has been banned' });
+      return;
+    }
+
+    req.user = user;
+    next();
+  } catch (_error) {
+    res.status(401).json({ success: false, message: 'Not authorized, token failed' });
+  }
+};

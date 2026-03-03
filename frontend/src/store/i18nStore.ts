@@ -301,6 +301,8 @@ interface Translations {
   };
   community: {
     sortBy: string;
+    new: string;
+    hot: string;
     top: string;
     loadingFeed: string;
     noPostsYet: string;
@@ -760,7 +762,9 @@ const translations: Record<Language, Translations> = {
     },
     community: {
       sortBy: 'Sắp xếp theo:',
-      top: 'Nổi bật',
+      new: 'Mới nhất',
+      hot: 'Nổi bật',
+      top: 'Nhiều thích nhất',
       loadingFeed: 'Đang tải feed...',
       noPostsYet: 'Chưa có bài đăng nào',
       beFirstToShare: 'Hãy là người đầu tiên chia sẻ với cộng đồng!',
@@ -1272,6 +1276,8 @@ const translations: Record<Language, Translations> = {
     },
     community: {
       sortBy: 'Sort by:',
+      new: 'New',
+      hot: 'Hot',
       top: 'Top',
       loadingFeed: 'Loading feed...',
       noPostsYet: 'No posts yet',

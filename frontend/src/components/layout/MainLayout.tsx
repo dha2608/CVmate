@@ -78,7 +78,7 @@ const MainLayout = ({
     '/payment',
     '/payment/success',
     '/payment/cancel',
-    '/messages',
+    '/messaging',
   ];
   const centeredRoutes = ['/login', '/register', '/onboarding'];
   const narrowRoutes = ['/builder', '/interview'];

@@ -33,8 +33,14 @@ interface Post {
 interface CommunityState {
   posts: Post[];
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
+  page: number;
+  hasMore: boolean;
+  sort: 'new' | 'hot' | 'top';
   fetchPosts: () => Promise<void>;
+  loadMore: () => Promise<void>;
+  setSort: (sort: 'new' | 'hot' | 'top') => void;
   createPost: (content: string, image?: string) => Promise<void>;
   likePost: (postId: string) => Promise<void>;
   commentPost: (postId: string, text: string, parentId?: string) => Promise<void>;
@@ -51,19 +57,56 @@ const showErrorToast = async (message: string) => {
 export const useCommunityStore = create<CommunityState>((set, get) => ({
   posts: [],
   isLoading: false,
+  isLoadingMore: false,
   error: null,
+  page: 1,
+  hasMore: true,
+  sort: 'new',
+
+  setSort: (sort: 'new' | 'hot' | 'top') => {
+    set({ sort });
+    get().fetchPosts();
+  },
 
   fetchPosts: async () => {
-    set({ isLoading: true, error: null });
+    const { sort } = get();
+    set({ isLoading: true, error: null, page: 1, hasMore: true });
     try {
-      const res = await api.getPosts();
+      const res = await api.getPosts(1, 10, sort);
       if (res.success) {
-        set({ posts: (res.data || []) as Post[], isLoading: false, error: null });
+        const posts = (res.data || []) as Post[];
+        const hasMore = res.pagination ? res.pagination.page < res.pagination.pages : false;
+        set({ posts, isLoading: false, error: null, page: 1, hasMore });
       } else {
         set({ error: (res as any).message || 'Failed to load posts', isLoading: false });
       }
     } catch (error: any) {
       set({ error: error.message || 'Failed to load posts', isLoading: false });
+    }
+  },
+
+  loadMore: async () => {
+    const { isLoadingMore, hasMore, page, sort } = get();
+    if (isLoadingMore || !hasMore) return;
+
+    const nextPage = page + 1;
+    set({ isLoadingMore: true });
+    try {
+      const res = await api.getPosts(nextPage, 10, sort);
+      if (res.success) {
+        const newPosts = (res.data || []) as Post[];
+        const hasMore = res.pagination ? res.pagination.page < res.pagination.pages : false;
+        set((state) => ({
+          posts: [...state.posts, ...newPosts],
+          page: nextPage,
+          hasMore,
+          isLoadingMore: false,
+        }));
+      } else {
+        set({ isLoadingMore: false });
+      }
+    } catch {
+      set({ isLoadingMore: false });
     }
   },
 
@@ -91,7 +134,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       if (res.success) {
         set((state) => ({
           posts: state.posts.map((post) =>
-            post._id === postId ? { ...post, likes: (res.data as string[]) || post.likes } : post,
+            post._id === postId ? { ...post, likes: (res.data as string[]) || post.likes } : post
           ),
         }));
       }
@@ -112,7 +155,9 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       if (res.success) {
         set((state) => ({
           posts: state.posts.map((post) =>
-            post._id === postId ? { ...post, comments: (res.data as Comment[]) || post.comments } : post,
+            post._id === postId
+              ? { ...post, comments: (res.data as Comment[]) || post.comments }
+              : post
           ),
         }));
       }
@@ -158,7 +203,9 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       if (res.success) {
         set((state) => ({
           posts: state.posts.map((post) =>
-            post._id === postId ? { ...post, comments: (res.data as Comment[]) || post.comments } : post,
+            post._id === postId
+              ? { ...post, comments: (res.data as Comment[]) || post.comments }
+              : post
           ),
         }));
       }
@@ -173,7 +220,9 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       if (res.success) {
         set((state) => ({
           posts: state.posts.map((post) =>
-            post._id === postId ? { ...post, comments: (res.data as Comment[]) || post.comments } : post,
+            post._id === postId
+              ? { ...post, comments: (res.data as Comment[]) || post.comments }
+              : post
           ),
         }));
       }

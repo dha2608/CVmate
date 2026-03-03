@@ -7,7 +7,7 @@ import { useToastStore } from '@/store/toastStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, MessageSquare, Check, CheckCheck, Loader2 } from 'lucide-react';
+import { Send, MessageSquare, Check, CheckCheck, Loader2, ArrowLeft } from 'lucide-react';
 import { apiRequest } from '@/lib/utils';
 
 const Messaging = () => {
@@ -25,15 +25,23 @@ const Messaging = () => {
   const sendMessage = useMessageStore((state) => state.sendMessage);
   const setActiveConversation = useMessageStore((state) => state.setActiveConversation);
   const markAsRead = useMessageStore((state) => state.markAsRead);
+  const connectRealtime = useMessageStore((state) => state.connectRealtime);
+  const disconnectRealtime = useMessageStore((state) => state.disconnectRealtime);
+  const sendTyping = useMessageStore((state) => state.sendTyping);
 
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetchConversations();
-  }, [fetchConversations]);
+    connectRealtime();
+    return () => {
+      disconnectRealtime();
+    };
+  }, [fetchConversations, connectRealtime, disconnectRealtime]);
 
   // Handle user query param to auto-select conversation
   useEffect(() => {
@@ -83,14 +91,7 @@ const Messaging = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  // Auto-refresh messages every 5 seconds for real-time feel
-  useEffect(() => {
-    if (!activeConversationId) return;
-    const interval = setInterval(() => {
-      fetchMessages(activeConversationId);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [activeConversationId, fetchMessages]);
+  // Real-time updates handled by SSE via connectRealtime() — no polling needed
 
   const handleSend = async () => {
     if (!inputText.trim() || !activeConversation || isSending) {
@@ -120,7 +121,9 @@ const Messaging = () => {
     <MainLayout>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 h-[calc(100vh-120px)] flex flex-col sm:flex-row overflow-hidden animate-fade-in">
         {/* Sidebar List */}
-        <div className="w-full sm:w-1/3 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-white dark:bg-gray-800">
+        <div
+          className={`w-full sm:w-1/3 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-white dark:bg-gray-800 ${!showMobileSidebar && activeConversation ? 'hidden sm:flex' : 'flex'}`}
+        >
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 font-bold text-gray-700 dark:text-white flex items-center gap-2">
             <MessageSquare size={20} />
             {t('messaging.title')}
@@ -136,7 +139,10 @@ const Messaging = () => {
                       ? 'border-accent bg-red-50 dark:bg-red-900/20'
                       : 'border-transparent'
                   }`}
-                  onClick={() => setActiveConversation(conv)}
+                  onClick={() => {
+                    setActiveConversation(conv);
+                    setShowMobileSidebar(false);
+                  }}
                 >
                   <div className="relative w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400 overflow-hidden flex-shrink-0">
                     {conv.avatar ? (
@@ -149,7 +155,6 @@ const Messaging = () => {
                     ) : (
                       conv.name.charAt(0).toUpperCase()
                     )}
-                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
@@ -178,10 +183,19 @@ const Messaging = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900">
+        <div
+          className={`flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 ${showMobileSidebar && activeConversation ? 'hidden sm:flex' : !activeConversation ? 'hidden sm:flex' : 'flex'}`}
+        >
           {activeConversation ? (
             <>
               <div className="p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm">
+                <button
+                  type="button"
+                  className="sm:hidden p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+                  onClick={() => setShowMobileSidebar(true)}
+                >
+                  <ArrowLeft size={20} />
+                </button>
                 <div className="relative w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400 overflow-hidden flex-shrink-0">
                   {activeConversation.avatar ? (
                     <img
@@ -198,10 +212,6 @@ const Messaging = () => {
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white truncate">
                     {activeConversation.name}
                   </h3>
-                  <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                    {t('messaging.online')}
-                  </span>
                 </div>
               </div>
 
@@ -277,7 +287,12 @@ const Messaging = () => {
               <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex gap-2">
                 <Input
                   value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
+                  onChange={(e) => {
+                    setInputText(e.target.value);
+                    if (activeConversation && e.target.value.trim()) {
+                      sendTyping(activeConversation._id);
+                    }
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();

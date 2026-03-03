@@ -1,25 +1,54 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useCommunityStore } from '@/store/communityStore';
 import { useAuthStore } from '@/store/authStore';
 import { useI18n } from '@/store/i18nStore';
-import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import CreatePost from '@/components/community/CreatePost';
 import PostCard from '@/components/community/PostCard';
-import VirtualList from '@/components/VirtualList';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Loader2, Flame, Clock, TrendingUp } from 'lucide-react';
+
+const SORT_OPTIONS = [
+  { value: 'new' as const, icon: Clock, labelKey: 'community.new' },
+  { value: 'hot' as const, icon: Flame, labelKey: 'community.hot' },
+  { value: 'top' as const, icon: TrendingUp, labelKey: 'community.top' },
+];
 
 const Community = () => {
   const { user } = useAuthStore();
-  const { posts, fetchPosts, isLoading } = useCommunityStore();
+  const { posts, fetchPosts, loadMore, isLoading, isLoadingMore, hasMore, sort, setSort } =
+    useCommunityStore();
   const { t } = useI18n();
-  const navigate = useNavigate();
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchPosts();
-    // Removed auto-reload - posts will refresh when user interacts (like, comment, create new post)
   }, [fetchPosts]);
+
+  // Infinite scroll with IntersectionObserver
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const entry = entries[0];
+      if (entry?.isIntersecting && hasMore && !isLoadingMore && !isLoading) {
+        loadMore();
+      }
+    },
+    [hasMore, isLoadingMore, isLoading, loadMore]
+  );
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(handleObserver, {
+      root: null,
+      rootMargin: '200px',
+      threshold: 0,
+    });
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [handleObserver]);
 
   if (!user) {
     return null;
@@ -27,14 +56,22 @@ const Community = () => {
 
   return (
     <MainLayout>
-      {/* Sort / Filter Bar */}
-      <div className="flex items-center justify-end mb-4 px-2">
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          {t('community.sortBy')}{' '}
-          <span className="font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
-            {t('community.top')}
-          </span>
-        </span>
+      {/* Sort Tabs */}
+      <div className="flex items-center gap-1 mb-4 px-2">
+        {SORT_OPTIONS.map(({ value, icon: Icon, labelKey }) => (
+          <button
+            key={value}
+            onClick={() => setSort(value)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              sort === value
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+            }`}
+          >
+            <Icon className="w-3.5 h-3.5" />
+            {t(labelKey)}
+          </button>
+        ))}
       </div>
 
       <CreatePost />
@@ -64,14 +101,11 @@ const Community = () => {
           ))}
         </div>
       ) : (
-        <div className="space-y-4 animate-fade-in overflow-hidden">
-          <VirtualList
-            items={posts}
-            itemHeight={220}
-            height={600}
-            getItemKey={(post) => post._id}
-            renderItem={(post) => <PostCard post={post} />}
-          />
+        <div className="space-y-4 animate-fade-in">
+          {posts.map((post) => (
+            <PostCard key={post._id} post={post} />
+          ))}
+
           {posts.length === 0 && (
             <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 text-center rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
               <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto opacity-50 mb-4 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg">
@@ -85,6 +119,11 @@ const Community = () => {
               </p>
             </div>
           )}
+
+          {/* Infinite scroll sentinel */}
+          <div ref={sentinelRef} className="py-4 flex justify-center">
+            {isLoadingMore && <Loader2 className="w-6 h-6 animate-spin text-gray-400" />}
+          </div>
         </div>
       )}
     </MainLayout>

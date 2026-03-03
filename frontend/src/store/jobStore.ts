@@ -20,6 +20,8 @@ interface Job {
 interface JobState {
   jobs: Job[];
   isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
   error: string | null;
   pagination: {
     page: number;
@@ -27,17 +29,27 @@ interface JobState {
     total: number;
     pages: number;
   } | null;
-  fetchJobs: (params?: { 
-    page?: number; 
-    limit?: number; 
-    search?: string; 
-    type?: string; 
+  lastFetchParams: {
+    search?: string;
+    type?: string;
+    location?: string;
+    salaryMin?: number;
+    salaryMax?: number;
+    experienceLevel?: string;
+    companySize?: string;
+  };
+  fetchJobs: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    type?: string;
     location?: string;
     salaryMin?: number;
     salaryMax?: number;
     experienceLevel?: string;
     companySize?: string;
   }) => Promise<void>;
+  loadMore: () => Promise<void>;
   applyJob: (jobId: string) => Promise<void>;
   getJob: (id: string) => Promise<Job | null>;
 }
@@ -45,24 +57,62 @@ interface JobState {
 export const useJobStore = create<JobState>((set, get) => ({
   jobs: [],
   isLoading: false,
+  isLoadingMore: false,
+  hasMore: true,
   error: null,
   pagination: null,
+  lastFetchParams: {},
 
   fetchJobs: async (params = {}) => {
-    set({ isLoading: true, error: null });
+    const { page, limit, ...filterParams } = params;
+    set({ isLoading: true, error: null, lastFetchParams: filterParams });
     try {
-      const response = await api.getJobs(params);
+      const response = await api.getJobs({ ...params, page: page || 1, limit: limit || 20 });
       if (response.success) {
-        set({ 
-          jobs: response.data, 
+        const hasMore = response.pagination
+          ? response.pagination.page < response.pagination.pages
+          : false;
+        set({
+          jobs: response.data,
           pagination: response.pagination,
-          isLoading: false 
+          hasMore,
+          isLoading: false,
         });
       } else {
         set({ error: 'Failed to fetch jobs', isLoading: false });
       }
     } catch (error: any) {
       set({ error: error.message || 'Failed to fetch jobs', isLoading: false });
+    }
+  },
+
+  loadMore: async () => {
+    const { isLoadingMore, hasMore, pagination, lastFetchParams } = get();
+    if (isLoadingMore || !hasMore || !pagination) return;
+
+    const nextPage = pagination.page + 1;
+    set({ isLoadingMore: true });
+    try {
+      const response = await api.getJobs({
+        ...lastFetchParams,
+        page: nextPage,
+        limit: pagination.limit,
+      });
+      if (response.success) {
+        const hasMore = response.pagination
+          ? response.pagination.page < response.pagination.pages
+          : false;
+        set((state) => ({
+          jobs: [...state.jobs, ...response.data],
+          pagination: response.pagination,
+          hasMore,
+          isLoadingMore: false,
+        }));
+      } else {
+        set({ isLoadingMore: false });
+      }
+    } catch {
+      set({ isLoadingMore: false });
     }
   },
 
@@ -93,5 +143,5 @@ export const useJobStore = create<JobState>((set, get) => ({
       console.error('Error applying:', error);
       throw error;
     }
-  }
+  },
 }));

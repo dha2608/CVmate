@@ -8,7 +8,7 @@ import { checkAndAwardAchievement } from './achievementController.js';
 export const createPost = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { content, image } = req.body;
-    
+
     if (!content && !image) {
       res.status(400).json({ success: false, message: 'Content or image is required' });
       return;
@@ -17,10 +17,13 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
     const post = await Post.create({
       user: req.user?._id,
       content,
-      image
+      image,
     });
 
-    const populatedPost = await Post.findById(post._id).populate('user', 'name avatar careerGoal location');
+    const populatedPost = await Post.findById(post._id).populate(
+      'user',
+      'name avatar careerGoal location'
+    );
 
     // Check for write_post achievement
     const postCount = await Post.countDocuments({ user: req.user?._id });
@@ -43,40 +46,56 @@ export const getPosts = async (req: AuthRequest, res: Response, next: NextFuncti
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const sort = (req.query.sort as string) || 'new';
     const skip = (page - 1) * limit;
 
     // Admin can see all posts, regular users only see approved posts
     const isAdmin = req.user?.role === 'admin';
     const query = isAdmin ? {} : { status: 'approved' };
 
+    // Determine sort order based on sort param
+    // 'new' = newest first, 'top' and 'hot' re-sort in memory
+    const mongoSort: Record<string, 1 | -1> = { createdAt: -1 };
+
     const [posts, total] = await Promise.all([
       Post.find(query)
-        .sort({ createdAt: -1 })
+        .sort(mongoSort)
         .skip(skip)
         .limit(limit)
         .populate('user', 'name avatar careerGoal location')
         .populate('comments.user', 'name avatar careerGoal location'),
-      Post.countDocuments(query)
+      Post.countDocuments(query),
     ]);
-    
-    // Sort posts: posts with images first, then by createdAt
-    const sortedPosts = posts.sort((a, b) => {
-      const aHasImage = a.image && a.image.trim().length > 0;
-      const bHasImage = b.image && b.image.trim().length > 0;
-      if (aHasImage && !bHasImage) return -1;
-      if (!aHasImage && bHasImage) return 1;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-    
-    res.json({ 
-      success: true, 
+
+    let sortedPosts = posts;
+    if (sort === 'top') {
+      // Top: most liked first, then by date
+      sortedPosts = [...posts].sort((a, b) => {
+        const diff = (b.likes?.length || 0) - (a.likes?.length || 0);
+        if (diff !== 0) return diff;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sort === 'hot') {
+      // Hot score: engagement (likes + comments*2) weighted by recency
+      const now = Date.now();
+      sortedPosts = [...posts].sort((a, b) => {
+        const aAge = Math.max(1, (now - new Date(a.createdAt).getTime()) / 3600000); // hours
+        const bAge = Math.max(1, (now - new Date(b.createdAt).getTime()) / 3600000);
+        const aScore = ((a.likes?.length || 0) + (a.comments?.length || 0) * 2) / aAge;
+        const bScore = ((b.likes?.length || 0) + (b.comments?.length || 0) * 2) / bAge;
+        return bScore - aScore;
+      });
+    }
+
+    res.json({
+      success: true,
       data: sortedPosts,
       pagination: {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     });
   } catch (error) {
     next(error);
@@ -86,7 +105,7 @@ export const getPosts = async (req: AuthRequest, res: Response, next: NextFuncti
 export const likePost = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const post = await Post.findById(req.params.id);
-    
+
     if (!post) {
       res.status(404).json({ success: false, message: 'Post not found' });
       return;
@@ -122,14 +141,14 @@ export const likePost = async (req: AuthRequest, res: Response, next: NextFuncti
 export const commentPost = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { text, parentId } = req.body;
-    
+
     if (!text) {
       res.status(400).json({ success: false, message: 'Comment text is required' });
       return;
     }
 
     const post = await Post.findById(req.params.id);
-    
+
     if (!post) {
       res.status(404).json({ success: false, message: 'Post not found' });
       return;
@@ -142,18 +161,18 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
       likes: [],
       parentId: parentId || null,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
-    post.comments.push(newComment as any); 
-    
+    post.comments.push(newComment as any);
+
     await post.save();
 
     // Tạo notification khi có bình luận (không gửi cho chính mình)
-    const recipientId = parentId 
-      ? post.comments.find((c: any) => c._id.toString() === parentId)?.user 
+    const recipientId = parentId
+      ? post.comments.find((c: any) => c._id.toString() === parentId)?.user
       : post.user;
-    
+
     if (recipientId && recipientId.toString() !== (req.user?._id as Types.ObjectId).toString()) {
       await Notification.create({
         recipient: recipientId,
@@ -166,8 +185,8 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
     }
 
     const updatedPost = await Post.findById(req.params.id)
-        .populate('user', 'name avatar')
-        .populate('comments.user', 'name avatar');
+      .populate('user', 'name avatar')
+      .populate('comments.user', 'name avatar');
 
     res.json({ success: true, data: updatedPost?.comments });
   } catch (error) {
@@ -178,7 +197,7 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
 export const likeComment = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const post = await Post.findById(req.params.id);
-    
+
     if (!post) {
       res.status(404).json({ success: false, message: 'Post not found' });
       return;
@@ -212,14 +231,14 @@ export const likeComment = async (req: AuthRequest, res: Response, next: NextFun
 export const updateComment = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { text } = req.body;
-    
+
     if (!text) {
       res.status(400).json({ success: false, message: 'Comment text is required' });
       return;
     }
 
     const post = await Post.findById(req.params.id);
-    
+
     if (!post) {
       res.status(404).json({ success: false, message: 'Post not found' });
       return;
@@ -241,8 +260,8 @@ export const updateComment = async (req: AuthRequest, res: Response, next: NextF
     await post.save();
 
     const updatedPost = await Post.findById(req.params.id)
-        .populate('user', 'name avatar')
-        .populate('comments.user', 'name avatar');
+      .populate('user', 'name avatar')
+      .populate('comments.user', 'name avatar');
 
     res.json({ success: true, data: updatedPost?.comments });
   } catch (error) {
@@ -253,7 +272,7 @@ export const updateComment = async (req: AuthRequest, res: Response, next: NextF
 export const deleteComment = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const post = await Post.findById(req.params.id);
-    
+
     if (!post) {
       res.status(404).json({ success: false, message: 'Post not found' });
       return;
@@ -272,15 +291,16 @@ export const deleteComment = async (req: AuthRequest, res: Response, next: NextF
 
     // Remove comment and all its replies
     post.comments = post.comments.filter((c: any) => {
-      return c._id.toString() !== req.params.commentId && 
-             c.parentId?.toString() !== req.params.commentId;
+      return (
+        c._id.toString() !== req.params.commentId && c.parentId?.toString() !== req.params.commentId
+      );
     });
 
     await post.save();
 
     const updatedPost = await Post.findById(req.params.id)
-        .populate('user', 'name avatar')
-        .populate('comments.user', 'name avatar');
+      .populate('user', 'name avatar')
+      .populate('comments.user', 'name avatar');
 
     res.json({ success: true, data: updatedPost?.comments });
   } catch (error) {
