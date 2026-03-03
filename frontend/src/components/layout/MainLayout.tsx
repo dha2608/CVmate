@@ -14,7 +14,6 @@ import {
   Search,
   LogOut,
   FileText,
-  Brain,
   Sun,
   Moon,
   Globe,
@@ -38,13 +37,13 @@ interface MainLayoutProps {
   children: ReactNode;
   rightSidebar?: ReactNode;
   layoutMode?: LayoutMode;
-  showLeftSidebar?: boolean;
   showRightSidebar?: boolean;
 }
 
 export const resolveAssetUrl = (url?: string) => {
   if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:'))
+    return url;
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
   const origin = apiBase.replace(/\/api\/?$/, '');
   const normalized = url.startsWith('/') ? url : `/${url}`;
@@ -55,7 +54,6 @@ const MainLayout = ({
   children,
   rightSidebar,
   layoutMode = 'default',
-  showLeftSidebar,
   showRightSidebar,
 }: MainLayoutProps) => {
   const { user, logout } = useAuthStore();
@@ -66,10 +64,20 @@ const MainLayout = ({
   const isActive = (path: string) => location.pathname === path;
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const moreMenuRef = useRef<HTMLLIElement | null>(null);
 
-  const fullWidthRoutes = ['/pricing', '/terms', '/privacy', '/about', '/payment', '/payment/success', '/payment/cancel'];
+  const fullWidthRoutes = [
+    '/pricing',
+    '/terms',
+    '/privacy',
+    '/about',
+    '/payment',
+    '/payment/success',
+    '/payment/cancel',
+  ];
   const centeredRoutes = ['/login', '/register', '/onboarding'];
   const narrowRoutes = ['/builder', '/interview'];
 
@@ -82,31 +90,29 @@ const MainLayout = ({
     return 'default';
   };
 
-  const shouldShowLeftSidebar =
-    showLeftSidebar !== undefined
-      ? showLeftSidebar
-      : ![...fullWidthRoutes, ...centeredRoutes].includes(location.pathname);
-
-  const shouldShowRightSidebar =
-    showRightSidebar !== undefined
-      ? showRightSidebar
-      : ![...fullWidthRoutes, ...centeredRoutes, ...narrowRoutes].includes(location.pathname);
+  const shouldShowRightSidebar = showRightSidebar !== undefined ? showRightSidebar : !!rightSidebar;
 
   const finalLayoutMode = layoutMode === 'default' ? getLayoutMode() : layoutMode;
-  const isPremium = user?.subscription?.plan === 'premium' && user?.subscription?.status === 'active';
 
   useEffect(() => {
-    if (!isProfileMenuOpen) return;
+    if (!isProfileMenuOpen && !isMoreMenuOpen) return;
 
     const onPointerDown = (e: PointerEvent) => {
-      const el = profileMenuRef.current;
-      if (!el) return;
-      if (el.contains(e.target as Node)) return;
-      setIsProfileMenuOpen(false);
+      if (isProfileMenuOpen) {
+        const el = profileMenuRef.current;
+        if (el && !el.contains(e.target as Node)) setIsProfileMenuOpen(false);
+      }
+      if (isMoreMenuOpen) {
+        const el = moreMenuRef.current;
+        if (el && !el.contains(e.target as Node)) setIsMoreMenuOpen(false);
+      }
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsProfileMenuOpen(false);
+      if (e.key === 'Escape') {
+        setIsProfileMenuOpen(false);
+        setIsMoreMenuOpen(false);
+      }
     };
 
     document.addEventListener('pointerdown', onPointerDown);
@@ -116,7 +122,7 @@ const MainLayout = ({
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [isProfileMenuOpen]);
+  }, [isProfileMenuOpen, isMoreMenuOpen]);
 
   const getMainContentClasses = () => {
     switch (finalLayoutMode) {
@@ -132,12 +138,18 @@ const MainLayout = ({
     }
   };
 
-
   return (
-    <div className={`min-h-screen font-sans transition-colors duration-300 ease-in-out flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-[#F8F9FA] text-slate-900'}`}>
+    <div
+      className={`min-h-screen font-sans transition-colors duration-300 ease-in-out flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-[#F8F9FA] text-slate-900'}`}
+    >
       <SkipLinks />
 
-      <nav id="navigation" className="hidden md:block glass-nav shadow-sm transition-all duration-300" role="navigation" aria-label="Main navigation">
+      <nav
+        id="navigation"
+        className="hidden md:block glass-nav shadow-sm transition-all duration-300"
+        role="navigation"
+        aria-label="Main navigation"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 gap-4">
             <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 flex-1 min-w-0">
@@ -154,7 +166,10 @@ const MainLayout = ({
                 className="hidden sm:flex items-center bg-gray-100 dark:bg-gray-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full flex-1 min-w-0 max-w-md border border-transparent hover:border-red-500 hover:bg-white dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer"
                 onClick={() => setIsSearchModalOpen(true)}
               >
-                <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 dark:text-gray-400 mr-2 flex-shrink-0" aria-hidden="true" />
+                <Search
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 dark:text-gray-400 mr-2 flex-shrink-0"
+                  aria-hidden="true"
+                />
                 <span className="bg-transparent text-xs sm:text-sm w-full text-gray-600 dark:text-gray-300 truncate">
                   {`${t('common.search')} jobs, articles, posts...`}
                 </span>
@@ -171,18 +186,108 @@ const MainLayout = ({
               </Button>
             </div>
 
-            <ul className="flex items-center gap-0.5 sm:gap-1 md:gap-2 h-full flex-shrink-0">
-              <NavItem icon={<Home size={18} className="sm:w-5 sm:h-5" />} label={t('nav.home')} active={isActive('/dashboard')} onClick={() => navigate('/dashboard')} />
-              <NavItem icon={<Users size={18} className="sm:w-5 sm:h-5" />} label={t('nav.community')} active={isActive('/community')} onClick={() => navigate('/community')} />
-              <NavItem icon={<FileText size={18} className="sm:w-5 sm:h-5" />} label={t('nav.blog')} active={isActive('/blog')} onClick={() => navigate('/blog')} />
-              <NavItem icon={<Briefcase size={18} className="sm:w-5 sm:h-5" />} label={t('nav.jobs')} active={isActive('/jobs')} onClick={() => navigate('/jobs')} />
-              <NavItem icon={<MessageSquare size={18} className="sm:w-5 sm:h-5" />} label={t('nav.messages')} active={isActive('/messaging')} onClick={() => navigate('/messaging')} />
-              <NavItem icon={<Bell size={18} className="sm:w-5 sm:h-5" />} label={t('nav.alerts')} active={isActive('/notifications')} onClick={() => navigate('/notifications')} />
-              <NavItem icon={<Bookmark size={18} className="sm:w-5 sm:h-5" />} label={language === 'vi' ? 'Đánh dấu' : 'Bookmarks'} active={isActive('/bookmarks')} onClick={() => navigate('/bookmarks')} />
-              <NavItem icon={<Crown size={18} className="sm:w-5 sm:h-5" />} label={language === 'vi' ? 'Bảng giá' : 'Pricing'} active={isActive('/pricing')} onClick={() => navigate('/pricing')} />
-              {user?.role === 'admin' && (
-                <NavItem icon={<Shield size={18} className="sm:w-5 sm:h-5" />} label={language === 'vi' ? 'Quản trị' : 'Admin'} active={isActive('/admin')} onClick={() => navigate('/admin')} />
-              )}
+            <ul className="flex items-center gap-1 sm:gap-1.5 md:gap-2 h-full flex-shrink-0">
+              {/* Primary nav items */}
+              <NavItem
+                icon={<Home size={18} className="sm:w-5 sm:h-5" />}
+                label={t('nav.home')}
+                active={isActive('/dashboard')}
+                onClick={() => navigate('/dashboard')}
+              />
+              <NavItem
+                icon={<Users size={18} className="sm:w-5 sm:h-5" />}
+                label={t('nav.community')}
+                active={isActive('/community')}
+                onClick={() => navigate('/community')}
+              />
+              <NavItem
+                icon={<Briefcase size={18} className="sm:w-5 sm:h-5" />}
+                label={t('nav.jobs')}
+                active={isActive('/jobs')}
+                onClick={() => navigate('/jobs')}
+              />
+              <NavItem
+                icon={<MessageSquare size={18} className="sm:w-5 sm:h-5" />}
+                label={t('nav.messages')}
+                active={isActive('/messaging')}
+                onClick={() => navigate('/messaging')}
+              />
+
+              {/* More dropdown - secondary items */}
+              <li className="h-full relative" ref={moreMenuRef}>
+                <button
+                  type="button"
+                  className={`relative flex flex-col items-center justify-center cursor-pointer px-1.5 sm:px-2 md:px-3 h-full transition-all duration-200 group ${
+                    ['/blog', '/notifications', '/bookmarks'].some((p) => isActive(p))
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                  onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+                  aria-label="More"
+                  aria-haspopup="true"
+                  aria-expanded={isMoreMenuOpen}
+                >
+                  {['/blog', '/notifications', '/bookmarks'].some((p) => isActive(p)) && (
+                    <motion.div
+                      className="absolute bottom-0 left-0 right-0 h-[3px] bg-red-600 dark:bg-red-400"
+                      layoutId="activeIndicator"
+                      initial={false}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                  <div
+                    className={`p-1 sm:p-1.5 rounded-md group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors ${['/blog', '/notifications', '/bookmarks'].some((p) => isActive(p)) ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
+                  >
+                    <MoreHorizontal size={18} className="sm:w-5 sm:h-5" />
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-medium hidden sm:block mt-0.5">
+                    {language === 'vi' ? 'Thêm' : 'More'}
+                  </span>
+                </button>
+
+                <div
+                  className={`absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-200 z-50 py-1 ${
+                    isMoreMenuOpen
+                      ? 'opacity-100 visible translate-y-0'
+                      : 'opacity-0 invisible translate-y-2 pointer-events-none'
+                  }`}
+                  role="menu"
+                >
+                  <button
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isActive('/blog') ? 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                    onClick={() => {
+                      setIsMoreMenuOpen(false);
+                      navigate('/blog');
+                    }}
+                    role="menuitem"
+                  >
+                    <FileText size={16} />
+                    {t('nav.blog')}
+                  </button>
+                  <button
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isActive('/notifications') ? 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                    onClick={() => {
+                      setIsMoreMenuOpen(false);
+                      navigate('/notifications');
+                    }}
+                    role="menuitem"
+                  >
+                    <Bell size={16} />
+                    {t('nav.alerts')}
+                  </button>
+                  <button
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isActive('/bookmarks') ? 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                    onClick={() => {
+                      setIsMoreMenuOpen(false);
+                      navigate('/bookmarks');
+                    }}
+                    role="menuitem"
+                  >
+                    <Bookmark size={16} />
+                    {language === 'vi' ? 'Đánh dấu' : 'Bookmarks'}
+                  </button>
+                </div>
+              </li>
 
               <li className="flex items-center justify-center px-1 sm:px-2">
                 <button
@@ -190,7 +295,11 @@ const MainLayout = ({
                   className="p-1.5 sm:p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   aria-label="Toggle theme"
                 >
-                  {theme === 'dark' ? <Sun size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Moon size={16} className="sm:w-[18px] sm:h-[18px]" />}
+                  {theme === 'dark' ? (
+                    <Sun size={16} className="sm:w-[18px] sm:h-[18px]" />
+                  ) : (
+                    <Moon size={16} className="sm:w-[18px] sm:h-[18px]" />
+                  )}
                 </button>
               </li>
 
@@ -227,22 +336,32 @@ const MainLayout = ({
                         }}
                       />
                     ) : null}
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black dark:bg-gray-700 text-white flex items-center justify-center ${user?.avatar?.trim() ? 'hidden' : ''}`}>
-                      <span className="font-bold text-xs sm:text-sm">{user?.name?.charAt(0)?.toUpperCase()}</span>
+                    <div
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black dark:bg-gray-700 text-white flex items-center justify-center ${user?.avatar?.trim() ? 'hidden' : ''}`}
+                    >
+                      <span className="font-bold text-xs sm:text-sm">
+                        {user?.name?.charAt(0)?.toUpperCase()}
+                      </span>
                     </div>
                   </button>
 
                   <div
                     className={`absolute top-full right-0 mt-2 sm:mt-3 w-48 sm:w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 transition-all duration-200 z-50 ${
-                      isProfileMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2 pointer-events-none'
+                      isProfileMenuOpen
+                        ? 'opacity-100 visible translate-y-0'
+                        : 'opacity-0 invisible translate-y-2 pointer-events-none'
                     }`}
                     role="menu"
                     aria-orientation="vertical"
                     tabIndex={-1}
                   >
                     <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700 mb-2">
-                      <p className="font-bold text-sm sm:text-base text-gray-900 dark:text-white truncate">{user?.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+                      <p className="font-bold text-sm sm:text-base text-gray-900 dark:text-white truncate">
+                        {user?.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {user?.email}
+                      </p>
                     </div>
                     <Button
                       variant="ghost"
@@ -273,13 +392,27 @@ const MainLayout = ({
                       className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
                       onClick={() => {
                         setIsProfileMenuOpen(false);
-                        navigate('/profile');
+                        navigate('/pricing');
                       }}
                       role="menuitem"
                     >
-                      <Settings2 className="w-4 h-4 mr-2" />
-                      {t('nav.settings') || 'Settings'}
+                      <Crown className="w-4 h-4 mr-2" />
+                      {language === 'vi' ? 'Bảng giá' : 'Pricing'}
                     </Button>
+                    {user?.role === 'admin' && (
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          navigate('/admin');
+                        }}
+                        role="menuitem"
+                      >
+                        <Shield className="w-4 h-4 mr-2" />
+                        {language === 'vi' ? 'Quản trị' : 'Admin'}
+                      </Button>
+                    )}
                     <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
                     <Button
                       variant="ghost"
@@ -302,124 +435,17 @@ const MainLayout = ({
         </div>
       </nav>
 
-      <main id="main-content" className={`${getMainContentClasses()} px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 pb-20 md:pb-8 sm:pb-10 lg:pb-12 min-h-[calc(100vh-200px)]`} role="main" tabIndex={-1}>
-        {finalLayoutMode === 'default' && (shouldShowLeftSidebar || shouldShowRightSidebar) ? (
+      <main
+        id="main-content"
+        className={`${getMainContentClasses()} px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 pb-20 md:pb-8 sm:pb-10 lg:pb-12 min-h-[calc(100vh-200px)]`}
+        role="main"
+        tabIndex={-1}
+      >
+        {finalLayoutMode === 'default' && shouldShowRightSidebar ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
-            {shouldShowLeftSidebar && (
-              <div className="hidden lg:block lg:col-span-3">
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow p-5 sticky top-20 lg:top-24 mb-6">
-                  {/* Profile Header */}
-                  <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="w-14 h-14 rounded-full border-[3px] border-crimson-red dark:border-red-500 bg-white dark:bg-gray-800 overflow-hidden flex items-center justify-center shadow-md flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
-                      onClick={() => navigate('/profile')}
-                    >
-                      {user?.avatar?.trim() ? (
-                        <img
-                          src={resolveAssetUrl(user.avatar)}
-                          className="w-full h-full object-cover"
-                          alt="Avatar"
-                          onError={(e) => {
-                            const img = e.target as HTMLImageElement;
-                            img.style.display = 'none';
-                            const fallback = img.nextElementSibling as HTMLElement;
-                            if (fallback) fallback.style.display = 'flex';
-                          }}
-                        />
-                      ) : null}
-                      <span className={`text-xl font-black text-crimson-red dark:text-red-400 ${user?.avatar?.trim() ? 'hidden' : 'flex'}`}>
-                        {user?.name?.charAt(0)?.toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3
-                        className="font-bold text-sm text-gray-900 dark:text-white hover:text-crimson-red dark:hover:text-red-400 cursor-pointer transition-colors truncate mb-0.5"
-                        onClick={() => navigate('/profile')}
-                      >
-                        {user?.name}
-                      </h3>
-                      <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                        {user?.careerGoal
-                          ? user.careerGoal === 'new-job'
-                            ? 'Job Seeker'
-                            : user.careerGoal === 'internship'
-                            ? 'Intern'
-                            : user.careerGoal === 'career-switch'
-                            ? 'Career Switcher'
-                            : 'Professional'
-                          : 'Professional'}
-                      </p>
-                    </div>
-                  </div>
+            <div className="col-span-1 min-w-0 lg:col-span-9">{children}</div>
 
-                  {/* Quick Actions */}
-                  <div className="space-y-2 mb-4">
-                    <Button
-                      variant="outline"
-                      className="w-full text-xs py-2.5 justify-start border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-                      onClick={() => navigate('/profile')}
-                    >
-                      <User size={14} className="mr-2" />
-                      {language === 'vi' ? 'Xem hồ sơ' : 'View Profile'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full text-xs py-2.5 justify-start border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-                      onClick={() => navigate('/settings')}
-                    >
-                      <Settings2 size={14} className="mr-2" />
-                      {language === 'vi' ? 'Cài đặt' : 'Settings'}
-                    </Button>
-                  </div>
-
-                  {/* Premium CTA */}
-                  {!isPremium && (
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <div className="bg-gradient-to-r from-crimson-red to-fire-red rounded-lg p-3 text-white">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Crown size={16} className="text-yellow-300" />
-                          <span className="text-xs font-bold">Premium</span>
-                        </div>
-                        <p className="text-[10px] mb-2 opacity-90">
-                          {language === 'vi' ? 'Mở khóa tất cả tính năng AI' : 'Unlock all AI features'}
-                        </p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full text-xs py-1.5 bg-white/20 hover:bg-white/30 border-white/30 text-white"
-                          onClick={() => navigate('/pricing')}
-                        >
-                          {language === 'vi' ? 'Nâng cấp ngay' : 'Upgrade Now'}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Quick Stats */}
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="grid grid-cols-2 gap-2 text-center">
-                      <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-xs font-bold text-gray-900 dark:text-white">CV</p>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Resumes</p>
-                      </div>
-                      <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-xs font-bold text-gray-900 dark:text-white">Jobs</p>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Applied</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className={`col-span-1 min-w-0 ${shouldShowLeftSidebar && shouldShowRightSidebar ? 'lg:col-span-6' : shouldShowLeftSidebar ? 'lg:col-span-9' : shouldShowRightSidebar ? 'lg:col-span-9' : 'lg:col-span-12'}`}>
-              {children}
-            </div>
-
-            {shouldShowRightSidebar && (
-              <div className="hidden lg:block lg:col-span-3">
-                {rightSidebar || <NewsSidebar />}
-              </div>
-            )}
+            <div className="hidden lg:block lg:col-span-3">{rightSidebar || <NewsSidebar />}</div>
           </div>
         ) : (
           <div>{children}</div>
@@ -439,12 +465,26 @@ const MainLayout = ({
   );
 };
 
-const NavItem = ({ icon, label, active, onClick, badge }: { icon: any; label: string; active: boolean; onClick?: () => void; badge?: number }) => (
+const NavItem = ({
+  icon,
+  label,
+  active,
+  onClick,
+  badge,
+}: {
+  icon: any;
+  label: string;
+  active: boolean;
+  onClick?: () => void;
+  badge?: number;
+}) => (
   <li className="h-full">
     <button
       type="button"
       className={`relative flex flex-col items-center justify-center cursor-pointer px-1 sm:px-2 md:px-3 h-full transition-all duration-200 group ${
-        active ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+        active
+          ? 'text-red-600 dark:text-red-400'
+          : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
       }`}
       onClick={onClick}
       title={label}
@@ -459,7 +499,9 @@ const NavItem = ({ icon, label, active, onClick, badge }: { icon: any; label: st
           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         />
       )}
-      <div className={`p-1 sm:p-1.5 rounded-md group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors relative ${active ? 'bg-red-50 dark:bg-red-900/20' : ''}`}>
+      <div
+        className={`p-1 sm:p-1.5 rounded-md group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors relative ${active ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
+      >
         <div className="relative">
           {icon}
           {badge && badge > 0 && (
@@ -469,7 +511,9 @@ const NavItem = ({ icon, label, active, onClick, badge }: { icon: any; label: st
           )}
         </div>
       </div>
-      <span className="text-[9px] sm:text-[10px] font-medium hidden sm:block mt-0.5 sm:mt-1 truncate max-w-[64px]">{label}</span>
+      <span className="text-[11px] sm:text-xs font-medium hidden sm:block mt-0.5 sm:mt-1 truncate max-w-[64px]">
+        {label}
+      </span>
     </button>
   </li>
 );
