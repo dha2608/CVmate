@@ -1,14 +1,24 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
-import { createPost, getPosts, likePost, commentPost, likeComment, updateComment, deleteComment } from '../controllers/postController.js';
+import {
+  createPost,
+  getPosts,
+  likePost,
+  commentPost,
+  likeComment,
+  updateComment,
+  deleteComment,
+  deletePost,
+  updatePost,
+} from '../controllers/postController.js';
 import { validate, createPostSchema, commentPostSchema } from '../utils/validators.js';
 
 const router = express.Router();
 
-router.route('/')
-  .get(protect, getPosts)
-  .post(protect, validate(createPostSchema), createPost);
+router.route('/').get(protect, getPosts).post(protect, validate(createPostSchema), createPost);
 
+router.put('/:id', protect, updatePost);
+router.delete('/:id', protect, deletePost);
 router.put('/:id/like', protect, likePost);
 router.post('/:id/comment', protect, validate(commentPostSchema), commentPost);
 router.put('/:id/comment/:commentId/like', protect, likeComment);

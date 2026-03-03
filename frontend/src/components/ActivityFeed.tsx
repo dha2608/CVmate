@@ -36,7 +36,7 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
       try {
         // Try to fetch from API first
         const { api } = await import('@/lib/utils');
-        const response = await api.getActivities?.();
+        const response = await api.getActivities(limit);
 
         if (response?.success && response?.data) {
           const apiActivities: Activity[] = response.data.map((a: any) => ({
@@ -81,7 +81,9 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
               ...a,
               timestamp: new Date(a.timestamp),
             }));
-            parsedActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+            parsedActivities.sort(
+              (a: Activity, b: Activity) => b.timestamp.getTime() - a.timestamp.getTime()
+            );
             setActivities(parsedActivities.slice(0, limit));
           } catch (e) {
             console.error('Failed to parse activities:', e);
