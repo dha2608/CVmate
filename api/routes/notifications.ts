@@ -1,13 +1,17 @@
 import express from 'express';
-import { protect } from '../middleware/authMiddleware.js';
-import { 
-  getNotifications, 
+import { protect, protectSSE } from '../middleware/authMiddleware.js';
+import {
+  getNotifications,
   markAsRead,
   markAllAsRead,
   deleteNotification,
+  notificationEvents,
 } from '../controllers/notificationController.js';
 
 const router = express.Router();
+
+// SSE endpoint for real-time notifications (must be before any /:id routes)
+router.get('/events', protectSSE, notificationEvents);
 
 // List notifications for current user
 router.get('/', protect, getNotifications);
