@@ -42,6 +42,9 @@ interface Translations {
     noMessages: string;
     sendFailed: string;
     typing: string;
+    imageTooLarge: string;
+    imageOnly: string;
+    uploadFailed: string;
   };
   nav: {
     home: string;
@@ -195,6 +198,12 @@ interface Translations {
     cvsCreated: string;
     interviews: string;
     postViews: string;
+    posts: string;
+    articles: string;
+    applications: string;
+    avgAtsScore: string;
+    avgInterviewScore: string;
+    recentItems: string;
     recommendedForYou: string;
     viewAll: string;
     analytics: string;
@@ -308,6 +317,15 @@ interface Translations {
     noPostsYet: string;
     beFirstToShare: string;
     sharePlaceholder: string;
+    editPost: string;
+    deletePost: string;
+    deletePostConfirm: string;
+    share: string;
+    linkCopied: string;
+    follow: string;
+    unfollow: string;
+    following: string;
+    followers: string;
   };
   blog: {
     title: string;
@@ -340,6 +358,10 @@ interface Translations {
     category?: string;
     allCategories?: string;
     loadMore?: string;
+    comments?: string;
+    writeComment?: string;
+    loginToComment?: string;
+    noComments?: string;
   };
   interview: {
     simulator: string;
@@ -446,6 +468,17 @@ interface Translations {
     enterprise?: string;
     advancedFilters?: string;
     clearFilters?: string;
+    saveAlert?: string;
+    myAlerts?: string;
+    alertName?: string;
+    alertSaved?: string;
+    alertDeleted?: string;
+    alertToggled?: string;
+    maxAlerts?: string;
+    noAlerts?: string;
+    manageAlerts?: string;
+    activeAlerts?: string;
+    matches?: string;
   };
   footer: {
     description: string;
@@ -647,6 +680,12 @@ const translations: Record<Language, Translations> = {
       cvsCreated: 'CV đã tạo',
       interviews: 'Phỏng vấn',
       postViews: 'Lượt xem bài đăng',
+      posts: 'Bài đăng',
+      articles: 'Bài viết',
+      applications: 'Ứng tuyển',
+      avgAtsScore: 'Điểm ATS TB',
+      avgInterviewScore: 'Điểm PV TB',
+      recentItems: 'Hoạt động gần đây',
       recommendedForYou: 'Đề xuất cho bạn',
       viewAll: 'Xem tất cả',
       analytics: 'Phân tích nâng cao',
@@ -769,6 +808,15 @@ const translations: Record<Language, Translations> = {
       noPostsYet: 'Chưa có bài đăng nào',
       beFirstToShare: 'Hãy là người đầu tiên chia sẻ với cộng đồng!',
       sharePlaceholder: 'Chia sẻ cập nhật sự nghiệp hoặc hỏi về phản hồi CV...',
+      editPost: 'Chỉnh sửa bài viết',
+      deletePost: 'Xoá bài viết',
+      deletePostConfirm: 'Bạn có chắc muốn xoá bài viết này? Hành động này không thể hoàn tác.',
+      share: 'Chia sẻ',
+      linkCopied: 'Đã sao chép liên kết bài viết!',
+      follow: 'Theo dõi',
+      unfollow: 'Bỏ theo dõi',
+      following: 'đang theo dõi',
+      followers: 'người theo dõi',
     },
     blog: {
       title: 'Blog & Tin tức Sự nghiệp',
@@ -801,6 +849,10 @@ const translations: Record<Language, Translations> = {
       category: 'Danh mục',
       allCategories: 'Tất cả',
       loadMore: 'Tải thêm',
+      comments: 'Bình luận',
+      writeComment: 'Viết bình luận...',
+      loginToComment: 'Đăng nhập để bình luận.',
+      noComments: 'Chưa có bình luận. Hãy là người đầu tiên!',
     },
     interview: {
       simulator: 'Mô phỏng phỏng vấn',
@@ -913,12 +965,17 @@ const translations: Record<Language, Translations> = {
       enterprise: 'Doanh nghiệp',
       advancedFilters: 'Bộ lọc nâng cao',
       clearFilters: 'Xóa bộ lọc',
-      jobTitlePlaceholder: 'Tiêu đề việc làm (VD: Frontend Engineer)',
-      companyPlaceholder: 'Tên công ty',
-      locationPlaceholder: 'Địa điểm (hoặc Remote)',
-      salaryPlaceholder: 'Mức lương (tuỳ chọn, ví dụ 30-40M)',
-      descriptionPlaceholder: 'Mô tả công việc',
-      requirementsPlaceholder: 'Yêu cầu (mỗi dòng một ý)',
+      saveAlert: 'Lưu thông báo',
+      myAlerts: 'Thông báo việc làm',
+      alertName: 'Tên thông báo',
+      alertSaved: 'Đã lưu thông báo việc làm',
+      alertDeleted: 'Đã xóa thông báo',
+      alertToggled: 'Đã cập nhật thông báo',
+      maxAlerts: 'Tối đa 10 thông báo',
+      noAlerts: 'Chưa có thông báo việc làm',
+      manageAlerts: 'Quản lý thông báo',
+      activeAlerts: 'Đang hoạt động',
+      matches: 'lượt khớp',
     },
     footer: {
       description:
@@ -954,6 +1011,9 @@ const translations: Record<Language, Translations> = {
       noMessages: 'Chưa có tin nhắn',
       sendFailed: 'Gửi tin nhắn thất bại',
       typing: 'Đang nhập...',
+      imageTooLarge: 'Ảnh phải nhỏ hơn 5MB',
+      imageOnly: 'Chỉ chấp nhận file ảnh',
+      uploadFailed: 'Tải ảnh thất bại',
     },
     export: {
       exportShare: 'Xuất & Chia sẻ',
@@ -1162,6 +1222,12 @@ const translations: Record<Language, Translations> = {
       cvsCreated: 'CVs Created',
       interviews: 'Interviews',
       postViews: 'Post Views',
+      posts: 'Posts',
+      articles: 'Articles',
+      applications: 'Applications',
+      avgAtsScore: 'Avg ATS Score',
+      avgInterviewScore: 'Avg Interview Score',
+      recentItems: 'Recent Items',
       recommendedForYou: 'Recommended for you',
       viewAll: 'View all',
       analytics: 'Advanced Analytics',
@@ -1283,6 +1349,15 @@ const translations: Record<Language, Translations> = {
       noPostsYet: 'No posts yet',
       beFirstToShare: 'Be the first to share something with the community!',
       sharePlaceholder: 'Share a career update or ask for CV feedback...',
+      editPost: 'Edit post',
+      deletePost: 'Delete post',
+      deletePostConfirm: 'Are you sure you want to delete this post? This action cannot be undone.',
+      share: 'Share',
+      linkCopied: 'Post link copied!',
+      follow: 'Follow',
+      unfollow: 'Unfollow',
+      following: 'following',
+      followers: 'followers',
     },
     blog: {
       title: 'Career Blog & News',
@@ -1315,6 +1390,10 @@ const translations: Record<Language, Translations> = {
       category: 'Category',
       allCategories: 'All categories',
       loadMore: 'Load more',
+      comments: 'Comments',
+      writeComment: 'Write a comment...',
+      loginToComment: 'Log in to leave a comment.',
+      noComments: 'No comments yet. Be the first to comment!',
     },
     interview: {
       simulator: 'Interview Simulator',
@@ -1425,6 +1504,17 @@ const translations: Record<Language, Translations> = {
       enterprise: 'Enterprise',
       advancedFilters: 'Advanced Filters',
       clearFilters: 'Clear Filters',
+      saveAlert: 'Save Alert',
+      myAlerts: 'Job Alerts',
+      alertName: 'Alert Name',
+      alertSaved: 'Job alert saved',
+      alertDeleted: 'Alert deleted',
+      alertToggled: 'Alert updated',
+      maxAlerts: 'Maximum 10 alerts',
+      noAlerts: 'No job alerts yet',
+      manageAlerts: 'Manage Alerts',
+      activeAlerts: 'Active',
+      matches: 'matches',
       jobTitlePlaceholder: 'Job Title (e.g., Frontend Engineer)',
       companyPlaceholder: 'Company Name',
       locationPlaceholder: 'Location (or Remote)',
@@ -1466,6 +1556,9 @@ const translations: Record<Language, Translations> = {
       noMessages: 'No messages',
       sendFailed: 'Failed to send message',
       typing: 'Typing...',
+      imageTooLarge: 'Image must be less than 5MB',
+      imageOnly: 'Only image files are allowed',
+      uploadFailed: 'Failed to upload image',
     },
     export: {
       exportShare: 'Export & Share',

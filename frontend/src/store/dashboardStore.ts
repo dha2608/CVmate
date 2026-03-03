@@ -1,45 +1,64 @@
 import { create } from 'zustand';
 import { api } from '@/lib/utils';
 
-// Định nghĩa kiểu dữ liệu cho các chỉ số thống kê
+export interface RecentResume {
+  _id: string;
+  title: string;
+  atsScore?: number;
+  themeConfig?: { template?: string };
+  updatedAt: string;
+}
+
+export interface RecentInterview {
+  _id: string;
+  persona: string;
+  feedback?: { score?: number };
+  createdAt: string;
+  isCompleted?: boolean;
+}
+
 export interface DashboardStats {
   resumesCount: number;
   interviewsCount: number;
   postsCount: number;
-  likesReceived: number; // Tùy chọn: tổng số like nhận được
+  articlesCount: number;
+  applicationsCount: number;
+  avgAtsScore: number;
+  avgInterviewScore: number;
+  recentResumes: RecentResume[];
+  recentInterviews: RecentInterview[];
 }
+
+const defaultStats: DashboardStats = {
+  resumesCount: 0,
+  interviewsCount: 0,
+  postsCount: 0,
+  articlesCount: 0,
+  applicationsCount: 0,
+  avgAtsScore: 0,
+  avgInterviewScore: 0,
+  recentResumes: [],
+  recentInterviews: [],
+};
 
 interface DashboardState {
   stats: DashboardStats;
   isLoading: boolean;
   error: string | null;
-  
-  // Actions
   fetchStats: () => Promise<void>;
   resetStats: () => void;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
-  // State khởi tạo
-  stats: {
-    resumesCount: 0,
-    interviewsCount: 0,
-    postsCount: 0,
-    likesReceived: 0,
-  },
+  stats: { ...defaultStats },
   isLoading: false,
   error: null,
 
-  // Reset khi logout
-  resetStats: () => set({ 
-    stats: { resumesCount: 0, interviewsCount: 0, postsCount: 0, likesReceived: 0 },
-    error: null 
-  }),
+  resetStats: () => set({ stats: { ...defaultStats }, error: null }),
 
-  // Hàm lấy dữ liệu thống kê
   fetchStats: async () => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await api.getDashboardStats();
       if (!response.success) {
@@ -48,25 +67,30 @@ export const useDashboardStore = create<DashboardState>((set) => ({
 
       const data = response.data || {};
       const overview = data.overview || {};
+      const performance = data.performance || {};
+      const recent = data.recent || {};
 
       set({
         stats: {
           resumesCount: overview.resumes || 0,
           interviewsCount: overview.interviews || 0,
           postsCount: overview.posts || 0,
-          likesReceived: 0, // Có thể mở rộng sau nếu backend hỗ trợ
+          articlesCount: overview.articles || 0,
+          applicationsCount: overview.applications || 0,
+          avgAtsScore: performance.avgAtsScore || 0,
+          avgInterviewScore: performance.avgInterviewScore || 0,
+          recentResumes: recent.resumes || [],
+          recentInterviews: recent.interviews || [],
         },
         isLoading: false,
       });
-
     } catch (error: any) {
       console.error('Dashboard stats fetch error:', error);
       set({
-        // fallback an toàn để dashboard vẫn hoạt động
-        stats: { resumesCount: 0, interviewsCount: 0, postsCount: 0, likesReceived: 0 },
+        stats: { ...defaultStats },
         error: error.message || 'Failed to load dashboard stats',
         isLoading: false,
       });
     }
-  }
+  },
 }));
