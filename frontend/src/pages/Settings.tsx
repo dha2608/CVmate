@@ -7,22 +7,24 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useConfirmDialog } from '@/components/ui/confirm-dialog';
-import { 
-  User, 
-  Bell, 
-  Shield, 
-  Globe, 
-  Moon, 
-  Sun, 
-  Trash2, 
-  Key, 
+import {
+  User,
+  Bell,
+  Shield,
+  Globe,
+  Moon,
+  Sun,
+  Trash2,
+  Key,
   Mail,
   Save,
   Eye,
   EyeOff,
-  Lock
+  Lock,
+  Smartphone,
 } from 'lucide-react';
 import { api } from '@/lib/utils';
+import { twoFactorApi } from '@/lib/apiClient';
 import { useTheme } from '@/hooks/useTheme';
 
 const Settings = () => {
@@ -33,7 +35,9 @@ const Settings = () => {
   const navigate = useNavigate();
   const confirmDialog = useConfirmDialog();
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications' | 'privacy' | 'account'>('profile');
+  const [activeTab, setActiveTab] = useState<
+    'profile' | 'security' | 'notifications' | 'privacy' | 'account'
+  >('profile');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -64,6 +68,11 @@ const Settings = () => {
     showEmail: false,
     showLocation: true,
   });
+
+  // 2FA state
+  const [twoFactorQr, setTwoFactorQr] = useState<string | null>(null);
+  const [twoFactorToken, setTwoFactorToken] = useState('');
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -125,7 +134,9 @@ const Settings = () => {
         setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       }
     } catch (error: any) {
-      toast.error(error.message || t('settings.passwordChangeFailed') || 'Failed to change password');
+      toast.error(
+        error.message || t('settings.passwordChangeFailed') || 'Failed to change password'
+      );
     } finally {
       setLoading(false);
     }
@@ -147,7 +158,9 @@ const Settings = () => {
         toast.success(t('settings.privacyUpdated') || 'Privacy settings updated');
       }
     } catch (error: any) {
-      toast.error(error.message || t('settings.updateFailed') || 'Failed to update privacy settings');
+      toast.error(
+        error.message || t('settings.updateFailed') || 'Failed to update privacy settings'
+      );
     } finally {
       setLoading(false);
     }
@@ -232,8 +245,12 @@ const Settings = () => {
                         </label>
                         <Input
                           value={profileData.headline}
-                          onChange={(e) => setProfileData({ ...profileData, headline: e.target.value })}
-                          placeholder={t('settings.headlinePlaceholder') || 'e.g., Senior Software Engineer'}
+                          onChange={(e) =>
+                            setProfileData({ ...profileData, headline: e.target.value })
+                          }
+                          placeholder={
+                            t('settings.headlinePlaceholder') || 'e.g., Senior Software Engineer'
+                          }
                           className="dark:bg-gray-700 dark:border-gray-600"
                         />
                       </div>
@@ -255,7 +272,9 @@ const Settings = () => {
                         className="bg-crimson-red hover:bg-fire-red text-white"
                       >
                         <Save size={16} className="mr-2" />
-                        {loading ? t('settings.saving') || 'Saving...' : t('settings.save') || 'Save Changes'}
+                        {loading
+                          ? t('settings.saving') || 'Saving...'
+                          : t('settings.save') || 'Save Changes'}
                       </Button>
                     </div>
                   </div>
@@ -278,7 +297,9 @@ const Settings = () => {
                           <Input
                             type={showPassword ? 'text' : 'password'}
                             value={passwordData.currentPassword}
-                            onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                            onChange={(e) =>
+                              setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                            }
                             className="dark:bg-gray-700 dark:border-gray-600 pr-10"
                           />
                           <button
@@ -298,7 +319,9 @@ const Settings = () => {
                           <Input
                             type={showNewPassword ? 'text' : 'password'}
                             value={passwordData.newPassword}
-                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                            onChange={(e) =>
+                              setPasswordData({ ...passwordData, newPassword: e.target.value })
+                            }
                             className="dark:bg-gray-700 dark:border-gray-600 pr-10"
                           />
                           <button
@@ -318,7 +341,9 @@ const Settings = () => {
                           <Input
                             type={showConfirmPassword ? 'text' : 'password'}
                             value={passwordData.confirmPassword}
-                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                            onChange={(e) =>
+                              setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                            }
                             className="dark:bg-gray-700 dark:border-gray-600 pr-10"
                           />
                           <button
@@ -332,13 +357,175 @@ const Settings = () => {
                       </div>
                       <Button
                         onClick={handleChangePassword}
-                        disabled={loading || !passwordData.newPassword || !passwordData.confirmPassword}
+                        disabled={
+                          loading || !passwordData.newPassword || !passwordData.confirmPassword
+                        }
                         className="bg-crimson-red hover:bg-fire-red text-white"
                       >
                         <Key size={16} className="mr-2" />
-                        {loading ? t('settings.changing') || 'Changing...' : t('settings.changePassword') || 'Change Password'}
+                        {loading
+                          ? t('settings.changing') || 'Changing...'
+                          : t('settings.changePassword') || 'Change Password'}
                       </Button>
                     </div>
+                  </div>
+
+                  {/* Two-Factor Authentication */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      <Smartphone size={18} className="inline mr-2" />
+                      {t('settings.twoFactorAuth') || 'Two-Factor Authentication'}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      {t('settings.twoFactorDesc') ||
+                        'Add an extra layer of security using an authenticator app.'}
+                    </p>
+
+                    {user?.twoFactorEnabled ? (
+                      /* 2FA is ON - show disable form */
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm font-medium">
+                          <Lock size={16} />
+                          {t('settings.twoFactorEnabled') || '2FA is currently enabled'}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('settings.enterCodeToDisable') ||
+                              'Enter code from authenticator to disable'}
+                          </label>
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={6}
+                            placeholder="000000"
+                            value={twoFactorToken}
+                            onChange={(e) =>
+                              setTwoFactorToken(e.target.value.replace(/\D/g, '').slice(0, 6))
+                            }
+                            className="max-w-[200px] dark:bg-gray-700 dark:border-gray-600"
+                          />
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={async () => {
+                            if (twoFactorToken.length !== 6) return;
+                            setTwoFactorLoading(true);
+                            try {
+                              await twoFactorApi.disable(twoFactorToken);
+                              setUser({ ...user, twoFactorEnabled: false });
+                              setTwoFactorToken('');
+                              toast.success(
+                                t('settings.twoFactorDisabled') || '2FA has been disabled'
+                              );
+                            } catch {
+                              toast.error(
+                                t('settings.invalidCode') || 'Invalid code. Please try again.'
+                              );
+                            } finally {
+                              setTwoFactorLoading(false);
+                            }
+                          }}
+                          disabled={twoFactorLoading || twoFactorToken.length !== 6}
+                          className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20"
+                        >
+                          {twoFactorLoading
+                            ? t('settings.disabling') || 'Disabling...'
+                            : t('settings.disableTwoFactor') || 'Disable 2FA'}
+                        </Button>
+                      </div>
+                    ) : twoFactorQr ? (
+                      /* QR code shown - user needs to scan and enter code */
+                      <div className="space-y-4">
+                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 inline-block">
+                          <img src={twoFactorQr} alt="2FA QR Code" className="w-48 h-48 mx-auto" />
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {t('settings.scanQrCode') ||
+                            'Scan this QR code with your authenticator app, then enter the 6-digit code below.'}
+                        </p>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('settings.verificationCode') || 'Verification Code'}
+                          </label>
+                          <Input
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={6}
+                            placeholder="000000"
+                            value={twoFactorToken}
+                            onChange={(e) =>
+                              setTwoFactorToken(e.target.value.replace(/\D/g, '').slice(0, 6))
+                            }
+                            className="max-w-[200px] dark:bg-gray-700 dark:border-gray-600"
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <Button
+                            onClick={async () => {
+                              if (twoFactorToken.length !== 6) return;
+                              setTwoFactorLoading(true);
+                              try {
+                                await twoFactorApi.enable(twoFactorToken);
+                                setUser({ ...user!, twoFactorEnabled: true });
+                                setTwoFactorQr(null);
+                                setTwoFactorToken('');
+                                toast.success(
+                                  t('settings.twoFactorActivated') || '2FA has been enabled!'
+                                );
+                              } catch {
+                                toast.error(
+                                  t('settings.invalidCode') || 'Invalid code. Please try again.'
+                                );
+                              } finally {
+                                setTwoFactorLoading(false);
+                              }
+                            }}
+                            disabled={twoFactorLoading || twoFactorToken.length !== 6}
+                            className="bg-crimson-red hover:bg-fire-red text-white"
+                          >
+                            {twoFactorLoading
+                              ? t('settings.verifying') || 'Verifying...'
+                              : t('settings.verifyAndEnable') || 'Verify & Enable'}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setTwoFactorQr(null);
+                              setTwoFactorToken('');
+                            }}
+                            className="dark:border-gray-600 dark:text-gray-300"
+                          >
+                            {t('common.cancel') || 'Cancel'}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* 2FA is OFF - show setup button */
+                      <Button
+                        variant="outline"
+                        onClick={async () => {
+                          setTwoFactorLoading(true);
+                          try {
+                            const res = await twoFactorApi.setup();
+                            setTwoFactorQr(res.data.qrCodeDataUrl);
+                          } catch {
+                            toast.error(
+                              t('settings.twoFactorSetupError') ||
+                                'Failed to set up 2FA. Please try again.'
+                            );
+                          } finally {
+                            setTwoFactorLoading(false);
+                          }
+                        }}
+                        disabled={twoFactorLoading}
+                        className="dark:border-gray-600 dark:text-gray-300"
+                      >
+                        <Smartphone size={16} className="mr-2" />
+                        {twoFactorLoading
+                          ? t('settings.settingUp') || 'Setting up...'
+                          : t('settings.setupTwoFactor') || 'Set Up 2FA'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
@@ -357,18 +544,28 @@ const Settings = () => {
                             {t('settings.emailNotifications') || 'Email Notifications'}
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {t('settings.emailNotificationsDesc') || 'Receive email updates about your account'}
+                            {t('settings.emailNotificationsDesc') ||
+                              'Receive email updates about your account'}
                           </p>
                         </div>
                         <button
-                          onClick={() => setNotificationSettings({ ...notificationSettings, emailNotifications: !notificationSettings.emailNotifications })}
+                          onClick={() =>
+                            setNotificationSettings({
+                              ...notificationSettings,
+                              emailNotifications: !notificationSettings.emailNotifications,
+                            })
+                          }
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            notificationSettings.emailNotifications ? 'bg-crimson-red' : 'bg-gray-300 dark:bg-gray-600'
+                            notificationSettings.emailNotifications
+                              ? 'bg-crimson-red'
+                              : 'bg-gray-300 dark:bg-gray-600'
                           }`}
                         >
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              notificationSettings.emailNotifications ? 'translate-x-6' : 'translate-x-1'
+                              notificationSettings.emailNotifications
+                                ? 'translate-x-6'
+                                : 'translate-x-1'
                             }`}
                           />
                         </button>
@@ -379,18 +576,28 @@ const Settings = () => {
                             {t('settings.pushNotifications') || 'Push Notifications'}
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {t('settings.pushNotificationsDesc') || 'Receive browser push notifications'}
+                            {t('settings.pushNotificationsDesc') ||
+                              'Receive browser push notifications'}
                           </p>
                         </div>
                         <button
-                          onClick={() => setNotificationSettings({ ...notificationSettings, pushNotifications: !notificationSettings.pushNotifications })}
+                          onClick={() =>
+                            setNotificationSettings({
+                              ...notificationSettings,
+                              pushNotifications: !notificationSettings.pushNotifications,
+                            })
+                          }
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            notificationSettings.pushNotifications ? 'bg-crimson-red' : 'bg-gray-300 dark:bg-gray-600'
+                            notificationSettings.pushNotifications
+                              ? 'bg-crimson-red'
+                              : 'bg-gray-300 dark:bg-gray-600'
                           }`}
                         >
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              notificationSettings.pushNotifications ? 'translate-x-6' : 'translate-x-1'
+                              notificationSettings.pushNotifications
+                                ? 'translate-x-6'
+                                : 'translate-x-1'
                             }`}
                           />
                         </button>
@@ -401,13 +608,21 @@ const Settings = () => {
                             {t('settings.jobAlerts') || 'Job Alerts'}
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {t('settings.jobAlertsDesc') || 'Get notified about new job opportunities'}
+                            {t('settings.jobAlertsDesc') ||
+                              'Get notified about new job opportunities'}
                           </p>
                         </div>
                         <button
-                          onClick={() => setNotificationSettings({ ...notificationSettings, jobAlerts: !notificationSettings.jobAlerts })}
+                          onClick={() =>
+                            setNotificationSettings({
+                              ...notificationSettings,
+                              jobAlerts: !notificationSettings.jobAlerts,
+                            })
+                          }
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            notificationSettings.jobAlerts ? 'bg-crimson-red' : 'bg-gray-300 dark:bg-gray-600'
+                            notificationSettings.jobAlerts
+                              ? 'bg-crimson-red'
+                              : 'bg-gray-300 dark:bg-gray-600'
                           }`}
                         >
                           <span
@@ -440,9 +655,16 @@ const Settings = () => {
                           </p>
                         </div>
                         <button
-                          onClick={() => setPrivacySettings({ ...privacySettings, isPublicProfile: !privacySettings.isPublicProfile })}
+                          onClick={() =>
+                            setPrivacySettings({
+                              ...privacySettings,
+                              isPublicProfile: !privacySettings.isPublicProfile,
+                            })
+                          }
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            privacySettings.isPublicProfile ? 'bg-crimson-red' : 'bg-gray-300 dark:bg-gray-600'
+                            privacySettings.isPublicProfile
+                              ? 'bg-crimson-red'
+                              : 'bg-gray-300 dark:bg-gray-600'
                           }`}
                         >
                           <span
@@ -458,7 +680,9 @@ const Settings = () => {
                         className="bg-crimson-red hover:bg-fire-red text-white"
                       >
                         <Save size={16} className="mr-2" />
-                        {loading ? t('settings.saving') || 'Saving...' : t('settings.save') || 'Save Changes'}
+                        {loading
+                          ? t('settings.saving') || 'Saving...'
+                          : t('settings.save') || 'Save Changes'}
                       </Button>
                     </div>
                   </div>
@@ -486,7 +710,11 @@ const Settings = () => {
                             className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                           >
                             {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
-                            <span className="text-sm">{theme === 'dark' ? t('settings.dark') || 'Dark' : t('settings.light') || 'Light'}</span>
+                            <span className="text-sm">
+                              {theme === 'dark'
+                                ? t('settings.dark') || 'Dark'
+                                : t('settings.light') || 'Light'}
+                            </span>
                           </button>
                         </div>
                       </div>
@@ -503,7 +731,9 @@ const Settings = () => {
                             className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                           >
                             <Globe size={16} />
-                            <span className="text-sm">{language === 'vi' ? 'Tiếng Việt' : 'English'}</span>
+                            <span className="text-sm">
+                              {language === 'vi' ? 'Tiếng Việt' : 'English'}
+                            </span>
                           </button>
                         </div>
                       </div>
@@ -513,19 +743,33 @@ const Settings = () => {
                           {t('settings.dangerZone') || 'Danger Zone'}
                         </h3>
                         <p className="text-sm text-red-700 dark:text-red-400 mb-4">
-                          {t('settings.deleteAccountWarning') || 'Once you delete your account, there is no going back. Please be certain.'}
+                          {t('settings.deleteAccountWarning') ||
+                            'Once you delete your account, there is no going back. Please be certain.'}
                         </p>
                         <Button
                           variant="destructive"
                           onClick={async () => {
                             const confirmed = await confirmDialog({
                               title: t('settings.deleteAccount') || 'Delete Account',
-                              message: t('settings.confirmDeleteAccount') || 'Are you sure you want to delete your account? This action cannot be undone.',
+                              message:
+                                t('settings.confirmDeleteAccount') ||
+                                'Are you sure you want to delete your account? This action cannot be undone.',
                               confirmText: t('settings.delete') || 'Delete',
                               cancelText: t('settings.cancel') || 'Cancel',
                             });
                             if (confirmed) {
-                              toast.error(t('settings.deleteAccountNotImplemented') || 'Account deletion is not yet implemented');
+                              try {
+                                await useAuthStore.getState().deleteAccount();
+                                toast.success(
+                                  t('settings.accountDeleted') || 'Your account has been deleted'
+                                );
+                                navigate('/');
+                              } catch {
+                                toast.error(
+                                  t('settings.deleteAccountError') ||
+                                    'Failed to delete account. Please try again.'
+                                );
+                              }
                             }
                           }}
                         >
