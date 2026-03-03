@@ -25,50 +25,56 @@ const InterviewDashboard = () => {
       return;
     }
 
-    const userMessages = messages.filter(m => m.role === 'user');
-    const assistantMessages = messages.filter(m => m.role === 'assistant');
-    
+    const userMessages = messages.filter((m) => m.role === 'user');
+    const assistantMessages = messages.filter((m) => m.role === 'assistant');
+
     // Calculate response time (average time between assistant question and user answer)
     let totalResponseTime = 0;
     let responseCount = 0;
-    
+
     for (let i = 0; i < userMessages.length; i++) {
       const userMsg = userMessages[i];
       const prevAssistantMsg = assistantMessages[i];
-      
+
       if (userMsg?.timestamp && prevAssistantMsg?.timestamp) {
-        const timeDiff = new Date(userMsg.timestamp).getTime() - new Date(prevAssistantMsg.timestamp).getTime();
+        const timeDiff =
+          new Date(userMsg.timestamp).getTime() - new Date(prevAssistantMsg.timestamp).getTime();
         totalResponseTime += timeDiff;
         responseCount++;
       }
     }
-    
-    const avgResponseTime = responseCount > 0 ? Math.round(totalResponseTime / responseCount / 1000) : 0;
-    
+
+    const avgResponseTime =
+      responseCount > 0 ? Math.round(totalResponseTime / responseCount / 1000) : 0;
+
     // Calculate speaking pace (words per minute)
     const totalWords = userMessages.reduce((acc, msg) => {
       return acc + msg.content.split(' ').length;
     }, 0);
-    
-    const totalTime = userMessages.length > 0 && userMessages[0]?.timestamp 
-      ? (new Date().getTime() - new Date(userMessages[0].timestamp).getTime()) / 1000 / 60
-      : 1;
-    
+
+    const totalTime =
+      userMessages.length > 0 && userMessages[0]?.timestamp
+        ? (new Date().getTime() - new Date(userMessages[0].timestamp).getTime()) / 1000 / 60
+        : 1;
+
     const speakingPace = totalTime > 0 ? Math.round(totalWords / totalTime) : 0;
-    
+
     // Calculate confidence level (based on response length and complexity)
-    const avgResponseLength = userMessages.length > 0 
-      ? userMessages.reduce((acc, msg) => acc + msg.content.length, 0) / userMessages.length
-      : 0;
-    
+    const avgResponseLength =
+      userMessages.length > 0
+        ? userMessages.reduce((acc, msg) => acc + msg.content.length, 0) / userMessages.length
+        : 0;
+
     const confidenceLevel = Math.min(100, Math.round((avgResponseLength / 200) * 100));
-    
+
     setMetrics({
       responseTime: avgResponseTime,
       speakingPace,
       confidenceLevel,
       questionsAnswered: assistantMessages.length,
-      averageScore: Math.round((confidenceLevel + (speakingPace > 100 ? 50 : speakingPace / 2)) / 2),
+      averageScore: Math.round(
+        (confidenceLevel + (speakingPace > 100 ? 50 : speakingPace / 2)) / 2
+      ),
     });
   }, [messages]);
 
@@ -83,9 +89,10 @@ const InterviewDashboard = () => {
           <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">{label}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{label}</p>
           <p className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
-            {value}{unit && <span className="text-xs sm:text-sm text-gray-500 ml-1">{unit}</span>}
+            {value}
+            {unit && <span className="text-xs sm:text-sm text-gray-500 ml-1">{unit}</span>}
           </p>
         </div>
       </div>

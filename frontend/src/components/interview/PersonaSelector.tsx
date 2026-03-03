@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Zap, Code, Briefcase, Globe, Users, Building2, GraduationCap } from 'lucide-react';
+import {
+  Loader2,
+  Zap,
+  Code,
+  Briefcase,
+  Globe,
+  Users,
+  Building2,
+  GraduationCap,
+} from 'lucide-react';
 import { useI18n } from '@/store/i18nStore';
 
 interface Persona {
@@ -14,7 +23,13 @@ interface Persona {
   category: string;
 }
 
-const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => void; isLoading: boolean }) => {
+const PersonaSelector = ({
+  onSelect,
+  isLoading,
+}: {
+  onSelect: (id: string) => void;
+  isLoading: boolean;
+}) => {
   const { t } = useI18n();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [imgOk, setImgOk] = useState<Record<string, boolean>>({});
@@ -27,8 +42,8 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       'english-native': 'EN',
       'tech-lead': 'TL',
       'startup-founder': 'SF',
-      'executive': 'EX',
-      'academic': 'AC',
+      executive: 'EX',
+      academic: 'AC',
     };
     return initials[id] || 'AI';
   };
@@ -42,7 +57,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       icon: Users,
       color: 'bg-blue-500',
       difficulty: 'Easy',
-      category: 'hr'
+      category: 'hr',
     },
     {
       id: 'strict-manager',
@@ -52,7 +67,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       icon: Briefcase,
       color: 'bg-red-500',
       difficulty: 'Hard',
-      category: 'technical'
+      category: 'technical',
     },
     {
       id: 'english-native',
@@ -62,7 +77,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       icon: Globe,
       color: 'bg-green-500',
       difficulty: 'Medium',
-      category: 'language'
+      category: 'language',
     },
     {
       id: 'tech-lead',
@@ -72,7 +87,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       icon: Code,
       color: 'bg-purple-500',
       difficulty: 'Hard',
-      category: 'technical'
+      category: 'technical',
     },
     {
       id: 'startup-founder',
@@ -82,7 +97,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       icon: Zap,
       color: 'bg-yellow-500',
       difficulty: 'Medium',
-      category: 'business'
+      category: 'business',
     },
     {
       id: 'executive',
@@ -92,7 +107,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       icon: Building2,
       color: 'bg-indigo-500',
       difficulty: 'Hard',
-      category: 'business'
+      category: 'business',
     },
     {
       id: 'academic',
@@ -102,7 +117,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
       icon: GraduationCap,
       color: 'bg-teal-500',
       difficulty: 'Medium',
-      category: 'academic'
+      category: 'academic',
     },
   ];
 
@@ -115,16 +130,19 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
     { id: 'academic', label: 'Academic' },
   ];
 
-  const filteredPersonas = selectedCategory === 'all' 
-    ? personas 
-    : personas.filter(p => p.category === selectedCategory);
+  const filteredPersonas =
+    selectedCategory === 'all' ? personas : personas.filter((p) => p.category === selectedCategory);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Easy': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
-      case 'Medium': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'Hard': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'Easy':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'Hard':
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      default:
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -132,7 +150,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
     <div className="w-full">
       {/* Category Filter */}
       <div className="flex flex-wrap gap-2 mb-4 sm:mb-6 justify-center px-2">
-        {categories.map(cat => (
+        {categories.map((cat) => (
           <Button
             key={cat.id}
             variant={selectedCategory === cat.id ? 'default' : 'outline'}
@@ -147,7 +165,7 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
 
       {/* Persona Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {filteredPersonas.map(persona => {
+        {filteredPersonas.map((persona) => {
           const Icon = persona.icon;
           const ok = imgOk[persona.id] !== false;
           return (
@@ -157,18 +175,24 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
               onClick={() => !isLoading && onSelect(persona.id)}
             >
               {/* Background gradient */}
-              <div className={`absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 ${persona.color} opacity-10 rounded-bl-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 transition-transform group-hover:scale-150`}></div>
-              
+              <div
+                className={`absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 ${persona.color} opacity-10 rounded-bl-full -mr-6 sm:-mr-8 -mt-6 sm:-mt-8 transition-transform group-hover:scale-150`}
+              ></div>
+
               {/* Difficulty Badge */}
               <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-                <span className={`text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${getDifficultyColor(persona.difficulty)}`}>
+                <span
+                  className={`text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${getDifficultyColor(persona.difficulty)}`}
+                >
                   {persona.difficulty}
                 </span>
               </div>
 
               {/* Avatar */}
               <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full ${persona.color} p-0.5 sm:p-1 flex items-center justify-center flex-shrink-0 shadow-md`}>
+                <div
+                  className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full ${persona.color} p-0.5 sm:p-1 flex items-center justify-center flex-shrink-0 shadow-md`}
+                >
                   <div className="w-full h-full rounded-full bg-white dark:bg-gray-700 overflow-hidden flex items-center justify-center">
                     {persona.avatar && ok ? (
                       <img
@@ -179,7 +203,9 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${persona.color.replace('bg-', 'text-')}`} />
+                        <Icon
+                          className={`w-6 h-6 sm:w-7 sm:h-7 ${persona.color.replace('bg-', 'text-')}`}
+                        />
                       </div>
                     )}
                   </div>
@@ -189,8 +215,12 @@ const PersonaSelector = ({ onSelect, isLoading }: { onSelect: (id: string) => vo
                     {persona.title}
                   </h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${persona.color.replace('bg-', 'text-')}`} />
-                    <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 capitalize">{persona.category}</span>
+                    <Icon
+                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${persona.color.replace('bg-', 'text-')}`}
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                      {persona.category}
+                    </span>
                   </div>
                 </div>
               </div>

@@ -3,14 +3,22 @@ import { useInterviewStore } from '@/store/interviewStore';
 import { useI18n } from '@/store/i18nStore';
 import { BadgeCheck, BarChart3, Sparkles } from 'lucide-react';
 
-const DIMENSIONS: { key: 'communication' | 'content' | 'confidence' | 'structure'; label: string }[] = [
+const DIMENSIONS: {
+  key: 'communication' | 'content' | 'confidence' | 'structure';
+  label: string;
+}[] = [
   { key: 'communication', label: 'Communication' },
   { key: 'content', label: 'Content' },
   { key: 'confidence', label: 'Confidence' },
   { key: 'structure', label: 'Structure' },
 ];
 
-const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
+const polarToCartesian = (
+  centerX: number,
+  centerY: number,
+  radius: number,
+  angleInDegrees: number
+) => {
   const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
   return {
     x: centerX + radius * Math.cos(angleInRadians),
@@ -37,14 +45,20 @@ const InterviewResult = () => {
       return polarToCartesian(centerX, centerY, radius, angle);
     });
 
-    if (!points.length) {return '';}
+    if (!points.length) {
+      return '';
+    }
 
-    return points
-      .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
-      .join(' ') + ' Z';
+    return (
+      points
+        .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+        .join(' ') + ' Z'
+    );
   }, [scores]);
 
-  if (!feedback) {return null;}
+  if (!feedback) {
+    return null;
+  }
 
   const overall = feedback.overallScore ?? feedback.confidenceScore ?? feedback.contentScore ?? 0;
 
@@ -135,9 +149,7 @@ const InterviewResult = () => {
                   key={dim.key}
                   className="bg-white/70 dark:bg-gray-900/60 border border-gray-200/80 dark:border-gray-700/80 rounded-xl p-2.5 sm:p-3"
                 >
-                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-1">
-                    {dim.label}
-                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{dim.label}</p>
                   <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                     {value != null ? `${Math.round(value)} / 100` : '—'}
                   </p>
@@ -164,11 +176,16 @@ const InterviewResult = () => {
               <ul className="space-y-1.5">
                 {(feedback.strengths && feedback.strengths.length
                   ? feedback.strengths
-                  : [t('interview.noStrengths') || 'No strengths identified yet.'])!.map((item, idx) => (
-                  <li key={idx} className="text-xs sm:text-sm text-emerald-900 dark:text-emerald-100">
-                    • {item}
-                  </li>
-                ))}
+                  : [t('interview.noStrengths') || 'No strengths identified yet.'])!.map(
+                  (item, idx) => (
+                    <li
+                      key={idx}
+                      className="text-xs sm:text-sm text-emerald-900 dark:text-emerald-100"
+                    >
+                      • {item}
+                    </li>
+                  )
+                )}
               </ul>
             </div>
             <div className="bg-white dark:bg-gray-900/70 border border-amber-200/70 dark:border-amber-700/70 rounded-xl p-3 sm:p-4">
@@ -181,13 +198,13 @@ const InterviewResult = () => {
               <ul className="space-y-1.5">
                 {(feedback.improvements && feedback.improvements.length
                   ? feedback.improvements
-                  : [t('interview.noImprovements') || 'No improvement suggestions available.'])!.map(
-                  (item, idx) => (
-                    <li key={idx} className="text-xs sm:text-sm text-amber-900 dark:text-amber-100">
-                      • {item}
-                    </li>
-                  ),
-                )}
+                  : [
+                      t('interview.noImprovements') || 'No improvement suggestions available.',
+                    ])!.map((item, idx) => (
+                  <li key={idx} className="text-xs sm:text-sm text-amber-900 dark:text-amber-100">
+                    • {item}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -221,16 +238,14 @@ const InterviewResult = () => {
                     <p className="font-semibold text-gray-900 dark:text-white">
                       Q{idx + 1}: {item.question}
                     </p>
-                    <span className="px-2 py-0.5 rounded-full bg-gray-900 text-white text-[10px] sm:text-xs">
+                    <span className="px-2 py-0.5 rounded-full bg-gray-900 text-white text-xs">
                       {Math.round(item.score)} / 100
                     </span>
                   </div>
-                  <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mb-1.5">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">
                     {t('interview.yourAnswer') || 'Your answer'}: {item.answer}
                   </p>
-                  <p className="text-[11px] sm:text-xs text-gray-700 dark:text-gray-300">
-                    {item.feedback}
-                  </p>
+                  <p className="text-xs text-gray-700 dark:text-gray-300">{item.feedback}</p>
                 </div>
               ))}
             </div>
@@ -242,4 +257,3 @@ const InterviewResult = () => {
 };
 
 export default InterviewResult;
-

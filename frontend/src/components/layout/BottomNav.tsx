@@ -33,17 +33,18 @@ export const BottomNav = () => {
                 'relative flex flex-col items-center justify-center flex-1 h-full',
                 'transition-colors duration-200',
                 'min-w-[44px] min-h-[44px]',
-                active
-                  ? 'text-crimson-red dark:text-red-400'
-                  : 'text-gray-500 dark:text-gray-400'
+                active ? 'text-crimson-red dark:text-red-400' : 'text-gray-500 dark:text-gray-400'
               )}
               aria-label={item.label}
               aria-current={active ? 'page' : undefined}
             >
-              <motion.div animate={active ? { scale: 1.1 } : { scale: 1 }} transition={{ duration: 0.2 }}>
+              <motion.div
+                animate={active ? { scale: 1.1 } : { scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
                 <Icon size={20} />
               </motion.div>
-              <span className="text-[10px] mt-1 font-medium">{item.label}</span>
+              <span className="text-xs mt-1 font-medium">{item.label}</span>
               {active && (
                 <motion.div
                   layoutId="bottomNavIndicator"
