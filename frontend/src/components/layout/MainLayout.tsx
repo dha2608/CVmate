@@ -240,7 +240,7 @@ const MainLayout = ({
                   >
                     <MoreHorizontal size={18} className="sm:w-5 sm:h-5" />
                   </div>
-                  <span className="text-[11px] sm:text-xs font-medium hidden sm:block mt-0.5">
+                  <span className="text-xs font-medium hidden sm:block mt-0.5">
                     {language === 'vi' ? 'Thêm' : 'More'}
                   </span>
                 </button>
@@ -511,7 +511,7 @@ const NavItem = ({
           )}
         </div>
       </div>
-      <span className="text-[11px] sm:text-xs font-medium hidden sm:block mt-0.5 sm:mt-1 truncate max-w-[64px]">
+      <span className="text-xs font-medium hidden sm:block mt-0.5 sm:mt-1 truncate max-w-[64px]">
         {label}
       </span>
     </button>
@@ -562,7 +562,7 @@ const NewsSidebar = () => {
                   {article.title}
                 </h4>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <p className="text-[10px] lg:text-xs text-gray-400 dark:text-gray-500">
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     {new Date(article.pubDate).toLocaleDateString()}
                   </p>
                 </div>
