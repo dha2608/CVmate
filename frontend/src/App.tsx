@@ -1,50 +1,51 @@
-import { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useAuthStore } from "@/store/authStore";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import AdminRoute from "@/components/AdminRoute";
-import Toast from "@/components/Toast";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import { OfflineIndicator } from "@/components/mobile";
-import { Loader2 } from "lucide-react";
-import ScrollToTop from "@/components/ScrollToTop";
-import { ConfirmDialogProvider } from "@/components/ui/confirm-dialog";
+import { lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import AdminRoute from '@/components/AdminRoute';
+import Toast from '@/components/Toast';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { OfflineIndicator } from '@/components/mobile';
+import { Loader2 } from 'lucide-react';
+import ScrollToTop from '@/components/ScrollToTop';
+import { ConfirmDialogProvider } from '@/components/ui/confirm-dialog';
 
 // Lazy load pages for better performance
-const Home = lazy(() => import("@/pages/Home"));
-const Login = lazy(() => import("@/pages/Login"));
-const Register = lazy(() => import("@/pages/Register"));
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const Builder = lazy(() => import("@/pages/Builder"));
-const Interview = lazy(() => import("@/pages/Interview"));
-const Community = lazy(() => import("@/pages/Community"));
-const Blog = lazy(() => import("@/pages/Blog"));
-const BlogDetail = lazy(() => import("@/pages/BlogDetail"));
-const NewsDetail = lazy(() => import("@/pages/NewsDetail"));
-const Jobs = lazy(() => import("@/pages/Jobs"));
-const JobDetail = lazy(() => import("@/pages/JobDetail"));
-const Messaging = lazy(() => import("@/pages/Messaging"));
-const Notifications = lazy(() => import("@/pages/Notifications"));
-const Profile = lazy(() => import("@/pages/Profile"));
-const Bookmarks = lazy(() => import("@/pages/Bookmarks"));
-const Onboarding = lazy(() => import("@/pages/Onboarding"));
-const AuthCallback = lazy(() => import("@/pages/AuthCallback"));
-const PaymentSuccess = lazy(() => import("@/pages/PaymentSuccess"));
-const PaymentCancel = lazy(() => import("@/pages/PaymentCancel"));
-const Terms = lazy(() => import("@/pages/Terms"));
-const Privacy = lazy(() => import("@/pages/Privacy"));
-const About = lazy(() => import("@/pages/About"));
-const Pricing = lazy(() => import("@/pages/Pricing"));
-const CookiePolicy = lazy(() => import("@/pages/CookiePolicy"));
-const HelpCenter = lazy(() => import("@/pages/HelpCenter"));
-const Contact = lazy(() => import("@/pages/Contact"));
-const Careers = lazy(() => import("@/pages/Careers"));
-const Partners = lazy(() => import("@/pages/Partners"));
-const Sitemap = lazy(() => import("@/pages/Sitemap"));
-const Accessibility = lazy(() => import("@/pages/Accessibility"));
-const Admin = lazy(() => import("@/pages/Admin"));
-const UserProfile = lazy(() => import("@/pages/UserProfile"));
-const Settings = lazy(() => import("@/pages/Settings"));
+const Home = lazy(() => import('@/pages/Home'));
+const Login = lazy(() => import('@/pages/Login'));
+const Register = lazy(() => import('@/pages/Register'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Builder = lazy(() => import('@/pages/Builder'));
+const Interview = lazy(() => import('@/pages/Interview'));
+const Community = lazy(() => import('@/pages/Community'));
+const Blog = lazy(() => import('@/pages/Blog'));
+const BlogDetail = lazy(() => import('@/pages/BlogDetail'));
+const NewsDetail = lazy(() => import('@/pages/NewsDetail'));
+const Jobs = lazy(() => import('@/pages/Jobs'));
+const JobDetail = lazy(() => import('@/pages/JobDetail'));
+const Messaging = lazy(() => import('@/pages/Messaging'));
+const Notifications = lazy(() => import('@/pages/Notifications'));
+const Profile = lazy(() => import('@/pages/Profile'));
+const Bookmarks = lazy(() => import('@/pages/Bookmarks'));
+const Achievements = lazy(() => import('@/pages/Achievements'));
+const Onboarding = lazy(() => import('@/pages/Onboarding'));
+const AuthCallback = lazy(() => import('@/pages/AuthCallback'));
+const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
+const PaymentCancel = lazy(() => import('@/pages/PaymentCancel'));
+const Terms = lazy(() => import('@/pages/Terms'));
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const About = lazy(() => import('@/pages/About'));
+const Pricing = lazy(() => import('@/pages/Pricing'));
+const CookiePolicy = lazy(() => import('@/pages/CookiePolicy'));
+const HelpCenter = lazy(() => import('@/pages/HelpCenter'));
+const Contact = lazy(() => import('@/pages/Contact'));
+const Careers = lazy(() => import('@/pages/Careers'));
+const Partners = lazy(() => import('@/pages/Partners'));
+const Sitemap = lazy(() => import('@/pages/Sitemap'));
+const Accessibility = lazy(() => import('@/pages/Accessibility'));
+const Admin = lazy(() => import('@/pages/Admin'));
+const UserProfile = lazy(() => import('@/pages/UserProfile'));
+const Settings = lazy(() => import('@/pages/Settings'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -82,125 +83,133 @@ const AppShell = () => {
           <Route path="/partners" element={<Partners />} />
           <Route path="/sitemap" element={<Sitemap />} />
           <Route path="/accessibility" element={<Accessibility />} />
-          <Route 
-            path="/onboarding" 
+          <Route
+            path="/onboarding"
             element={
               <ProtectedRoute>
                 <Onboarding />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/builder" 
+          <Route
+            path="/builder"
             element={
               <ProtectedRoute>
                 <Builder />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/interview" 
+          <Route
+            path="/interview"
             element={
               <ProtectedRoute>
                 <Interview />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/community" 
+          <Route
+            path="/community"
             element={
               <ProtectedRoute>
                 <Community />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/blog" 
+          <Route
+            path="/blog"
             element={
               <ProtectedRoute>
                 <Blog />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/blog/:id" 
+          <Route
+            path="/blog/:id"
             element={
               <ProtectedRoute>
                 <BlogDetail />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/news/:link" 
+          <Route
+            path="/news/:link"
             element={
               <ProtectedRoute>
                 <NewsDetail />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/profile" 
+          <Route
+            path="/profile"
             element={
               <ProtectedRoute>
                 <Profile />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/settings" 
+          <Route
+            path="/settings"
             element={
               <ProtectedRoute>
                 <Settings />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/jobs" 
+          <Route
+            path="/jobs"
             element={
               <ProtectedRoute>
                 <Jobs />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/jobs/:id" 
+          <Route
+            path="/jobs/:id"
             element={
               <ProtectedRoute>
                 <JobDetail />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/messaging" 
+          <Route
+            path="/messaging"
             element={
               <ProtectedRoute>
                 <Messaging />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/notifications" 
+          <Route
+            path="/notifications"
             element={
               <ProtectedRoute>
                 <Notifications />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/bookmarks" 
+          <Route
+            path="/bookmarks"
             element={
               <ProtectedRoute>
                 <Bookmarks />
               </ProtectedRoute>
-            } 
+            }
+          />
+          <Route
+            path="/achievements"
+            element={
+              <ProtectedRoute>
+                <Achievements />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/admin"
@@ -210,7 +219,7 @@ const AppShell = () => {
               </AdminRoute>
             }
           />
-          <Route 
+          <Route
             path="/u/:id"
             element={
               <ProtectedRoute>

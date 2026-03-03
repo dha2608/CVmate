@@ -17,6 +17,7 @@ import {
   Sun,
   Moon,
   Globe,
+  Trophy,
   Bookmark,
   Crown,
   Shield,
@@ -387,6 +388,18 @@ const MainLayout = ({
                     >
                       <Settings2 className="w-4 h-4 mr-2" />
                       {t('nav.settings') || 'Settings'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        navigate('/achievements');
+                      }}
+                      role="menuitem"
+                    >
+                      <Trophy className="w-4 h-4 mr-2" />
+                      {t('nav.achievements') || 'Achievements'}
                     </Button>
                     <Button
                       variant="ghost"
