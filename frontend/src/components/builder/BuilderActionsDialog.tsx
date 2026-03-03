@@ -2,7 +2,16 @@ import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Keyboard, LayoutTemplate, ListTree, Sparkles, X, Zap, Wand2, BarChart3 } from 'lucide-react';
+import {
+  Keyboard,
+  LayoutTemplate,
+  ListTree,
+  Sparkles,
+  X,
+  Zap,
+  Wand2,
+  BarChart3,
+} from 'lucide-react';
 import TemplateSelector from '@/components/builder/TemplateSelector';
 import SectionReorder from '@/components/builder/SectionReorder';
 import AISuggestions from '@/components/builder/AISuggestions';
@@ -175,8 +184,12 @@ const BuilderActionsDialog = ({
               <div className="flex items-center gap-2 mb-3">
                 <Wand2 size={18} className="text-purple-600" />
                 <div>
-                  <div className="text-sm font-bold text-gray-900 dark:text-white">AI Generate CV</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">Describe your experience or paste a job description</div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-white">
+                    AI Generate CV
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Describe your experience or paste a job description
+                  </div>
                 </div>
               </div>
               <Textarea
@@ -193,7 +206,9 @@ const BuilderActionsDialog = ({
                   className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 >
                   {ROLES.map((r) => (
-                    <option key={r.value} value={r.value}>{r.label}</option>
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -215,7 +230,9 @@ const BuilderActionsDialog = ({
                 <BarChart3 size={18} className="text-blue-600" />
                 <div>
                   <div className="text-sm font-bold text-gray-900 dark:text-white">ATS Checker</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">Paste Job Description to compare with current CV</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Paste Job Description to compare with current CV
+                  </div>
                 </div>
               </div>
 
@@ -239,20 +256,34 @@ const BuilderActionsDialog = ({
               {atsAnalysis && (
                 <div className="mt-4 space-y-3 rounded-lg border border-blue-100 dark:border-blue-800 bg-white/80 dark:bg-gray-900/40 p-3">
                   <div className="flex flex-wrap gap-4 text-sm font-semibold">
-                    <span className="text-gray-800 dark:text-gray-100">ATS Score: <span className="text-blue-600">{atsAnalysis.score ?? 0}%</span></span>
-                    <span className="text-gray-800 dark:text-gray-100">JD Match: <span className="text-blue-600">{atsAnalysis.matchScore ?? atsAnalysis.score ?? 0}%</span></span>
+                    <span className="text-gray-800 dark:text-gray-100">
+                      ATS Score: <span className="text-blue-600">{atsAnalysis.score ?? 0}%</span>
+                    </span>
+                    <span className="text-gray-800 dark:text-gray-100">
+                      JD Match:{' '}
+                      <span className="text-blue-600">
+                        {atsAnalysis.matchScore ?? atsAnalysis.score ?? 0}%
+                      </span>
+                    </span>
                   </div>
 
                   {atsAnalysis.summary && (
-                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{atsAnalysis.summary}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {atsAnalysis.summary}
+                    </p>
                   )}
 
                   {!!atsAnalysis.missingKeywords?.length && (
                     <div>
-                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-200 mb-1">Missing keywords</div>
+                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                        Missing keywords
+                      </div>
                       <div className="flex flex-wrap gap-1.5">
                         {atsAnalysis.missingKeywords.map((kw, idx) => (
-                          <span key={`${kw}-${idx}`} className="px-2 py-0.5 rounded-full text-[11px] bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                          <span
+                            key={`${kw}-${idx}`}
+                            className="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                          >
                             {kw}
                           </span>
                         ))}
@@ -269,8 +300,12 @@ const BuilderActionsDialog = ({
               <div className="flex items-center gap-2">
                 <Sparkles size={18} className="text-purple-600" />
                 <div>
-                  <div className="text-sm font-bold text-gray-900 dark:text-white">AI Suggestions</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">Get AI-powered recommendations</div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-white">
+                    AI Suggestions
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Get AI-powered recommendations
+                  </div>
                 </div>
               </div>
             </summary>

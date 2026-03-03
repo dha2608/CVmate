@@ -1,18 +1,18 @@
 import { Button } from '@/components/ui/button';
-import { 
-  CheckCircle2, 
-  Circle, 
-  Download, 
-  Save, 
-  User, 
-  FileText, 
-  Briefcase, 
-  GraduationCap, 
+import {
+  CheckCircle2,
+  Circle,
+  Download,
+  Save,
+  User,
+  FileText,
+  Briefcase,
+  GraduationCap,
   Zap,
   ChevronLeft,
   ChevronRight,
   Settings2,
-  ArrowLeft
+  ArrowLeft,
 } from 'lucide-react';
 
 export type BuilderSectionId = 'personal' | 'summary' | 'experience' | 'education' | 'skills';
@@ -89,48 +89,58 @@ const BuilderSidebar = ({
   currentResume,
 }: BuilderSidebarProps) => {
   const visibleSections = sections.filter((s) => s.visible !== false);
-  
+
   // Calculate real progress based on actual data
   const calculateProgress = () => {
-    if (!currentResume) {return 0;}
-    
+    if (!currentResume) {
+      return 0;
+    }
+
     let completed = 0;
     const total = visibleSections.length;
-    
+
     // Personal Info: at least name and email
     if (currentResume.personalInfo?.fullName?.trim() && currentResume.personalInfo?.email?.trim()) {
       completed++;
     }
-    
+
     // Summary: has content
     if (currentResume.summary?.trim()) {
       completed++;
     }
-    
+
     // Experience: has at least one complete entry
     if (currentResume.experience && currentResume.experience.length > 0) {
       const hasComplete = currentResume.experience.some(
-        exp => exp.company?.trim() && exp.position?.trim()
+        (exp) => exp.company?.trim() && exp.position?.trim()
       );
-      if (hasComplete) {completed++;}
+      if (hasComplete) {
+        completed++;
+      }
     }
-    
+
     // Education: has at least one complete entry
     if (currentResume.education && currentResume.education.length > 0) {
       const hasComplete = currentResume.education.some(
-        edu => edu.institution?.trim() && edu.degree?.trim()
+        (edu) => edu.institution?.trim() && edu.degree?.trim()
       );
-      if (hasComplete) {completed++;}
+      if (hasComplete) {
+        completed++;
+      }
     }
-    
+
     // Skills: has at least one skill
-    if (currentResume.skills && currentResume.skills.length > 0 && currentResume.skills.some(s => s.trim())) {
+    if (
+      currentResume.skills &&
+      currentResume.skills.length > 0 &&
+      currentResume.skills.some((s) => s.trim())
+    ) {
       completed++;
     }
-    
+
     return Math.round((completed / total) * 100);
   };
-  
+
   const progress = calculateProgress();
 
   return (
@@ -157,8 +167,12 @@ const BuilderSidebar = ({
               C
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-bold text-gray-900 dark:text-white truncate">CV Builder</div>
-              <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">Professional Resume</div>
+              <div className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                CV Builder
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                Professional Resume
+              </div>
             </div>
           </div>
         )}
@@ -193,8 +207,12 @@ const BuilderSidebar = ({
       {!isCollapsed && (
         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Completion</span>
-            <span className="text-xs font-bold text-crimson-red dark:text-red-400">{Math.round(progress)}%</span>
+            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+              Completion
+            </span>
+            <span className="text-xs font-bold text-crimson-red dark:text-red-400">
+              {Math.round(progress)}%
+            </span>
           </div>
           <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
             <div
@@ -203,7 +221,7 @@ const BuilderSidebar = ({
             />
           </div>
           {progress === 100 && (
-            <p className="text-[10px] text-green-600 dark:text-green-400 mt-1.5 flex items-center gap-1">
+            <p className="text-xs text-green-600 dark:text-green-400 mt-1.5 flex items-center gap-1">
               <CheckCircle2 size={12} />
               <span>CV is complete!</span>
             </p>
@@ -214,7 +232,7 @@ const BuilderSidebar = ({
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-3">
         {!isCollapsed && (
-          <div className="text-[10px] uppercase tracking-wider text-gray-400 px-2 py-2 font-bold">
+          <div className="text-xs uppercase tracking-wider text-gray-400 px-2 py-2 font-bold">
             Sections
           </div>
         )}
@@ -222,24 +240,42 @@ const BuilderSidebar = ({
           {visibleSections.map((s, index) => {
             const isActive = activeTab === s.id;
             const Icon = sectionIcons[s.id];
-            
+
             // Check if section is actually completed
             const isCompleted = (() => {
-              if (!currentResume) {return false;}
+              if (!currentResume) {
+                return false;
+              }
               switch (s.id) {
                 case 'personal':
-                  return !!(currentResume.personalInfo?.fullName?.trim() && currentResume.personalInfo?.email?.trim());
+                  return !!(
+                    currentResume.personalInfo?.fullName?.trim() &&
+                    currentResume.personalInfo?.email?.trim()
+                  );
                 case 'summary':
                   return !!currentResume.summary?.trim();
                 case 'experience':
-                  return !!(currentResume.experience && currentResume.experience.length > 0 && 
-                    currentResume.experience.some(exp => exp.company?.trim() && exp.position?.trim()));
+                  return !!(
+                    currentResume.experience &&
+                    currentResume.experience.length > 0 &&
+                    currentResume.experience.some(
+                      (exp) => exp.company?.trim() && exp.position?.trim()
+                    )
+                  );
                 case 'education':
-                  return !!(currentResume.education && currentResume.education.length > 0 && 
-                    currentResume.education.some(edu => edu.institution?.trim() && edu.degree?.trim()));
+                  return !!(
+                    currentResume.education &&
+                    currentResume.education.length > 0 &&
+                    currentResume.education.some(
+                      (edu) => edu.institution?.trim() && edu.degree?.trim()
+                    )
+                  );
                 case 'skills':
-                  return !!(currentResume.skills && currentResume.skills.length > 0 && 
-                    currentResume.skills.some(skill => skill.trim()));
+                  return !!(
+                    currentResume.skills &&
+                    currentResume.skills.length > 0 &&
+                    currentResume.skills.some((skill) => skill.trim())
+                  );
                 default:
                   return false;
               }
@@ -259,26 +295,36 @@ const BuilderSidebar = ({
               >
                 <span className="flex-shrink-0 relative">
                   {isActive ? (
-                    <div className={`${isCollapsed ? 'h-10 w-10' : 'h-8 w-8'} rounded-lg bg-crimson-red text-white flex items-center justify-center shadow-md`}>
+                    <div
+                      className={`${isCollapsed ? 'h-10 w-10' : 'h-8 w-8'} rounded-lg bg-crimson-red text-white flex items-center justify-center shadow-md`}
+                    >
                       <Icon size={isCollapsed ? 18 : 16} />
                     </div>
                   ) : isCompleted ? (
-                    <div className={`${isCollapsed ? 'h-10 w-10' : 'h-8 w-8'} rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center`}>
+                    <div
+                      className={`${isCollapsed ? 'h-10 w-10' : 'h-8 w-8'} rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center`}
+                    >
                       <CheckCircle2 size={isCollapsed ? 18 : 16} />
                     </div>
                   ) : (
-                    <div className={`${isCollapsed ? 'h-10 w-10' : 'h-8 w-8'} rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 flex items-center justify-center`}>
+                    <div
+                      className={`${isCollapsed ? 'h-10 w-10' : 'h-8 w-8'} rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 flex items-center justify-center`}
+                    >
                       <Icon size={isCollapsed ? 18 : 16} />
                     </div>
                   )}
                 </span>
                 {!isCollapsed && (
                   <div className="flex-1 min-w-0 text-left">
-                    <div className={`font-semibold truncate ${isActive ? 'text-crimson-red dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                    <div
+                      className={`font-semibold truncate ${isActive ? 'text-crimson-red dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}`}
+                    >
                       {s.label}
                     </div>
                     {isActive && (
-                      <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Currently editing</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        Currently editing
+                      </div>
                     )}
                   </div>
                 )}
@@ -292,7 +338,7 @@ const BuilderSidebar = ({
       <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 space-y-2">
         {!isCollapsed && (
           <div className="px-2 pb-2">
-            <div className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-1.5">
+            <div className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-1.5">
               Quick Actions
             </div>
           </div>
@@ -330,7 +376,7 @@ const BuilderSidebar = ({
           {!isCollapsed && 'Download PDF'}
         </Button>
         {!isCollapsed && (
-          <p className="text-[10px] text-gray-400 dark:text-gray-500 px-2 pt-1 text-center">
+          <p className="text-xs text-gray-400 dark:text-gray-500 px-2 pt-1 text-center">
             💡 Tip: Press Ctrl+S to save, Ctrl+D to download
           </p>
         )}

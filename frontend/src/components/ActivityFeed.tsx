@@ -32,12 +32,12 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
   useEffect(() => {
     const loadActivities = async () => {
       setIsLoading(true);
-      
+
       try {
         // Try to fetch from API first
         const { api } = await import('@/lib/utils');
         const response = await api.getActivities?.();
-        
+
         if (response?.success && response?.data) {
           const apiActivities: Activity[] = response.data.map((a: any) => ({
             id: a._id || a.id,
@@ -47,7 +47,7 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
             timestamp: new Date(a.timestamp || a.createdAt),
             link: a.link || a.url,
           }));
-          
+
           // Sort by timestamp (newest first)
           apiActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
           setActivities(apiActivities.slice(0, limit));
@@ -55,7 +55,7 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
           // Fallback to localStorage
           const storedActivities = localStorage.getItem('recentActivities');
           let parsedActivities: Activity[] = [];
-          
+
           if (storedActivities) {
             try {
               parsedActivities = JSON.parse(storedActivities).map((a: any) => ({
@@ -66,7 +66,7 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
               console.error('Failed to parse activities:', error);
             }
           }
-          
+
           // Sort by timestamp (newest first)
           parsedActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
           setActivities(parsedActivities.slice(0, limit));
@@ -93,18 +93,18 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
     };
 
     loadActivities();
-    
+
     // Listen for new activities
     const handleStorageChange = () => {
       loadActivities();
     };
-    
+
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [limit]);
 
   const getActivityIcon = (type: Activity['type']) => {
-    const iconClass = "w-4 h-4 sm:w-5 sm:h-5";
+    const iconClass = 'w-4 h-4 sm:w-5 sm:h-5';
     switch (type) {
       case 'resume':
         return <FileText className={`${iconClass} text-blue-600 dark:text-blue-400`} />;
@@ -169,9 +169,7 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
         )}
         <div className="text-center py-8">
           <Clock className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Chưa có hoạt động gần đây
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Chưa có hoạt động gần đây</p>
         </div>
       </div>
     );
@@ -194,9 +192,7 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
               activity.link ? 'hover:scale-[1.02]' : ''
             } ${getActivityColor(activity.type)}`}
           >
-            <div className="flex-shrink-0 mt-0.5">
-              {getActivityIcon(activity.type)}
-            </div>
+            <div className="flex-shrink-0 mt-0.5">{getActivityIcon(activity.type)}</div>
             <div className="flex-1 min-w-0">
               <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white line-clamp-1">
                 {activity.action}
@@ -204,7 +200,7 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
               <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1 mt-0.5">
                 {activity.title}
               </p>
-              <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 {formatDistanceToNow(activity.timestamp, {
                   addSuffix: true,
