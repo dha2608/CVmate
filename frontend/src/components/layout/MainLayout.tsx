@@ -77,6 +77,7 @@ const MainLayout = ({
     '/payment',
     '/payment/success',
     '/payment/cancel',
+    '/messages',
   ];
   const centeredRoutes = ['/login', '/register', '/onboarding'];
   const narrowRoutes = ['/builder', '/interview'];
@@ -511,7 +512,7 @@ const NavItem = ({
           )}
         </div>
       </div>
-      <span className="text-xs font-medium hidden sm:block mt-0.5 sm:mt-1 truncate max-w-[64px]">
+      <span className="text-xs font-medium hidden sm:block mt-0.5 sm:mt-1 truncate max-w-[80px]">
         {label}
       </span>
     </button>

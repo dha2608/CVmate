@@ -28,16 +28,13 @@ const Community = () => {
   return (
     <MainLayout>
       {/* Sort / Filter Bar */}
-      <div className="flex items-center justify-between mb-4 px-2">
-        <div className="flex items-center gap-2">
-          <div className="h-[1px] bg-gray-300 dark:bg-gray-600 w-full flex-grow"></div>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {t('community.sortBy')}{' '}
-            <span className="font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
-              {t('community.top')}
-            </span>
+      <div className="flex items-center justify-end mb-4 px-2">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          {t('community.sortBy')}{' '}
+          <span className="font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
+            {t('community.top')}
           </span>
-        </div>
+        </span>
       </div>
 
       <CreatePost />

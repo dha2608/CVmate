@@ -51,30 +51,87 @@ interface Translations {
     messages: string;
     alerts: string;
     signOut: string;
+    profile: string;
+    settings: string;
   };
-    common: {
-      search: string;
-      loading: string;
-      error: string;
-      success: string;
-      save: string;
-      cancel: string;
-      edit: string;
-      delete: string;
-      confirm: string;
-      close: string;
-      back: string;
-      next: string;
-      submit: string;
-      upload: string;
-      choose: string;
-      or: string;
-      posting: string;
-      post: string;
-      imageUrl: string;
-      all: string;
-      backTo: string;
-    };
+  settings?: {
+    title: string;
+    profile: string;
+    security: string;
+    notifications: string;
+    privacy: string;
+    account: string;
+    profileSettings: string;
+    name: string;
+    email: string;
+    emailCannotChange: string;
+    headline: string;
+    headlinePlaceholder: string;
+    bio: string;
+    bioPlaceholder: string;
+    save: string;
+    saving: string;
+    profileUpdated: string;
+    updateFailed: string;
+    securitySettings: string;
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+    changePassword: string;
+    changing: string;
+    passwordsDoNotMatch: string;
+    passwordTooShort: string;
+    passwordChanged: string;
+    passwordChangeFailed: string;
+    notificationSettings: string;
+    emailNotifications: string;
+    emailNotificationsDesc: string;
+    pushNotifications: string;
+    pushNotificationsDesc: string;
+    jobAlerts: string;
+    jobAlertsDesc: string;
+    privacySettings: string;
+    publicProfile: string;
+    publicProfileDesc: string;
+    privacyUpdated: string;
+    accountSettings: string;
+    appearance: string;
+    theme: string;
+    dark: string;
+    light: string;
+    language: string;
+    selectLanguage: string;
+    dangerZone: string;
+    deleteAccountWarning: string;
+    deleteAccount: string;
+    confirmDeleteAccount: string;
+    delete: string;
+    cancel: string;
+    deleteAccountNotImplemented: string;
+  };
+  common: {
+    search: string;
+    loading: string;
+    error: string;
+    success: string;
+    save: string;
+    cancel: string;
+    edit: string;
+    delete: string;
+    confirm: string;
+    close: string;
+    back: string;
+    next: string;
+    submit: string;
+    upload: string;
+    choose: string;
+    or: string;
+    posting: string;
+    post: string;
+    imageUrl: string;
+    all: string;
+    backTo: string;
+  };
   profile: {
     title: string;
     editProfile: string;
@@ -223,14 +280,14 @@ interface Translations {
     alreadyHaveAccount: string;
     signIn: string;
   };
-    community: {
-      sortBy: string;
-      top: string;
-      loadingFeed: string;
-      noPostsYet: string;
-      beFirstToShare: string;
-      sharePlaceholder: string;
-    };
+  community: {
+    sortBy: string;
+    top: string;
+    loadingFeed: string;
+    noPostsYet: string;
+    beFirstToShare: string;
+    sharePlaceholder: string;
+  };
   blog: {
     title: string;
     description: string;
@@ -316,59 +373,59 @@ interface Translations {
     overallPerformance?: string;
     startNew?: string;
   };
-    jobs: {
-      findDreamJob: string;
-      searchPlaceholder: string;
-      search: string;
-      filters: string;
-      all: string;
-      fullTime: string;
-      partTime: string;
-      remote: string;
-      contract: string;
-      internship: string;
-      location: string;
-      loadingJobs: string;
-      noJobsAvailable: string;
-      noJobsMatch: string;
-      noJobsAtMoment: string;
-      clearSearch: string;
-      applied: string;
-      apply: string;
-      pleaseLogin: string;
-      appliedSuccessfully: string;
-      failedToApply: string;
-      jobSeekerGuidance: string;
-      recommendedBasedOn: string;
-      improveResume: string;
-      exploreBuilder: string;
-      salaryInsights: string;
-      seeWhatWorth: string;
-      salaryRange: string;
-      postJob: string;
-      hideForm: string;
-      showPostForm: string;
-      postSuccess: string;
-      postFailed: string;
-      posting: string;
-      minSalary?: string;
-      maxSalary?: string;
-      experienceLevel?: string;
-      entry?: string;
-      junior?: string;
-      mid?: string;
-      senior?: string;
-      lead?: string;
-      executive?: string;
-      companySize?: string;
-      startup?: string;
-      small?: string;
-      medium?: string;
-      large?: string;
-      enterprise?: string;
-      advancedFilters?: string;
-      clearFilters?: string;
-    };
+  jobs: {
+    findDreamJob: string;
+    searchPlaceholder: string;
+    search: string;
+    filters: string;
+    all: string;
+    fullTime: string;
+    partTime: string;
+    remote: string;
+    contract: string;
+    internship: string;
+    location: string;
+    loadingJobs: string;
+    noJobsAvailable: string;
+    noJobsMatch: string;
+    noJobsAtMoment: string;
+    clearSearch: string;
+    applied: string;
+    apply: string;
+    pleaseLogin: string;
+    appliedSuccessfully: string;
+    failedToApply: string;
+    jobSeekerGuidance: string;
+    recommendedBasedOn: string;
+    improveResume: string;
+    exploreBuilder: string;
+    salaryInsights: string;
+    seeWhatWorth: string;
+    salaryRange: string;
+    postJob: string;
+    hideForm: string;
+    showPostForm: string;
+    postSuccess: string;
+    postFailed: string;
+    posting: string;
+    minSalary?: string;
+    maxSalary?: string;
+    experienceLevel?: string;
+    entry?: string;
+    junior?: string;
+    mid?: string;
+    senior?: string;
+    lead?: string;
+    executive?: string;
+    companySize?: string;
+    startup?: string;
+    small?: string;
+    medium?: string;
+    large?: string;
+    enterprise?: string;
+    advancedFilters?: string;
+    clearFilters?: string;
+  };
   footer: {
     description: string;
     quickLinks: string;
@@ -420,6 +477,64 @@ const translations: Record<Language, Translations> = {
       messages: 'Tin nhắn',
       alerts: 'Thông báo',
       signOut: 'Đăng xuất',
+      profile: 'Hồ sơ',
+      settings: 'Cài đặt',
+    },
+    settings: {
+      title: 'Cài đặt',
+      profile: 'Hồ sơ',
+      security: 'Bảo mật',
+      notifications: 'Thông báo',
+      privacy: 'Quyền riêng tư',
+      account: 'Tài khoản',
+      profileSettings: 'Cài đặt hồ sơ',
+      name: 'Tên',
+      email: 'Email',
+      emailCannotChange: 'Email không thể thay đổi',
+      headline: 'Tiêu đề',
+      headlinePlaceholder: 'VD: Kỹ sư phần mềm cao cấp',
+      bio: 'Giới thiệu',
+      bioPlaceholder: 'Hãy giới thiệu về bản thân...',
+      save: 'Lưu thay đổi',
+      saving: 'Đang lưu...',
+      profileUpdated: 'Cập nhật hồ sơ thành công',
+      updateFailed: 'Cập nhật thất bại',
+      securitySettings: 'Cài đặt bảo mật',
+      currentPassword: 'Mật khẩu hiện tại',
+      newPassword: 'Mật khẩu mới',
+      confirmPassword: 'Xác nhận mật khẩu mới',
+      changePassword: 'Đổi mật khẩu',
+      changing: 'Đang đổi...',
+      passwordsDoNotMatch: 'Mật khẩu không khớp',
+      passwordTooShort: 'Mật khẩu phải có ít nhất 6 ký tự',
+      passwordChanged: 'Đổi mật khẩu thành công',
+      passwordChangeFailed: 'Đổi mật khẩu thất bại',
+      notificationSettings: 'Cài đặt thông báo',
+      emailNotifications: 'Thông báo qua email',
+      emailNotificationsDesc: 'Nhận thông báo qua email về tài khoản của bạn',
+      pushNotifications: 'Thông báo đẩy',
+      pushNotificationsDesc: 'Nhận thông báo đẩy từ trình duyệt',
+      jobAlerts: 'Thông báo việc làm',
+      jobAlertsDesc: 'Nhận thông báo về cơ hội việc làm mới',
+      privacySettings: 'Cài đặt quyền riêng tư',
+      publicProfile: 'Hồ sơ công khai',
+      publicProfileDesc: 'Cho phép người khác xem hồ sơ của bạn',
+      privacyUpdated: 'Cập nhật quyền riêng tư thành công',
+      accountSettings: 'Cài đặt tài khoản',
+      appearance: 'Giao diện',
+      theme: 'Chế độ',
+      dark: 'Tối',
+      light: 'Sáng',
+      language: 'Ngôn ngữ',
+      selectLanguage: 'Chọn ngôn ngữ',
+      dangerZone: 'Vùng nguy hiểm',
+      deleteAccountWarning: 'Khi bạn xóa tài khoản, không thể hoàn tác. Hãy chắc chắn.',
+      deleteAccount: 'Xóa tài khoản',
+      confirmDeleteAccount:
+        'Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.',
+      delete: 'Xóa',
+      cancel: 'Hủy',
+      deleteAccountNotImplemented: 'Tính năng xóa tài khoản chưa được triển khai',
     },
     common: {
       search: 'Tìm kiếm',
@@ -471,7 +586,8 @@ const translations: Record<Language, Translations> = {
       updateFailed: 'Cập nhật thất bại',
       selectImageFile: 'Vui lòng chọn file ảnh',
       imageTooLarge: 'Kích thước ảnh phải nhỏ hơn 5MB',
-      unsavedChangesWarning: 'Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
+      unsavedChangesWarning:
+        'Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
     },
     dashboard: {
       goodMorning: 'Chào buổi sáng',
@@ -505,11 +621,14 @@ const translations: Record<Language, Translations> = {
       nextBestAction: 'Gợi ý bước tiếp theo',
       profileCompletion: 'Mức độ hoàn thiện hồ sơ',
       nextActionOnboarding: 'Hoàn thành onboarding để cá nhân hoá trải nghiệm',
-      nextActionOnboardingDesc: 'Chọn mục tiêu nghề nghiệp để chúng tôi gợi ý CV, interview và jobs phù hợp.',
+      nextActionOnboardingDesc:
+        'Chọn mục tiêu nghề nghiệp để chúng tôi gợi ý CV, interview và jobs phù hợp.',
       nextActionCreateCV: 'Tạo CV đầu tiên của bạn',
-      nextActionCreateCVDesc: 'Bắt đầu với template ATS-friendly và để AI tối ưu nội dung giúp bạn.',
+      nextActionCreateCVDesc:
+        'Bắt đầu với template ATS-friendly và để AI tối ưu nội dung giúp bạn.',
       nextActionInterview: 'Luyện phỏng vấn với AI',
-      nextActionInterviewDesc: 'Chọn một persona phù hợp và luyện trả lời các câu hỏi phỏng vấn thực tế.',
+      nextActionInterviewDesc:
+        'Chọn một persona phù hợp và luyện trả lời các câu hỏi phỏng vấn thực tế.',
       nextActionJobs: 'Khám phá các cơ hội việc làm phù hợp',
       nextActionJobsDesc: 'Dùng CV đã tối ưu để apply vào các job đang tuyển dụng.',
       completeOnboarding: 'Hoàn thành onboarding',
@@ -519,7 +638,8 @@ const translations: Record<Language, Translations> = {
     home: {
       heroTitle: 'Tạo CV Hoàn Hảo',
       heroSubtitle: 'Trong Vòng 5 Phút',
-      heroDescription: 'Trình tạo CV hỗ trợ AI giúp bạn có được công việc mơ ước. Mẫu thân thiện ATS. Luyện phỏng vấn. Tất cả ở một nơi.',
+      heroDescription:
+        'Trình tạo CV hỗ trợ AI giúp bạn có được công việc mơ ước. Mẫu thân thiện ATS. Luyện phỏng vấn. Tất cả ở một nơi.',
       getStartedFree: 'Bắt đầu miễn phí',
       signIn: 'Đăng nhập',
       noCreditCard: 'Không cần thẻ tín dụng',
@@ -528,17 +648,21 @@ const translations: Record<Language, Translations> = {
       everythingYouNeed: 'Mọi thứ bạn cần để thành công',
       allInOnePlatform: 'Nền tảng All-in-one hỗ trợ sự nghiệp',
       aiCVBuilder: 'Trình tạo CV AI',
-      aiCVBuilderDesc: 'Tạo CV thân thiện ATS trong vài phút. AI nâng cao nội dung của bạn để trở nên chuyên nghiệp và ấn tượng.',
+      aiCVBuilderDesc:
+        'Tạo CV thân thiện ATS trong vài phút. AI nâng cao nội dung của bạn để trở nên chuyên nghiệp và ấn tượng.',
       aiInterviewPractice: 'Luyện phỏng vấn AI',
-      aiInterviewPracticeDesc: 'Luyện tập với các nhân vật AI khác nhau - HR thân thiện, Quản lý nghiêm khắc, hoặc Người bản ngữ. Nhận phản hồi tức thì.',
+      aiInterviewPracticeDesc:
+        'Luyện tập với các nhân vật AI khác nhau - HR thân thiện, Quản lý nghiêm khắc, hoặc Người bản ngữ. Nhận phản hồi tức thì.',
       careerCommunity: 'Cộng đồng sự nghiệp',
-      careerCommunityDesc: 'Chia sẻ CV của bạn, nhận phản hồi và kết nối với các chuyên gia. Học hỏi từ kinh nghiệm của người khác.',
+      careerCommunityDesc:
+        'Chia sẻ CV của bạn, nhận phản hồi và kết nối với các chuyên gia. Học hỏi từ kinh nghiệm của người khác.',
       howItWorks: 'Cách hoạt động',
       simpleFastEffective: 'Đơn giản. Nhanh chóng. Hiệu quả.',
       signUp: 'Đăng ký',
       signUpDesc: 'Tạo tài khoản miễn phí trong vài giây. Không cần thẻ tín dụng.',
       buildYourCV: 'Tạo CV của bạn',
-      buildYourCVDesc: 'Sử dụng trình tạo hỗ trợ AI của chúng tôi để tạo CV chuyên nghiệp, thân thiện ATS.',
+      buildYourCVDesc:
+        'Sử dụng trình tạo hỗ trợ AI của chúng tôi để tạo CV chuyên nghiệp, thân thiện ATS.',
       practiceApply: 'Luyện tập & Ứng tuyển',
       practiceApplyDesc: 'Luyện phỏng vấn với AI, sau đó xuất CV và bắt đầu ứng tuyển.',
       latestCareerInsights: 'Thông tin sự nghiệp mới nhất',
@@ -642,17 +766,21 @@ const translations: Record<Language, Translations> = {
       friendlyHR: 'HR Thân thiện',
       friendlyHRDesc: 'Tập trung vào văn hóa và kỹ năng mềm. Nhẹ nhàng và khuyến khích.',
       strictManager: 'Quản lý Nghiêm khắc',
-      strictManagerDesc: 'Đi sâu vào chi tiết kỹ thuật và giải quyết vấn đề. Trực tiếp và thách thức.',
+      strictManagerDesc:
+        'Đi sâu vào chi tiết kỹ thuật và giải quyết vấn đề. Trực tiếp và thách thức.',
       englishNative: 'Người bản ngữ',
       englishNativeDesc: 'Kiểm tra trình độ ngôn ngữ, ngữ pháp và sự trôi chảy của bạn.',
       techLead: 'Tech Lead Cấp cao',
       techLeadDesc: 'Thách thức về thiết kế hệ thống, kiến trúc và thực hành lập trình tốt nhất.',
       startupFounder: 'Nhà sáng lập Startup',
-      startupFounderDesc: 'Kiểm tra tư duy khởi nghiệp, khả năng thích ứng và giải quyết vấn đề dưới áp lực.',
+      startupFounderDesc:
+        'Kiểm tra tư duy khởi nghiệp, khả năng thích ứng và giải quyết vấn đề dưới áp lực.',
       executive: 'C-Level Executive',
-      executiveDesc: 'Tập trung vào tư duy chiến lược, khả năng lãnh đạo và hiểu biết kinh doanh cấp cao.',
+      executiveDesc:
+        'Tập trung vào tư duy chiến lược, khả năng lãnh đạo và hiểu biết kinh doanh cấp cao.',
       academic: 'Nhà nghiên cứu Học thuật',
-      academicDesc: 'Khám phá phương pháp nghiên cứu, tư duy phản biện và kiến thức chuyên ngành của bạn.',
+      academicDesc:
+        'Khám phá phương pháp nghiên cứu, tư duy phản biện và kiến thức chuyên ngành của bạn.',
       startInterview: 'Bắt đầu phỏng vấn',
       backToDashboard: 'Quay lại Dashboard',
       online: 'Trực tuyến',
@@ -665,9 +793,11 @@ const translations: Record<Language, Translations> = {
       typeAnswer: 'Nhập câu trả lời của bạn...',
       sending: 'Đang gửi...',
       send: 'Gửi',
-      microphoneDenied: 'Quyền truy cập microphone bị từ chối. Vui lòng bật trong cài đặt trình duyệt.',
+      microphoneDenied:
+        'Quyền truy cập microphone bị từ chối. Vui lòng bật trong cài đặt trình duyệt.',
       microphoneError: 'Không thể truy cập microphone. Vui lòng kiểm tra cài đặt trình duyệt.',
-      speechNotSupported: 'Nhận dạng giọng nói không được hỗ trợ trong trình duyệt của bạn. Vui lòng sử dụng Chrome hoặc Edge.',
+      speechNotSupported:
+        'Nhận dạng giọng nói không được hỗ trợ trong trình duyệt của bạn. Vui lòng sử dụng Chrome hoặc Edge.',
       speechError: 'Lỗi nhận dạng giọng nói. Vui lòng thử lại.',
       rateLimitExceeded: 'API đã vượt quá giới hạn. Vui lòng đợi một chút và thử lại.',
       serviceUnavailable: 'Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau vài phút.',
@@ -749,7 +879,8 @@ const translations: Record<Language, Translations> = {
       requirementsPlaceholder: 'Yêu cầu (mỗi dòng một ý)',
     },
     footer: {
-      description: 'Nền tảng AI-powered giúp bạn tạo CV chuyên nghiệp, luyện phỏng vấn và phát triển sự nghiệp. Tất cả trong một nơi.',
+      description:
+        'Nền tảng AI-powered giúp bạn tạo CV chuyên nghiệp, luyện phỏng vấn và phát triển sự nghiệp. Tất cả trong một nơi.',
       quickLinks: 'Liên kết nhanh',
       company: 'Công ty',
       legalSupport: 'Pháp lý & Hỗ trợ',
@@ -809,7 +940,8 @@ const translations: Record<Language, Translations> = {
       comments: 'Bình luận',
       jobs: 'Việc làm',
       noNotifications: 'Chưa có thông báo',
-      noNotificationsDesc: 'Chúng tôi sẽ thông báo khi có cập nhật về đơn ứng tuyển hoặc hoạt động cộng đồng của bạn.',
+      noNotificationsDesc:
+        'Chúng tôi sẽ thông báo khi có cập nhật về đơn ứng tuyển hoặc hoạt động cộng đồng của bạn.',
       noMatchingNotifications: 'Không có thông báo nào khớp với bộ lọc của bạn.',
     },
     toast: {
@@ -837,6 +969,65 @@ const translations: Record<Language, Translations> = {
       messages: 'Messages',
       alerts: 'Alerts',
       signOut: 'Sign Out',
+      profile: 'Profile',
+      settings: 'Settings',
+    },
+    settings: {
+      title: 'Settings',
+      profile: 'Profile',
+      security: 'Security',
+      notifications: 'Notifications',
+      privacy: 'Privacy',
+      account: 'Account',
+      profileSettings: 'Profile Settings',
+      name: 'Name',
+      email: 'Email',
+      emailCannotChange: 'Email cannot be changed',
+      headline: 'Headline',
+      headlinePlaceholder: 'e.g. Senior Software Engineer',
+      bio: 'Bio',
+      bioPlaceholder: 'Tell us about yourself...',
+      save: 'Save Changes',
+      saving: 'Saving...',
+      profileUpdated: 'Profile updated successfully',
+      updateFailed: 'Update failed',
+      securitySettings: 'Security Settings',
+      currentPassword: 'Current Password',
+      newPassword: 'New Password',
+      confirmPassword: 'Confirm New Password',
+      changePassword: 'Change Password',
+      changing: 'Changing...',
+      passwordsDoNotMatch: 'Passwords do not match',
+      passwordTooShort: 'Password must be at least 6 characters',
+      passwordChanged: 'Password changed successfully',
+      passwordChangeFailed: 'Password change failed',
+      notificationSettings: 'Notification Settings',
+      emailNotifications: 'Email Notifications',
+      emailNotificationsDesc: 'Receive email notifications about your account',
+      pushNotifications: 'Push Notifications',
+      pushNotificationsDesc: 'Receive push notifications in your browser',
+      jobAlerts: 'Job Alerts',
+      jobAlertsDesc: 'Get notified about new job opportunities',
+      privacySettings: 'Privacy Settings',
+      publicProfile: 'Public Profile',
+      publicProfileDesc: 'Allow others to view your profile',
+      privacyUpdated: 'Privacy settings updated',
+      accountSettings: 'Account Settings',
+      appearance: 'Appearance',
+      theme: 'Theme',
+      dark: 'Dark',
+      light: 'Light',
+      language: 'Language',
+      selectLanguage: 'Select Language',
+      dangerZone: 'Danger Zone',
+      deleteAccountWarning:
+        'Once you delete your account, there is no going back. Please be certain.',
+      deleteAccount: 'Delete Account',
+      confirmDeleteAccount:
+        'Are you sure you want to delete your account? This action cannot be undone.',
+      delete: 'Delete',
+      cancel: 'Cancel',
+      deleteAccountNotImplemented: 'Account deletion is not yet implemented',
     },
     common: {
       search: 'Search',
@@ -888,7 +1079,8 @@ const translations: Record<Language, Translations> = {
       updateFailed: 'Failed to update profile',
       selectImageFile: 'Please select an image file',
       imageTooLarge: 'Image size must be less than 5MB',
-      unsavedChangesWarning: 'You have unsaved changes. Are you sure you want to leave? Your changes will be lost.',
+      unsavedChangesWarning:
+        'You have unsaved changes. Are you sure you want to leave? Your changes will be lost.',
     },
     dashboard: {
       goodMorning: 'Good Morning',
@@ -922,9 +1114,11 @@ const translations: Record<Language, Translations> = {
       nextBestAction: 'Next best action',
       profileCompletion: 'Profile completion',
       nextActionOnboarding: 'Complete onboarding to personalize your experience',
-      nextActionOnboardingDesc: 'Choose your career goal so we can suggest the right CV, interviews, and jobs.',
+      nextActionOnboardingDesc:
+        'Choose your career goal so we can suggest the right CV, interviews, and jobs.',
       nextActionCreateCV: 'Create your first CV',
-      nextActionCreateCVDesc: 'Start with an ATS-friendly template and let AI optimize your content.',
+      nextActionCreateCVDesc:
+        'Start with an ATS-friendly template and let AI optimize your content.',
       nextActionInterview: 'Practice interviews with AI',
       nextActionInterviewDesc: 'Pick a persona and practice realistic interview questions.',
       nextActionJobs: 'Explore matching job opportunities',
@@ -936,7 +1130,8 @@ const translations: Record<Language, Translations> = {
     home: {
       heroTitle: 'Create Your Perfect CV',
       heroSubtitle: 'in Under 5 Minutes',
-      heroDescription: 'AI-powered resume builder that helps you land your dream job. ATS-friendly templates. Interview practice. All in one place.',
+      heroDescription:
+        'AI-powered resume builder that helps you land your dream job. ATS-friendly templates. Interview practice. All in one place.',
       getStartedFree: 'Get Started Free',
       signIn: 'Sign In',
       noCreditCard: 'No Credit Card Required',
@@ -945,11 +1140,14 @@ const translations: Record<Language, Translations> = {
       everythingYouNeed: 'Everything You Need to Succeed',
       allInOnePlatform: 'All-in-one career platform powered by AI',
       aiCVBuilder: 'AI CV Builder',
-      aiCVBuilderDesc: 'Create ATS-friendly resumes in minutes. AI enhances your content to make it professional and impactful.',
+      aiCVBuilderDesc:
+        'Create ATS-friendly resumes in minutes. AI enhances your content to make it professional and impactful.',
       aiInterviewPractice: 'AI Interview Practice',
-      aiInterviewPracticeDesc: 'Practice with different AI personas - Friendly HR, Strict Manager, or English Native. Get instant feedback.',
+      aiInterviewPracticeDesc:
+        'Practice with different AI personas - Friendly HR, Strict Manager, or English Native. Get instant feedback.',
       careerCommunity: 'Career Community',
-      careerCommunityDesc: 'Share your CV, get feedback, and connect with professionals. Learn from others\' experiences.',
+      careerCommunityDesc:
+        "Share your CV, get feedback, and connect with professionals. Learn from others' experiences.",
       howItWorks: 'How It Works',
       simpleFastEffective: 'Simple. Fast. Effective.',
       signUp: 'Sign Up',
@@ -964,7 +1162,8 @@ const translations: Record<Language, Translations> = {
       viewAllArticles: 'View all articles',
       noArticlesYet: 'No articles yet. Be the first to write one!',
       readyToLand: 'Ready to Land Your Dream Job?',
-      joinThousands: 'Join thousands of professionals who have already created their perfect CV with CV Mate.',
+      joinThousands:
+        'Join thousands of professionals who have already created their perfect CV with CV Mate.',
       startBuildingNow: 'Start Building Your CV Now',
     },
     auth: {
@@ -1059,17 +1258,20 @@ const translations: Record<Language, Translations> = {
       friendlyHR: 'Friendly HR',
       friendlyHRDesc: 'Focuses on culture fit and soft skills. Gentle and encouraging.',
       strictManager: 'Strict Manager',
-      strictManagerDesc: 'Drills into technical details and problem solving. Direct and challenging.',
+      strictManagerDesc:
+        'Drills into technical details and problem solving. Direct and challenging.',
       englishNative: 'English Native',
       englishNativeDesc: 'Checks your language proficiency, grammar, and fluency.',
       techLead: 'Senior Tech Lead',
       techLeadDesc: 'Challenges on system design, architecture, and coding best practices.',
       startupFounder: 'Startup Founder',
-      startupFounderDesc: 'Tests your entrepreneurial mindset, adaptability, and problem-solving under pressure.',
+      startupFounderDesc:
+        'Tests your entrepreneurial mindset, adaptability, and problem-solving under pressure.',
       executive: 'C-Level Executive',
       executiveDesc: 'Focuses on strategic thinking, leadership, and high-level business acumen.',
       academic: 'Academic Researcher',
-      academicDesc: 'Explores your research methodology, critical thinking, and domain-specific knowledge.',
+      academicDesc:
+        'Explores your research methodology, critical thinking, and domain-specific knowledge.',
       startInterview: 'Start Interview',
       backToDashboard: 'Back to Dashboard',
       online: 'Online',
@@ -1084,7 +1286,8 @@ const translations: Record<Language, Translations> = {
       send: 'Send',
       microphoneDenied: 'Microphone permission denied. Please enable it in your browser settings.',
       microphoneError: 'Could not access microphone. Please check your browser settings.',
-      speechNotSupported: 'Speech recognition is not supported in your browser. Please use Chrome or Edge.',
+      speechNotSupported:
+        'Speech recognition is not supported in your browser. Please use Chrome or Edge.',
       speechError: 'Speech recognition error. Please try again.',
       rateLimitExceeded: 'API rate limit exceeded. Please wait a moment and try again.',
       serviceUnavailable: 'Service temporarily unavailable. Please try again in a few moments.',
@@ -1166,7 +1369,8 @@ const translations: Record<Language, Translations> = {
       requirementsPlaceholder: 'Requirements (one per line)',
     },
     footer: {
-      description: 'AI-powered platform helping you create professional CVs, practice interviews, and grow your career. All in one place.',
+      description:
+        'AI-powered platform helping you create professional CVs, practice interviews, and grow your career. All in one place.',
       quickLinks: 'Quick Links',
       company: 'Company',
       legalSupport: 'Legal & Support',
@@ -1226,7 +1430,8 @@ const translations: Record<Language, Translations> = {
       comments: 'Comments',
       jobs: 'Jobs',
       noNotifications: 'No notifications yet',
-      noNotificationsDesc: 'We\'ll let you know when there\'s an update on your job applications or community activity.',
+      noNotificationsDesc:
+        "We'll let you know when there's an update on your job applications or community activity.",
       noMatchingNotifications: 'No notifications match your filters.',
     },
     toast: {
