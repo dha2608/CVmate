@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { useNotificationStore } from '@/store/notificationStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useI18n } from '@/store/i18nStore';
 import { useNewsStore } from '@/store/newsStore';
@@ -58,6 +59,7 @@ const MainLayout = ({
   showRightSidebar,
 }: MainLayoutProps) => {
   const { user, logout } = useAuthStore();
+  const { unreadCount, connectSSE, disconnectSSE, fetchNotifications } = useNotificationStore();
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage, t } = useI18n();
   const navigate = useNavigate();
@@ -69,6 +71,14 @@ const MainLayout = ({
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const moreMenuRef = useRef<HTMLLIElement | null>(null);
+
+  // Connect notification SSE globally on mount
+  useEffect(() => {
+    if (!user) return;
+    fetchNotifications();
+    connectSSE();
+    return () => disconnectSSE();
+  }, [user, connectSSE, disconnectSSE, fetchNotifications]);
 
   const fullWidthRoutes = [
     '/pricing',
@@ -240,7 +250,12 @@ const MainLayout = ({
                   <div
                     className={`p-1 sm:p-1.5 rounded-md group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors ${['/blog', '/notifications', '/bookmarks'].some((p) => isActive(p)) ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
                   >
-                    <MoreHorizontal size={18} className="sm:w-5 sm:h-5" />
+                    <div className="relative">
+                      <MoreHorizontal size={18} className="sm:w-5 sm:h-5" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 animate-pulse" />
+                      )}
+                    </div>
                   </div>
                   <span className="text-xs font-medium hidden sm:block mt-0.5">
                     {language === 'vi' ? 'Thêm' : 'More'}
@@ -274,7 +289,14 @@ const MainLayout = ({
                     }}
                     role="menuitem"
                   >
-                    <Bell size={16} />
+                    <div className="relative">
+                      <Bell size={16} />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold px-0.5">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </div>
                     {t('nav.alerts')}
                   </button>
                   <button
@@ -457,12 +479,27 @@ const MainLayout = ({
       >
         {finalLayoutMode === 'default' && shouldShowRightSidebar ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
-            <div className="col-span-1 min-w-0 lg:col-span-9">{children}</div>
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="col-span-1 min-w-0 lg:col-span-9"
+            >
+              {children}
+            </motion.div>
 
             <div className="hidden lg:block lg:col-span-3">{rightSidebar || <NewsSidebar />}</div>
           </div>
         ) : (
-          <div>{children}</div>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
+            {children}
+          </motion.div>
         )}
       </main>
 
