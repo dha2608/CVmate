@@ -65,7 +65,7 @@ interface SpeechRecognitionAlternative {
 }
 
 const Interview = () => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const toast = useToastStore();
   const navigate = useNavigate();
   const [input, setInput] = useState('');
@@ -159,7 +159,7 @@ const Interview = () => {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
-      recognition.lang = 'en-US';
+      recognition.lang = language === 'vi' ? 'vi-VN' : 'en-US';
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
         const firstResult = event.results[0];

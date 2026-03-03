@@ -483,3 +483,37 @@ export const capturePayPalPayment = async (
     res.status(500).json({ success: false, message: errorMessage });
   }
 };
+
+// Switch billing plan (monthly <-> yearly)
+export const switchPlan = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const user = await User.findById(req.user?._id);
+    if (!user || user.subscription?.plan !== 'premium' || user.subscription?.status !== 'active') {
+      res.status(403).json({ success: false, message: 'No active premium subscription found' });
+      return;
+    }
+
+    const { billingCycle } = req.body as { billingCycle: 'monthly' | 'yearly' };
+    if (!billingCycle || !['monthly', 'yearly'].includes(billingCycle)) {
+      res.status(400).json({ success: false, message: 'Invalid billing cycle. Use monthly or yearly.' });
+      return;
+    }
+
+    if (user.subscription.billingCycle === billingCycle) {
+      res.status(400).json({ success: false, message: 'You are already on this plan.' });
+      return;
+    }
+
+    // Recalculate end date from today based on new cycle
+    const offsetMs = billingCycle === 'yearly' ? 365 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+    user.subscription.billingCycle = billingCycle;
+    user.subscription.endDate = new Date(Date.now() + offsetMs);
+    user.subscription.startDate = new Date();
+    await user.save();
+
+    logger.info('User switched subscription plan', { userId: req.user?._id, billingCycle });
+    res.json({ success: true, message: 'Subscription plan updated successfully', data: user.subscription });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -32,6 +32,7 @@ interface User {
     paymentMethod?: string;
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
+    billingCycle?: 'monthly' | 'yearly';
   };
 }
 

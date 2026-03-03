@@ -251,6 +251,12 @@ export const api = {
       method: 'POST',
     }),
 
+  switchPlan: (billingCycle: 'monthly' | 'yearly') =>
+    apiRequest<ApiResponse<unknown>>('/payment/switch-plan', {
+      method: 'POST',
+      body: JSON.stringify({ billingCycle }),
+    }),
+
   createPayPalOrder: () =>
     apiRequest<{
       success: boolean;
@@ -310,6 +316,25 @@ export const api = {
   applyJob: (id: string) =>
     apiRequest<{ success: boolean; message: string }>(`/jobs/${id}/apply`, {
       method: 'POST',
+    }),
+
+  applyToJob: (jobId: string, coverLetter?: string) =>
+    apiRequest<{ success: boolean; message: string }>(`/jobs/${jobId}/apply`, {
+      method: 'POST',
+      body: JSON.stringify({ coverLetter }),
+    }),
+
+  getMyPostedJobs: () => apiRequest<{ success: boolean; data: any[] }>('/jobs/my-posts'),
+
+  getMyApplications: () => apiRequest<{ success: boolean; data: any[] }>('/jobs/my-applications'),
+
+  getJobApplications: (jobId: string) =>
+    apiRequest<{ success: boolean; data: any[] }>(`/jobs/${jobId}/applications`),
+
+  updateApplicationStatus: (jobId: string, appId: string, status: string, notes?: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/jobs/${jobId}/applications/${appId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, recruiterNotes: notes }),
     }),
 
   // Admin

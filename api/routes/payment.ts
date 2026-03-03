@@ -8,6 +8,7 @@ import {
   cancelSubscription,
   createPayPalOrder,
   capturePayPalPayment,
+  switchPlan,
 } from '../controllers/paymentController.js';
 import { validate, createCheckoutSchema, paypalOrderSchema } from '../utils/validators.js';
 import express from 'express';
@@ -24,6 +25,7 @@ router.post(
 router.post('/verify-checkout-session', protect, verifyCheckoutSession);
 router.get('/subscription-status', protect, getSubscriptionStatus);
 router.post('/cancel-subscription', protect, cancelSubscription);
+router.post('/switch-plan', protect, switchPlan);
 router.post('/paypal/create-order', protect, validate(paypalOrderSchema), createPayPalOrder);
 router.post('/paypal/capture', protect, capturePayPalPayment);
 

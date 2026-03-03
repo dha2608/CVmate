@@ -161,6 +161,14 @@ const Builder = () => {
 
   const handleSave = useCallback(
     async (silent = false) => {
+      // Validate required fields before saving
+      if (!silent) {
+        const name = currentResume.personalInfo?.fullName?.trim();
+        if (!name) {
+          toast.error('Please enter your full name before saving');
+          return;
+        }
+      }
       if (!silent) {
         setSaving(true);
       }

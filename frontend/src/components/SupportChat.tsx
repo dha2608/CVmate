@@ -61,7 +61,11 @@ const SupportChatComponent = () => {
           },
         ]);
       } else {
-        throw new Error('Failed to get AI response');
+        // Use server-provided error message when available (rate limit, auth failures, etc.)
+        throw new Error(
+          (response as any).message ||
+            'Xin lỗi, tôi gặp sự cố. Vui lòng thử lại sau hoặc gửi email đến support@cvmate.com.'
+        );
       }
     } catch (error: any) {
       console.error('Chat error:', error);
@@ -77,8 +81,6 @@ const SupportChatComponent = () => {
           time: new Date(),
         },
       ]);
-
-      toast.error('Không thể kết nối với AI. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }

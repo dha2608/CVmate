@@ -30,7 +30,7 @@ Hãy trả lời bằng tiếng Việt, ngắn gọn và hữu ích.`;
     // Build conversation context
     const conversationContext = conversationHistory
       .slice(-5) // Last 5 messages for context
-      .map((msg: { type: string; text: string }) => 
+      .map((msg: { type: string; text: string }) =>
         msg.type === 'user' ? `Người dùng: ${msg.text}` : `Trợ lý: ${msg.text}`
       )
       .join('\n');
@@ -54,7 +54,7 @@ Hãy trả lời bằng tiếng Việt, ngắn gọn và hữu ích.`;
       const response: any = await hf.chatCompletion({
         model,
         messages,
-        max_tokens: 200,
+        max_tokens: 400,
         temperature: 0.7,
         top_p: 0.9,
       });
@@ -77,7 +77,8 @@ Hãy trả lời bằng tiếng Việt, ngắn gọn và hữu ích.`;
 
       // Fallback if response is empty
       if (!aiResponse) {
-        aiResponse = 'Xin lỗi, tôi chưa hiểu rõ câu hỏi của bạn. Bạn có thể mô tả chi tiết hơn không? Hoặc liên hệ support@cvmate.com để được hỗ trợ.';
+        aiResponse =
+          'Xin lỗi, tôi chưa hiểu rõ câu hỏi của bạn. Bạn có thể mô tả chi tiết hơn không? Hoặc liên hệ support@cvmate.com để được hỗ trợ.';
       }
 
       const durationMs = Date.now() - startedAt;
@@ -103,7 +104,7 @@ Hãy trả lời bằng tiếng Việt, ngắn gọn và hữu ích.`;
       });
 
       let errorMessage = 'Xin lỗi, tôi gặp sự cố khi xử lý câu hỏi của bạn. Vui lòng thử lại sau.';
-      
+
       const msg = String(error.message || '');
       const lower = msg.toLowerCase();
 

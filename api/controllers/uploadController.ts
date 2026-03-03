@@ -1,11 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import { uploadToCloudinary } from '../utils/cloudinaryClient.js';
 import User from '../models/User.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export const uploadAvatar = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -14,13 +10,25 @@ export const uploadAvatar = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
-    const fileUrl = `/uploads/${req.file.filename}`;
+    const result = await uploadToCloudinary(req.file.buffer, 'avatars', {
+      publicId: `avatar_${req.user?._id}_${Date.now()}`,
+      transformation: [
+        {
+          width: 400,
+          height: 400,
+          crop: 'fill',
+          gravity: 'face',
+          quality: 'auto',
+          fetch_format: 'auto',
+        },
+      ],
+    });
 
     let updatedUser = null;
     if (req.user?._id) {
       updatedUser = await User.findByIdAndUpdate(
         req.user._id,
-        { avatar: fileUrl },
+        { avatar: result.secure_url },
         { new: true, runValidators: false }
       ).select('name email avatar coverPhoto subscription');
     }
@@ -28,10 +36,10 @@ export const uploadAvatar = async (req: AuthRequest, res: Response, next: NextFu
     res.json({
       success: true,
       data: {
-        url: fileUrl,
-        avatar: fileUrl,
-        filename: req.file.filename,
-        size: req.file.size,
+        url: result.secure_url,
+        avatar: result.secure_url,
+        publicId: result.public_id,
+        size: result.bytes,
         user: updatedUser,
       },
     });
@@ -47,13 +55,18 @@ export const uploadCoverPhoto = async (req: AuthRequest, res: Response, next: Ne
       return;
     }
 
-    const fileUrl = `/uploads/${req.file.filename}`;
+    const result = await uploadToCloudinary(req.file.buffer, 'covers', {
+      publicId: `cover_${req.user?._id}_${Date.now()}`,
+      transformation: [
+        { width: 1200, height: 400, crop: 'fill', quality: 'auto', fetch_format: 'auto' },
+      ],
+    });
 
     let updatedUser = null;
     if (req.user?._id) {
       updatedUser = await User.findByIdAndUpdate(
         req.user._id,
-        { coverPhoto: fileUrl },
+        { coverPhoto: result.secure_url },
         { new: true, runValidators: false }
       ).select('name email avatar coverPhoto subscription');
     }
@@ -61,10 +74,10 @@ export const uploadCoverPhoto = async (req: AuthRequest, res: Response, next: Ne
     res.json({
       success: true,
       data: {
-        url: fileUrl,
-        coverPhoto: fileUrl,
-        filename: req.file.filename,
-        size: req.file.size,
+        url: result.secure_url,
+        coverPhoto: result.secure_url,
+        publicId: result.public_id,
+        size: result.bytes,
         user: updatedUser,
       },
     });
@@ -80,14 +93,17 @@ export const uploadPostImage = async (req: AuthRequest, res: Response, next: Nex
       return;
     }
 
-    const fileUrl = `/uploads/${req.file.filename}`;
+    const result = await uploadToCloudinary(req.file.buffer, 'posts', {
+      publicId: `post_${req.user?._id}_${Date.now()}`,
+      transformation: [{ width: 1200, quality: 'auto', fetch_format: 'auto' }],
+    });
 
     res.json({
       success: true,
       data: {
-        url: fileUrl,
-        filename: req.file.filename,
-        size: req.file.size,
+        url: result.secure_url,
+        publicId: result.public_id,
+        size: result.bytes,
       },
     });
   } catch (error: any) {
@@ -95,45 +111,11 @@ export const uploadPostImage = async (req: AuthRequest, res: Response, next: Nex
   }
 };
 
-export const getFileAsBase64 = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { filename } = req.params;
-    if (!filename) {
-      res.status(400).json({ success: false, message: 'Filename is required' });
-      return;
-    }
-
-    // Sanitize filename to prevent path traversal
-    const sanitized = path.basename(filename);
-    if (
-      sanitized !== filename ||
-      filename.includes('..') ||
-      filename.includes('/') ||
-      filename.includes('\\')
-    ) {
-      res.status(400).json({ success: false, message: 'Invalid filename' });
-      return;
-    }
-
-    const filePath = path.join(__dirname, '../../uploads', sanitized);
-
-    const fs = await import('fs');
-    if (fs.existsSync(filePath)) {
-      const fileBuffer = fs.readFileSync(filePath);
-      const base64 = fileBuffer.toString('base64');
-      const mimeType = path.extname(filename).toLowerCase() === '.png' ? 'image/png' : 'image/jpeg';
-
-      res.json({
-        success: true,
-        data: {
-          base64: `data:${mimeType};base64,${base64}`,
-          filename,
-        },
-      });
-    } else {
-      res.status(404).json({ success: false, message: 'File not found' });
-    }
-  } catch (error: any) {
-    next(error);
-  }
+// Legacy endpoint — with Cloudinary, files are served directly via secure_url.
+// This returns 410 Gone since local disk files no longer exist.
+export const getFileAsBase64 = async (req: Request, res: Response) => {
+  res.status(410).json({
+    success: false,
+    message: 'This endpoint is deprecated. Files are now served directly via Cloudinary URLs.',
+  });
 };

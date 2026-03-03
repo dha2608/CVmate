@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import Job from '../models/Job.js';
+import Application from '../models/Application.js';
 import JobAlert from '../models/JobAlert.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
@@ -242,6 +243,7 @@ export const applyJob = async (req: AuthRequest, res: Response, next: NextFuncti
     }
 
     const userId = (req.user?._id as Types.ObjectId).toString();
+    const { coverLetter } = req.body;
 
     const hasApplied = job.applicants.some((applicantId: any) => applicantId.toString() === userId);
 
@@ -252,6 +254,22 @@ export const applyJob = async (req: AuthRequest, res: Response, next: NextFuncti
 
     job.applicants.push(req.user?._id as Types.ObjectId);
     await job.save();
+
+    // Create Application document (upsert-style to be safe)
+    await Application.findOneAndUpdate(
+      { job: job._id, applicant: req.user?._id },
+      {
+        $setOnInsert: {
+          job: job._id,
+          applicant: req.user?._id,
+          recruiter: job.postedBy,
+          coverLetter: coverLetter || '',
+          status: 'pending',
+          appliedAt: new Date(),
+        },
+      },
+      { upsert: true, new: true }
+    );
 
     // Tạo notification cho người đăng tuyển (nếu khác người apply)
     if (job.postedBy.toString() !== userId) {
@@ -468,6 +486,121 @@ Please pick the 10 best matching jobs (or fewer if there are not enough), based 
         message: 'Job recommendation service is currently unavailable. Please try again later.',
       });
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── Recruiter Flow ────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/jobs/my-posts
+ * Returns all jobs posted by the authenticated user.
+ */
+export const getMyPostedJobs = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const jobs = await Job.find({ postedBy: req.user?._id }).sort({ postedAt: -1 }).limit(50);
+    res.json({ success: true, data: jobs });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/jobs/my-applications
+ * Returns all applications submitted by the authenticated user.
+ */
+export const getMyApplications = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const applications = await Application.find({ applicant: req.user?._id })
+      .populate('job', 'title company location type postedAt')
+      .sort({ appliedAt: -1 })
+      .limit(50);
+    res.json({ success: true, data: applications });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/jobs/:id/applications
+ * Returns all applications for a specific job. Recruiter-only (must own the job).
+ */
+export const getJobApplications = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const job = await Job.findById(req.params.id);
+
+    if (!job) {
+      res.status(404).json({ success: false, message: 'Job not found' });
+      return;
+    }
+
+    if (job.postedBy.toString() !== req.user?._id?.toString()) {
+      res
+        .status(403)
+        .json({ success: false, message: 'Not authorized to view applications for this job' });
+      return;
+    }
+
+    const applications = await Application.find({ job: req.params.id })
+      .populate('applicant', 'name email avatar headline currentRole skills')
+      .sort({ appliedAt: -1 });
+
+    res.json({ success: true, data: applications });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * PATCH /api/jobs/:jobId/applications/:appId
+ * Update the status (and optional recruiterNotes) of an application. Recruiter-only.
+ */
+export const updateApplicationStatus = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { jobId, appId } = req.params;
+    const { status, recruiterNotes } = req.body;
+
+    const validStatuses = ['pending', 'reviewing', 'shortlisted', 'rejected', 'accepted'];
+    if (!status || !validStatuses.includes(status)) {
+      res.status(400).json({ success: false, message: 'Invalid status value' });
+      return;
+    }
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      res.status(404).json({ success: false, message: 'Job not found' });
+      return;
+    }
+
+    if (job.postedBy.toString() !== req.user?._id?.toString()) {
+      res
+        .status(403)
+        .json({ success: false, message: 'Not authorized to update this application' });
+      return;
+    }
+
+    const update: Record<string, unknown> = { status };
+    if (recruiterNotes !== undefined) {
+      update.recruiterNotes = recruiterNotes;
+    }
+
+    const application = await Application.findByIdAndUpdate(
+      appId,
+      { $set: update },
+      { new: true }
+    ).populate('applicant', 'name email avatar headline currentRole skills');
+
+    if (!application) {
+      res.status(404).json({ success: false, message: 'Application not found' });
+      return;
+    }
+
+    res.json({ success: true, data: application });
   } catch (error) {
     next(error);
   }

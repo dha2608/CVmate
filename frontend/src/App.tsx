@@ -46,6 +46,7 @@ const Accessibility = lazy(() => import('@/pages/Accessibility'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const UserProfile = lazy(() => import('@/pages/UserProfile'));
 const Settings = lazy(() => import('@/pages/Settings'));
+const RecruiterDashboard = lazy(() => import('@/pages/RecruiterDashboard'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -217,6 +218,14 @@ const AppShell = () => {
               <AdminRoute>
                 <Admin />
               </AdminRoute>
+            }
+          />
+          <Route
+            path="/recruiter"
+            element={
+              <ProtectedRoute>
+                <RecruiterDashboard />
+              </ProtectedRoute>
             }
           />
           <Route

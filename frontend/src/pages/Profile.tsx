@@ -239,6 +239,28 @@ const Profile = () => {
     }
   };
 
+  const handleSwitchPlan = async () => {
+    if (!subscription?.billingCycle) return;
+    const newCycle = subscription.billingCycle === 'yearly' ? 'monthly' : 'yearly';
+    setLoadingSubscription(true);
+    try {
+      await api.switchPlan(newCycle);
+      toast.success(t('profile.planSwitched') || 'Plan updated successfully');
+      // Refresh user data
+      await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success) useAuthStore.getState().setUser(data.data);
+        });
+    } catch (error: any) {
+      toast.error(error.message || t('toast.somethingWentWrong'));
+    } finally {
+      setLoadingSubscription(false);
+    }
+  };
+
   const validateImage = (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error(t('profile.selectImageFile'));
@@ -599,12 +621,28 @@ const Profile = () => {
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                       {subscription?.plan === 'premium'
                         ? subscription.endDate
-                          ? `${t('profile.expiresOn')} ${new Date(subscription.endDate).toLocaleDateString()}`
+                          ? `${subscription.billingCycle === 'yearly' ? t('profile.yearlyPlan') : t('profile.monthlyPlan')} · ${t('profile.expiresOn')} ${new Date(subscription.endDate).toLocaleDateString()}`
                           : t('profile.activeSubscription')
                         : t('profile.upgradeToUnlock')}
                     </p>
                   </div>
                 </div>
+                {/* Switch plan button for premium users */}
+                {subscription?.plan === 'premium' && (
+                  <div className="flex gap-2 mt-3 pt-3 border-t border-yellow-200 dark:border-yellow-800">
+                    <button
+                      onClick={handleSwitchPlan}
+                      disabled={loadingSubscription}
+                      className="text-xs px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-blue-400 hover:text-blue-600 transition-colors disabled:opacity-50"
+                    >
+                      {loadingSubscription
+                        ? '...'
+                        : subscription.billingCycle === 'yearly'
+                          ? t('profile.switchToMonthly')
+                          : t('profile.switchToYearly')}
+                    </button>
+                  </div>
+                )}
                 {subscription?.plan !== 'premium' && (
                   <div className="flex flex-col gap-2 w-full sm:w-auto">
                     <div className="flex gap-2">

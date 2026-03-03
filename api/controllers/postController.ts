@@ -19,6 +19,7 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
       user: req.user?._id,
       content,
       image,
+      status: 'approved', // Auto-approve posts on creation
     });
 
     const populatedPost = await Post.findById(post._id).populate(
@@ -54,7 +55,10 @@ export const getPosts = async (req: AuthRequest, res: Response, next: NextFuncti
 
     // Admin can see all posts, regular users only see approved posts
     const isAdmin = req.user?.role === 'admin';
-    const query: Record<string, unknown> = isAdmin ? {} : { status: 'approved' };
+    // Non-admins see approved posts OR their own posts (any status)
+    const query: Record<string, unknown> = isAdmin
+      ? {}
+      : { $or: [{ status: 'approved' }, { user: req.user?._id }] };
 
     // Filter by author if provided
     if (author.trim()) {

@@ -167,6 +167,11 @@ interface Translations {
     freePlan: string;
     activeSubscription: string;
     expiresOn: string;
+    monthlyPlan: string;
+    yearlyPlan: string;
+    switchToYearly: string;
+    switchToMonthly: string;
+    planSwitched: string;
     upgradeToUnlock: string;
     upgradeToPremium: string;
     chooseImage: string;
@@ -487,6 +492,10 @@ interface Translations {
     manageAlerts?: string;
     activeAlerts?: string;
     matches?: string;
+    practiceInterview?: string;
+    aiInterview?: string;
+    connectCommunity?: string;
+    getAdvice?: string;
   };
   footer: {
     description: string;
@@ -735,6 +744,11 @@ const translations: Record<Language, Translations> = {
       freePlan: 'Gói miễn phí',
       activeSubscription: 'Đang kích hoạt',
       expiresOn: 'Hết hạn vào',
+      monthlyPlan: 'Gói tháng',
+      yearlyPlan: 'Gói năm',
+      switchToYearly: 'Chuyển sang gói năm',
+      switchToMonthly: 'Chuyển sang gói tháng',
+      planSwitched: 'Đã cập nhật gói thành viên',
       upgradeToUnlock: 'Nâng cấp để mở khóa tất cả tính năng premium',
       upgradeToPremium: 'Nâng cấp lên Premium',
       chooseImage: 'Chọn ảnh',
@@ -1072,6 +1086,10 @@ const translations: Record<Language, Translations> = {
       manageAlerts: 'Quản lý thông báo',
       activeAlerts: 'Đang hoạt động',
       matches: 'lượt khớp',
+      practiceInterview: 'Luyện tập phỏng vấn',
+      aiInterview: 'Mô phỏng phỏng vấn AI',
+      connectCommunity: 'Kết nối cộng đồng',
+      getAdvice: 'Nhận lời khuyên',
     },
     footer: {
       description:
@@ -1365,6 +1383,11 @@ const translations: Record<Language, Translations> = {
       freePlan: 'Free Plan',
       activeSubscription: 'Active subscription',
       expiresOn: 'Expires on',
+      monthlyPlan: 'Monthly Plan',
+      yearlyPlan: 'Yearly Plan',
+      switchToYearly: 'Switch to Yearly Plan',
+      switchToMonthly: 'Switch to Monthly Plan',
+      planSwitched: 'Subscription plan updated',
       upgradeToUnlock: 'Upgrade to unlock all premium features',
       upgradeToPremium: 'Upgrade to Premium',
       chooseImage: 'Choose Image',
@@ -1699,6 +1722,10 @@ const translations: Record<Language, Translations> = {
       manageAlerts: 'Manage Alerts',
       activeAlerts: 'Active',
       matches: 'matches',
+      practiceInterview: 'Practice Interview',
+      aiInterview: 'AI Interview Simulator',
+      connectCommunity: 'Connect with Community',
+      getAdvice: 'Get Career Advice',
       jobTitlePlaceholder: 'Job Title (e.g., Frontend Engineer)',
       companyPlaceholder: 'Company Name',
       locationPlaceholder: 'Location (or Remote)',

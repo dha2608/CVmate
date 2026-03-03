@@ -230,7 +230,7 @@ const MainLayout = ({
                 <button
                   type="button"
                   className={`relative flex flex-col items-center justify-center cursor-pointer px-1.5 sm:px-2 md:px-3 h-full transition-all duration-200 group ${
-                    ['/blog', '/notifications', '/bookmarks'].some((p) => isActive(p))
+                    ['/blog', '/notifications', '/bookmarks', '/recruiter'].some((p) => isActive(p))
                       ? 'text-red-600 dark:text-red-400'
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
@@ -239,7 +239,9 @@ const MainLayout = ({
                   aria-haspopup="true"
                   aria-expanded={isMoreMenuOpen}
                 >
-                  {['/blog', '/notifications', '/bookmarks'].some((p) => isActive(p)) && (
+                  {['/blog', '/notifications', '/bookmarks', '/recruiter'].some((p) =>
+                    isActive(p)
+                  ) && (
                     <motion.div
                       className="absolute bottom-0 left-0 right-0 h-[3px] bg-red-600 dark:bg-red-400"
                       layoutId="activeIndicator"
@@ -248,7 +250,7 @@ const MainLayout = ({
                     />
                   )}
                   <div
-                    className={`p-1 sm:p-1.5 rounded-md group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors ${['/blog', '/notifications', '/bookmarks'].some((p) => isActive(p)) ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
+                    className={`p-1 sm:p-1.5 rounded-md group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors ${['/blog', '/notifications', '/bookmarks', '/recruiter'].some((p) => isActive(p)) ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
                   >
                     <div className="relative">
                       <Ellipsis size={18} className="sm:w-5 sm:h-5" />
@@ -309,6 +311,17 @@ const MainLayout = ({
                   >
                     <Bookmark size={16} />
                     {language === 'vi' ? 'Đánh dấu' : 'Bookmarks'}
+                  </button>
+                  <button
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isActive('/recruiter') ? 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                    onClick={() => {
+                      setIsMoreMenuOpen(false);
+                      navigate('/recruiter');
+                    }}
+                    role="menuitem"
+                  >
+                    <BriefcaseBusiness size={16} />
+                    {language === 'vi' ? 'Tuyển dụng' : 'Post a Job'}
                   </button>
                 </div>
               </li>
