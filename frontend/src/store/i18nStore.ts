@@ -53,6 +53,7 @@ interface Translations {
     signOut: string;
     profile: string;
     settings: string;
+    achievements: string;
   };
   settings?: {
     title: string;
@@ -108,6 +109,24 @@ interface Translations {
     delete: string;
     cancel: string;
     deleteAccountNotImplemented: string;
+    accountDeleted: string;
+    deleteAccountError: string;
+    twoFactorAuth: string;
+    twoFactorDesc: string;
+    twoFactorEnabled: string;
+    twoFactorDisabled: string;
+    twoFactorActivated: string;
+    setupTwoFactor: string;
+    disableTwoFactor: string;
+    scanQrCode: string;
+    verificationCode: string;
+    verifyAndEnable: string;
+    enterCodeToDisable: string;
+    invalidCode: string;
+    twoFactorSetupError: string;
+    settingUp: string;
+    verifying: string;
+    disabling: string;
   };
   common: {
     search: string;
@@ -479,6 +498,7 @@ const translations: Record<Language, Translations> = {
       signOut: 'Đăng xuất',
       profile: 'Hồ sơ',
       settings: 'Cài đặt',
+      achievements: 'Thành tựu',
     },
     settings: {
       title: 'Cài đặt',
@@ -535,6 +555,24 @@ const translations: Record<Language, Translations> = {
       delete: 'Xóa',
       cancel: 'Hủy',
       deleteAccountNotImplemented: 'Tính năng xóa tài khoản chưa được triển khai',
+      accountDeleted: 'Tài khoản của bạn đã được xóa',
+      deleteAccountError: 'Không thể xóa tài khoản. Vui lòng thử lại.',
+      twoFactorAuth: 'Xác thực hai yếu tố',
+      twoFactorDesc: 'Thêm một lớp bảo mật bằng ứng dụng xác thực.',
+      twoFactorEnabled: '2FA đang được bật',
+      twoFactorDisabled: '2FA đã được tắt',
+      twoFactorActivated: '2FA đã được bật!',
+      setupTwoFactor: 'Thiết lập 2FA',
+      disableTwoFactor: 'Tắt 2FA',
+      scanQrCode: 'Quét mã QR bằng ứng dụng xác thực, sau đó nhập mã 6 chữ số bên dưới.',
+      verificationCode: 'Mã xác thực',
+      verifyAndEnable: 'Xác minh & Bật',
+      enterCodeToDisable: 'Nhập mã từ ứng dụng xác thực để tắt',
+      invalidCode: 'Mã không hợp lệ. Vui lòng thử lại.',
+      twoFactorSetupError: 'Không thể thiết lập 2FA. Vui lòng thử lại.',
+      settingUp: 'Đang thiết lập...',
+      verifying: 'Đang xác minh...',
+      disabling: 'Đang tắt...',
     },
     common: {
       search: 'Tìm kiếm',
@@ -971,6 +1009,7 @@ const translations: Record<Language, Translations> = {
       signOut: 'Sign Out',
       profile: 'Profile',
       settings: 'Settings',
+      achievements: 'Achievements',
     },
     settings: {
       title: 'Settings',
@@ -1028,6 +1067,25 @@ const translations: Record<Language, Translations> = {
       delete: 'Delete',
       cancel: 'Cancel',
       deleteAccountNotImplemented: 'Account deletion is not yet implemented',
+      accountDeleted: 'Your account has been deleted',
+      deleteAccountError: 'Failed to delete account. Please try again.',
+      twoFactorAuth: 'Two-Factor Authentication',
+      twoFactorDesc: 'Add an extra layer of security using an authenticator app.',
+      twoFactorEnabled: '2FA is currently enabled',
+      twoFactorDisabled: '2FA has been disabled',
+      twoFactorActivated: '2FA has been enabled!',
+      setupTwoFactor: 'Set Up 2FA',
+      disableTwoFactor: 'Disable 2FA',
+      scanQrCode:
+        'Scan this QR code with your authenticator app, then enter the 6-digit code below.',
+      verificationCode: 'Verification Code',
+      verifyAndEnable: 'Verify & Enable',
+      enterCodeToDisable: 'Enter code from authenticator to disable',
+      invalidCode: 'Invalid code. Please try again.',
+      twoFactorSetupError: 'Failed to set up 2FA. Please try again.',
+      settingUp: 'Setting up...',
+      verifying: 'Verifying...',
+      disabling: 'Disabling...',
     },
     common: {
       search: 'Search',
