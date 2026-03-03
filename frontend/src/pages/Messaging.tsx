@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMessageStore } from '@/store/messageStore';
 import { useAuthStore } from '@/store/authStore';
@@ -7,8 +7,19 @@ import { useToastStore } from '@/store/toastStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, MessageSquare, Check, CheckCheck, Loader2, ArrowLeft } from 'lucide-react';
+import {
+  Send,
+  MessageSquare,
+  Check,
+  CheckCheck,
+  Loader2,
+  ArrowLeft,
+  Smile,
+  ImagePlus,
+  X,
+} from 'lucide-react';
 import { apiRequest } from '@/lib/utils';
+import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 
 const Messaging = () => {
   const { user } = useAuthStore();
@@ -32,8 +43,13 @@ const Messaging = () => {
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(true);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchConversations();
@@ -94,19 +110,66 @@ const Messaging = () => {
   // Real-time updates handled by SSE via connectRealtime() — no polling needed
 
   const handleSend = async () => {
-    if (!inputText.trim() || !activeConversation || isSending) {
+    if ((!inputText.trim() && !pendingImage) || !activeConversation || isSending) {
       return;
     }
     setIsSending(true);
     try {
-      await sendMessage(activeConversation._id, inputText);
+      await sendMessage(activeConversation._id, inputText, pendingImage || undefined);
       setInputText('');
+      setPendingImage(null);
+      setShowEmojiPicker(false);
     } catch (error: any) {
       toast.error(error.message || t('messaging.sendFailed'));
     } finally {
       setIsSending(false);
     }
   };
+
+  const handleEmojiSelect = useCallback((emoji: string) => {
+    setInputText((prev) => prev + emoji);
+    inputRef.current?.focus();
+  }, []);
+
+  const handleImageUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(t('messaging.imageTooLarge') || 'Image must be less than 5MB');
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error(t('messaging.imageOnly') || 'Only image files are allowed');
+        return;
+      }
+
+      setIsUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+        const res = await apiRequest<{ success: boolean; url: string }>('/upload/post-image', {
+          method: 'POST',
+          body: formData,
+          requiresAuth: true,
+        });
+        if (res.url) {
+          setPendingImage(res.url);
+        }
+      } catch (error: any) {
+        toast.error(error.message || t('messaging.uploadFailed') || 'Failed to upload image');
+      } finally {
+        setIsUploading(false);
+        // Reset file input
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    },
+    [toast]
+  );
 
   const getLastMessage = (conv: any) => {
     // This would come from backend - for now, show placeholder
@@ -129,52 +192,69 @@ const Messaging = () => {
             {t('messaging.title')}
           </div>
           <div className="flex-1 overflow-y-auto">
-            {conversations.map((conv) => {
-              const unreadCount = getUnreadCount(conv);
-              return (
-                <div
-                  key={conv._id}
-                  className={`p-3 flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 border-l-4 transition-all duration-200 ${
-                    activeConversation?._id === conv._id
-                      ? 'border-accent bg-red-50 dark:bg-red-900/20'
-                      : 'border-transparent'
-                  }`}
-                  onClick={() => {
-                    setActiveConversation(conv);
-                    setShowMobileSidebar(false);
-                  }}
-                >
-                  <div className="relative w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400 overflow-hidden flex-shrink-0">
-                    {conv.avatar ? (
-                      <img
-                        src={conv.avatar}
-                        className="w-full h-full object-cover"
-                        alt={conv.name}
-                        loading="lazy"
-                      />
-                    ) : (
-                      conv.name.charAt(0).toUpperCase()
-                    )}
+            {isLoading && conversations.length === 0 ? (
+              <div className="space-y-0">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    className="p-3 flex items-center gap-3 border-l-4 border-transparent animate-pulse"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2" />
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                        {conv.name}
-                      </p>
-                      {unreadCount > 0 && (
-                        <span className="bg-accent text-white text-xs rounded-full px-2 py-0.5 flex-shrink-0">
-                          {unreadCount}
-                        </span>
+                ))}
+              </div>
+            ) : (
+              conversations.map((conv) => {
+                const unreadCount = getUnreadCount(conv);
+                return (
+                  <div
+                    key={conv._id}
+                    className={`p-3 flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 border-l-4 transition-all duration-200 ${
+                      activeConversation?._id === conv._id
+                        ? 'border-accent bg-red-50 dark:bg-red-900/20'
+                        : 'border-transparent'
+                    }`}
+                    onClick={() => {
+                      setActiveConversation(conv);
+                      setShowMobileSidebar(false);
+                    }}
+                  >
+                    <div className="relative w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400 overflow-hidden flex-shrink-0">
+                      {conv.avatar ? (
+                        <img
+                          src={conv.avatar}
+                          className="w-full h-full object-cover"
+                          alt={conv.name}
+                          loading="lazy"
+                        />
+                      ) : (
+                        conv.name.charAt(0).toUpperCase()
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                      {getLastMessage(conv)}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                          {conv.name}
+                        </p>
+                        {unreadCount > 0 && (
+                          <span className="bg-accent text-white text-xs rounded-full px-2 py-0.5 flex-shrink-0">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {getLastMessage(conv)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-            {conversations.length === 0 && (
+                );
+              })
+            )}
+            {!isLoading && conversations.length === 0 && (
               <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
                 {t('messaging.noConversations')}
               </div>
@@ -217,8 +297,31 @@ const Messaging = () => {
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {isLoading && messages.length === 0 ? (
-                  <div className="flex justify-center items-center h-full">
-                    <Loader2 className="animate-spin text-accent" size={24} />
+                  <div className="space-y-4 animate-pulse">
+                    <div className="flex items-end gap-2">
+                      <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+                      <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl rounded-bl-sm px-4 py-2.5 max-w-[60%]">
+                        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-32 mb-1.5" />
+                        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-20" />
+                      </div>
+                    </div>
+                    <div className="flex items-end justify-end gap-2">
+                      <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[60%]">
+                        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-40 mb-1.5" />
+                        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-24" />
+                      </div>
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
+                      <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl rounded-bl-sm px-4 py-2.5 max-w-[60%]">
+                        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-48" />
+                      </div>
+                    </div>
+                    <div className="flex items-end justify-end gap-2">
+                      <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[60%]">
+                        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-36" />
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -237,7 +340,24 @@ const Messaging = () => {
                                 : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none'
                             }`}
                           >
-                            <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                            {msg.image && (
+                              <a
+                                href={msg.image}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block mb-2"
+                              >
+                                <img
+                                  src={msg.image}
+                                  alt=""
+                                  className="rounded-md max-h-48 w-auto object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                  loading="lazy"
+                                />
+                              </a>
+                            )}
+                            {msg.content && (
+                              <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                            )}
                             <div
                               className={`flex items-center gap-1 mt-1 text-xs ${isOwn ? 'text-red-100 justify-end' : 'text-gray-400 dark:text-gray-500'}`}
                             >
@@ -284,33 +404,96 @@ const Messaging = () => {
                 )}
               </div>
 
-              <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex gap-2">
-                <Input
-                  value={inputText}
-                  onChange={(e) => {
-                    setInputText(e.target.value);
-                    if (activeConversation && e.target.value.trim()) {
-                      sendTyping(activeConversation._id);
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                  placeholder={t('messaging.writeMessage')}
-                  className="flex-1 dark:bg-gray-700 dark:border-gray-600"
-                  disabled={isSending}
-                />
-                <Button
-                  onClick={handleSend}
-                  size="icon"
-                  className="bg-accent hover:bg-red-700 flex-shrink-0"
-                  disabled={isSending || !inputText.trim()}
-                >
-                  {isSending ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-                </Button>
+              <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                {/* Image preview */}
+                {pendingImage && (
+                  <div className="mb-2 relative inline-block">
+                    <img
+                      src={pendingImage}
+                      alt=""
+                      className="h-20 rounded-lg border border-gray-200 dark:border-gray-700"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPendingImage(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  {/* Emoji picker */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      <Smile size={20} />
+                    </button>
+                    {showEmojiPicker && (
+                      <EmojiPicker
+                        onSelect={handleEmojiSelect}
+                        onClose={() => setShowEmojiPicker(false)}
+                      />
+                    )}
+                  </div>
+
+                  {/* Image upload */}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                  >
+                    {isUploading ? (
+                      <Loader2 size={20} className="animate-spin" />
+                    ) : (
+                      <ImagePlus size={20} />
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+
+                  <Input
+                    ref={inputRef}
+                    value={inputText}
+                    onChange={(e) => {
+                      setInputText(e.target.value);
+                      if (activeConversation && e.target.value.trim()) {
+                        sendTyping(activeConversation._id);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
+                    placeholder={t('messaging.writeMessage')}
+                    className="flex-1 dark:bg-gray-700 dark:border-gray-600"
+                    disabled={isSending}
+                  />
+                  <Button
+                    onClick={handleSend}
+                    size="icon"
+                    className="bg-accent hover:bg-red-700 flex-shrink-0"
+                    disabled={isSending || (!inputText.trim() && !pendingImage)}
+                  >
+                    {isSending ? (
+                      <Loader2 className="animate-spin" size={18} />
+                    ) : (
+                      <Send size={18} />
+                    )}
+                  </Button>
+                </div>
               </div>
             </>
           ) : (

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { useJobStore } from '@/store/jobStore';
 
@@ -42,6 +42,10 @@ import {
   X,
   Video,
   MessageSquare,
+  Bell,
+  BellOff,
+  Trash2,
+  Plus,
 } from 'lucide-react';
 
 import { validateJobPosting } from '@/utils/validation';
@@ -74,6 +78,14 @@ const Jobs = () => {
   const [companySize, setCompanySize] = useState<string>('');
 
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  const [showAlerts, setShowAlerts] = useState(false);
+
+  const [alerts, setAlerts] = useState<any[]>([]);
+
+  const [isLoadingAlerts, setIsLoadingAlerts] = useState(false);
+
+  const [alertName, setAlertName] = useState('');
 
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
 
@@ -282,6 +294,69 @@ const Jobs = () => {
     }
   };
 
+  // ── Job Alerts ──────────────────────────────────────────────────────────────
+
+  const fetchAlerts = useCallback(async () => {
+    if (!user) return;
+    setIsLoadingAlerts(true);
+    try {
+      const res = await api.getJobAlerts();
+      if (res.success) setAlerts(res.alerts);
+    } catch {
+      /* ignore */
+    }
+    setIsLoadingAlerts(false);
+  }, [user]);
+
+  // Fetch alerts on mount whenever user is available
+  useEffect(() => {
+    fetchAlerts();
+  }, [fetchAlerts]);
+
+  const handleSaveAlert = async () => {
+    if (!user) return;
+    const name = alertName.trim() || `${searchTerm || t('jobs.all')} - ${selectedType}`;
+    const filters: Record<string, any> = {};
+    if (searchTerm) filters.search = searchTerm;
+    if (selectedType !== t('jobs.all')) filters.type = selectedType;
+    if (locationFilter) filters.location = locationFilter;
+    if (salaryMin) filters.salaryMin = salaryMin;
+    if (salaryMax) filters.salaryMax = salaryMax;
+    if (experienceLevel) filters.experienceLevel = experienceLevel;
+    if (companySize) filters.companySize = companySize;
+    try {
+      const res = await api.createJobAlert(name, filters);
+      if (res.success) {
+        toast.success(t('jobs.alertSaved') || 'Alert saved');
+        setAlertName('');
+        fetchAlerts();
+      }
+    } catch {
+      toast.error(t('jobs.maxAlerts') || 'Max alerts reached');
+    }
+  };
+
+  const handleDeleteAlert = async (id: string) => {
+    try {
+      await api.deleteJobAlert(id);
+      setAlerts((prev) => prev.filter((a) => a._id !== id));
+      toast.success(t('jobs.alertDeleted') || 'Alert deleted');
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleToggleAlert = async (id: string) => {
+    try {
+      const res = await api.toggleJobAlert(id);
+      if (res.success) {
+        setAlerts((prev) => prev.map((a) => (a._id === id ? res.alert : a)));
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+
   return (
     <MainLayout
       rightSidebar={
@@ -460,6 +535,47 @@ const Jobs = () => {
                   {t('jobs.clearFilters')}
                 </Button>
               )}
+
+              {/* My Alerts toggle */}
+              {user && (
+                <button
+                  onClick={() => {
+                    setShowAlerts((v) => !v);
+                    if (!showAlerts) fetchAlerts();
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    showAlerts
+                      ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <Bell size={14} />
+                  {t('jobs.myAlerts') || 'My Alerts'}
+                  {alerts.length > 0 && (
+                    <span className="bg-amber-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                      {alerts.length}
+                    </span>
+                  )}
+                </button>
+              )}
+
+              {/* Save current filters as alert */}
+              {user &&
+                (searchTerm ||
+                  selectedType !== t('jobs.all') ||
+                  locationFilter ||
+                  salaryMin ||
+                  salaryMax ||
+                  experienceLevel ||
+                  companySize) && (
+                  <button
+                    onClick={handleSaveAlert}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-colors border border-blue-200 dark:border-blue-800"
+                  >
+                    <Plus size={14} />
+                    {t('jobs.saveAlert') || 'Save Alert'}
+                  </button>
+                )}
             </div>
 
             {showAdvancedFilters && (
@@ -654,11 +770,154 @@ const Jobs = () => {
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-10">
-          <Loader2 className="inline-block animate-spin h-8 w-8 text-crimson-red" />
+      {/* ── My Alerts Panel ─────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showAlerts && user && (
+          <motion.div
+            key="alerts-panel"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden mb-6"
+          >
+            <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-5">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Bell size={16} className="text-amber-500" />
+                  {t('jobs.myAlerts') || 'My Alerts'}
+                </h2>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {t('jobs.manageAlerts') || 'Manage your job alerts'}
+                </span>
+              </div>
 
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('jobs.loadingJobs')}</p>
+              {/* Name input + save button */}
+              <div className="flex gap-2 mb-4">
+                <Input
+                  placeholder={t('jobs.alertName') || 'Alert name (optional)'}
+                  value={alertName}
+                  onChange={(e) => setAlertName(e.target.value)}
+                  className="flex-1 dark:bg-gray-700 dark:border-gray-600 text-sm"
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSaveAlert}
+                  disabled={
+                    !(
+                      searchTerm ||
+                      selectedType !== t('jobs.all') ||
+                      locationFilter ||
+                      salaryMin ||
+                      salaryMax ||
+                      experienceLevel ||
+                      companySize
+                    )
+                  }
+                  className="bg-amber-500 hover:bg-amber-600 text-white shrink-0"
+                >
+                  <Plus size={14} className="mr-1" />
+                  {t('jobs.saveAlert') || 'Save Alert'}
+                </Button>
+              </div>
+
+              {/* Alerts list */}
+              {isLoadingAlerts ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 size={20} className="animate-spin text-gray-400" />
+                </div>
+              ) : alerts.length === 0 ? (
+                <div className="text-center py-6 text-gray-500 dark:text-gray-400 text-sm">
+                  <Bell size={28} className="mx-auto mb-2 opacity-30" />
+                  <p>{t('jobs.noAlerts') || 'No alerts yet.'}</p>
+                  <p className="text-xs mt-1 opacity-70">
+                    {t('jobs.noAlertsHint') ||
+                      'Set some filters above then click "Save Alert" to get notified.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {alerts.map((alert) => (
+                    <div
+                      key={alert._id}
+                      className="flex items-center gap-3 p-3 bg-white dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600"
+                    >
+                      {/* Active toggle */}
+                      <button
+                        onClick={() => handleToggleAlert(alert._id)}
+                        className="flex-shrink-0 transition-opacity hover:opacity-70"
+                        title={
+                          alert.active
+                            ? t('jobs.activeAlerts') || 'Active — click to pause'
+                            : 'Inactive — click to activate'
+                        }
+                      >
+                        {alert.active ? (
+                          <Bell size={16} className="text-amber-500" />
+                        ) : (
+                          <BellOff size={16} className="text-gray-400" />
+                        )}
+                      </button>
+
+                      {/* Alert info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {alert.name}
+                        </p>
+                        {alert.matchCount != null && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {alert.matchCount} {t('jobs.matches') || 'matches'}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDeleteAlert(alert._id)}
+                        className="flex-shrink-0 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        title="Delete alert"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {isLoading ? (
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-5 animate-pulse"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/5 mb-2" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/5" />
+                </div>
+                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0" />
+              </div>
+              <div className="flex flex-wrap gap-2 mb-3">
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-20" />
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-24" />
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-16" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
+              </div>
+              <div className="flex items-center justify-between mt-4">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg w-20" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : jobs.length === 0 ? (
         <div className="text-center py-16 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
