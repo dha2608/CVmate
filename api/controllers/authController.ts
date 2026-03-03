@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import User, { IUser } from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { checkAndAwardAchievement } from './achievementController.js';
@@ -352,6 +352,48 @@ export const getPublicProfile = async (req: Request, res: Response, next: NextFu
       },
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAccount = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'Not authorized' });
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    // Delete all related data in parallel
+    const db = mongoose.connection.db;
+    if (db) {
+      await Promise.all([
+        db.collection('resumes').deleteMany({ user: user._id }),
+        db.collection('posts').deleteMany({ author: user._id }),
+        db.collection('messages').deleteMany({
+          $or: [{ sender: user._id }, { receiver: user._id }],
+        }),
+        db.collection('notifications').deleteMany({ user: user._id }),
+        db.collection('achievements').deleteMany({ user: user._id }),
+        db.collection('interviews').deleteMany({ user: user._id }),
+        db.collection('pushsubscriptions').deleteMany({ user: user._id }),
+        db.collection('resumehistories').deleteMany({ user: user._id }),
+      ]);
+    }
+
+    await User.findByIdAndDelete(userId);
+
+    logger.info('auth_account_deleted', { userId: userId.toString(), email: user.email });
+
+    res.json({ success: true, message: 'Account deleted successfully' });
+  } catch (error) {
+    logger.error('auth_account_delete_error', error);
     next(error);
   }
 };
