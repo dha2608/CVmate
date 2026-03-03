@@ -10,11 +10,13 @@ interface Article {
   image?: string;
   coverImage?: string;
   createdAt: string;
-  author?: {
-    _id: string;
-    name: string;
-    avatar?: string;
-  } | string;
+  author?:
+    | {
+        _id: string;
+        name: string;
+        avatar?: string;
+      }
+    | string;
   views?: number;
 }
 
@@ -34,7 +36,7 @@ export const useBlogStore = create<BlogState>((set) => ({
   fetchArticles: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await api.getArticles({ timeout: 15000 });
+      const res = await api.getArticles();
       if (res.success) {
         set({ articles: res.data as Article[], isLoading: false });
       } else {
@@ -57,11 +59,14 @@ export const useBlogStore = create<BlogState>((set) => ({
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/articles`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(articleData),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/articles`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(articleData),
+        }
+      );
       const data = await response.json();
 
       if (data.success) {

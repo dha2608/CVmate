@@ -38,15 +38,19 @@ interface CommunityState {
   page: number;
   hasMore: boolean;
   sort: 'new' | 'hot' | 'top';
+  search: string;
   fetchPosts: () => Promise<void>;
   loadMore: () => Promise<void>;
   setSort: (sort: 'new' | 'hot' | 'top') => void;
+  setSearch: (search: string) => void;
   createPost: (content: string, image?: string) => Promise<void>;
   likePost: (postId: string) => Promise<void>;
   commentPost: (postId: string, text: string, parentId?: string) => Promise<void>;
   likeComment: (postId: string, commentId: string) => Promise<void>;
   updateComment: (postId: string, commentId: string, text: string) => Promise<void>;
   deleteComment: (postId: string, commentId: string) => Promise<void>;
+  updatePost: (postId: string, content: string, image?: string) => Promise<void>;
+  deletePost: (postId: string) => Promise<void>;
 }
 
 const showErrorToast = async (message: string) => {
@@ -62,17 +66,23 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
   page: 1,
   hasMore: true,
   sort: 'new',
+  search: '',
 
   setSort: (sort: 'new' | 'hot' | 'top') => {
     set({ sort });
     get().fetchPosts();
   },
 
+  setSearch: (search: string) => {
+    set({ search });
+    get().fetchPosts();
+  },
+
   fetchPosts: async () => {
-    const { sort } = get();
+    const { sort, search } = get();
     set({ isLoading: true, error: null, page: 1, hasMore: true });
     try {
-      const res = await api.getPosts(1, 10, sort);
+      const res = await api.getPosts(1, 10, sort, search);
       if (res.success) {
         const posts = (res.data || []) as Post[];
         const hasMore = res.pagination ? res.pagination.page < res.pagination.pages : false;
@@ -86,13 +96,13 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
   },
 
   loadMore: async () => {
-    const { isLoadingMore, hasMore, page, sort } = get();
+    const { isLoadingMore, hasMore, page, sort, search } = get();
     if (isLoadingMore || !hasMore) return;
 
     const nextPage = page + 1;
     set({ isLoadingMore: true });
     try {
-      const res = await api.getPosts(nextPage, 10, sort);
+      const res = await api.getPosts(nextPage, 10, sort, search);
       if (res.success) {
         const newPosts = (res.data || []) as Post[];
         const hasMore = res.pagination ? res.pagination.page < res.pagination.pages : false;
@@ -228,6 +238,34 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       }
     } catch (error: any) {
       await showErrorToast(error?.message || 'Không thể xoá bình luận.');
+    }
+  },
+
+  updatePost: async (postId: string, content: string, image?: string) => {
+    try {
+      const res = await api.updatePost(postId, content, image);
+      if (res.success) {
+        set((state) => ({
+          posts: state.posts.map((post) =>
+            post._id === postId ? { ...post, ...(res.data as Post) } : post
+          ),
+        }));
+      }
+    } catch (error: any) {
+      await showErrorToast(error?.message || 'Không thể cập nhật bài viết.');
+    }
+  },
+
+  deletePost: async (postId: string) => {
+    try {
+      const res = await api.deletePost(postId);
+      if (res.success) {
+        set((state) => ({
+          posts: state.posts.filter((post) => post._id !== postId),
+        }));
+      }
+    } catch (error: any) {
+      await showErrorToast(error?.message || 'Không thể xoá bài viết.');
     }
   },
 }));
