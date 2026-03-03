@@ -1,21 +1,21 @@
-import type { ApiResponse } from "@/types/shared";
-import { logger, isDevelopment } from "./logger";
+import type { ApiResponse } from '@/types/shared';
+import { logger, isDevelopment } from './logger';
 
 const resolveApiBaseUrl = () => {
   const envApiUrl = import.meta.env.VITE_API_URL;
   if (envApiUrl) return envApiUrl;
 
-  if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
-    return "/api";
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return '/api';
   }
 
-  return "http://localhost:5001/api";
+  return 'http://localhost:5001/api';
 };
 
 export const API_BASE_URL = resolveApiBaseUrl();
 
 if (isDevelopment) {
-  logger.log("🔗 API Base URL:", API_BASE_URL);
+  logger.log('🔗 API Base URL:', API_BASE_URL);
 }
 
 const DEFAULT_TIMEOUT = 30000;
@@ -27,7 +27,7 @@ export interface ApiOptions extends RequestInit {
 }
 
 const getAuthToken = (): string | null => {
-  const user = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  const user = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
   if (!user) return null;
 
   try {
@@ -48,14 +48,14 @@ const getCsrfToken = async (): Promise<string | null> => {
   csrfTokenPromise = (async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/csrf-token`, {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       });
 
       if (!response.ok) return null;
 
       const data = await response.json();
-      if (data?.success && typeof data.csrfToken === "string") {
+      if (data?.success && typeof data.csrfToken === 'string') {
         csrfTokenCache = data.csrfToken;
         return csrfTokenCache;
       }
@@ -82,36 +82,36 @@ export const apiRequest = async <T = any>(
 ): Promise<T> => {
   const { requiresAuth = true, timeout, ...fetchOptions } = options;
 
-  const method = (fetchOptions.method || "GET").toUpperCase();
-  const isMutatingRequest = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+  const method = (fetchOptions.method || 'GET').toUpperCase();
+  const isMutatingRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
 
   const headers: Record<string, string> = {
     ...(fetchOptions.headers as Record<string, string> | undefined),
   };
 
-  const isFormData = typeof FormData !== "undefined" && fetchOptions.body instanceof FormData;
-  if (!isFormData && !headers["Content-Type"]) {
-    headers["Content-Type"] = "application/json";
+  const isFormData = typeof FormData !== 'undefined' && fetchOptions.body instanceof FormData;
+  if (!isFormData && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
   }
 
   if (requiresAuth) {
     const token = getAuthToken();
     if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+      headers['Authorization'] = `Bearer ${token}`;
     }
   }
 
   if (isMutatingRequest) {
     const csrfToken = await getCsrfToken();
     if (csrfToken) {
-      headers["x-csrf-token"] = csrfToken;
+      headers['x-csrf-token'] = csrfToken;
     }
   }
 
   const url = `${API_BASE_URL}${endpoint}`;
 
   if (isDevelopment) {
-    logger.log("📤 API Request:", url, { method });
+    logger.log('📤 API Request:', url, { method });
   }
 
   const controller = new AbortController();
@@ -121,21 +121,21 @@ export const apiRequest = async <T = any>(
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
-      credentials: "include",
+      credentials: 'include',
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      let errorMessage = "Request failed";
-      let errorType = "unknown";
+      let errorMessage = 'Request failed';
+      let errorType = 'unknown';
       let errorDetails: any = undefined;
 
       try {
         const error = await response.json();
         errorMessage = error.message || error.error || `HTTP error! status: ${response.status}`;
-        errorType = error.type || "unknown";
+        errorType = error.type || 'unknown';
         errorDetails = error;
 
         if (response.status === 403 && isMutatingRequest) {
@@ -143,18 +143,18 @@ export const apiRequest = async <T = any>(
         }
       } catch {
         if (response.status === 503) {
-          errorMessage = "Service temporarily unavailable. Please try again in a few moments.";
+          errorMessage = 'Service temporarily unavailable. Please try again in a few moments.';
         } else if (response.status === 429) {
-          const retryAfter = response.headers.get("Retry-After");
+          const retryAfter = response.headers.get('Retry-After');
           const retryMessage = retryAfter
             ? ` Please try again after ${retryAfter} seconds.`
-            : " Please wait a moment and try again.";
+            : ' Please wait a moment and try again.';
           errorMessage = `Rate limit exceeded.${retryMessage}`;
-          errorType = "server_rate_limit";
+          errorType = 'server_rate_limit';
         } else if (response.status === 401) {
-          errorMessage = "Unauthorized. Please login again.";
+          errorMessage = 'Unauthorized. Please login again.';
         } else if (response.status === 404) {
-          errorMessage = "Resource not found.";
+          errorMessage = 'Resource not found.';
         } else {
           errorMessage = `HTTP error! status: ${response.status}`;
         }
@@ -171,11 +171,11 @@ export const apiRequest = async <T = any>(
   } catch (error: any) {
     clearTimeout(timeoutId);
 
-    if (error?.name === "AbortError" || error?.name === "TimeoutError") {
+    if (error?.name === 'AbortError' || error?.name === 'TimeoutError') {
       const timeoutError = new Error(
-        "Request timeout. Please check your connection and try again."
+        'Request timeout. Please check your connection and try again.'
       );
-      (timeoutError as any).type = "timeout";
+      (timeoutError as any).type = 'timeout';
       (timeoutError as any).status = 408;
       throw timeoutError;
     }
@@ -186,22 +186,22 @@ export const apiRequest = async <T = any>(
 
 export const authApi = {
   login: (email: string, password: string) =>
-    apiRequest<{ success: boolean; data: any }>("/auth/login", {
-      method: "POST",
+    apiRequest<{ success: boolean; data: any }>('/auth/login', {
+      method: 'POST',
       body: JSON.stringify({ email, password }),
       requiresAuth: false,
       timeout: AUTH_TIMEOUT,
     }),
 
   register: (name: string, email: string, password: string) =>
-    apiRequest<{ success: boolean; data?: any; message?: string }>("/auth/register", {
-      method: "POST",
+    apiRequest<{ success: boolean; data?: any; message?: string }>('/auth/register', {
+      method: 'POST',
       body: JSON.stringify({ name, email, password }),
       requiresAuth: false,
       timeout: AUTH_TIMEOUT,
     }),
 
-  getMe: () => apiRequest<{ success: boolean; data: any }>("/auth/me"),
+  getMe: () => apiRequest<{ success: boolean; data: any }>('/auth/me'),
 
   updateProfile: (payload: {
     name?: string;
@@ -223,31 +223,78 @@ export const authApi = {
     };
     isPublicProfile?: boolean;
   }) =>
-    apiRequest<{ success: boolean; data: any }>("/auth/me", {
-      method: "PUT",
+    apiRequest<{ success: boolean; data: any }>('/auth/me', {
+      method: 'PUT',
       body: JSON.stringify(payload),
+    }),
+
+  deleteAccount: () =>
+    apiRequest<{ success: boolean; message: string }>('/auth/me', {
+      method: 'DELETE',
+    }),
+};
+
+export const twoFactorApi = {
+  setup: () =>
+    apiRequest<{ success: boolean; data: { otpauthUrl: string; qrCodeDataUrl: string } }>(
+      '/twoFA/setup',
+      { method: 'POST' }
+    ),
+
+  enable: (token: string) =>
+    apiRequest<{ success: boolean; message: string }>('/twoFA/enable', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    }),
+
+  disable: (token: string) =>
+    apiRequest<{ success: boolean; message: string }>('/twoFA/disable', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
     }),
 };
 
 export const uploadApi = {
   uploadAvatar: (formData: FormData) =>
-    apiRequest<ApiResponse<{ avatar?: string; url?: string }>>("/upload/avatar", {
-      method: "POST",
+    apiRequest<ApiResponse<{ avatar?: string; url?: string }>>('/upload/avatar', {
+      method: 'POST',
       body: formData,
       headers: {},
     }),
 
   uploadCoverPhoto: (formData: FormData) =>
-    apiRequest<ApiResponse<{ coverPhoto?: string; url?: string }>>("/upload/cover-photo", {
-      method: "POST",
+    apiRequest<ApiResponse<{ coverPhoto?: string; url?: string }>>('/upload/cover-photo', {
+      method: 'POST',
       body: formData,
       headers: {},
     }),
 
   uploadPostImage: (formData: FormData) =>
-    apiRequest<ApiResponse<{ url: string; filename: string; size: number }>>("/upload/post-image", {
-      method: "POST",
+    apiRequest<ApiResponse<{ url: string; filename: string; size: number }>>('/upload/post-image', {
+      method: 'POST',
       body: formData,
       headers: {},
+    }),
+};
+
+export const bookmarkApi = {
+  getBookmarks: (type?: 'job' | 'article') =>
+    apiRequest<{ success: boolean; data: any[] }>(type ? `/bookmarks?type=${type}` : '/bookmarks'),
+
+  addBookmark: (type: 'job' | 'article', itemId: string) =>
+    apiRequest<{ success: boolean; data: any }>('/bookmarks', {
+      method: 'POST',
+      body: JSON.stringify({ type, itemId }),
+    }),
+
+  toggleBookmark: (type: 'job' | 'article', itemId: string) =>
+    apiRequest<{ success: boolean; data: any; bookmarked: boolean }>('/bookmarks/toggle', {
+      method: 'POST',
+      body: JSON.stringify({ type, itemId }),
+    }),
+
+  removeBookmark: (id: string) =>
+    apiRequest<{ success: boolean; message: string }>(`/bookmarks/${id}`, {
+      method: 'DELETE',
     }),
 };

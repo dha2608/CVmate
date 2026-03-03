@@ -6,7 +6,7 @@ import { useI18n } from '@/store/i18nStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import BookmarkButton from '@/components/BookmarkButton';
-import { Bookmark, Briefcase, FileText, Trash2, Loader2 } from 'lucide-react';
+import { Bookmark, Briefcase, FileText, Trash2 } from 'lucide-react';
 import { api } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -38,7 +38,7 @@ const Bookmarks = () => {
       setLoadingItems(true);
       try {
         const items: any[] = [];
-        
+
         for (const bookmark of bookmarks) {
           try {
             // Validate itemId - skip if it's a URL or invalid
@@ -66,7 +66,7 @@ const Bookmarks = () => {
             }
           }
         }
-        
+
         setBookmarkItems(items);
       } catch (error) {
         console.error('Failed to load bookmark items:', error);
@@ -78,16 +78,19 @@ const Bookmarks = () => {
     loadBookmarkItems();
   }, [bookmarks]);
 
-  const filteredItems = activeTab === 'all' 
-    ? bookmarkItems 
-    : bookmarkItems.filter(item => item.bookmarkType === activeTab);
+  const filteredItems =
+    activeTab === 'all'
+      ? bookmarkItems
+      : bookmarkItems.filter((item) => item.bookmarkType === activeTab);
 
   const handleRemove = async (bookmarkId: string) => {
     await removeBookmark(bookmarkId);
-    setBookmarkItems(prev => prev.filter(item => item.bookmarkId !== bookmarkId));
+    setBookmarkItems((prev) => prev.filter((item) => item.bookmarkId !== bookmarkId));
   };
 
-  if (!user) {return null;}
+  if (!user) {
+    return null;
+  }
 
   return (
     <MainLayout>
@@ -116,11 +119,10 @@ const Bookmarks = () => {
                   : 'dark:bg-gray-700 dark:text-white dark:border-gray-600'
               }`}
             >
-              {tab === 'all' ? t('common.all') : 
-               tab === 'job' ? t('nav.jobs') : t('nav.blog')}
+              {tab === 'all' ? t('common.all') : tab === 'job' ? t('nav.jobs') : t('nav.blog')}
               {tab !== 'all' && (
                 <span className="ml-2 bg-white/20 dark:bg-gray-600 px-1.5 py-0.5 rounded text-xs">
-                  {bookmarkItems.filter(item => item.bookmarkType === tab).length}
+                  {bookmarkItems.filter((item) => item.bookmarkType === tab).length}
                 </span>
               )}
             </Button>
@@ -131,7 +133,10 @@ const Bookmarks = () => {
         {isLoading || loadingItems ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+              <div
+                key={i}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4"
+              >
                 <div className="flex items-start gap-4">
                   <Skeleton variant="rectangular" width={80} height={80} className="rounded-lg" />
                   <div className="flex-1 space-y-2">
@@ -150,11 +155,11 @@ const Bookmarks = () => {
               Chưa có bookmarks
             </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6">
-              {activeTab === 'all' 
+              {activeTab === 'all'
                 ? 'Bắt đầu lưu các công việc và bài viết bạn quan tâm'
                 : activeTab === 'job'
-                ? 'Lưu các công việc bạn muốn xem lại sau'
-                : 'Lưu các bài viết hữu ích để đọc sau'}
+                  ? 'Lưu các công việc bạn muốn xem lại sau'
+                  : 'Lưu các bài viết hữu ích để đọc sau'}
             </p>
             <Button
               onClick={() => navigate(activeTab === 'job' ? '/jobs' : '/blog')}
@@ -171,21 +176,23 @@ const Bookmarks = () => {
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-md transition-all duration-300"
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    item.bookmarkType === 'job' 
-                      ? 'bg-blue-100 dark:bg-blue-900/20' 
-                      : 'bg-green-100 dark:bg-green-900/20'
-                  }`}>
+                  <div
+                    className={`w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      item.bookmarkType === 'job'
+                        ? 'bg-blue-100 dark:bg-blue-900/20'
+                        : 'bg-green-100 dark:bg-green-900/20'
+                    }`}
+                  >
                     {item.bookmarkType === 'job' ? (
                       <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
                     ) : (
                       <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
                     )}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 
+                      <h3
                         className="text-base sm:text-lg font-bold text-gray-900 dark:text-white hover:text-crimson-red dark:hover:text-red-400 transition-colors cursor-pointer line-clamp-2"
                         onClick={() => {
                           if (item.bookmarkType === 'job') {
@@ -198,9 +205,9 @@ const Bookmarks = () => {
                         {item.title}
                       </h3>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <BookmarkButton 
-                          type={item.bookmarkType} 
-                          itemId={item._id || item.bookmarkId} 
+                        <BookmarkButton
+                          type={item.bookmarkType}
+                          itemId={item._id || item.bookmarkId}
                         />
                         <Button
                           variant="ghost"
@@ -213,7 +220,7 @@ const Bookmarks = () => {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {item.bookmarkType === 'job' ? (
                       <>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
