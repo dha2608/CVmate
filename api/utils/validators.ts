@@ -422,7 +422,7 @@ export const aiGenerateFullSchema = z.object({
   prompt: z.string().max(5000).trim().optional(),
   jobDescription: z.string().max(10000).trim().optional(),
   role: z.string().max(200).trim().optional(),
-  mode: z.enum(['scratch', 'enhance']).optional().default('scratch'),
+  mode: z.enum(['concise', 'human']).optional().default('human'),
 });
 
 /**

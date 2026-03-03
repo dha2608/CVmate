@@ -176,8 +176,10 @@ app.use((req, res, next) => {
   return csrfProtection(req, res, next);
 });
 
-// Expose CSRF token for frontend to fetch and cache
-app.get('/api/csrf-token', (req: Request, res: Response) => {
+// Expose CSRF token for frontend to fetch and cache.
+// Apply csrfProtection specifically here so req.csrfToken() is available
+// (the global middleware above skips /api/ routes).
+app.get('/api/csrf-token', csrfProtection, (req: Request, res: Response) => {
   res.json({
     success: true,
     csrfToken: (req as any).csrfToken(),

@@ -30,19 +30,13 @@ export function broadcastNotification(userId: string, notification: unknown): vo
 export const notificationEvents = async (req: AuthRequest, res: Response) => {
   const userId = (req.user?._id as import('mongoose').Types.ObjectId).toString();
 
-  // SSE headers — include CORS explicitly for cross-origin EventSource connections
-  const origin = req.headers.origin;
+  // SSE headers — CORS is handled by the Express cors middleware (via res.setHeader),
+  // which validates origins against the allowlist. writeHead merges those headers automatically.
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
     'X-Accel-Buffering': 'no',
-    ...(origin
-      ? {
-          'Access-Control-Allow-Origin': origin,
-          'Access-Control-Allow-Credentials': 'true',
-        }
-      : {}),
   });
 
   // Send initial unread count

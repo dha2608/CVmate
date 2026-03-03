@@ -244,19 +244,13 @@ export const messageEvents = async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  // Set SSE headers — include CORS explicitly for cross-origin EventSource connections
-  const origin = req.headers.origin;
+  // Set SSE headers — CORS is handled by the Express cors middleware (via res.setHeader),
+  // which validates origins against the allowlist. writeHead merges those headers automatically.
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
     'X-Accel-Buffering': 'no',
-    ...(origin
-      ? {
-          'Access-Control-Allow-Origin': origin,
-          'Access-Control-Allow-Credentials': 'true',
-        }
-      : {}),
   });
 
   // Send initial connected event
