@@ -3,6 +3,7 @@ import { Response, NextFunction } from 'express';
 import Message from '../models/Message.js';
 import User from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import { getSseCorsHeaders } from '../utils/cors.js';
 
 /**
  * In-memory typing state.
@@ -244,13 +245,15 @@ export const messageEvents = async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  // Set SSE headers — CORS is handled by the Express cors middleware (via res.setHeader),
-  // which validates origins against the allowlist. writeHead merges those headers automatically.
+  // Set SSE headers — explicit validated CORS headers required for writeHead()
+  // because Express cors middleware's setHeader() headers don't survive proxy 502s.
+  const corsHeaders = getSseCorsHeaders(req.headers.origin);
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
     'X-Accel-Buffering': 'no',
+    ...corsHeaders,
   });
 
   // Send initial connected event
