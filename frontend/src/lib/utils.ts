@@ -102,14 +102,18 @@ export const api = {
 
   // Dashboard
   getDashboardStats: () => apiRequest<{ success: boolean; data: any }>('/dashboard/stats'),
+  getActivities: (limit = 10) =>
+    apiRequest<{ success: boolean; data: any[] }>(`/dashboard/activities?limit=${limit}`),
 
   // Community / Posts
-  getPosts: (page = 1, limit = 10, sort = 'new') =>
+  getPosts: (page = 1, limit = 10, sort = 'new', search = '') =>
     apiRequest<{
       success: boolean;
       data: any[];
       pagination: { page: number; limit: number; total: number; pages: number };
-    }>(`/posts?page=${page}&limit=${limit}&sort=${sort}`),
+    }>(
+      `/posts?page=${page}&limit=${limit}&sort=${sort}${search ? `&search=${encodeURIComponent(search)}` : ''}`
+    ),
 
   createPost: (content: string, imageUrl?: string) =>
     apiRequest<{ success: boolean; data: any }>('/posts', {
@@ -144,17 +148,40 @@ export const api = {
       method: 'DELETE',
     }),
 
+  updatePost: (postId: string, content: string, image?: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/posts/${postId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content, image }),
+    }),
+
+  deletePost: (postId: string) =>
+    apiRequest<{ success: boolean; message: string }>(`/posts/${postId}`, {
+      method: 'DELETE',
+    }),
+
+  followUser: (userId: string) =>
+    apiRequest<{
+      success: boolean;
+      data: { isFollowing: boolean; followersCount: number; followingCount: number };
+    }>(`/auth/users/${userId}/follow`, {
+      method: 'POST',
+    }),
+
   // Achievements
   getAchievements: () => apiRequest<{ success: boolean; data: any[] }>('/achievements'),
 
   getAchievementStats: () => apiRequest<{ success: boolean; data: any }>('/achievements/stats'),
 
   // Articles & News
-  getArticles: (options?: { timeout?: number; requiresAuth?: boolean }) =>
-    apiRequest<{ success: boolean; data: any[] }>('/articles', {
-      requiresAuth: options?.requiresAuth ?? false,
-      timeout: options?.timeout,
-    }),
+  getArticles: (page = 1, limit = 9, category?: string, search?: string) =>
+    apiRequest<{
+      success: boolean;
+      data: any[];
+      pagination?: { page: number; limit: number; total: number; pages: number };
+    }>(
+      `/articles?page=${page}&limit=${limit}${category ? `&category=${encodeURIComponent(category)}` : ''}${search ? `&search=${encodeURIComponent(search)}` : ''}`,
+      { requiresAuth: false }
+    ),
 
   getArticle: (id: string) => apiRequest<{ success: boolean; data: any }>(`/articles/${id}`),
 
@@ -162,6 +189,25 @@ export const api = {
     apiRequest<{ success: boolean; data: any; message?: string }>('/articles', {
       method: 'POST',
       body: JSON.stringify(payload),
+    }),
+
+  likeArticle: (id: string) =>
+    apiRequest<{ success: boolean; data: { likes: number; isLiked: boolean } }>(
+      `/articles/${id}/like`,
+      {
+        method: 'POST',
+      }
+    ),
+
+  addArticleComment: (id: string, content: string) =>
+    apiRequest<{ success: boolean; data: any }>(`/articles/${id}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    }),
+
+  deleteArticleComment: (id: string, commentId: string) =>
+    apiRequest<{ success: boolean }>(`/articles/${id}/comments/${commentId}`, {
+      method: 'DELETE',
     }),
 
   getNews: (limit?: number) =>
@@ -371,6 +417,86 @@ export const api = {
     apiRequest<{ success: boolean; data: { message: string } }>('/chat', {
       method: 'POST',
       body: JSON.stringify({ message, conversationHistory }),
+    }),
+
+  // User search
+  searchUsers: (q: string, page = 1, limit = 10) =>
+    apiRequest<{
+      success: boolean;
+      data: Array<{
+        _id: string;
+        name: string;
+        avatar?: string;
+        headline?: string;
+        skills?: string[];
+        currentRole?: string;
+        location?: string;
+      }>;
+      pagination: { page: number; limit: number; total: number; pages: number };
+    }>(`/auth/users/search?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`),
+
+  // Followers/Following lists
+  getFollowers: (userId: string, page = 1, limit = 20) =>
+    apiRequest<{
+      success: boolean;
+      data: Array<{
+        _id: string;
+        name: string;
+        avatar?: string;
+        headline?: string;
+        currentRole?: string;
+      }>;
+      pagination: { page: number; limit: number; total: number; pages: number };
+    }>(`/auth/users/${userId}/followers?page=${page}&limit=${limit}`, { requiresAuth: false }),
+
+  getFollowing: (userId: string, page = 1, limit = 20) =>
+    apiRequest<{
+      success: boolean;
+      data: Array<{
+        _id: string;
+        name: string;
+        avatar?: string;
+        headline?: string;
+        currentRole?: string;
+      }>;
+      pagination: { page: number; limit: number; total: number; pages: number };
+    }>(`/auth/users/${userId}/following?page=${page}&limit=${limit}`, { requiresAuth: false }),
+
+  // User achievements (public)
+  getUserAchievements: (userId: string) =>
+    apiRequest<{
+      success: boolean;
+      data: Array<{
+        _id: string;
+        type: string;
+        unlockedAt: string;
+        metadata?: Record<string, unknown>;
+      }>;
+    }>(`/auth/users/${userId}/achievements`, { requiresAuth: false }),
+
+  // User posts
+  getUserPosts: (userId: string, page = 1, limit = 10) =>
+    apiRequest<{
+      success: boolean;
+      data: any[];
+      pagination?: { page: number; limit: number; total: number; pages: number };
+    }>(`/posts?author=${userId}&page=${page}&limit=${limit}`, { requiresAuth: false }),
+
+  // Job Alerts
+  getJobAlerts: () => apiRequest<{ success: boolean; alerts: any[] }>('/job-alerts'),
+
+  createJobAlert: (name: string, filters: Record<string, any>) =>
+    apiRequest<{ success: boolean; alert: any }>('/job-alerts', {
+      method: 'POST',
+      body: JSON.stringify({ name, filters }),
+    }),
+
+  deleteJobAlert: (id: string) =>
+    apiRequest<{ success: boolean }>(`/job-alerts/${id}`, { method: 'DELETE' }),
+
+  toggleJobAlert: (id: string) =>
+    apiRequest<{ success: boolean; alert: any }>(`/job-alerts/${id}/toggle`, {
+      method: 'PATCH',
     }),
 
   // Uploads
