@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useCommunityStore } from '@/store/communityStore';
 import { useAuthStore } from '@/store/authStore';
 import { useI18n } from '@/store/i18nStore';
@@ -6,7 +6,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import CreatePost from '@/components/community/CreatePost';
 import PostCard from '@/components/community/PostCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Loader2, Flame, Clock, TrendingUp } from 'lucide-react';
+import { MessageSquare, Loader2, Flame, Clock, TrendingUp, Search, X } from 'lucide-react';
 
 const SORT_OPTIONS = [
   { value: 'new' as const, icon: Clock, labelKey: 'community.new' },
@@ -16,10 +16,39 @@ const SORT_OPTIONS = [
 
 const Community = () => {
   const { user } = useAuthStore();
-  const { posts, fetchPosts, loadMore, isLoading, isLoadingMore, hasMore, sort, setSort } =
-    useCommunityStore();
+  const {
+    posts,
+    fetchPosts,
+    loadMore,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    sort,
+    setSort,
+    search,
+    setSearch,
+  } = useCommunityStore();
   const { t } = useI18n();
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const [searchInput, setSearchInput] = useState('');
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Debounced search
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchInput(value);
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = setTimeout(() => {
+        setSearch(value);
+      }, 400);
+    },
+    [setSearch]
+  );
+
+  const clearSearch = useCallback(() => {
+    setSearchInput('');
+    setSearch('');
+  }, [setSearch]);
 
   useEffect(() => {
     fetchPosts();
@@ -56,22 +85,45 @@ const Community = () => {
 
   return (
     <MainLayout>
-      {/* Sort Tabs */}
-      <div className="flex items-center gap-1 mb-4 px-2">
-        {SORT_OPTIONS.map(({ value, icon: Icon, labelKey }) => (
-          <button
-            key={value}
-            onClick={() => setSort(value)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              sort === value
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-            }`}
-          >
-            <Icon className="w-3.5 h-3.5" />
-            {t(labelKey)}
-          </button>
-        ))}
+      {/* Search + Sort */}
+      <div className="space-y-3 mb-4">
+        {/* Search bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder={t('common.search') + '...'}
+            className="w-full pl-10 pr-10 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
+          />
+          {searchInput && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Sort Tabs */}
+        <div className="flex items-center gap-1 px-2">
+          {SORT_OPTIONS.map(({ value, icon: Icon, labelKey }) => (
+            <button
+              key={value}
+              onClick={() => setSort(value)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                sort === value
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {t(labelKey)}
+            </button>
+          ))}
+        </div>
       </div>
 
       <CreatePost />
