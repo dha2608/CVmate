@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18n } from '@/store/i18nStore';
 import { useToastStore } from '@/store/toastStore';
@@ -22,9 +22,54 @@ import {
   Linkedin,
   Github,
   Globe2,
+  CheckCircle2,
+  Circle,
 } from 'lucide-react';
 import { api } from '@/lib/utils';
 import PayPalButton from '@/components/PayPalButton';
+
+interface CompletionField {
+  key: string;
+  label: string;
+  filled: boolean;
+}
+
+const ProfileCompletionBar = memo(({ fields }: { fields: CompletionField[] }) => {
+  const filledCount = fields.filter((f) => f.filled).length;
+  const total = fields.length;
+  const percent = Math.round((filledCount / total) * 100);
+
+  if (percent === 100) return null;
+
+  return (
+    <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/20">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Hoàn thiện hồ sơ</h3>
+        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{percent}%</span>
+      </div>
+      <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-3">
+        <div
+          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <div className="flex flex-wrap gap-x-4 gap-y-1">
+        {fields.map((f) => (
+          <span
+            key={f.key}
+            className={`inline-flex items-center gap-1 text-xs ${
+              f.filled ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'
+            }`}
+          >
+            {f.filled ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
+            {f.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+});
+ProfileCompletionBar.displayName = 'ProfileCompletionBar';
 
 const resolveAssetUrl = (url?: string) => {
   if (!url) return '';
@@ -103,6 +148,26 @@ const Profile = () => {
     }
     return false;
   }, [formData, originalData]);
+
+  const completionFields = useMemo<CompletionField[]>(
+    () => [
+      { key: 'name', label: 'Họ tên', filled: !!formData.name.trim() },
+      { key: 'avatar', label: 'Ảnh đại diện', filled: !!formData.avatar?.trim() },
+      { key: 'bio', label: 'Giới thiệu', filled: !!formData.bio.trim() },
+      { key: 'headline', label: 'Headline', filled: !!formData.headline.trim() },
+      { key: 'location', label: 'Vị trí', filled: !!formData.location.trim() },
+      { key: 'yearsOfExperience', label: 'Kinh nghiệm', filled: !!formData.yearsOfExperience },
+      { key: 'currentRole', label: 'Vị trí hiện tại', filled: !!formData.currentRole.trim() },
+      { key: 'industries', label: 'Ngành', filled: !!formData.industries.trim() },
+      { key: 'skills', label: 'Kỹ năng', filled: !!formData.skills.trim() },
+      {
+        key: 'socialLinks',
+        label: 'Liên kết',
+        filled: !!(formData.linkedin || formData.github || formData.portfolio),
+      },
+    ],
+    [formData]
+  );
 
   useEffect(() => {
     if (hasChanges) {
@@ -599,6 +664,8 @@ const Profile = () => {
                 )}
               </div>
             </div>
+
+            <ProfileCompletionBar fields={completionFields} />
 
             <div className="space-y-4 sm:space-y-6">
               <div className="space-y-2">
