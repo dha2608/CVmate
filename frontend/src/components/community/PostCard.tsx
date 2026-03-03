@@ -11,20 +11,24 @@ interface PostCardProps {
 }
 
 const normalizeImageUrl = (url: string | undefined | null): string | null => {
-  if (!url || typeof url !== 'string') {return null;}
-  
+  if (!url || typeof url !== 'string') {
+    return null;
+  }
+
   const trimmed = url.trim();
-  if (!trimmed) {return null;}
-  
+  if (!trimmed) {
+    return null;
+  }
+
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return trimmed;
   }
-  
+
   if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
     return `${baseUrl.replace('/api', '')}/${trimmed.startsWith('/') ? trimmed.slice(1) : trimmed}`;
   }
-  
+
   return trimmed;
 };
 
@@ -44,7 +48,7 @@ const PostCardComponent = ({ post }: PostCardProps) => {
   const postUserName = postUser?.name?.trim() || 'Người dùng';
   const postUserCareerGoal = postUser?.careerGoal;
   const postUserLocation = postUser?.location;
-  
+
   const normalizedAvatar = normalizeImageUrl(postUser?.avatar);
   const normalizedPostImage = normalizeImageUrl(post?.image);
 
@@ -53,7 +57,9 @@ const PostCardComponent = ({ post }: PostCardProps) => {
   const isLiked = postLikes.includes(user?._id);
 
   const handleLike = () => {
-    if (!post?._id) {return;}
+    if (!post?._id) {
+      return;
+    }
     likePost(post._id);
   };
 
@@ -80,7 +86,10 @@ const PostCardComponent = ({ post }: PostCardProps) => {
   };
 
   return (
-    <div id={`post-${post?._id || 'unknown'}`} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-4 relative z-0">
+    <div
+      id={`post-${post?._id || 'unknown'}`}
+      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-4 relative z-0"
+    >
       <div className="flex items-center mb-3">
         <button
           className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold overflow-hidden focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-crimson-red"
@@ -88,9 +97,9 @@ const PostCardComponent = ({ post }: PostCardProps) => {
           aria-label={postUserName}
         >
           {normalizedAvatar && !avatarError ? (
-            <img 
-              src={normalizedAvatar} 
-              className="h-full w-full rounded-full object-cover" 
+            <img
+              src={normalizedAvatar}
+              className="h-full w-full rounded-full object-cover"
               alt={postUserName}
               loading="lazy"
               onError={() => setAvatarError(true)}
@@ -107,29 +116,31 @@ const PostCardComponent = ({ post }: PostCardProps) => {
           >
             {postUserName}
           </button>
-          <p className="text-[11px] text-gray-600 dark:text-gray-400">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
             {postUserCareerGoal === 'new-job'
               ? 'Job Seeker'
               : postUserCareerGoal === 'internship'
-              ? 'Intern'
-              : postUserCareerGoal === 'career-switch'
-              ? 'Career Switcher'
-              : 'Professional'}
+                ? 'Intern'
+                : postUserCareerGoal === 'career-switch'
+                  ? 'Career Switcher'
+                  : 'Professional'}
             {postUserLocation ? ` • ${postUserLocation}` : ''}
           </p>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             {post?.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}
           </p>
         </div>
       </div>
 
-      <p className="text-gray-800 dark:text-gray-100 mb-3 whitespace-pre-wrap">{post?.content || ''}</p>
+      <p className="text-gray-800 dark:text-gray-100 mb-3 whitespace-pre-wrap">
+        {post?.content || ''}
+      </p>
       {normalizedPostImage && !imageError && (
         <div className="w-full mb-3 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-          <img 
-            src={normalizedPostImage} 
-            alt="Post content" 
-            className="w-full h-auto object-contain max-h-[500px] mx-auto" 
+          <img
+            src={normalizedPostImage}
+            alt="Post content"
+            className="w-full h-auto object-contain max-h-[500px] mx-auto"
             loading="lazy"
             onError={() => setImageError(true)}
           />
@@ -138,29 +149,24 @@ const PostCardComponent = ({ post }: PostCardProps) => {
 
       <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-2">
         <div className="flex gap-4">
-            <button 
-                onClick={handleLike}
+          <button
+            onClick={handleLike}
             className={`flex items-center gap-1 text-sm font-medium ${isLiked ? 'text-crimson-red' : 'text-gray-600 dark:text-gray-300 hover:text-crimson-red'}`}
-            >
-                <span>{isLiked ? '❤️' : '🤍'}</span>
+          >
+            <span>{isLiked ? '❤️' : '🤍'}</span>
             <span>{postLikes.length} Likes</span>
-            </button>
-            <button 
-                onClick={() => setShowComments(!showComments)}
+          </button>
+          <button
+            onClick={() => setShowComments(!showComments)}
             className="flex items-center gap-1 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-crimson-red"
-            >
-                <span>💬</span>
+          >
+            <span>💬</span>
             <span>{postComments.length} Comments</span>
-            </button>
+          </button>
         </div>
 
         {postUserId !== user?._id && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleMessage}
-            className="text-xs"
-          >
+          <Button variant="outline" size="sm" onClick={handleMessage} className="text-xs">
             Nhắn tin
           </Button>
         )}
@@ -169,42 +175,42 @@ const PostCardComponent = ({ post }: PostCardProps) => {
       {showComments && (
         <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-3">
           {postComments
-              .filter((c: any) => !c.parentId)
-              .map((comment: any) => {
+            .filter((c: any) => !c.parentId)
+            .map((comment: any) => {
               const replies = postComments.filter((c: any) => c.parentId === comment._id);
-                return (
-                  <CommentItem
-                    key={comment._id}
-                    comment={{ ...comment, replies }}
-                    postId={post._id}
-                    onReply={(commentId, text) => {
-                      commentPost(post._id, text, commentId);
-                    }}
-                    onEdit={(commentId, text) => {
-                      updateComment(post._id, commentId, text);
-                    }}
-                    onDelete={(commentId) => {
-                      deleteComment(post._id, commentId);
-                    }}
-                    onLike={(commentId) => {
-                      likeComment(post._id, commentId);
-                    }}
-                  />
-                );
-              })}
-            
-            <form onSubmit={handleComment} className="flex gap-2 mt-3">
-                <input
-                    type="text"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Write a comment..."
-              className="flex-1 border border-gray-300 dark:border-gray-600 rounded-full px-3 py-1 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-crimson-red"
+              return (
+                <CommentItem
+                  key={comment._id}
+                  comment={{ ...comment, replies }}
+                  postId={post._id}
+                  onReply={(commentId, text) => {
+                    commentPost(post._id, text, commentId);
+                  }}
+                  onEdit={(commentId, text) => {
+                    updateComment(post._id, commentId, text);
+                  }}
+                  onDelete={(commentId) => {
+                    deleteComment(post._id, commentId);
+                  }}
+                  onLike={(commentId) => {
+                    likeComment(post._id, commentId);
+                  }}
                 />
+              );
+            })}
+
+          <form onSubmit={handleComment} className="flex gap-2 mt-3">
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Write a comment..."
+              className="flex-1 border border-gray-300 dark:border-gray-600 rounded-full px-3 py-1 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-crimson-red"
+            />
             <Button type="submit" size="sm" variant="ghost" disabled={!commentText.trim()}>
-                    Post
-                </Button>
-            </form>
+              Post
+            </Button>
+          </form>
         </div>
       )}
     </div>

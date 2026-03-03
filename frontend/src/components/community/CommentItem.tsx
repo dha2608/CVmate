@@ -6,9 +6,13 @@ import { Heart, Reply, Edit2, Trash2, MoreVertical, X } from 'lucide-react';
 import { useConfirmDialog } from '@/components/ui/confirm-dialog';
 
 const normalizeImageUrl = (url: string | undefined | null): string | null => {
-  if (!url || typeof url !== 'string') {return null;}
+  if (!url || typeof url !== 'string') {
+    return null;
+  }
   const trimmed = url.trim();
-  if (!trimmed) {return null;}
+  if (!trimmed) {
+    return null;
+  }
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return trimmed;
   }
@@ -58,7 +62,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const [editText, setEditText] = useState(comment.text);
   const [showMenu, setShowMenu] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-  
+
   const commentUser = comment?.user ?? null;
   const commentUserId = commentUser?._id;
   const commentUserName = commentUser?.name?.trim() || 'Người dùng';
@@ -69,20 +73,24 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const maxDepth = 2;
 
   const handleReply = () => {
-    if (!replyText.trim()) {return;}
+    if (!replyText.trim()) {
+      return;
+    }
     onReply?.(comment._id, replyText);
     setReplyText('');
     setIsReplying(false);
   };
 
   const handleEdit = () => {
-    if (!editText.trim()) {return;}
+    if (!editText.trim()) {
+      return;
+    }
     onEdit?.(comment._id, editText);
     setIsEditing(false);
   };
 
   const confirmDialog = useConfirmDialog();
-  
+
   const handleDelete = async () => {
     const confirmed = await confirmDialog({
       title: 'Delete Comment',
@@ -108,7 +116,10 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   return (
-    <div id={`comment-${comment._id}`} className={`${depth > 0 ? 'ml-6 border-l-2 border-gray-200 dark:border-gray-700 pl-3' : ''}`}>
+    <div
+      id={`comment-${comment._id}`}
+      className={`${depth > 0 ? 'ml-6 border-l-2 border-gray-200 dark:border-gray-700 pl-3' : ''}`}
+    >
       <div className="flex gap-2 group">
         <button
           onClick={() => commentUserId && navigate(`/u/${commentUserId}`)}
@@ -126,7 +137,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
             <span>{commentUserName?.charAt(0)?.toUpperCase() || 'U'}</span>
           )}
         </button>
-        
+
         <div className="flex-1 min-w-0">
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2.5 relative border border-gray-100 dark:border-gray-700">
             <div className="flex items-start justify-between mb-1">
@@ -137,11 +148,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 >
                   {commentUserName}
                 </button>
-                <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   {new Date(comment.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              
+
               {isOwner && (
                 <div className="relative">
                   <button
@@ -150,7 +161,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                   >
                     <MoreVertical size={14} />
                   </button>
-                  
+
                   {showMenu && (
                     <div className="absolute right-0 top-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-[120px]">
                       <button
@@ -175,7 +186,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 </div>
               )}
             </div>
-            
+
             {isEditing ? (
               <div className="space-y-2">
                 <textarea
@@ -221,7 +232,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 })}
               </p>
             )}
-            
+
             <div className="flex items-center gap-4 mt-2">
               <button
                 onClick={handleLike}
@@ -234,7 +245,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 <Heart size={12} className={isLiked ? 'fill-current' : ''} />
                 <span>{comment.likes?.length || 0}</span>
               </button>
-              
+
               {depth < maxDepth && (
                 <button
                   onClick={() => {
@@ -251,7 +262,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               )}
             </div>
           </div>
-          
+
           {isReplying && (
             <div className="mt-2 space-y-2">
               <textarea
@@ -263,7 +274,12 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 autoFocus
               />
               <div className="flex gap-2">
-                <Button size="sm" onClick={handleReply} className="h-7 text-xs" disabled={!replyText.trim()}>
+                <Button
+                  size="sm"
+                  onClick={handleReply}
+                  className="h-7 text-xs"
+                  disabled={!replyText.trim()}
+                >
                   Reply
                 </Button>
                 <Button
@@ -282,7 +298,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           )}
         </div>
       </div>
-      
+
       {comment.replies && comment.replies.length > 0 && (
         <div className="mt-2 space-y-2">
           {comment.replies.map((reply) => (
