@@ -46,7 +46,9 @@ const Admin = () => {
   const [userSearch, setUserSearch] = useState('');
 
   const [posts, setPosts] = useState<any[]>([]);
-  const [postStatusFilter, setPostStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [postStatusFilter, setPostStatusFilter] = useState<
+    'all' | 'pending' | 'approved' | 'rejected'
+  >('all');
 
   const [articles, setArticles] = useState<any[]>([]);
   const [jobs, setJobs] = useState<any[]>([]);
@@ -60,14 +62,8 @@ const Admin = () => {
 
     const load = async () => {
       setLoading(true);
-    try {
-        await Promise.all([
-          loadOverview(),
-          loadUsers(),
-          loadPosts(),
-          loadArticles(),
-          loadJobs(),
-        ]);
+      try {
+        await Promise.all([loadOverview(), loadUsers(), loadPosts(), loadArticles(), loadJobs()]);
       } finally {
         setLoading(false);
       }
@@ -270,11 +266,36 @@ const Admin = () => {
   const tabHeader = useMemo(
     () => (
       <div className="flex flex-wrap gap-2">
-        <button className={tabButtonClass(activeTab === 'overview')} onClick={() => setActiveTab('overview')}>Overview</button>
-        <button className={tabButtonClass(activeTab === 'users')} onClick={() => setActiveTab('users')}>Users</button>
-        <button className={tabButtonClass(activeTab === 'posts')} onClick={() => setActiveTab('posts')}>Posts</button>
-        <button className={tabButtonClass(activeTab === 'articles')} onClick={() => setActiveTab('articles')}>Articles</button>
-        <button className={tabButtonClass(activeTab === 'jobs')} onClick={() => setActiveTab('jobs')}>Jobs</button>
+        <button
+          className={tabButtonClass(activeTab === 'overview')}
+          onClick={() => setActiveTab('overview')}
+        >
+          Overview
+        </button>
+        <button
+          className={tabButtonClass(activeTab === 'users')}
+          onClick={() => setActiveTab('users')}
+        >
+          Users
+        </button>
+        <button
+          className={tabButtonClass(activeTab === 'posts')}
+          onClick={() => setActiveTab('posts')}
+        >
+          Posts
+        </button>
+        <button
+          className={tabButtonClass(activeTab === 'articles')}
+          onClick={() => setActiveTab('articles')}
+        >
+          Articles
+        </button>
+        <button
+          className={tabButtonClass(activeTab === 'jobs')}
+          onClick={() => setActiveTab('jobs')}
+        >
+          Jobs
+        </button>
       </div>
     ),
     [activeTab]
@@ -288,8 +309,12 @@ const Admin = () => {
         <div className="max-w-3xl mx-auto py-16 text-center">
           <XCircle className="mx-auto text-red-500 mb-4" size={56} />
           <h1 className="text-2xl font-bold mb-2">Access denied</h1>
-          <p className="text-gray-600 dark:text-gray-300">You need admin privileges to view this page.</p>
-          <Button className="mt-6" onClick={() => navigate('/dashboard')}>Back to dashboard</Button>
+          <p className="text-gray-600 dark:text-gray-300">
+            You need admin privileges to view this page.
+          </p>
+          <Button className="mt-6" onClick={() => navigate('/dashboard')}>
+            Back to dashboard
+          </Button>
         </div>
       </MainLayout>
     );
@@ -301,12 +326,16 @@ const Admin = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 sm:p-6 lg:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
             <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
-              <Shield size={20} />
-            </div>
-            <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Admin Management Console</h1>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Manage users, content, jobs, subscriptions, and moderation actions.</p>
+              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
+                <Shield size={20} />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                  Admin Management Console
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                  Manage users, content, jobs, subscriptions, and moderation actions.
+                </p>
               </div>
             </div>
 
@@ -317,23 +346,68 @@ const Admin = () => {
           </div>
 
           {tabHeader}
-              </div>
+        </div>
 
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <OverviewCard icon={<Users size={18} />} label="Users" value={overview?.usersCount ?? 0} />
-            <OverviewCard icon={<Ban size={18} />} label="Banned Users" value={overview?.bannedUsersCount ?? 0} />
-            <OverviewCard icon={<MessageSquare size={18} />} label="Posts" value={overview?.postsCount ?? 0} />
-            <OverviewCard icon={<CheckCircle2 size={18} />} label="Pending Posts" value={overview?.pendingPostsCount ?? 0} />
-            <OverviewCard icon={<FileText size={18} />} label="Articles" value={overview?.articlesCount ?? 0} />
-            <OverviewCard icon={<Briefcase size={18} />} label="Jobs" value={overview?.jobsCount ?? 0} />
-            <OverviewCard icon={<Crown size={18} />} label="Premium Users" value={overview?.premiumUsersCount ?? 0} />
-            <OverviewCard icon={<DollarSign size={18} />} label="Revenue Signals" value={(overview?.premiumUsersCount ?? 0) * 9.99} suffix="USD/mo" />
+            <OverviewCard
+              icon={<Users size={18} />}
+              label="Users"
+              value={overview?.usersCount ?? 0}
+            />
+            <OverviewCard
+              icon={<Ban size={18} />}
+              label="Banned Users"
+              value={overview?.bannedUsersCount ?? 0}
+            />
+            <OverviewCard
+              icon={<MessageSquare size={18} />}
+              label="Posts"
+              value={overview?.postsCount ?? 0}
+            />
+            <OverviewCard
+              icon={<CheckCircle2 size={18} />}
+              label="Pending Posts"
+              value={overview?.pendingPostsCount ?? 0}
+            />
+            <OverviewCard
+              icon={<FileText size={18} />}
+              label="Articles"
+              value={overview?.articlesCount ?? 0}
+            />
+            <OverviewCard
+              icon={<Briefcase size={18} />}
+              label="Jobs"
+              value={overview?.jobsCount ?? 0}
+            />
+            <OverviewCard
+              icon={<Crown size={18} />}
+              label="Premium Users"
+              value={overview?.premiumUsersCount ?? 0}
+            />
+            <OverviewCard
+              icon={<DollarSign size={18} />}
+              label="Total Revenue"
+              value={overview?.totalRevenue ?? 0}
+              suffix="USD"
+            />
+            <OverviewCard
+              icon={<DollarSign size={18} />}
+              label="Monthly Subs"
+              value={overview?.premiumMonthlyCount ?? 0}
+              suffix={`× $8/mo`}
+            />
+            <OverviewCard
+              icon={<DollarSign size={18} />}
+              label="Yearly Subs"
+              value={overview?.premiumYearlyCount ?? 0}
+              suffix={`× $80/yr`}
+            />
           </div>
         )}
 
         {activeTab === 'users' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 sm:p-6 lg:p-8 space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 sm:p-6 lg:p-8 space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <Input
                 value={userSearch}
@@ -341,7 +415,9 @@ const Admin = () => {
                 placeholder="Search by name or email"
                 className="max-w-sm"
               />
-              <Button variant="outline" onClick={loadUsers}>Search</Button>
+              <Button variant="outline" onClick={loadUsers}>
+                Search
+              </Button>
             </div>
 
             <div className="overflow-x-auto">
@@ -363,18 +439,32 @@ const Admin = () => {
                         <div className="text-xs text-gray-500">{u.email}</div>
                       </td>
                       <td className="py-3">{u.role}</td>
-                      <td className="py-3">{u.subscription?.plan || 'free'} / {u.subscription?.status || 'active'}</td>
+                      <td className="py-3">
+                        {u.subscription?.plan || 'free'} / {u.subscription?.status || 'active'}
+                      </td>
                       <td className="py-3">{u.isBanned ? 'Banned' : 'Active'}</td>
                       <td className="py-3">
                         <div className="flex justify-end flex-wrap gap-2">
                           <Button size="sm" variant="outline" onClick={() => handleRoleToggle(u)}>
                             {u.role === 'admin' ? 'Set User' : 'Set Admin'}
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => handleSubscriptionToggle(u)}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleSubscriptionToggle(u)}
+                          >
                             {u.subscription?.plan === 'premium' ? 'Set Free' : 'Set Premium'}
                           </Button>
-                          <Button size="sm" variant={u.isBanned ? 'secondary' : 'destructive'} onClick={() => handleBanToggle(u)}>
-                            {u.isBanned ? <UserCheck size={14} className="mr-1" /> : <Ban size={14} className="mr-1" />}
+                          <Button
+                            size="sm"
+                            variant={u.isBanned ? 'secondary' : 'destructive'}
+                            onClick={() => handleBanToggle(u)}
+                          >
+                            {u.isBanned ? (
+                              <UserCheck size={14} className="mr-1" />
+                            ) : (
+                              <Ban size={14} className="mr-1" />
+                            )}
                             {u.isBanned ? 'Unban' : 'Ban'}
                           </Button>
                         </div>
@@ -419,31 +509,63 @@ const Admin = () => {
                   {posts.map((p) => (
                     <tr key={p._id} className="border-b border-gray-100 dark:border-gray-700/60">
                       <td className="py-3">
-                        <div className="font-semibold text-gray-900 dark:text-white">{p.user?.name || 'Unknown user'}</div>
+                        <div className="font-semibold text-gray-900 dark:text-white">
+                          {p.user?.name || 'Unknown user'}
+                        </div>
                         <div className="text-xs text-gray-500">{p.user?.email || ''}</div>
                       </td>
                       <td className="py-3 max-w-md">
-                        <p className="text-sm text-gray-700 dark:text-gray-200 line-clamp-2">{p.content || '(No content)'}</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-200 line-clamp-2">
+                          {p.content || '(No content)'}
+                        </p>
                         {p.rejectedReason && (
                           <p className="text-xs text-red-600 mt-1">Reason: {p.rejectedReason}</p>
                         )}
                       </td>
                       <td className="py-3">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          p.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                          p.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
-                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            p.status === 'approved'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                              : p.status === 'rejected'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                          }`}
+                        >
                           {p.status || 'pending'}
                         </span>
                       </td>
-                      <td className="py-3 text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString()}</td>
+                      <td className="py-3 text-xs text-gray-500">
+                        {new Date(p.createdAt).toLocaleDateString()}
+                      </td>
                       <td className="py-3">
                         <div className="flex justify-end flex-wrap gap-2">
-                          <Button size="sm" variant="outline" onClick={() => handlePostStatus(p._id, 'approved')}>Approve</Button>
-                          <Button size="sm" variant="outline" onClick={() => handlePostStatus(p._id, 'pending')}>Pending</Button>
-                          <Button size="sm" variant="secondary" onClick={() => handlePostStatus(p._id, 'rejected')}>Reject</Button>
-                          <Button size="sm" variant="destructive" onClick={() => handleDeletePost(p._id)}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handlePostStatus(p._id, 'approved')}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handlePostStatus(p._id, 'pending')}
+                          >
+                            Pending
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handlePostStatus(p._id, 'rejected')}
+                          >
+                            Reject
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeletePost(p._id)}
+                          >
                             <Trash2 size={14} className="mr-1" /> Delete
                           </Button>
                         </div>
@@ -472,16 +594,26 @@ const Admin = () => {
                 <tbody>
                   {articles.map((a) => (
                     <tr key={a._id} className="border-b border-gray-100 dark:border-gray-700/60">
-                      <td className="py-3 font-semibold text-gray-900 dark:text-white">{a.title}</td>
+                      <td className="py-3 font-semibold text-gray-900 dark:text-white">
+                        {a.title}
+                      </td>
                       <td className="py-3">{a.author?.name || 'Unknown'}</td>
                       <td className="py-3">{a.category}</td>
                       <td className="py-3">{a.isPublished ? 'Yes' : 'No'}</td>
                       <td className="py-3">
                         <div className="flex justify-end gap-2">
-                          <Button size="sm" variant="outline" onClick={() => handleToggleArticlePublish(a._id)}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleToggleArticlePublish(a._id)}
+                          >
                             {a.isPublished ? 'Unpublish' : 'Publish'}
                           </Button>
-                          <Button size="sm" variant="destructive" onClick={() => handleDeleteArticle(a._id)}>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteArticle(a._id)}
+                          >
                             <Trash2 size={14} className="mr-1" /> Delete
                           </Button>
                         </div>
@@ -511,16 +643,24 @@ const Admin = () => {
                 <tbody>
                   {jobs.map((j) => (
                     <tr key={j._id} className="border-b border-gray-100 dark:border-gray-700/60">
-                      <td className="py-3 font-semibold text-gray-900 dark:text-white">{j.title}</td>
+                      <td className="py-3 font-semibold text-gray-900 dark:text-white">
+                        {j.title}
+                      </td>
                       <td className="py-3">{j.company}</td>
                       <td className="py-3">{j.type}</td>
                       <td className="py-3">{j.postedBy?.name || 'Unknown'}</td>
-                      <td className="py-3">{Array.isArray(j.applicants) ? j.applicants.length : 0}</td>
+                      <td className="py-3">
+                        {Array.isArray(j.applicants) ? j.applicants.length : 0}
+                      </td>
                       <td className="py-3">
                         <div className="flex justify-end gap-2">
-                          <Button size="sm" variant="destructive" onClick={() => handleDeleteJob(j._id)}>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteJob(j._id)}
+                          >
                             <Trash2 size={14} className="mr-1" /> Delete
-            </Button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -535,11 +675,24 @@ const Admin = () => {
   );
 };
 
-const OverviewCard = ({ icon, label, value, suffix }: { icon: React.ReactNode; label: string; value: number; suffix?: string }) => (
+const OverviewCard = ({
+  icon,
+  label,
+  value,
+  suffix,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  suffix?: string;
+}) => (
   <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
     <div className="flex items-center gap-3 mb-2 text-crimson-red">{icon}</div>
     <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</div>
-    <div className="text-2xl font-bold text-gray-900 dark:text-white">{value}{suffix ? ` ${suffix}` : ''}</div>
+    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+      {value}
+      {suffix ? ` ${suffix}` : ''}
+    </div>
   </div>
 );
 

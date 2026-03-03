@@ -28,6 +28,7 @@ export interface IUser extends Document {
   subscription?: {
     plan: 'free' | 'premium';
     status: 'active' | 'cancelled' | 'expired';
+    billingCycle?: 'monthly' | 'yearly';
     startDate?: Date;
     endDate?: Date;
     paymentMethod?: string;
@@ -152,6 +153,11 @@ const userSchema = new Schema<IUser>(
         type: String,
         enum: ['active', 'cancelled', 'expired'],
         default: 'active',
+      },
+      billingCycle: {
+        type: String,
+        enum: ['monthly', 'yearly'],
+        default: 'monthly',
       },
       startDate: Date,
       endDate: Date,

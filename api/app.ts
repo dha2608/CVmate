@@ -67,7 +67,7 @@ app.use(
       },
     },
     crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: { policy: 'same-origin' },
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
     referrerPolicy: {
       policy: 'strict-origin-when-cross-origin',
     },
@@ -176,7 +176,10 @@ app.use((req, res, next) => {
     path === '/api/auth/register' ||
     path === '/api/auth/google' ||
     path === '/api/auth/google/callback' ||
-    path === '/api/payment/webhook'
+    path === '/api/payment/webhook' ||
+    // Messages use Bearer token auth (CSRF-resistant); SSE can't send CSRF cookies cross-origin
+    path.startsWith('/api/messages') ||
+    path === '/api/notifications/events'
   ) {
     return next();
   }

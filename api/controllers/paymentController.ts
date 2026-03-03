@@ -29,13 +29,13 @@ const activatePremiumSubscription = async (
   }
 ) => {
   const billingCycle = payload.billingCycle || 'monthly';
-  const endDateOffset = billingCycle === 'yearly' 
-    ? 365 * 24 * 60 * 60 * 1000 
-    : 30 * 24 * 60 * 60 * 1000;
-  
+  const endDateOffset =
+    billingCycle === 'yearly' ? 365 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+
   user.subscription = {
     plan: 'premium',
     status: 'active',
+    billingCycle: billingCycle,
     startDate: new Date(),
     endDate: payload.endDate || new Date(Date.now() + endDateOffset),
     paymentMethod: payload.paymentMethod,
@@ -45,7 +45,11 @@ const activatePremiumSubscription = async (
   await user.save();
 };
 
-export const createCheckoutSession = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+export const createCheckoutSession = async (
+  req: AuthRequest,
+  res: Response,
+  _next: NextFunction
+) => {
   try {
     const stripe = getStripe();
     if (!stripe) {
@@ -61,7 +65,7 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, _ne
 
     const { billingCycle = 'monthly' } = req.body;
     const isYearly = billingCycle === 'yearly';
-    
+
     // Pricing: monthly = 199000 VND (~$8), yearly = 1990000 VND (~$80) - save ~17%
     const unitAmount = isYearly ? 8000 : 800; // $80 for yearly, $8 for monthly (in cents)
     const interval = isYearly ? 'year' : 'month';
@@ -91,8 +95,8 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, _ne
             currency: 'usd',
             product_data: {
               name: 'CV Mate Premium',
-              description: isYearly 
-                ? 'Unlimited AI features, priority support, and more (Yearly)' 
+              description: isYearly
+                ? 'Unlimited AI features, priority support, and more (Yearly)'
                 : 'Unlimited AI features, priority support, and more (Monthly)',
             },
             unit_amount: unitAmount,
@@ -120,10 +124,15 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response, _ne
       },
     });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create checkout session';
-    logger.error('Stripe Error creating checkout session', error instanceof Error ? error : new Error(String(error)), {
-      userId: req.user?._id,
-    });
+    const errorMessage =
+      error instanceof Error ? error.message : 'Failed to create checkout session';
+    logger.error(
+      'Stripe Error creating checkout session',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        userId: req.user?._id,
+      }
+    );
     res.status(500).json({ success: false, message: errorMessage });
   }
 };
@@ -133,7 +142,10 @@ export const stripeWebhook = async (req: Request, res: Response, _next: NextFunc
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    logger.error('Stripe webhook secret not configured', new Error('Missing STRIPE_WEBHOOK_SECRET'));
+    logger.error(
+      'Stripe webhook secret not configured',
+      new Error('Missing STRIPE_WEBHOOK_SECRET')
+    );
     res.status(400).send('Webhook secret not configured');
     return;
   }
@@ -156,7 +168,10 @@ export const stripeWebhook = async (req: Request, res: Response, _next: NextFunc
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    logger.error('Webhook signature verification failed', err instanceof Error ? err : new Error(String(err)));
+    logger.error(
+      'Webhook signature verification failed',
+      err instanceof Error ? err : new Error(String(err))
+    );
     res.status(400).send(`Webhook Error: ${errorMessage}`);
     return;
   }
@@ -170,10 +185,13 @@ export const stripeWebhook = async (req: Request, res: Response, _next: NextFunc
         if (userId) {
           const user = await User.findById(userId);
           if (user) {
-            const subscription = (await stripe.subscriptions.retrieve(session.subscription as string)) as any;
-            const periodEnd = typeof subscription.current_period_end === 'number'
-              ? subscription.current_period_end
-              : Date.now() / 1000 + 30 * 24 * 60 * 60;
+            const subscription = (await stripe.subscriptions.retrieve(
+              session.subscription as string
+            )) as any;
+            const periodEnd =
+              typeof subscription.current_period_end === 'number'
+                ? subscription.current_period_end
+                : Date.now() / 1000 + 30 * 24 * 60 * 60;
 
             const billingCycle = session.metadata?.billingCycle || 'monthly';
             await activatePremiumSubscription(user, {
@@ -198,9 +216,10 @@ export const stripeWebhook = async (req: Request, res: Response, _next: NextFunc
           if (subscription.status === 'active') {
             user.subscription = user.subscription || { plan: 'free', status: 'active' };
             user.subscription.status = 'active';
-            const periodEnd = typeof subscription.current_period_end === 'number'
-              ? subscription.current_period_end
-              : Date.now() / 1000 + 30 * 24 * 60 * 60;
+            const periodEnd =
+              typeof subscription.current_period_end === 'number'
+                ? subscription.current_period_end
+                : Date.now() / 1000 + 30 * 24 * 60 * 60;
             user.subscription.endDate = new Date(periodEnd * 1000);
           } else {
             user.subscription = user.subscription || { plan: 'free', status: 'active' };
@@ -218,14 +237,22 @@ export const stripeWebhook = async (req: Request, res: Response, _next: NextFunc
 
     res.json({ received: true });
   } catch (error: unknown) {
-    logger.error('Webhook handler error', error instanceof Error ? error : new Error(String(error)), {
-      eventType: event.type,
-    });
+    logger.error(
+      'Webhook handler error',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        eventType: event.type,
+      }
+    );
     res.status(500).json({ error: 'Webhook handler failed' });
   }
 };
 
-export const verifyCheckoutSession = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+export const verifyCheckoutSession = async (
+  req: AuthRequest,
+  res: Response,
+  _next: NextFunction
+) => {
   try {
     const stripe = getStripe();
     if (!stripe) {
@@ -254,9 +281,10 @@ export const verifyCheckoutSession = async (req: AuthRequest, res: Response, _ne
     }
 
     const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-    const periodEnd = typeof (subscription as any).current_period_end === 'number'
-      ? (subscription as any).current_period_end
-      : Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+    const periodEnd =
+      typeof (subscription as any).current_period_end === 'number'
+        ? (subscription as any).current_period_end
+        : Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
 
     const billingCycle = session.metadata?.billingCycle || 'monthly';
     await activatePremiumSubscription(user, {
@@ -276,15 +304,24 @@ export const verifyCheckoutSession = async (req: AuthRequest, res: Response, _ne
       },
     });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to verify checkout session';
-    logger.error('Verify checkout session error', error instanceof Error ? error : new Error(String(error)), {
-      userId: req.user?._id,
-    });
+    const errorMessage =
+      error instanceof Error ? error.message : 'Failed to verify checkout session';
+    logger.error(
+      'Verify checkout session error',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        userId: req.user?._id,
+      }
+    );
     res.status(500).json({ success: false, message: errorMessage });
   }
 };
 
-export const getSubscriptionStatus = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+export const getSubscriptionStatus = async (
+  req: AuthRequest,
+  res: Response,
+  _next: NextFunction
+) => {
   try {
     const user = await User.findById(req.user?._id);
     if (!user) {
@@ -342,9 +379,13 @@ export const cancelSubscription = async (req: AuthRequest, res: Response, _next:
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to cancel subscription';
-    logger.error('Cancel subscription error', error instanceof Error ? error : new Error(String(error)), {
-      userId: req.user?._id,
-    });
+    logger.error(
+      'Cancel subscription error',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        userId: req.user?._id,
+      }
+    );
     res.status(500).json({ success: false, message: errorMessage });
   }
 };
@@ -360,6 +401,10 @@ export const createPayPalOrder = async (req: AuthRequest, res: Response, _next: 
       return;
     }
 
+    const { billingCycle = 'monthly' } = req.body;
+    const isYearly = billingCycle === 'yearly';
+    const amount = isYearly ? '80.00' : '8.00';
+
     const orderId = `PAYPAL-${Date.now()}-${user._id}`;
 
     res.json({
@@ -367,16 +412,20 @@ export const createPayPalOrder = async (req: AuthRequest, res: Response, _next: 
       data: {
         orderId,
         amount: {
-          value: '9.99',
+          value: amount,
           currency: 'USD',
         },
       },
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to create PayPal order';
-    logger.error('PayPal order creation error', error instanceof Error ? error : new Error(String(error)), {
-      userId: req.user?._id,
-    });
+    logger.error(
+      'PayPal order creation error',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        userId: req.user?._id,
+      }
+    );
     res.status(500).json({ success: false, message: errorMessage });
   }
 };
@@ -384,9 +433,13 @@ export const createPayPalOrder = async (req: AuthRequest, res: Response, _next: 
 /**
  * Capture PayPal payment
  */
-export const capturePayPalPayment = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+export const capturePayPalPayment = async (
+  req: AuthRequest,
+  res: Response,
+  _next: NextFunction
+) => {
   try {
-    const { orderId } = req.body;
+    const { orderId, billingCycle = 'monthly' } = req.body;
 
     if (!orderId) {
       res.status(400).json({ success: false, message: 'Order ID is required' });
@@ -399,9 +452,13 @@ export const capturePayPalPayment = async (req: AuthRequest, res: Response, _nex
       return;
     }
 
+    const isYearly = billingCycle === 'yearly';
+    const endDateOffset = isYearly ? 365 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000;
+
     await activatePremiumSubscription(user, {
       paymentMethod: 'paypal',
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      endDate: new Date(Date.now() + endDateOffset),
+      billingCycle: billingCycle as 'monthly' | 'yearly',
     });
 
     logger.info('PayPal payment captured successfully', { userId: user._id, orderId });
@@ -414,10 +471,15 @@ export const capturePayPalPayment = async (req: AuthRequest, res: Response, _nex
       },
     });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to capture PayPal payment';
-    logger.error('PayPal capture error', error instanceof Error ? error : new Error(String(error)), {
-      userId: req.user?._id,
-    });
+    const errorMessage =
+      error instanceof Error ? error.message : 'Failed to capture PayPal payment';
+    logger.error(
+      'PayPal capture error',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        userId: req.user?._id,
+      }
+    );
     res.status(500).json({ success: false, message: errorMessage });
   }
 };

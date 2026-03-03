@@ -15,15 +15,39 @@ const getPagination = (req: AuthRequest) => {
 
 export const getAdminOverview = async (_req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const [usersCount, bannedUsersCount, postsCount, pendingPostsCount, articlesCount, jobsCount, premiumUsersCount] = await Promise.all([
+    const [
+      usersCount,
+      bannedUsersCount,
+      postsCount,
+      pendingPostsCount,
+      articlesCount,
+      jobsCount,
+      premiumMonthlyCount,
+      premiumYearlyCount,
+    ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ isBanned: true }),
       Post.countDocuments(),
       Post.countDocuments({ status: 'pending' }),
       Article.countDocuments(),
       Job.countDocuments(),
-      User.countDocuments({ 'subscription.plan': 'premium', 'subscription.status': 'active' }),
+      User.countDocuments({
+        'subscription.plan': 'premium',
+        'subscription.status': 'active',
+        'subscription.billingCycle': { $ne: 'yearly' },
+      }),
+      User.countDocuments({
+        'subscription.plan': 'premium',
+        'subscription.status': 'active',
+        'subscription.billingCycle': 'yearly',
+      }),
     ]);
+
+    const premiumUsersCount = premiumMonthlyCount + premiumYearlyCount;
+    // Revenue: monthly = $8/mo, yearly = $80/yr ($6.67/mo)
+    const monthlyRevenue = premiumMonthlyCount * 8;
+    const yearlyRevenue = premiumYearlyCount * 80;
+    const totalRevenue = monthlyRevenue + yearlyRevenue;
 
     res.json({
       success: true,
@@ -35,6 +59,11 @@ export const getAdminOverview = async (_req: AuthRequest, res: Response, next: N
         articlesCount,
         jobsCount,
         premiumUsersCount,
+        premiumMonthlyCount,
+        premiumYearlyCount,
+        monthlyRevenue,
+        yearlyRevenue,
+        totalRevenue,
       },
     });
   } catch (error) {
@@ -103,7 +132,11 @@ export const updateUserRole = async (req: AuthRequest, res: Response, next: Next
   }
 };
 
-export const updateUserSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const updateUserSubscription = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { plan, status, endDate } = req.body;
     if (!['free', 'premium'].includes(plan)) {

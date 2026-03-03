@@ -156,12 +156,12 @@ const PostCardComponent = ({ post }: PostCardProps) => {
   return (
     <div
       id={`post-${post?._id || 'unknown'}`}
-      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-4 relative z-0"
+      className="bg-white dark:bg-gray-800 p-5 sm:p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700 relative z-0"
     >
       {/* Header */}
-      <div className="flex items-center mb-3">
+      <div className="flex items-start mb-4">
         <button
-          className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold overflow-hidden focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-crimson-red"
+          className="h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex-shrink-0 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson-red"
           onClick={() => postUserId && navigate(`/u/${postUserId}`)}
           aria-label={postUserName}
         >
@@ -174,18 +174,18 @@ const PostCardComponent = ({ post }: PostCardProps) => {
               onError={() => setAvatarError(true)}
             />
           ) : (
-            <span className="text-sm">{postUserName.charAt(0).toUpperCase()}</span>
+            <span className="text-sm font-semibold">{postUserName.charAt(0).toUpperCase()}</span>
           )}
         </button>
 
-        <div className="ml-3 flex-1">
+        <div className="ml-3 sm:ml-4 flex-1 min-w-0">
           <button
             onClick={() => postUserId && navigate(`/u/${postUserId}`)}
-            className="font-semibold text-gray-900 dark:text-gray-100 hover:text-crimson-red transition-colors text-left"
+            className="font-semibold text-[15px] text-gray-900 dark:text-gray-100 hover:text-crimson-red transition-colors text-left"
           >
             {postUserName}
           </button>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             {postUserCareerGoal === 'new-job'
               ? 'Job Seeker'
               : postUserCareerGoal === 'internship'
@@ -194,8 +194,7 @@ const PostCardComponent = ({ post }: PostCardProps) => {
                   ? 'Career Switcher'
                   : 'Professional'}
             {postUserLocation ? ` • ${postUserLocation}` : ''}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {' • '}
             {post?.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}
           </p>
         </div>
@@ -234,11 +233,11 @@ const PostCardComponent = ({ post }: PostCardProps) => {
 
       {/* Content - Editable or Read-only */}
       {isEditing ? (
-        <div className="mb-3">
+        <div className="mb-4">
           <textarea
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-crimson-red resize-none min-h-[80px]"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-[15px] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-crimson-red resize-none min-h-[100px]"
             rows={4}
           />
           <div className="flex justify-end gap-2 mt-2">
@@ -251,13 +250,13 @@ const PostCardComponent = ({ post }: PostCardProps) => {
           </div>
         </div>
       ) : (
-        <p className="text-gray-800 dark:text-gray-100 mb-3 whitespace-pre-wrap">
+        <p className="text-[15px] leading-relaxed text-gray-800 dark:text-gray-100 mb-4 whitespace-pre-wrap">
           {post?.content || ''}
         </p>
       )}
 
       {normalizedPostImage && !imageError && (
-        <div className="w-full mb-3 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+        <div className="w-full mb-4 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
           <img
             src={normalizedPostImage}
             alt="Post content"
@@ -269,29 +268,29 @@ const PostCardComponent = ({ post }: PostCardProps) => {
       )}
 
       {/* Action Bar */}
-      <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-2">
-        <div className="flex gap-4">
+      <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-3 mt-1">
+        <div className="flex gap-1">
           <button
             onClick={handleLike}
-            className={`flex items-center gap-1 text-sm font-medium ${isLiked ? 'text-crimson-red' : 'text-gray-600 dark:text-gray-300 hover:text-crimson-red'}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isLiked ? 'text-crimson-red bg-red-50 dark:bg-red-900/20' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <span>{isLiked ? '❤️' : '🤍'}</span>
-            <span>{postLikes.length} Likes</span>
+            <span>{postLikes.length}</span>
           </button>
           <button
             onClick={() => setShowComments(!showComments)}
-            className="flex items-center gap-1 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-crimson-red"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${showComments ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <span>💬</span>
-            <span>{postComments.length} Comments</span>
+            <span>{postComments.length}</span>
           </button>
           <button
             onClick={handleShare}
-            className="flex items-center gap-1 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-500"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             title="Copy link"
           >
             <Share2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Chia sẻ</span>
+            <span className="hidden sm:inline">Share</span>
           </button>
         </div>
 
@@ -325,7 +324,7 @@ const PostCardComponent = ({ post }: PostCardProps) => {
 
       {/* Comments Section */}
       {showComments && (
-        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-3">
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-3">
           {postComments
             .filter((c: any) => !c.parentId)
             .map((comment: any) => {
@@ -357,9 +356,9 @@ const PostCardComponent = ({ post }: PostCardProps) => {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="Write a comment..."
-              className="flex-1 border border-gray-300 dark:border-gray-600 rounded-full px-3 py-1 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-crimson-red"
+              className="flex-1 border border-gray-300 dark:border-gray-600 rounded-full px-4 py-2 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-crimson-red/30 focus:border-crimson-red"
             />
-            <Button type="submit" size="sm" variant="ghost" disabled={!commentText.trim()}>
+            <Button type="submit" size="sm" disabled={!commentText.trim()}>
               Post
             </Button>
           </form>

@@ -86,16 +86,16 @@ const Community = () => {
   return (
     <MainLayout>
       {/* Search + Sort */}
-      <div className="space-y-3 mb-4">
+      <div className="space-y-3 mb-6">
         {/* Search bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             value={searchInput}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder={t('common.search') + '...'}
-            className="w-full pl-10 pr-10 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
+            className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 shadow-sm"
           />
           {searchInput && (
             <button
@@ -108,18 +108,18 @@ const Community = () => {
         </div>
 
         {/* Sort Tabs */}
-        <div className="flex items-center gap-1 px-2">
+        <div className="flex items-center gap-2">
           {SORT_OPTIONS.map(({ value, icon: Icon, labelKey }) => (
             <button
               key={value}
               onClick={() => setSort(value)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 sort === value
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 shadow-sm'
                   : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className="w-4 h-4" />
               {t(labelKey)}
             </button>
           ))}
@@ -153,7 +153,7 @@ const Community = () => {
           ))}
         </div>
       ) : (
-        <div className="space-y-4 animate-fade-in">
+        <div className="space-y-5 animate-fade-in">
           {posts.map((post) => (
             <PostCard key={post._id} post={post} />
           ))}
