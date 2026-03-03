@@ -2,6 +2,71 @@ import { Response, NextFunction } from 'express';
 import Notification from '../models/Notification.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 
+// ── SSE infrastructure ──────────────────────────────────────────
+const sseClients = new Map<string, Set<Response>>();
+
+/**
+ * Broadcast a notification event to a connected user via SSE.
+ * Called from other controllers when a notification is created.
+ */
+export function broadcastNotification(userId: string, notification: unknown): void {
+  const clients = sseClients.get(userId);
+  if (!clients || clients.size === 0) return;
+
+  const payload = `event: new_notification\ndata: ${JSON.stringify(notification)}\n\n`;
+  for (const res of clients) {
+    try {
+      res.write(payload);
+    } catch {
+      clients.delete(res);
+    }
+  }
+}
+
+/**
+ * SSE endpoint for real-time notification streaming.
+ * GET /api/notifications/events?token=JWT
+ */
+export const notificationEvents = async (req: AuthRequest, res: Response) => {
+  const userId = (req.user?._id as import('mongoose').Types.ObjectId).toString();
+
+  // SSE headers
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+
+  // Send initial unread count
+  const unread = await Notification.countDocuments({ recipient: req.user?._id, read: false });
+  res.write(`event: connected\ndata: ${JSON.stringify({ unread })}\n\n`);
+
+  // Register client
+  if (!sseClients.has(userId)) {
+    sseClients.set(userId, new Set());
+  }
+  sseClients.get(userId)!.add(res);
+
+  // Heartbeat every 15s
+  const heartbeat = setInterval(() => {
+    try {
+      res.write(': ping\n\n');
+    } catch {
+      clearInterval(heartbeat);
+    }
+  }, 15000);
+
+  // Cleanup on close
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    sseClients.get(userId)?.delete(res);
+    if (sseClients.get(userId)?.size === 0) {
+      sseClients.delete(userId);
+    }
+  });
+};
+
 export const getNotifications = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
@@ -17,9 +82,9 @@ export const getNotifications = async (req: AuthRequest, res: Response, next: Ne
       Notification.countDocuments({ recipient: req.user?._id }),
       Notification.countDocuments({ recipient: req.user?._id, read: false }),
     ]);
-      
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       data: notifications,
       pagination: {
         page,
@@ -55,10 +120,7 @@ export const markAsRead = async (req: AuthRequest, res: Response, next: NextFunc
 
 export const markAllAsRead = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await Notification.updateMany(
-      { recipient: req.user?._id, read: false },
-      { read: true }
-    );
+    await Notification.updateMany({ recipient: req.user?._id, read: false }, { read: true });
 
     res.json({ success: true, message: 'All notifications marked as read' });
   } catch (error) {

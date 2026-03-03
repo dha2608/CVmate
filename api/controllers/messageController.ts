@@ -148,38 +148,38 @@ export const getMessages = async (req: AuthRequest, res: Response, next: NextFun
 
 export const sendMessage = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { receiverId, content } = req.body;
+    const { receiverId, content, image } = req.body;
 
-    if (!receiverId || !content) {
-      res.status(400).json({ success: false, message: 'Receiver and content are required' });
+    if (!receiverId || (!content && !image)) {
+      res
+        .status(400)
+        .json({ success: false, message: 'Receiver and content or image are required' });
       return;
     }
 
     const message = await Message.create({
       sender: req.user?._id,
       receiver: receiverId,
-      content,
+      content: content || '',
+      ...(image ? { image } : {}),
     });
 
-    // Broadcast new message to receiver via SSE
-    broadcastToUser(receiverId, 'new_message', {
+    const messagePayload = {
       _id: message._id,
       sender: req.user?._id,
       receiver: receiverId,
       content: message.content,
+      image: message.image || null,
       createdAt: message.createdAt,
-    });
+    };
+
+    // Broadcast new message to receiver via SSE
+    broadcastToUser(receiverId, 'new_message', messagePayload);
 
     // Also broadcast to sender (for multi-tab/device sync)
     const senderId = req.user?._id?.toString();
     if (senderId) {
-      broadcastToUser(senderId, 'message_sent', {
-        _id: message._id,
-        sender: senderId,
-        receiver: receiverId,
-        content: message.content,
-        createdAt: message.createdAt,
-      });
+      broadcastToUser(senderId, 'message_sent', messagePayload);
     }
 
     // Clear typing state when message is sent
