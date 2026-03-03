@@ -155,6 +155,15 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       // Refresh conversations to update read state
       get().fetchConversations();
     });
+
+    // Polling fallback — when SSE is unavailable, realtimeClient emits poll_tick
+    realtimeClient.on('poll_tick', () => {
+      get().fetchConversations();
+      const active = get().activeConversation;
+      if (active) {
+        get().fetchMessages(active._id);
+      }
+    });
   },
 
   disconnectRealtime: () => {

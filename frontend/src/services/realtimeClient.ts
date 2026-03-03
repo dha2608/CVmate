@@ -1,6 +1,6 @@
 /**
  * Real-time messaging client using Server-Sent Events (SSE).
- * Works on both local dev and Vercel production.
+ * Falls back to polling when SSE is unavailable (e.g. Render free tier).
  * Auto-reconnects on connection drop.
  */
 
@@ -15,12 +15,18 @@ interface RealtimeClientOptions {
   onConnectionChange?: (connected: boolean) => void;
 }
 
+const MAX_SSE_FAILURES = 3;
+const POLL_INTERVAL = 5000; // 5s for messaging (more real-time feel)
+
 class RealtimeClient {
   private eventSource: EventSource | null = null;
   private handlers = new Map<string, Set<EventHandler>>();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private pollingTimer: ReturnType<typeof setInterval> | null = null;
   private reconnectDelay = 1000;
   private maxReconnectDelay = 30000;
+  private sseFailCount = 0;
+  private usingPolling = false;
   private apiUrl = '';
   private token = '';
   private onConnectionChange?: (connected: boolean) => void;
@@ -31,7 +37,7 @@ class RealtimeClient {
   }
 
   /**
-   * Connect to the SSE endpoint.
+   * Connect to the SSE endpoint (or fall back to polling).
    */
   connect(options: RealtimeClientOptions): void {
     this.apiUrl = options.apiUrl;
@@ -43,7 +49,7 @@ class RealtimeClient {
   }
 
   /**
-   * Disconnect and clean up.
+   * Disconnect and clean up everything.
    */
   disconnect(): void {
     if (this.reconnectTimer) {
@@ -54,7 +60,10 @@ class RealtimeClient {
       this.eventSource.close();
       this.eventSource = null;
     }
+    this.stopPolling();
     this.setConnected(false);
+    this.sseFailCount = 0;
+    this.reconnectDelay = 1000;
   }
 
   /**
@@ -67,7 +76,7 @@ class RealtimeClient {
     }
     this.handlers.get(event)!.add(handler);
 
-    // If already connected, add listener to existing EventSource
+    // If already connected via SSE, add listener to existing EventSource
     if (this.eventSource) {
       this.eventSource.addEventListener(event, ((e: MessageEvent) => {
         try {
@@ -104,12 +113,23 @@ class RealtimeClient {
   private createConnection(): void {
     if (!this.token || !this.apiUrl) return;
 
+    // If SSE has failed too many times, go straight to polling
+    if (this.sseFailCount >= MAX_SSE_FAILURES) {
+      if (!this.usingPolling) {
+        console.info('[messaging] SSE unavailable, using polling fallback');
+        this.startPolling();
+      }
+      return;
+    }
+
     const url = `${this.apiUrl}/messages/events?token=${encodeURIComponent(this.token)}`;
     this.eventSource = new EventSource(url);
 
     this.eventSource.addEventListener('connected', () => {
       this.setConnected(true);
-      this.reconnectDelay = 1000; // Reset backoff on successful connect
+      this.reconnectDelay = 1000;
+      this.sseFailCount = 0; // Reset on successful connection
+      this.stopPolling(); // Stop polling if it was active
     });
 
     // Register all existing handlers
@@ -125,7 +145,7 @@ class RealtimeClient {
       }
     }
 
-    // Auth failure from server — stop reconnecting
+    // Auth failure from server — stop reconnecting entirely
     this.eventSource.addEventListener('error', ((e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data);
@@ -133,7 +153,7 @@ class RealtimeClient {
           this.eventSource?.close();
           this.eventSource = null;
           this.setConnected(false);
-          return; // Don't schedule reconnect for auth failures
+          return;
         }
       } catch {
         // Not a JSON error event, ignore
@@ -144,8 +164,44 @@ class RealtimeClient {
       this.setConnected(false);
       this.eventSource?.close();
       this.eventSource = null;
-      this.scheduleReconnect();
+      this.sseFailCount++;
+
+      if (this.sseFailCount >= MAX_SSE_FAILURES) {
+        console.info('[messaging] SSE failed %d times, switching to polling', this.sseFailCount);
+        this.startPolling();
+      } else {
+        this.scheduleReconnect();
+      }
     };
+  }
+
+  private startPolling(): void {
+    if (this.pollingTimer) return;
+    this.usingPolling = true;
+    this.setConnected(true); // "connected" via polling
+
+    // Poll by emitting a synthetic event that messageStore can handle
+    this.pollingTimer = setInterval(() => {
+      this.emit('poll_tick', {});
+    }, POLL_INTERVAL);
+  }
+
+  private stopPolling(): void {
+    if (this.pollingTimer) {
+      clearInterval(this.pollingTimer);
+      this.pollingTimer = null;
+    }
+    this.usingPolling = false;
+  }
+
+  /** Emit an event to registered handlers */
+  private emit(event: string, data: unknown): void {
+    const handlerSet = this.handlers.get(event);
+    if (handlerSet) {
+      for (const handler of handlerSet) {
+        handler(data);
+      }
+    }
   }
 
   private scheduleReconnect(): void {
@@ -154,7 +210,6 @@ class RealtimeClient {
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
       this.createConnection();
-      // Exponential backoff with jitter
       this.reconnectDelay = Math.min(
         this.reconnectDelay * 2 + Math.random() * 500,
         this.maxReconnectDelay

@@ -29,26 +29,65 @@ interface NotificationState {
   markAllAsRead: () => Promise<void>;
   deleteNotification: (id: string) => Promise<void>;
 
-  // SSE real-time methods
+  // Real-time methods (SSE with polling fallback)
   connectSSE: () => void;
   disconnectSSE: () => void;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
-// SSE connection state (outside store to avoid re-renders)
+// Connection state (outside store to avoid re-renders)
 let eventSource: EventSource | null = null;
-let heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let pollingTimer: ReturnType<typeof setInterval> | null = null;
 let reconnectDelay = 1000;
-const MAX_RECONNECT_DELAY = 30000;
+let sseFailCount = 0;
+let usingPolling = false;
 
-function createSSEConnection(storeApi: {
+const MAX_RECONNECT_DELAY = 30000;
+const MAX_SSE_FAILURES = 3; // After 3 failures, switch to polling
+const POLL_INTERVAL = 30000; // 30 seconds
+
+type StoreApi = {
   getState: () => NotificationState;
   setState: (partial: Partial<NotificationState>) => void;
-}) {
+};
+
+function startPolling(storeApi: StoreApi) {
+  if (pollingTimer) return; // Already polling
+  usingPolling = true;
+
+  // Fetch immediately
+  storeApi.getState().fetchNotifications();
+
+  // Then poll every 30s
+  pollingTimer = setInterval(() => {
+    storeApi.getState().fetchNotifications();
+  }, POLL_INTERVAL);
+
+  storeApi.setState({ isConnected: true }); // "connected" via polling
+}
+
+function stopPolling() {
+  if (pollingTimer) {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
+  }
+  usingPolling = false;
+}
+
+function createSSEConnection(storeApi: StoreApi) {
   const token = localStorage.getItem('token');
   if (!token) return;
+
+  // If already exceeded SSE failure threshold, go straight to polling
+  if (sseFailCount >= MAX_SSE_FAILURES) {
+    if (!usingPolling) {
+      console.info('[notifications] SSE unavailable, using polling fallback');
+      startPolling(storeApi);
+    }
+    return;
+  }
 
   // Close existing connection
   if (eventSource) {
@@ -66,7 +105,9 @@ function createSSEConnection(storeApi: {
         isConnected: true,
         unreadCount: data.unread ?? storeApi.getState().unreadCount,
       });
-      reconnectDelay = 1000; // Reset backoff
+      reconnectDelay = 1000;
+      sseFailCount = 0; // Reset on successful connection
+      stopPolling(); // Stop polling if it was running
     } catch {
       storeApi.setState({ isConnected: true });
     }
@@ -89,7 +130,7 @@ function createSSEConnection(storeApi: {
     }
   });
 
-  // Auth failure from server — stop reconnecting
+  // Auth failure from server — stop reconnecting entirely
   eventSource.addEventListener('error', (e: MessageEvent) => {
     try {
       const data = JSON.parse(e.data);
@@ -97,7 +138,7 @@ function createSSEConnection(storeApi: {
         eventSource?.close();
         eventSource = null;
         storeApi.setState({ isConnected: false });
-        return; // Don't schedule reconnect for auth failures
+        return;
       }
     } catch {
       // Not a JSON error event, ignore
@@ -108,14 +149,19 @@ function createSSEConnection(storeApi: {
     storeApi.setState({ isConnected: false });
     eventSource?.close();
     eventSource = null;
-    scheduleReconnect(storeApi);
+    sseFailCount++;
+
+    if (sseFailCount >= MAX_SSE_FAILURES) {
+      // Switch to polling fallback
+      console.info('[notifications] SSE failed %d times, switching to polling', sseFailCount);
+      startPolling(storeApi);
+    } else {
+      scheduleReconnect(storeApi);
+    }
   };
 }
 
-function scheduleReconnect(storeApi: {
-  getState: () => NotificationState;
-  setState: (partial: Partial<NotificationState>) => void;
-}) {
+function scheduleReconnect(storeApi: StoreApi) {
   if (reconnectTimer) return;
   reconnectTimer = setTimeout(() => {
     reconnectTimer = null;
@@ -124,11 +170,7 @@ function scheduleReconnect(storeApi: {
   }, reconnectDelay);
 }
 
-function cleanupSSE() {
-  if (heartbeatTimer) {
-    clearTimeout(heartbeatTimer);
-    heartbeatTimer = null;
-  }
+function cleanupAll() {
   if (reconnectTimer) {
     clearTimeout(reconnectTimer);
     reconnectTimer = null;
@@ -137,7 +179,9 @@ function cleanupSSE() {
     eventSource.close();
     eventSource = null;
   }
+  stopPolling();
   reconnectDelay = 1000;
+  sseFailCount = 0;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
@@ -247,7 +291,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
 
   disconnectSSE: () => {
-    cleanupSSE();
+    cleanupAll();
     set({ isConnected: false });
   },
 }));
