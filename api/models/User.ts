@@ -36,6 +36,9 @@ export interface IUser extends Document {
   };
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
+  followers: mongoose.Types.ObjectId[];
+  following: mongoose.Types.ObjectId[];
+  profileViews: number;
   isBanned?: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -164,9 +167,25 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: null,
     },
+    followers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    following: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     isBanned: {
       type: Boolean,
       default: false,
+    },
+    profileViews: {
+      type: Number,
+      default: 0,
     },
   },
   {
