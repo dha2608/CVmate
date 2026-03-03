@@ -44,9 +44,10 @@ const SupportChatComponent = () => {
     setIsLoading(true);
 
     try {
+      // Map to {role, content} format expected by the API schema
       const conversationHistory = messages.slice(-10).map((msg) => ({
-        type: msg.type,
-        text: msg.text,
+        role: msg.type === 'user' ? 'user' : ('assistant' as 'user' | 'assistant'),
+        content: msg.text,
       }));
 
       const response = await api.chatWithAI(userMessageText, conversationHistory);

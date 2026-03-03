@@ -438,7 +438,10 @@ export const api = {
     }),
 
   // Chat / AI
-  chatWithAI: (message: string, conversationHistory?: Array<{ type: string; text: string }>) =>
+  chatWithAI: (
+    message: string,
+    conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
+  ) =>
     apiRequest<{ success: boolean; data: { message: string } }>('/chat', {
       method: 'POST',
       body: JSON.stringify({ message, conversationHistory }),

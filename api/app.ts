@@ -186,44 +186,21 @@ app.get('/api/csrf-token', csrfProtection, (req: Request, res: Response) => {
   });
 });
 
-// Serve uploaded files statically with restricted CORS
+// Legacy /uploads route — files are now stored on Cloudinary.
+// Redirect old local URLs to a neutral avatar placeholder so existing DB records
+// don't break with 404s (users can re-upload to get a Cloudinary URL).
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-app.use(
-  '/uploads',
-  (req, res, next) => {
-    if (req.method === 'OPTIONS') {
-      const origin = req.headers.origin;
-      if (
-        origin &&
-        allowedOrigins.some((allowed) => origin === allowed || origin.startsWith(allowed))
-      ) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-      }
-      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-      res.status(200).end();
-      return;
-    }
-
-    const origin = req.headers.origin;
-    if (
-      origin &&
-      allowedOrigins.some((allowed) => origin === allowed || origin.startsWith(allowed))
-    ) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-    }
-    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type');
-    next();
-  },
-  express.static(path.join(__dirname, '../uploads'), {
-    setHeaders: (res) => {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    },
-  })
-);
+app.use('/uploads', (req: Request, res: Response) => {
+  // Redirect to a public UI Avatars placeholder based on filename
+  const filename = req.path.replace(/^\//, '');
+  const isAvatar = filename.startsWith('avatar');
+  if (isAvatar) {
+    res.redirect(302, 'https://ui-avatars.com/api/?name=User&background=dc2626&color=fff&size=200');
+  } else {
+    res.redirect(302, 'https://placehold.co/800x400/e2e8f0/94a3b8?text=Image+Unavailable');
+  }
+});
 
 /**
  * API Routes

@@ -20,7 +20,8 @@ import {
 
 const router = express.Router();
 
-router.route('/').get(protect, getPosts).post(protect, validate(createPostSchema), createPost);
+// GET is public (author filter for public profiles); POST requires auth
+router.route('/').get(getPosts).post(protect, validate(createPostSchema), createPost);
 
 router.put('/:id', protect, validate(updatePostSchema), updatePost);
 router.delete('/:id', protect, deletePost);
