@@ -324,13 +324,16 @@ export const getPublicProfile = async (req: Request, res: Response, next: NextFu
     const { id } = req.params;
 
     const user = await User.findById(id).select(
-      'name avatar coverPhoto bio headline location yearsOfExperience currentRole industries skills socialLinks isPublicProfile careerGoal createdAt'
+      'name avatar coverPhoto bio headline location yearsOfExperience currentRole industries skills socialLinks isPublicProfile careerGoal followers following profileViews createdAt'
     );
 
     if (!user || user.isPublicProfile === false) {
       res.status(404).json({ success: false, message: 'User not found' });
       return;
     }
+
+    // Increment profile views (don't await — fire-and-forget)
+    User.updateOne({ _id: user._id }, { $inc: { profileViews: 1 } }).exec();
 
     res.json({
       success: true,
@@ -348,7 +351,80 @@ export const getPublicProfile = async (req: Request, res: Response, next: NextFu
         skills: user.skills || [],
         socialLinks: user.socialLinks || {},
         careerGoal: user.careerGoal,
+        followersCount: user.followers?.length || 0,
+        followingCount: user.following?.length || 0,
+        followers: user.followers?.map((id) => id.toString()) || [],
+        profileViews: user.profileViews || 0,
         createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const followUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const targetId = req.params.id;
+    const currentUserId = req.user?._id;
+
+    if (!currentUserId) {
+      res.status(401).json({ success: false, message: 'Not authorized' });
+      return;
+    }
+
+    if (targetId === currentUserId.toString()) {
+      res.status(400).json({ success: false, message: 'Cannot follow yourself' });
+      return;
+    }
+
+    const targetUser = await User.findById(targetId);
+    if (!targetUser) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    if (!currentUser) {
+      res.status(404).json({ success: false, message: 'Current user not found' });
+      return;
+    }
+
+    const isFollowing = currentUser.following.some((id) => id.toString() === targetId);
+
+    if (isFollowing) {
+      // Unfollow
+      currentUser.following = currentUser.following.filter((id) => id.toString() !== targetId);
+      targetUser.followers = targetUser.followers.filter(
+        (id) => id.toString() !== currentUserId.toString()
+      );
+    } else {
+      // Follow
+      currentUser.following.push(targetUser._id as Types.ObjectId);
+      targetUser.followers.push(currentUserId as Types.ObjectId);
+
+      // Create notification
+      const Notification = mongoose.model('Notification');
+      const notif = await Notification.create({
+        recipient: targetId,
+        sender: currentUserId,
+        type: 'follow',
+        message: 'đã bắt đầu theo dõi bạn.',
+        link: `/u/${currentUserId}`,
+      });
+      const populated = await notif.populate('sender', 'name avatar');
+      const { broadcastNotification } = await import('./notificationController.js');
+      if (targetId) broadcastNotification(targetId, populated);
+    }
+
+    await Promise.all([currentUser.save(), targetUser.save()]);
+
+    res.json({
+      success: true,
+      data: {
+        isFollowing: !isFollowing,
+        followersCount: targetUser.followers.length,
+        followingCount: targetUser.following.length,
       },
     });
   } catch (error) {
@@ -394,6 +470,131 @@ export const deleteAccount = async (req: AuthRequest, res: Response, next: NextF
     res.json({ success: true, message: 'Account deleted successfully' });
   } catch (error) {
     logger.error('auth_account_delete_error', error);
+    next(error);
+  }
+};
+
+// ── Search users ────────────────────────────────────────────────
+export const searchUsers = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { q, page = '1', limit = '10' } = req.query;
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(50, Math.max(1, Number(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    if (!q || typeof q !== 'string' || q.trim().length < 2) {
+      res.json({
+        success: true,
+        data: [],
+        pagination: { page: pageNum, limit: limitNum, total: 0, pages: 0 },
+      });
+      return;
+    }
+
+    const regex = new RegExp(q.trim(), 'i');
+    const filter = {
+      isPublicProfile: { $ne: false },
+      isBanned: { $ne: true },
+      $or: [
+        { name: regex },
+        { headline: regex },
+        { skills: regex },
+        { currentRole: regex },
+        { location: regex },
+      ],
+    };
+
+    const [users, total] = await Promise.all([
+      User.find(filter)
+        .select('name avatar headline skills currentRole location')
+        .skip(skip)
+        .limit(limitNum)
+        .sort({ name: 1 }),
+      User.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      data: users,
+      pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── Get followers list ─────────────────────────────────────────
+export const getFollowers = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { page = '1', limit = '20' } = req.query;
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(50, Math.max(1, Number(limit)));
+
+    const user = await User.findById(id).select('followers');
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    const total = user.followers.length;
+    const followerIds = user.followers.slice((pageNum - 1) * limitNum, pageNum * limitNum);
+
+    const followers = await User.find({ _id: { $in: followerIds } }).select(
+      'name avatar headline currentRole'
+    );
+
+    res.json({
+      success: true,
+      data: followers,
+      pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── Get following list ─────────────────────────────────────────
+export const getFollowing = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { page = '1', limit = '20' } = req.query;
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(50, Math.max(1, Number(limit)));
+
+    const user = await User.findById(id).select('following');
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    const total = user.following.length;
+    const followingIds = user.following.slice((pageNum - 1) * limitNum, pageNum * limitNum);
+
+    const following = await User.find({ _id: { $in: followingIds } }).select(
+      'name avatar headline currentRole'
+    );
+
+    res.json({
+      success: true,
+      data: following,
+      pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── Get user achievements (public) ─────────────────────────────
+export const getUserAchievements = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const Achievement = mongoose.model('Achievement');
+
+    const achievements = await Achievement.find({ user: id }).sort({ unlockedAt: -1 });
+
+    res.json({ success: true, data: achievements });
+  } catch (error) {
     next(error);
   }
 };
