@@ -8,7 +8,12 @@ import {
   completeOnboarding,
   googleAuthCallback,
   getPublicProfile,
+  followUser,
   deleteAccount,
+  searchUsers,
+  getFollowers,
+  getFollowing,
+  getUserAchievements,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
@@ -54,5 +59,18 @@ router.delete('/me', protect, deleteAccount);
 
 // Public profile
 router.get('/users/:id/public', getPublicProfile);
+
+// Follow/Unfollow
+router.post('/users/:id/follow', protect, followUser);
+
+// Followers/Following lists
+router.get('/users/:id/followers', getFollowers);
+router.get('/users/:id/following', getFollowing);
+
+// User achievements
+router.get('/users/:id/achievements', getUserAchievements);
+
+// User search
+router.get('/users/search', protect, searchUsers);
 
 export default router;
