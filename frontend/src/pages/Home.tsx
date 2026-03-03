@@ -47,7 +47,7 @@ const Home = () => {
 
     const fetchLatestArticles = async () => {
       try {
-        const response = await api.getArticles({ timeout: 10000 });
+        const response = await api.getArticles();
 
         if (!isMounted) return;
 
