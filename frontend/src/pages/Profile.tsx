@@ -7,13 +7,29 @@ import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Mail, Camera, Save, X, Loader2, Shield, Crown, CreditCard, MapPin, Briefcase, Linkedin, Github, Globe2 } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Camera,
+  Save,
+  X,
+  Loader2,
+  Shield,
+  Crown,
+  CreditCard,
+  MapPin,
+  Briefcase,
+  Linkedin,
+  Github,
+  Globe2,
+} from 'lucide-react';
 import { api } from '@/lib/utils';
 import PayPalButton from '@/components/PayPalButton';
 
 const resolveAssetUrl = (url?: string) => {
   if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:'))
+    return url;
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
   const origin = apiBase.replace(/\/api\/?$/, '');
   const normalized = url.startsWith('/') ? url : `/${url}`;
@@ -27,7 +43,8 @@ const Profile = () => {
   const toast = useToastStore();
   const { setDirty, clearDirty } = useDirtyStateStore();
   const { Dialog: UnsavedChangesDialogComponent } = useUnsavedChanges(
-    t('profile.unsavedChangesWarning') || 'You have unsaved changes. Are you sure you want to leave?'
+    t('profile.unsavedChangesWarning') ||
+      'You have unsaved changes. Are you sure you want to leave?'
   );
 
   const [isLoading, setIsLoading] = useState(false);
@@ -95,7 +112,9 @@ const Profile = () => {
     }
   }, [hasChanges, setDirty, clearDirty]);
 
-  const currentAvatar = resolveAssetUrl((formData.avatar?.trim() || user?.avatar?.trim() || '').trim());
+  const currentAvatar = resolveAssetUrl(
+    (formData.avatar?.trim() || user?.avatar?.trim() || '').trim()
+  );
 
   useEffect(() => {
     if (user) {
@@ -201,7 +220,6 @@ const Profile = () => {
 
       // Optionally refresh user data silently in background without affecting UI
 
-
       toast.success(t('profile.avatarUploaded'));
     } catch (error: any) {
       console.error('Avatar upload error:', error);
@@ -290,10 +308,16 @@ const Profile = () => {
     setIsLoading(true);
     try {
       const industriesArray = formData.industries
-        ? formData.industries.split(',').map((s) => s.trim()).filter(Boolean)
+        ? formData.industries
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
         : [];
       const skillsArray = formData.skills
-        ? formData.skills.split(',').map((s) => s.trim()).filter(Boolean)
+        ? formData.skills
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
         : [];
 
       const response = await api.updateProfile({
@@ -303,7 +327,9 @@ const Profile = () => {
         bio: formData.bio,
         headline: formData.headline,
         location: formData.location,
-        yearsOfExperience: formData.yearsOfExperience ? Number(formData.yearsOfExperience) : undefined,
+        yearsOfExperience: formData.yearsOfExperience
+          ? Number(formData.yearsOfExperience)
+          : undefined,
         currentRole: formData.currentRole,
         industries: industriesArray,
         skills: skillsArray,
@@ -325,12 +351,12 @@ const Profile = () => {
       setUser({
         ...user!,
         ...updatedUser,
-        token: user!.token
+        token: user!.token,
       });
 
       setOriginalData({
         ...formData,
-        avatar: updatedUser.avatar || formData.avatar
+        avatar: updatedUser.avatar || formData.avatar,
       });
 
       clearDirty();
@@ -355,7 +381,9 @@ const Profile = () => {
           <div
             className="h-32 sm:h-36 lg:h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative group/cover overflow-visible"
             style={{
-              backgroundImage: formData.coverPhoto?.trim() ? `url(${resolveAssetUrl(formData.coverPhoto)}?t=${Date.now()})` : undefined,
+              backgroundImage: formData.coverPhoto?.trim()
+                ? `url(${resolveAssetUrl(formData.coverPhoto)}?t=${Date.now()})`
+                : undefined,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
@@ -369,7 +397,11 @@ const Profile = () => {
               title="Change cover photo"
               aria-label="Change cover photo"
             >
-              {uploadingCover ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
+              {uploadingCover ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Camera size={16} />
+              )}
             </button>
             <input
               ref={coverPhotoInputRef}
@@ -393,13 +425,17 @@ const Profile = () => {
                       onError={(e) => {
                         const img = e.target as HTMLImageElement;
                         img.style.display = 'none';
-                        const fallback = img.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                        const fallback = img.parentElement?.querySelector(
+                          '.avatar-fallback'
+                        ) as HTMLElement;
                         if (fallback) {
                           fallback.style.display = 'flex';
                         }
                       }}
                       onLoad={(e) => {
-                        const fallback = (e.target as HTMLImageElement).parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                        const fallback = (
+                          e.target as HTMLImageElement
+                        ).parentElement?.querySelector('.avatar-fallback') as HTMLElement;
                         if (fallback) {
                           fallback.style.display = 'none';
                         }
@@ -420,7 +456,10 @@ const Profile = () => {
                   aria-label={t('profile.chooseImage')}
                 >
                   {uploading ? (
-                    <Loader2 size={14} className="sm:w-4 sm:h-4 lg:w-[18px] lg:h-[18px] animate-spin" />
+                    <Loader2
+                      size={14}
+                      className="sm:w-4 sm:h-4 lg:w-[18px] lg:h-[18px] animate-spin"
+                    />
                   ) : (
                     <Camera size={14} className="sm:w-4 sm:h-4 lg:w-[18px] lg:h-[18px]" />
                   )}
@@ -440,7 +479,9 @@ const Profile = () => {
           <div className="pt-12 sm:pt-14 lg:pt-16 pb-6 sm:pb-8 px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{formData.name || user.name}</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                  {formData.name || user.name}
+                </h1>
                 <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                   <Shield size={12} className="sm:w-3.5 sm:h-3.5" />
                   <span className="capitalize">{formData.role}</span>
@@ -449,11 +490,24 @@ const Profile = () => {
 
               {hasChanges && (
                 <div className="flex gap-2 w-full sm:w-auto">
-                  <Button variant="ghost" onClick={handleCancel} disabled={isLoading} className="flex-1 sm:flex-initial text-sm">
+                  <Button
+                    variant="ghost"
+                    onClick={handleCancel}
+                    disabled={isLoading}
+                    className="flex-1 sm:flex-initial text-sm"
+                  >
                     <X size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2" /> {t('common.cancel')}
                   </Button>
-                  <Button onClick={handleSave} disabled={isLoading} className="bg-indigo-600 hover:bg-indigo-700 text-white flex-1 sm:flex-initial text-sm">
-                    {isLoading ? <Loader2 size={14} className="sm:w-4 sm:h-4 animate-spin mr-1 sm:mr-2" /> : <Save size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2" />}
+                  <Button
+                    onClick={handleSave}
+                    disabled={isLoading}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white flex-1 sm:flex-initial text-sm"
+                  >
+                    {isLoading ? (
+                      <Loader2 size={14} className="sm:w-4 sm:h-4 animate-spin mr-1 sm:mr-2" />
+                    ) : (
+                      <Save size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    )}
                     {t('profile.saveChanges')}
                   </Button>
                 </div>
@@ -463,12 +517,19 @@ const Profile = () => {
             <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 shadow-sm">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                 <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                  <div className={`p-1.5 sm:p-2 rounded-full flex-shrink-0 ${subscription?.plan === 'premium' ? 'bg-yellow-400' : 'bg-gray-300 dark:bg-gray-600'}`}>
-                    <Crown size={16} className={`sm:w-5 sm:h-5 ${subscription?.plan === 'premium' ? 'text-yellow-900' : 'text-gray-600 dark:text-gray-300'}`} />
+                  <div
+                    className={`p-1.5 sm:p-2 rounded-full flex-shrink-0 ${subscription?.plan === 'premium' ? 'bg-yellow-400' : 'bg-gray-300 dark:bg-gray-600'}`}
+                  >
+                    <Crown
+                      size={16}
+                      className={`sm:w-5 sm:h-5 ${subscription?.plan === 'premium' ? 'text-yellow-900' : 'text-gray-600 dark:text-gray-300'}`}
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-bold text-sm sm:text-base text-gray-900 dark:text-white">
-                      {subscription?.plan === 'premium' ? t('profile.premiumMember') : t('profile.freePlan')}
+                      {subscription?.plan === 'premium'
+                        ? t('profile.premiumMember')
+                        : t('profile.freePlan')}
                     </h3>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                       {subscription?.plan === 'premium'
@@ -508,7 +569,10 @@ const Profile = () => {
                       >
                         {loadingSubscription ? (
                           <>
-                            <Loader2 size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                            <Loader2
+                              size={14}
+                              className="sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin"
+                            />
                             {t('common.loading')}
                           </>
                         ) : (
@@ -558,7 +622,9 @@ const Profile = () => {
                   disabled
                   className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 h-10 sm:h-11 text-sm sm:text-base cursor-not-allowed"
                 />
-                <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 pl-1">{t('profile.emailCannotChange')}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 pl-1">
+                  {t('profile.emailCannotChange')}
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -602,7 +668,9 @@ const Profile = () => {
                     type="number"
                     min={0}
                     value={formData.yearsOfExperience}
-                    onChange={(e) => setFormData({ ...formData, yearsOfExperience: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, yearsOfExperience: e.target.value })
+                    }
                     className="h-10 sm:h-11 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600"
                     placeholder="Ví dụ: 3"
                   />
@@ -696,8 +764,10 @@ const Profile = () => {
 
               <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 mt-2">
                 <div>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Public profile</p>
-                  <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">
+                    Public profile
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Cho phép người khác xem trang hồ sơ của bạn tại đường dẫn /u/&lt;id&gt;.
                   </p>
                 </div>
@@ -705,13 +775,19 @@ const Profile = () => {
                   type="button"
                   role="switch"
                   aria-checked={formData.isPublicProfile}
-                  onClick={() => setFormData((f) => ({ ...f, isPublicProfile: !f.isPublicProfile }))}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${formData.isPublicProfile ? 'bg-green-500 dark:bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
+                  onClick={() =>
+                    setFormData((f) => ({ ...f, isPublicProfile: !f.isPublicProfile }))
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+                    formData.isPublicProfile
+                      ? 'bg-green-500 dark:bg-green-600'
+                      : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${formData.isPublicProfile ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${
+                      formData.isPublicProfile ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                   />
                 </button>
               </div>
