@@ -9,7 +9,7 @@ const HelpCenter = () => {
         title="Help Center - CV Mate"
         description="Help Center for CV Mate: FAQs, troubleshooting, and support contact."
       />
-      <MainLayout layoutMode="centered" showLeftSidebar={false} showRightSidebar={false}>
+      <MainLayout layoutMode="centered" showRightSidebar={false}>
         <div className="py-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-6">

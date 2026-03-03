@@ -19,7 +19,7 @@ const PaymentCancel = () => {
   };
 
   return (
-    <MainLayout layoutMode="centered" showLeftSidebar={false} showRightSidebar={false}>
+    <MainLayout layoutMode="centered" showRightSidebar={false}>
       <div className="py-20">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center animate-fade-in">
           <XCircle className="mx-auto text-gray-400 mb-4" size={64} />

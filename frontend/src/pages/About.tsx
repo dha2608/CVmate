@@ -9,7 +9,7 @@ const About = () => {
         title="About Us - CV Mate" 
         description="Learn about CV Mate - AI-powered career platform"
       />
-      <MainLayout layoutMode="centered" showLeftSidebar={false} showRightSidebar={false}>
+      <MainLayout layoutMode="centered" showRightSidebar={false}>
         <div className="py-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 animate-fade-in">
             <h1 className="text-4xl font-black text-jet-black mb-4">About CV Mate</h1>

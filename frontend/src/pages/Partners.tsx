@@ -9,7 +9,7 @@ const Partners = () => {
         title="Partners - CV Mate"
         description="Partners and organizations collaborating with CV Mate."
       />
-      <MainLayout layoutMode="centered" showLeftSidebar={false} showRightSidebar={false}>
+      <MainLayout layoutMode="centered" showRightSidebar={false}>
         <div className="py-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-6">

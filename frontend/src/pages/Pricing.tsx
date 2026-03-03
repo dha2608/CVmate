@@ -192,7 +192,7 @@ const Pricing = () => {
   return (
     <>
       <SEOHead title={copy.seoTitle} description={copy.seoDescription} />
-      <MainLayout layoutMode="full-width" showLeftSidebar={false} showRightSidebar={false}>
+      <MainLayout layoutMode="full-width" showRightSidebar={false}>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 py-12 lg:py-20">
           <div className="max-w-7xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12 lg:mb-16">

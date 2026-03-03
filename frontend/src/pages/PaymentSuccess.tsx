@@ -66,7 +66,7 @@ const PaymentSuccess = () => {
 
   if (loading) {
     return (
-      <MainLayout layoutMode="centered" showLeftSidebar={false} showRightSidebar={false}>
+      <MainLayout layoutMode="centered" showRightSidebar={false}>
         <div className="py-20 text-center">
           <Loader2 className="mx-auto animate-spin text-crimson-red mb-4" size={48} />
           <p className="text-gray-600">{copy.verifying}</p>
@@ -76,7 +76,7 @@ const PaymentSuccess = () => {
   }
 
   return (
-    <MainLayout layoutMode="centered" showLeftSidebar={false} showRightSidebar={false}>
+    <MainLayout layoutMode="centered" showRightSidebar={false}>
       <div className="py-20">
         {error ? (
           <div className="bg-white rounded-lg shadow-sm border border-red-200 p-8 text-center">

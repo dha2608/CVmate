@@ -9,7 +9,7 @@ const Contact = () => {
         title="Contact - CV Mate"
         description="Contact CV Mate team for support, partnership, and general inquiries."
       />
-      <MainLayout layoutMode="centered" showLeftSidebar={false} showRightSidebar={false}>
+      <MainLayout layoutMode="centered" showRightSidebar={false}>
         <div className="py-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 animate-fade-in">
             <h1 className="text-3xl font-black text-jet-black mb-4">Liên hệ</h1>

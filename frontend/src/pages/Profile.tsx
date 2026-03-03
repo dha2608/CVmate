@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18n } from '@/store/i18nStore';
 import { useToastStore } from '@/store/toastStore';
@@ -77,7 +77,15 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
 
-  const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
+  const hasChanges = useMemo(() => {
+    const keys = Object.keys(formData) as (keyof typeof formData)[];
+    for (const key of keys) {
+      if (formData[key] !== originalData[key]) {
+        return true;
+      }
+    }
+    return false;
+  }, [formData, originalData]);
 
   useEffect(() => {
     if (hasChanges) {

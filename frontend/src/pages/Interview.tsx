@@ -217,7 +217,7 @@ const Interview = () => {
 
   if (!persona) {
       return (
-        <MainLayout layoutMode="narrow" showLeftSidebar={false} showRightSidebar={false}>
+        <MainLayout layoutMode="narrow" showRightSidebar={false}>
           <div className="py-4 sm:py-6 lg:py-8">
             <div className="mb-6 sm:mb-8">
               <Button 
