@@ -89,6 +89,21 @@ function createSSEConnection(storeApi: {
     }
   });
 
+  // Auth failure from server — stop reconnecting
+  eventSource.addEventListener('error', (e: MessageEvent) => {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.message === 'unauthorized') {
+        eventSource?.close();
+        eventSource = null;
+        storeApi.setState({ isConnected: false });
+        return; // Don't schedule reconnect for auth failures
+      }
+    } catch {
+      // Not a JSON error event, ignore
+    }
+  });
+
   eventSource.onerror = () => {
     storeApi.setState({ isConnected: false });
     eventSource?.close();

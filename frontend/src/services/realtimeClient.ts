@@ -125,6 +125,21 @@ class RealtimeClient {
       }
     }
 
+    // Auth failure from server — stop reconnecting
+    this.eventSource.addEventListener('error', ((e: MessageEvent) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.message === 'unauthorized') {
+          this.eventSource?.close();
+          this.eventSource = null;
+          this.setConnected(false);
+          return; // Don't schedule reconnect for auth failures
+        }
+      } catch {
+        // Not a JSON error event, ignore
+      }
+    }) as EventListener);
+
     this.eventSource.onerror = () => {
       this.setConnected(false);
       this.eventSource?.close();

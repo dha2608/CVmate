@@ -1,5 +1,7 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import jwt, { type JwtPayload } from 'jsonwebtoken';
 import Notification from '../models/Notification.js';
+import User from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { getSseCorsHeaders } from '../utils/cors.js';
 
@@ -27,12 +29,13 @@ export function broadcastNotification(userId: string, notification: unknown): vo
 /**
  * SSE endpoint for real-time notification streaming.
  * GET /api/notifications/events?token=JWT
+ *
+ * Auth is handled INLINE (not via middleware) so we can send writeHead()
+ * BEFORE any async operations. This ensures CORS headers reach the browser
+ * even through Render's reverse proxy, which may timeout waiting for headers.
  */
-export const notificationEvents = async (req: AuthRequest, res: Response) => {
-  const userId = (req.user?._id as import('mongoose').Types.ObjectId).toString();
-
-  // SSE headers — explicit validated CORS headers required for writeHead()
-  // because Express cors middleware's setHeader() headers don't survive proxy 502s.
+export const notificationEvents = async (req: Request, res: Response) => {
+  // 1. Send SSE + CORS headers IMMEDIATELY — before any async work
   const corsHeaders = getSseCorsHeaders(req.headers.origin);
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -41,18 +44,39 @@ export const notificationEvents = async (req: AuthRequest, res: Response) => {
     'X-Accel-Buffering': 'no',
     ...corsHeaders,
   });
+  res.flushHeaders(); // Force headers through the proxy NOW
 
-  // Send initial unread count
-  const unread = await Notification.countDocuments({ recipient: req.user?._id, read: false });
+  // 2. Authenticate via the stream (not middleware)
+  const token = req.query.token as string;
+  if (!token) {
+    res.write(`event: error\ndata: ${JSON.stringify({ message: 'unauthorized' })}\n\n`);
+    res.end();
+    return;
+  }
+
+  let userId: string;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as JwtPayload;
+    const user = await User.findById(decoded.id).select('_id');
+    if (!user) throw new Error('User not found');
+    userId = user._id.toString();
+  } catch {
+    res.write(`event: error\ndata: ${JSON.stringify({ message: 'unauthorized' })}\n\n`);
+    res.end();
+    return;
+  }
+
+  // 3. Send initial unread count
+  const unread = await Notification.countDocuments({ recipient: userId, read: false });
   res.write(`event: connected\ndata: ${JSON.stringify({ unread })}\n\n`);
 
-  // Register client
+  // 4. Register client
   if (!sseClients.has(userId)) {
     sseClients.set(userId, new Set());
   }
   sseClients.get(userId)!.add(res);
 
-  // Heartbeat every 15s
+  // 5. Heartbeat every 15s
   const heartbeat = setInterval(() => {
     try {
       res.write(': ping\n\n');
@@ -61,7 +85,7 @@ export const notificationEvents = async (req: AuthRequest, res: Response) => {
     }
   }, 15000);
 
-  // Cleanup on close
+  // 6. Cleanup on close
   req.on('close', () => {
     clearInterval(heartbeat);
     sseClients.get(userId)?.delete(res);

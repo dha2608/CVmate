@@ -1,5 +1,5 @@
 import express from 'express';
-import { protect, protectSSE } from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
 import {
   getConversations,
   getMessages,
@@ -12,8 +12,8 @@ import { validate, sendMessageSchema, typingSchema } from '../utils/validators.j
 
 const router = express.Router();
 
-// SSE endpoint (must be before /:userId to avoid conflict)
-router.get('/events', protectSSE, messageEvents);
+// SSE endpoint — auth handled inline (writeHead before async for proxy compat)
+router.get('/events', messageEvents);
 
 router.get('/conversations', protect, getConversations);
 router.get('/:userId', protect, getMessages);

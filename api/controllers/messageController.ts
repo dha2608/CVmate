@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import jwt, { type JwtPayload } from 'jsonwebtoken';
 import Message from '../models/Message.js';
 import User from '../models/User.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
@@ -237,16 +238,12 @@ export const markConversationRead = async (req: AuthRequest, res: Response, next
  * - typing_stop: Someone stopped typing
  * - messages_read: Messages were read by recipient
  * - heartbeat: Keep-alive ping
+ *
+ * Auth is handled INLINE so writeHead() fires BEFORE any async work,
+ * ensuring CORS headers reach the browser through Render's proxy.
  */
-export const messageEvents = async (req: AuthRequest, res: Response) => {
-  const userId = req.user?._id?.toString();
-  if (!userId) {
-    res.status(401).json({ success: false, message: 'Unauthorized' });
-    return;
-  }
-
-  // Set SSE headers — explicit validated CORS headers required for writeHead()
-  // because Express cors middleware's setHeader() headers don't survive proxy 502s.
+export const messageEvents = async (req: Request, res: Response) => {
+  // 1. Send SSE + CORS headers IMMEDIATELY
   const corsHeaders = getSseCorsHeaders(req.headers.origin);
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -255,22 +252,47 @@ export const messageEvents = async (req: AuthRequest, res: Response) => {
     'X-Accel-Buffering': 'no',
     ...corsHeaders,
   });
+  res.flushHeaders();
 
-  // Send initial connected event
+  // 2. Authenticate via the stream
+  const token = req.query.token as string;
+  if (!token) {
+    res.write(`event: error\ndata: ${JSON.stringify({ message: 'unauthorized' })}\n\n`);
+    res.end();
+    return;
+  }
+
+  let userId: string;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as JwtPayload;
+    const user = await User.findById(decoded.id).select('_id');
+    if (!user) throw new Error('User not found');
+    userId = user._id.toString();
+  } catch {
+    res.write(`event: error\ndata: ${JSON.stringify({ message: 'unauthorized' })}\n\n`);
+    res.end();
+    return;
+  }
+
+  // 3. Send initial connected event
   res.write(`event: connected\ndata: ${JSON.stringify({ userId })}\n\n`);
 
-  // Register this client
+  // 4. Register this client
   if (!sseClients.has(userId)) {
     sseClients.set(userId, new Set());
   }
   sseClients.get(userId)!.add(res);
 
-  // Heartbeat every 15s to keep connection alive
+  // 5. Heartbeat every 15s to keep connection alive
   const heartbeat = setInterval(() => {
-    res.write(`:heartbeat\n\n`);
+    try {
+      res.write(`:heartbeat\n\n`);
+    } catch {
+      clearInterval(heartbeat);
+    }
   }, 15000);
 
-  // Cleanup on disconnect
+  // 6. Cleanup on disconnect
   req.on('close', () => {
     clearInterval(heartbeat);
     const clients = sseClients.get(userId);

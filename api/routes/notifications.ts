@@ -1,5 +1,5 @@
 import express from 'express';
-import { protect, protectSSE } from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
 import {
   getNotifications,
   markAsRead,
@@ -10,8 +10,8 @@ import {
 
 const router = express.Router();
 
-// SSE endpoint for real-time notifications (must be before any /:id routes)
-router.get('/events', protectSSE, notificationEvents);
+// SSE endpoint — auth handled inline (writeHead before async for proxy compat)
+router.get('/events', notificationEvents);
 
 // List notifications for current user
 router.get('/', protect, getNotifications);
