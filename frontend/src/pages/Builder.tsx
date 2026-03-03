@@ -2,9 +2,14 @@ import { useCallback, useEffect, useMemo, useState, memo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { useResumeStore } from '@/store/resumeStore';
-import BuilderSidebar, { type BuilderSection, type BuilderSectionId } from '@/components/builder/BuilderSidebar';
+import BuilderSidebar, {
+  type BuilderSection,
+  type BuilderSectionId,
+} from '@/components/builder/BuilderSidebar';
 import ResumePreview from '@/components/builder/ResumePreview';
-import BuilderActionsDialog, { type AtsAnalysisResult } from '@/components/builder/BuilderActionsDialog';
+import BuilderActionsDialog, {
+  type AtsAnalysisResult,
+} from '@/components/builder/BuilderActionsDialog';
 import ShortcutsModal from '@/components/builder/ShortcutsModal';
 import BuilderTour from '@/components/builder/BuilderTour';
 import PersonalForm from '@/components/builder/PersonalForm';
@@ -18,59 +23,63 @@ import { api } from '@/lib/utils';
 import { useToastStore } from '@/store/toastStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const SummaryPanel = memo(({ summary, onSummaryChange }: { summary: string; onSummaryChange: (v: string) => void }) => {
-  const [enhancing, setEnhancing] = useState(false);
-  const handleAiEnhance = useCallback(async () => {
-    const text = summary?.trim() || 'Experienced professional seeking new opportunities.';
-    setEnhancing(true);
-    try {
-      const enhanced = await useResumeStore.getState().aiEnhanceText(text, 'summary');
-      if (enhanced) onSummaryChange(enhanced);
-    } catch (e) {
-      const { useToastStore } = await import('@/store/toastStore');
-      useToastStore.getState().error((e as Error)?.message || 'Enhance failed');
-    } finally {
-      setEnhancing(false);
-    }
-  }, [summary, onSummaryChange]);
-  return (
-    <div className="space-y-6 animate-in fade-in duration-300" data-section="summary">
-      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Professional Summary</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Write a compelling summary that highlights your key strengths and career goals
-            </p>
+const SummaryPanel = memo(
+  ({ summary, onSummaryChange }: { summary: string; onSummaryChange: (v: string) => void }) => {
+    const [enhancing, setEnhancing] = useState(false);
+    const handleAiEnhance = useCallback(async () => {
+      const text = summary?.trim() || 'Experienced professional seeking new opportunities.';
+      setEnhancing(true);
+      try {
+        const enhanced = await useResumeStore.getState().aiEnhanceText(text, 'summary');
+        if (enhanced) onSummaryChange(enhanced);
+      } catch (e) {
+        const { useToastStore } = await import('@/store/toastStore');
+        useToastStore.getState().error((e as Error)?.message || 'Enhance failed');
+      } finally {
+        setEnhancing(false);
+      }
+    }, [summary, onSummaryChange]);
+    return (
+      <div className="space-y-6 animate-in fade-in duration-300" data-section="summary">
+        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Professional Summary
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Write a compelling summary that highlights your key strengths and career goals
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAiEnhance}
+              disabled={enhancing}
+              className="gap-2 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+            >
+              <Brain size={16} className={enhancing ? 'animate-spin' : ''} />
+              {enhancing ? 'Enhancing…' : 'AI Enhance'}
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleAiEnhance}
-            disabled={enhancing}
-            className="gap-2 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
-          >
-            <Brain size={16} className={enhancing ? 'animate-spin' : ''} />
-            {enhancing ? 'Enhancing…' : 'AI Enhance'}
-          </Button>
-        </div>
-        <Textarea
-          placeholder="Example: Experienced software engineer with 5+ years of expertise in full-stack development. Proven track record of delivering scalable web applications using React, Node.js, and cloud technologies. Passionate about clean code, agile methodologies, and mentoring junior developers..."
-          value={summary}
-          onChange={(e) => onSummaryChange(e.target.value)}
-          className="min-h-[180px] resize-y text-sm"
-        />
-        <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-          <span>{summary.length} characters</span>
-          <span className={summary.length > 500 ? 'text-amber-600' : ''}>
-            Recommended: 100-500 characters
-          </span>
+          <Textarea
+            placeholder="Example: Experienced software engineer with 5+ years of expertise in full-stack development. Proven track record of delivering scalable web applications using React, Node.js, and cloud technologies. Passionate about clean code, agile methodologies, and mentoring junior developers..."
+            value={summary}
+            onChange={(e) => onSummaryChange(e.target.value)}
+            className="min-h-[180px] resize-y text-sm"
+          />
+          <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>{summary.length} characters</span>
+            <span className={summary.length > 500 ? 'text-amber-600' : ''}>
+              Recommended: 100-500 characters
+            </span>
+          </div>
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 SummaryPanel.displayName = 'SummaryPanel';
 
 const INITIAL_SECTIONS: BuilderSection[] = [
@@ -141,60 +150,63 @@ const Builder = () => {
     };
   }, []);
 
-  const handleSave = useCallback(async (silent = false) => {
-    if (!silent) {
-      setSaving(true);
-    }
-    try {
-      const payload = {
-        title: currentResume.title || 'Untitled Resume',
-        personalInfo: currentResume.personalInfo,
-        summary: currentResume.summary,
-        experience: currentResume.experience,
-        education: currentResume.education,
-        skills: currentResume.skills,
-      };
-
-      const response = resumeId
-        ? await api.updateResume(resumeId, payload)
-        : await api.createResume(payload);
-
-      if (!response.success || !response.data) {
-        throw new Error('Failed to save resume');
-      }
-
-      const normalized = normalizeResumeForStore(response.data);
-      setResume(normalized);
-
-      if (!resumeId && response.data._id) {
-        const nextParams = new URLSearchParams(searchParams);
-        nextParams.set('id', response.data._id);
-        setSearchParams(nextParams, { replace: true });
-      }
-
+  const handleSave = useCallback(
+    async (silent = false) => {
       if (!silent) {
-        toast.success('CV saved successfully');
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setSaving(true);
       }
-    } catch (error: any) {
-      if (!silent) {
-        toast.error(error?.message || 'Failed to save CV. Please try again.');
+      try {
+        const payload = {
+          title: currentResume.title || 'Untitled Resume',
+          personalInfo: currentResume.personalInfo,
+          summary: currentResume.summary,
+          experience: currentResume.experience,
+          education: currentResume.education,
+          skills: currentResume.skills,
+        };
+
+        const response = resumeId
+          ? await api.updateResume(resumeId, payload)
+          : await api.createResume(payload);
+
+        if (!response.success || !response.data) {
+          throw new Error('Failed to save resume');
+        }
+
+        const normalized = normalizeResumeForStore(response.data);
+        setResume(normalized);
+
+        if (!resumeId && response.data._id) {
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.set('id', response.data._id);
+          setSearchParams(nextParams, { replace: true });
+        }
+
+        if (!silent) {
+          toast.success('CV saved successfully');
+          setSaved(true);
+          setTimeout(() => setSaved(false), 2000);
+        }
+      } catch (error: any) {
+        if (!silent) {
+          toast.error(error?.message || 'Failed to save CV. Please try again.');
+        }
+      } finally {
+        if (!silent) {
+          setSaving(false);
+        }
       }
-    } finally {
-      if (!silent) {
-        setSaving(false);
-      }
-    }
-  }, [
-    currentResume,
-    normalizeResumeForStore,
-    resumeId,
-    searchParams,
-    setResume,
-    setSearchParams,
-    toast,
-  ]);
+    },
+    [
+      currentResume,
+      normalizeResumeForStore,
+      resumeId,
+      searchParams,
+      setResume,
+      setSearchParams,
+      toast,
+    ]
+  );
 
   // Auto-save functionality
   useEffect(() => {
@@ -228,7 +240,7 @@ const Builder = () => {
       const jsPDF = (await import('jspdf')).default;
 
       toast.success('Generating PDF...');
-      
+
       const canvas = await html2canvas(previewElement, {
         scale: 2,
         useCORS: true,
@@ -270,9 +282,7 @@ const Builder = () => {
   }, []);
 
   const handleToggleSectionVisibility = useCallback((id: string) => {
-    setSections((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s))
-    );
+    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s)));
   }, []);
 
   const handleOpenShortcuts = useCallback(() => {
@@ -313,7 +323,10 @@ const Builder = () => {
           store.updatePersonalInfo('fullName', 'Tran Thi B');
           store.updatePersonalInfo('email', 'tranthib@example.com');
           store.updatePersonalInfo('phone', '+84 987 654 321');
-          store.updateField('summary', 'Recent graduate eager to apply strong problem-solving, communication, and technical skills in a growth-oriented environment.');
+          store.updateField(
+            'summary',
+            'Recent graduate eager to apply strong problem-solving, communication, and technical skills in a growth-oriented environment.'
+          );
           if (store.currentResume.education.length === 0) {
             store.addEducation({
               id: `edu-${Date.now()}`,
@@ -333,47 +346,59 @@ const Builder = () => {
     []
   );
 
-  const handleAiGenerate = useCallback(async (payload: { prompt?: string; jobDescription?: string; role?: string; mode?: string }) => {
-    const store = useResumeStore.getState();
-    const data = await store.aiGenerateFull({
-      prompt: payload.prompt || payload.jobDescription,
-      role: (payload.role as any) || 'fullstack',
-      mode: (payload.mode as 'concise' | 'human') || 'human',
-    });
-    if (!data) return;
-    const current = store.currentResume;
-    store.setResume({
-      ...current,
-      summary: data.summary || current.summary,
-      experience: (data.experience ?? []).map((exp, i) => ({ ...exp, id: exp.id || `exp-${Date.now()}-${i}` })),
-      education: (data.education ?? []).map((edu, i) => ({ ...edu, id: edu.id || `edu-${Date.now()}-${i}` })),
-      skills: data.skills?.length ? data.skills : current.skills,
-    });
-    const { useToastStore } = await import('@/store/toastStore');
-    useToastStore.getState().success('CV generated. Review and edit as needed.');
-  }, []);
+  const handleAiGenerate = useCallback(
+    async (payload: { prompt?: string; jobDescription?: string; role?: string; mode?: string }) => {
+      const store = useResumeStore.getState();
+      const data = await store.aiGenerateFull({
+        prompt: payload.prompt || payload.jobDescription,
+        role: (payload.role as any) || 'fullstack',
+        mode: (payload.mode as 'concise' | 'human') || 'human',
+      });
+      if (!data) return;
+      const current = store.currentResume;
+      store.setResume({
+        ...current,
+        summary: data.summary || current.summary,
+        experience: (data.experience ?? []).map((exp, i) => ({
+          ...exp,
+          id: exp.id || `exp-${Date.now()}-${i}`,
+        })),
+        education: (data.education ?? []).map((edu, i) => ({
+          ...edu,
+          id: edu.id || `edu-${Date.now()}-${i}`,
+        })),
+        skills: data.skills?.length ? data.skills : current.skills,
+      });
+      const { useToastStore } = await import('@/store/toastStore');
+      useToastStore.getState().success('CV generated. Review and edit as needed.');
+    },
+    []
+  );
 
-  const handleAtsAnalyze = useCallback(async (jobDescription: string) => {
-    if (!resumeId) {
-      toast.error('Please save your CV first before running ATS Checker.');
-      return;
-    }
-
-    setAtsAnalyzing(true);
-    try {
-      const response = await api.analyzeResume(resumeId, jobDescription);
-      if (!response.success) {
-        throw new Error('Failed to analyze ATS');
+  const handleAtsAnalyze = useCallback(
+    async (jobDescription: string) => {
+      if (!resumeId) {
+        toast.error('Please save your CV first before running ATS Checker.');
+        return;
       }
 
-      setAtsAnalysis(response.data || null);
-      toast.success('ATS analysis completed.');
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to analyze ATS.');
-    } finally {
-      setAtsAnalyzing(false);
-    }
-  }, [resumeId, toast]);
+      setAtsAnalyzing(true);
+      try {
+        const response = await api.analyzeResume(resumeId, jobDescription);
+        if (!response.success) {
+          throw new Error('Failed to analyze ATS');
+        }
+
+        setAtsAnalysis(response.data || null);
+        toast.success('ATS analysis completed.');
+      } catch (error: any) {
+        toast.error(error?.message || 'Failed to analyze ATS.');
+      } finally {
+        setAtsAnalyzing(false);
+      }
+    },
+    [resumeId, toast]
+  );
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -578,11 +603,14 @@ const Builder = () => {
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-              {/* Mobile Toggle */}
-              <div className="flex lg:hidden border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+              {/* Mobile Toggle - sticky so it stays visible while scrolling */}
+              <div className="sticky top-0 z-10 flex lg:hidden border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
                 <button
                   type="button"
-                  onClick={() => setMobileView('form')}
+                  onClick={() => {
+                    setMobileView('form');
+                    setSidebarOpen(false);
+                  }}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
                     mobileView === 'form'
                       ? 'text-crimson-red border-b-2 border-crimson-red bg-red-50/50 dark:bg-red-900/20'
@@ -594,7 +622,10 @@ const Builder = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setMobileView('preview')}
+                  onClick={() => {
+                    setMobileView('preview');
+                    setSidebarOpen(false);
+                  }}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
                     mobileView === 'preview'
                       ? 'text-crimson-red border-b-2 border-crimson-red bg-red-50/50 dark:bg-red-900/20'
