@@ -1,5 +1,11 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IArticleComment {
+  user: mongoose.Types.ObjectId;
+  content: string;
+  createdAt: Date;
+}
+
 export interface IArticle extends Document {
   title: string;
   content: string;
@@ -12,59 +18,77 @@ export interface IArticle extends Document {
   tags?: string[];
   isPublished?: boolean;
   views?: number;
+  likes: mongoose.Types.ObjectId[];
+  comments: IArticleComment[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-const articleSchema = new Schema<IArticle>({
-  title: {
-    type: String,
-    required: true,
-    trim: true
+const articleSchema = new Schema<IArticle>(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: String,
+      enum: ['Tips CV', 'Interview Hack', 'Market News'],
+      default: 'Tips CV',
+    },
+    summary: {
+      type: String,
+      trim: true,
+    },
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    image: {
+      type: String,
+    },
+    coverImage: {
+      type: String,
+    },
+    slug: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    tags: [
+      {
+        type: String,
+      },
+    ],
+    isPublished: {
+      type: Boolean,
+      default: true,
+    },
+    views: {
+      type: Number,
+      default: 0,
+    },
+    likes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    comments: [
+      {
+        user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        content: { type: String, required: true, trim: true },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
   },
-  content: {
-    type: String,
-    required: true
-  },
-  category: {
-    type: String,
-    enum: ['Tips CV', 'Interview Hack', 'Market News'],
-    default: 'Tips CV'
-  },
-  summary: {
-    type: String,
-    trim: true
-  },
-  author: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  image: {
-    type: String
-  },
-  coverImage: {
-    type: String
-  },
-  slug: {
-    type: String,
-    unique: true,
-    sparse: true
-  },
-  tags: [{
-    type: String
-  }],
-  isPublished: {
-    type: Boolean,
-    default: true
-  },
-  views: {
-    type: Number,
-    default: 0
-  }
-}, {
-  timestamps: true
-});
+  { timestamps: true }
+);
 
 // Text search index
 articleSchema.index({ title: 'text', content: 'text' });

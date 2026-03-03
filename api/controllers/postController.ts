@@ -3,6 +3,7 @@ import mongoose, { Types } from 'mongoose';
 import Post from '../models/Post.js';
 import Notification from '../models/Notification.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
+import { broadcastNotification } from './notificationController.js';
 import { checkAndAwardAchievement } from './achievementController.js';
 
 export const createPost = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -47,11 +48,24 @@ export const getPosts = async (req: AuthRequest, res: Response, next: NextFuncti
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const sort = (req.query.sort as string) || 'new';
+    const search = (req.query.search as string) || '';
+    const author = (req.query.author as string) || '';
     const skip = (page - 1) * limit;
 
     // Admin can see all posts, regular users only see approved posts
     const isAdmin = req.user?.role === 'admin';
-    const query = isAdmin ? {} : { status: 'approved' };
+    const query: Record<string, unknown> = isAdmin ? {} : { status: 'approved' };
+
+    // Filter by author if provided
+    if (author.trim()) {
+      query.user = author.trim();
+    }
+
+    // Add content search if provided
+    if (search.trim().length >= 2) {
+      const regex = new RegExp(search.trim(), 'i');
+      query.content = regex;
+    }
 
     // Determine sort order based on sort param
     // 'new' = newest first, 'top' and 'hot' re-sort in memory
@@ -119,13 +133,15 @@ export const likePost = async (req: AuthRequest, res: Response, next: NextFuncti
 
       // Tạo notification khi được like (không gửi cho chính mình)
       if (post.user.toString() !== userId) {
-        await Notification.create({
+        const notif = await Notification.create({
           recipient: post.user,
           sender: req.user?._id,
           type: 'like',
           message: 'đã thích bài viết của bạn.',
           link: `/community`,
         });
+        const populated = await notif.populate('sender', 'name avatar');
+        broadcastNotification(post.user.toString(), populated);
       }
     } else {
       post.likes.splice(index, 1);
@@ -174,7 +190,7 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
       : post.user;
 
     if (recipientId && recipientId.toString() !== (req.user?._id as Types.ObjectId).toString()) {
-      await Notification.create({
+      const notif = await Notification.create({
         recipient: recipientId,
         sender: req.user?._id,
         type: 'comment',
@@ -182,6 +198,8 @@ export const commentPost = async (req: AuthRequest, res: Response, next: NextFun
         link: `/community?post=${req.params.id}&comment=${newComment._id}`,
         relatedId: req.params.id,
       });
+      const populated = await notif.populate('sender', 'name avatar');
+      broadcastNotification(recipientId.toString(), populated);
     }
 
     const updatedPost = await Post.findById(req.params.id)
@@ -317,7 +335,8 @@ export const deletePost = async (req: AuthRequest, res: Response, next: NextFunc
       return;
     }
 
-    if (post.user.toString() !== req.user?._id.toString()) {
+    const isAdmin = req.user?.role === 'admin';
+    if (post.user.toString() !== req.user?._id.toString() && !isAdmin) {
       res.status(401).json({ success: false, message: 'Not authorized' });
       return;
     }
@@ -325,6 +344,42 @@ export const deletePost = async (req: AuthRequest, res: Response, next: NextFunc
     await post.deleteOne();
 
     res.json({ success: true, message: 'Post removed' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updatePost = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      res.status(404).json({ success: false, message: 'Post not found' });
+      return;
+    }
+
+    if (post.user.toString() !== req.user?._id.toString()) {
+      res.status(401).json({ success: false, message: 'Not authorized' });
+      return;
+    }
+
+    const { content, image } = req.body;
+
+    if (!content && !image) {
+      res.status(400).json({ success: false, message: 'Content or image is required' });
+      return;
+    }
+
+    if (content !== undefined) post.content = content;
+    if (image !== undefined) post.image = image;
+
+    await post.save();
+
+    const updatedPost = await Post.findById(post._id)
+      .populate('user', 'name avatar careerGoal location')
+      .populate('comments.user', 'name avatar careerGoal location');
+
+    res.json({ success: true, data: updatedPost });
   } catch (error) {
     next(error);
   }
