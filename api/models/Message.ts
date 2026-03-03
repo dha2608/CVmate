@@ -4,6 +4,7 @@ export interface IMessage extends Document {
   sender: mongoose.Types.ObjectId;
   receiver: mongoose.Types.ObjectId;
   content: string;
+  image?: string;
   read: boolean;
   /**
    * Timestamp when the message was read.
@@ -33,6 +34,10 @@ const messageSchema = new Schema<IMessage>(
       required: true,
       trim: true,
     },
+    image: {
+      type: String,
+      default: null,
+    },
     read: {
       type: Boolean,
       default: false,
@@ -45,7 +50,7 @@ const messageSchema = new Schema<IMessage>(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 messageSchema.index({ sender: 1, receiver: 1, createdAt: 1 });
