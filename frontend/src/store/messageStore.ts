@@ -12,6 +12,7 @@ interface Message {
   sender: string;
   receiver: string;
   content: string;
+  image?: string | null;
   createdAt: string;
 }
 
@@ -25,7 +26,7 @@ interface MessageState {
   isConnected: boolean;
   fetchConversations: () => Promise<void>;
   fetchMessages: (userId: string) => Promise<void>;
-  sendMessage: (receiverId: string, content: string) => Promise<void>;
+  sendMessage: (receiverId: string, content: string, image?: string) => Promise<void>;
   setActiveConversation: (user: User) => void;
   markAsRead: (userId: string) => Promise<void>;
   connectRealtime: () => void;
@@ -204,11 +205,11 @@ export const useMessageStore = create<MessageState>((set, get) => ({
     }
   },
 
-  sendMessage: async (receiverId: string, content: string) => {
+  sendMessage: async (receiverId: string, content: string, image?: string) => {
     try {
       const res = await authFetch(`${API_URL}/messages`, {
         method: 'POST',
-        body: JSON.stringify({ receiverId, content }),
+        body: JSON.stringify({ receiverId, content, ...(image ? { image } : {}) }),
       });
 
       if (!res.ok) {
