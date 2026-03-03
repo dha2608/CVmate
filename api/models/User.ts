@@ -200,8 +200,7 @@ const userSchema = new Schema<IUser>(
 );
 
 // Indexes for performance
-userSchema.index({ email: 1 });
-userSchema.index({ googleId: 1 });
+// Note: email and googleId already have indexes from { unique: true } in schema definition
 userSchema.index({ 'subscription.plan': 1, 'subscription.status': 1 });
 userSchema.index({ isPublicProfile: 1 });
 userSchema.index({ isBanned: 1 });

@@ -64,7 +64,7 @@
     "lucide-react": "^0.511.0",
     "mongoose": "^8.2.0",
     "multer": "^2.0.2",
-    "nodemailer": "^6.9.16",
+    "nodemailer": "^8.0.1",
     "otplib": "^12.0.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
