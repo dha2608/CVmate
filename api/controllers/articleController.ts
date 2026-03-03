@@ -2,7 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import Article from '../models/Article.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import logger from '../utils/logger.js';
-import { getHFOrThrow, resolveModel, buildCacheKey, getCachedOrRun, logAIUsage } from '../utils/aiClient.js';
+import {
+  getHFOrThrow,
+  resolveModel,
+  buildCacheKey,
+  getCachedOrRun,
+  logAIUsage,
+} from '../utils/aiClient.js';
 
 export const createArticle = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -69,13 +75,17 @@ export const createArticle = async (req: AuthRequest, res: Response, next: NextF
         durationMs,
         success: true,
       });
-      } catch (error) {
-        logger.error('AI summary generation error', error instanceof Error ? error : new Error(String(error)), {
+    } catch (error) {
+      logger.error(
+        'AI summary generation error',
+        error instanceof Error ? error : new Error(String(error)),
+        {
           articleTitle: title,
           userId: req.user?._id,
-        });
-        summary = content.substring(0, 150) + '...';
-        tags = ['general'];
+        }
+      );
+      summary = content.substring(0, 150) + '...';
+      tags = ['general'];
 
       const durationMs = Date.now() - startedAt;
       logAIUsage({
@@ -116,7 +126,10 @@ export const getArticles = async (req: Request, res: Response, next: NextFunctio
     const { search, category } = req.query;
 
     const query: {
-      $or?: Array<{ title?: { $regex: string; $options: string }; summary?: { $regex: string; $options: string } }>;
+      $or?: Array<{
+        title?: { $regex: string; $options: string };
+        summary?: { $regex: string; $options: string };
+      }>;
       category?: string;
     } = {};
 
@@ -161,11 +174,10 @@ export const getArticles = async (req: Request, res: Response, next: NextFunctio
 export const getArticleById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const article = await Article.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    ).populate('author', 'name avatar bio role');
+    const article = await Article.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true })
+      .populate('author', 'name avatar bio role')
+      .populate('likes', '_id')
+      .populate('comments.user', 'name avatar');
 
     if (!article) {
       res.status(404).json({ success: false, message: 'Article not found' });
@@ -222,6 +234,110 @@ export const deleteArticle = async (req: AuthRequest, res: Response, next: NextF
     await article.deleteOne();
 
     res.json({ success: true, message: 'Article deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const likeArticle = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?._id;
+    const article = await Article.findById(id);
+
+    if (!article) {
+      res.status(404).json({ success: false, message: 'Article not found' });
+      return;
+    }
+
+    const alreadyLiked = article.likes.some(
+      (likeId: any) => likeId.toString() === userId?.toString()
+    );
+
+    if (alreadyLiked) {
+      article.likes = article.likes.filter(
+        (likeId: any) => likeId.toString() !== userId?.toString()
+      ) as any;
+    } else {
+      article.likes.push(userId as any);
+    }
+
+    await article.save();
+
+    res.json({
+      success: true,
+      data: {
+        likes: article.likes.length,
+        isLiked: !alreadyLiked,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addArticleComment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+
+    if (!content?.trim()) {
+      res.status(400).json({ success: false, message: 'Comment content is required' });
+      return;
+    }
+
+    const article = await Article.findById(id);
+
+    if (!article) {
+      res.status(404).json({ success: false, message: 'Article not found' });
+      return;
+    }
+
+    article.comments.push({
+      user: req.user?._id as any,
+      content: content.trim(),
+      createdAt: new Date(),
+    });
+
+    await article.save();
+
+    // Return the new comment with populated user
+    const updatedArticle = await Article.findById(id).populate('comments.user', 'name avatar');
+
+    const newComment = updatedArticle?.comments[updatedArticle.comments.length - 1];
+
+    res.status(201).json({ success: true, data: newComment });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteArticleComment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id, commentId } = req.params;
+    const article = await Article.findById(id);
+
+    if (!article) {
+      res.status(404).json({ success: false, message: 'Article not found' });
+      return;
+    }
+
+    const comment = article.comments.find((c: any) => c._id.toString() === commentId);
+
+    if (!comment) {
+      res.status(404).json({ success: false, message: 'Comment not found' });
+      return;
+    }
+
+    if (comment.user.toString() !== req.user?._id.toString() && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, message: 'Not authorized to delete this comment' });
+      return;
+    }
+
+    article.comments = article.comments.filter((c: any) => c._id.toString() !== commentId) as any;
+    await article.save();
+
+    res.json({ success: true, message: 'Comment deleted' });
   } catch (error) {
     next(error);
   }

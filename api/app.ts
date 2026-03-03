@@ -37,6 +37,7 @@ import pushRoutes from './routes/push.js';
 import achievementRoutes from './routes/achievements.js';
 import adminRoutes from './routes/admin.js';
 import bookmarkRoutes from './routes/bookmarks.js';
+import jobAlertRoutes from './routes/jobAlerts.js';
 
 // Load env
 dotenv.config();
@@ -253,6 +254,7 @@ app.use('/api/push', pushRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
+app.use('/api/job-alerts', jobAlertRoutes);
 
 /**
  * Root Endpoint
