@@ -11,13 +11,18 @@ import {
   deletePost,
   updatePost,
 } from '../controllers/postController.js';
-import { validate, createPostSchema, commentPostSchema } from '../utils/validators.js';
+import {
+  validate,
+  createPostSchema,
+  commentPostSchema,
+  updatePostSchema,
+} from '../utils/validators.js';
 
 const router = express.Router();
 
 router.route('/').get(protect, getPosts).post(protect, validate(createPostSchema), createPost);
 
-router.put('/:id', protect, updatePost);
+router.put('/:id', protect, validate(updatePostSchema), updatePost);
 router.delete('/:id', protect, deletePost);
 router.put('/:id/like', protect, likePost);
 router.post('/:id/comment', protect, validate(commentPostSchema), commentPost);

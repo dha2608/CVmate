@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
 import {
-  CheckCircle2,
+  CircleCheckBig,
   Circle,
   Download,
   Save,
   User,
   FileText,
-  Briefcase,
+  BriefcaseBusiness,
   GraduationCap,
   Zap,
   ChevronLeft,
@@ -68,7 +68,7 @@ interface BuilderSidebarProps {
 const sectionIcons: Record<BuilderSectionId, typeof User> = {
   personal: User,
   summary: FileText,
-  experience: Briefcase,
+  experience: BriefcaseBusiness,
   education: GraduationCap,
   skills: Zap,
 };
@@ -222,7 +222,7 @@ const BuilderSidebar = ({
           </div>
           {progress === 100 && (
             <p className="text-xs text-green-600 dark:text-green-400 mt-1.5 flex items-center gap-1">
-              <CheckCircle2 size={12} />
+              <CircleCheckBig size={12} />
               <span>CV is complete!</span>
             </p>
           )}
@@ -304,7 +304,7 @@ const BuilderSidebar = ({
                     <div
                       className={`${isCollapsed ? 'h-10 w-10' : 'h-8 w-8'} rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center`}
                     >
-                      <CheckCircle2 size={isCollapsed ? 18 : 16} />
+                      <CircleCheckBig size={isCollapsed ? 18 : 16} />
                     </div>
                   ) : (
                     <div

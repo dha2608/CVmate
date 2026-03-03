@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Brain, Lightbulb, X, Check } from 'lucide-react';
+import { Sparkles, Lightbulb, X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useResumeStore } from '@/store/resumeStore';
 
@@ -46,27 +46,32 @@ const AISuggestions = ({ onApply }: AISuggestionsProps) => {
   ]);
   const [applied, setApplied] = useState<Set<string>>(new Set());
 
-  const handleApply = useCallback(async (suggestion: Suggestion) => {
-    setApplied((prev) => new Set([...prev, suggestion.id]));
-    onApply?.(suggestion);
+  const handleApply = useCallback(
+    async (suggestion: Suggestion) => {
+      setApplied((prev) => new Set([...prev, suggestion.id]));
+      onApply?.(suggestion);
 
-    if (suggestion.aiAction === 'enhance-summary') {
-      setLoading(suggestion.id);
-      try {
-        const store = useResumeStore.getState();
-        const text = store.currentResume.summary?.trim() || 'Experienced professional seeking new opportunities.';
-        const enhanced = await store.aiEnhanceText(text, 'summary');
-        if (enhanced) store.updateField('summary', enhanced);
-      } catch (e) {
-        const { useToastStore } = await import('@/store/toastStore');
-        useToastStore.getState().error((e as Error)?.message || 'Enhance failed');
-      } finally {
-        setLoading(null);
+      if (suggestion.aiAction === 'enhance-summary') {
+        setLoading(suggestion.id);
+        try {
+          const store = useResumeStore.getState();
+          const text =
+            store.currentResume.summary?.trim() ||
+            'Experienced professional seeking new opportunities.';
+          const enhanced = await store.aiEnhanceText(text, 'summary');
+          if (enhanced) store.updateField('summary', enhanced);
+        } catch (e) {
+          const { useToastStore } = await import('@/store/toastStore');
+          useToastStore.getState().error((e as Error)?.message || 'Enhance failed');
+        } finally {
+          setLoading(null);
+        }
       }
-    }
-  }, [onApply]);
+    },
+    [onApply]
+  );
 
-  const unreadCount = suggestions.filter(s => !applied.has(s.id)).length;
+  const unreadCount = suggestions.filter((s) => !applied.has(s.id)).length;
 
   return (
     <div className="relative z-50">
@@ -74,7 +79,7 @@ const AISuggestions = ({ onApply }: AISuggestionsProps) => {
         onClick={() => setIsOpen(!isOpen)}
         className="relative flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 lg:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl flex-shrink-0 whitespace-nowrap"
       >
-        <Brain size={14} className="sm:w-4 sm:h-4" />
+        <Sparkles size={14} className="sm:w-4 sm:h-4" />
         <span className="text-xs sm:text-sm font-semibold hidden md:inline">AI Suggestions</span>
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold">
@@ -86,10 +91,7 @@ const AISuggestions = ({ onApply }: AISuggestionsProps) => {
       <AnimatePresence>
         {isOpen && (
           <>
-            <div 
-              className="fixed inset-0 z-[45]" 
-              onClick={() => setIsOpen(false)}
-            />
+            <div className="fixed inset-0 z-[45]" onClick={() => setIsOpen(false)} />
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -130,9 +132,7 @@ const AISuggestions = ({ onApply }: AISuggestionsProps) => {
                             <h4 className="text-sm font-bold text-gray-900 mb-1">
                               {suggestion.title}
                             </h4>
-                            <p className="text-xs text-gray-600">
-                              {suggestion.description}
-                            </p>
+                            <p className="text-xs text-gray-600">{suggestion.description}</p>
                           </div>
                           {isApplied && (
                             <Check size={16} className="text-green-500 flex-shrink-0" />

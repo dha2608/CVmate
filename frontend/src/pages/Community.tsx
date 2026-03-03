@@ -5,11 +5,20 @@ import { useI18n } from '@/store/i18nStore';
 import MainLayout from '@/components/layout/MainLayout';
 import CreatePost from '@/components/community/CreatePost';
 import PostCard from '@/components/community/PostCard';
+import CommunitySidebar from '@/components/community/CommunitySidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Loader2, Flame, Clock, TrendingUp, Search, X } from 'lucide-react';
+import {
+  MessageCircleMore,
+  Loader2,
+  Flame,
+  CalendarClock,
+  TrendingUp,
+  Search,
+  X,
+} from 'lucide-react';
 
 const SORT_OPTIONS = [
-  { value: 'new' as const, icon: Clock, labelKey: 'community.new' },
+  { value: 'new' as const, icon: CalendarClock, labelKey: 'community.new' },
   { value: 'hot' as const, icon: Flame, labelKey: 'community.hot' },
   { value: 'top' as const, icon: TrendingUp, labelKey: 'community.top' },
 ];
@@ -84,7 +93,7 @@ const Community = () => {
   }
 
   return (
-    <MainLayout>
+    <MainLayout rightSidebar={<CommunitySidebar />}>
       {/* Search + Sort */}
       <div className="space-y-3 mb-6">
         {/* Search bar */}
@@ -155,13 +164,15 @@ const Community = () => {
       ) : (
         <div className="space-y-5 animate-fade-in">
           {posts.map((post) => (
-            <PostCard key={post._id} post={post} />
+            <div key={post._id} id={`post-${post._id}`}>
+              <PostCard post={post} />
+            </div>
           ))}
 
           {posts.length === 0 && (
             <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 text-center rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
               <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto opacity-50 mb-4 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <MessageSquare className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 dark:text-gray-500" />
+                <MessageCircleMore className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 dark:text-gray-500" />
               </div>
               <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
                 {t('community.noPostsYet')}

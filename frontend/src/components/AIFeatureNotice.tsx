@@ -1,4 +1,4 @@
-import { AlertCircle, Brain, ExternalLink } from 'lucide-react';
+import { CircleAlert, Sparkles, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from './ui/button';
 
@@ -16,16 +16,16 @@ const AIFeatureNotice = ({ feature, onDismiss }: AIFeatureNoticeProps) => {
     >
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
-          <AlertCircle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+          <CircleAlert className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
         </div>
         <div className="flex-1">
           <h3 className="font-semibold text-yellow-900 dark:text-yellow-200 mb-1 flex items-center gap-2">
-            <Brain size={16} />
+            <Sparkles size={16} />
             Tính năng AI tạm thời không khả dụng
           </h3>
           <p className="text-sm text-yellow-800 dark:text-yellow-300 mb-3">
-            {feature} hiện không thể sử dụng vì chưa được cấu hình Hugging Face API Key (HF_API_KEY). 
-            Vui lòng liên hệ admin để được hỗ trợ.
+            {feature} hiện không thể sử dụng vì chưa được cấu hình Hugging Face API Key
+            (HF_API_KEY). Vui lòng liên hệ admin để được hỗ trợ.
           </p>
           <div className="flex items-center gap-2">
             <Button

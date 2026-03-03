@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion';
-import { Trash2, Archive, MoreVertical } from 'lucide-react';
+import { Trash2, Archive, EllipsisVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface SwipeAction {
@@ -27,7 +27,7 @@ export const SwipeableCard = ({
   leftActions = [],
   rightActions = [],
   threshold = 100,
-  className
+  className,
 }: SwipeableCardProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const x = useMotionValue(0);
@@ -47,11 +47,15 @@ export const SwipeableCard = ({
       if (offset < 0 && rightActions.length > 0) {
         // Swiped left - show right actions
         x.set(-leftWidth);
-        if (onSwipeLeft) {onSwipeLeft();}
+        if (onSwipeLeft) {
+          onSwipeLeft();
+        }
       } else if (offset > 0 && leftActions.length > 0) {
         // Swiped right - show left actions
         x.set(rightWidth);
-        if (onSwipeRight) {onSwipeRight();}
+        if (onSwipeRight) {
+          onSwipeRight();
+        }
       } else {
         x.set(0);
       }
@@ -67,7 +71,7 @@ export const SwipeableCard = ({
   };
 
   return (
-    <div className={cn("relative overflow-hidden", className)}>
+    <div className={cn('relative overflow-hidden', className)}>
       {/* Left Actions Background */}
       {leftActions.length > 0 && (
         <motion.div
@@ -78,10 +82,7 @@ export const SwipeableCard = ({
             <button
               key={index}
               onClick={() => handleActionClick(action)}
-              className={cn(
-                "h-full px-6 flex items-center justify-center",
-                action.color
-              )}
+              className={cn('h-full px-6 flex items-center justify-center', action.color)}
             >
               {action.icon}
             </button>
@@ -99,10 +100,7 @@ export const SwipeableCard = ({
             <button
               key={index}
               onClick={() => handleActionClick(action)}
-              className={cn(
-                "h-full px-6 flex items-center justify-center",
-                action.color
-              )}
+              className={cn('h-full px-6 flex items-center justify-center', action.color)}
             >
               {action.icon}
             </button>
@@ -133,12 +131,12 @@ export const createDeleteAction = (onDelete: () => void): SwipeAction => ({
   icon: <Trash2 size={20} className="text-white" />,
   label: 'Delete',
   color: 'bg-red-500 hover:bg-red-600',
-  action: onDelete
+  action: onDelete,
 });
 
 export const createArchiveAction = (onArchive: () => void): SwipeAction => ({
   icon: <Archive size={20} className="text-white" />,
   label: 'Archive',
   color: 'bg-gray-500 hover:bg-gray-600',
-  action: onArchive
+  action: onArchive,
 });

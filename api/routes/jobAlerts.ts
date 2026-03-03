@@ -7,6 +7,7 @@ import {
   deleteAlert,
   toggleAlert,
 } from '../controllers/jobAlertController.js';
+import { validate, createJobAlertSchema, updateJobAlertSchema } from '../utils/validators.js';
 
 const router = Router();
 
@@ -14,8 +15,8 @@ const router = Router();
 router.use(protect);
 
 router.get('/', getMyAlerts);
-router.post('/', createAlert);
-router.put('/:id', updateAlert);
+router.post('/', validate(createJobAlertSchema), createAlert);
+router.put('/:id', validate(updateJobAlertSchema), updateAlert);
 router.delete('/:id', deleteAlert);
 router.patch('/:id/toggle', toggleAlert);
 

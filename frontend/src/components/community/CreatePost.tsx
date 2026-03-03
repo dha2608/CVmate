@@ -51,6 +51,11 @@ const CreatePost = () => {
       return;
     }
 
+    if (content.length > 5000) {
+      toast.error('Post content must be 5000 characters or less');
+      return;
+    }
+
     let finalImageUrl: string | undefined;
 
     try {
@@ -65,7 +70,12 @@ const CreatePost = () => {
         }
         // Normalize URL - ensure it's a relative path starting with /uploads/
         let imageUrl = uploadResponse.data.url;
-        if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://') && !imageUrl.startsWith('/uploads/')) {
+        if (
+          imageUrl &&
+          !imageUrl.startsWith('http://') &&
+          !imageUrl.startsWith('https://') &&
+          !imageUrl.startsWith('/uploads/')
+        ) {
           imageUrl = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
         }
         finalImageUrl = imageUrl;
@@ -93,10 +103,13 @@ const CreatePost = () => {
         <textarea
           className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-crimson-red focus:border-transparent resize-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
           rows={4}
-          placeholder={t('community.sharePlaceholder') || 'Share your career updates or ask for CV feedback...'}
+          placeholder={
+            t('community.sharePlaceholder') || 'Share your career updates or ask for CV feedback...'
+          }
           value={content}
           onChange={(e) => setContent(e.target.value)}
           disabled={isLoading || isUploadingImage}
+          maxLength={5000}
         />
 
         {imagePreview && (
@@ -140,7 +153,9 @@ const CreatePost = () => {
             >
               <ImageIcon size={18} className="text-gray-600 dark:text-gray-400" />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                {selectedImage ? (t('common.imageSelected') || 'Image selected') : (t('common.uploadImage') || 'Upload image')}
+                {selectedImage
+                  ? t('common.imageSelected') || 'Image selected'
+                  : t('common.uploadImage') || 'Upload image'}
               </span>
             </label>
           </div>
@@ -153,7 +168,9 @@ const CreatePost = () => {
             {isLoading || isUploadingImage ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {isUploadingImage ? (t('common.uploading') || 'Uploading...') : (t('common.posting') || 'Posting...')}
+                {isUploadingImage
+                  ? t('common.uploading') || 'Uploading...'
+                  : t('common.posting') || 'Posting...'}
               </>
             ) : (
               t('common.post') || 'Post'

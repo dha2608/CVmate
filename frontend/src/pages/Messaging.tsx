@@ -8,13 +8,13 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Send,
-  MessageSquare,
+  SendHorizontal,
+  MessageCircleMore,
   Check,
   CheckCheck,
   Loader2,
   ArrowLeft,
-  Smile,
+  SmilePlus,
   ImagePlus,
   X,
 } from 'lucide-react';
@@ -103,8 +103,16 @@ const Messaging = () => {
     markAsRead(activeConversationId);
   }, [activeConversationId, fetchMessages, markAsRead]);
 
+  // Auto-scroll only when user is near the bottom (within 150px)
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const isNearBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+    if (isNearBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, isTyping]);
 
   // Real-time updates handled by SSE via connectRealtime() — no polling needed
@@ -188,7 +196,7 @@ const Messaging = () => {
           className={`w-full sm:w-1/3 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-white dark:bg-gray-800 ${!showMobileSidebar && activeConversation ? 'hidden sm:flex' : 'flex'}`}
         >
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 font-bold text-gray-700 dark:text-white flex items-center gap-2">
-            <MessageSquare size={20} />
+            <MessageCircleMore size={20} />
             {t('messaging.title')}
           </div>
           <div className="flex-1 overflow-y-auto">
@@ -295,7 +303,7 @@ const Messaging = () => {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3">
                 {isLoading && messages.length === 0 ? (
                   <div className="space-y-4 animate-pulse">
                     <div className="flex items-end gap-2">
@@ -431,7 +439,7 @@ const Messaging = () => {
                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                       className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
-                      <Smile size={20} />
+                      <SmilePlus size={20} />
                     </button>
                     {showEmojiPicker && (
                       <EmojiPicker
@@ -480,6 +488,7 @@ const Messaging = () => {
                     placeholder={t('messaging.writeMessage')}
                     className="flex-1 dark:bg-gray-700 dark:border-gray-600"
                     disabled={isSending}
+                    maxLength={5000}
                   />
                   <Button
                     onClick={handleSend}
@@ -490,7 +499,7 @@ const Messaging = () => {
                     {isSending ? (
                       <Loader2 className="animate-spin" size={18} />
                     ) : (
-                      <Send size={18} />
+                      <SendHorizontal size={18} />
                     )}
                   </Button>
                 </div>
@@ -498,7 +507,7 @@ const Messaging = () => {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
-              <MessageSquare size={48} className="mb-2 opacity-20" />
+              <MessageCircleMore size={48} className="mb-2 opacity-20" />
               <p className="text-sm">{t('messaging.selectConversation')}</p>
             </div>
           )}

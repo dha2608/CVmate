@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Target, Award, Calendar, BarChart3, Video } from 'lucide-react';
+import { Activity, TrendingDown, Compass, Gauge, Calendar, ChartSpline, Mic } from 'lucide-react';
 import { useI18n } from '@/store/i18nStore';
 
 interface StatCardProps {
@@ -12,8 +12,9 @@ interface StatCardProps {
 }
 
 const StatCard = ({ title, value, change, icon, color, trend = 'neutral' }: StatCardProps) => {
-  const TrendIcon = trend === 'up' ? TrendingUp : TrendingDown;
-  const trendColor = trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-gray-600';
+  const TrendIcon = trend === 'up' ? Activity : TrendingDown;
+  const trendColor =
+    trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-gray-600';
 
   return (
     <motion.div
@@ -22,9 +23,7 @@ const StatCard = ({ title, value, change, icon, color, trend = 'neutral' }: Stat
       className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300"
     >
       <div className="flex items-center justify-between mb-3">
-        <div className={`p-2 rounded-lg ${color}`}>
-          {icon}
-        </div>
+        <div className={`p-2 rounded-lg ${color}`}>{icon}</div>
         {change !== undefined && (
           <div className={`flex items-center gap-1 text-sm font-semibold ${trendColor}`}>
             <TrendIcon size={14} />
@@ -54,29 +53,29 @@ const AdvancedStats = ({ stats }: AdvancedStatsProps) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
-        <BarChart3 size={20} className="text-crimson-red" />
+        <ChartSpline size={20} className="text-crimson-red" />
         <h3 className="text-lg font-bold text-gray-900 dark:text-white">Advanced Statistics</h3>
       </div>
-      
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           title={t('dashboard.cvsCreated')}
           value={stats.resumesCount || 0}
-          icon={<Target size={20} className="text-blue-600" />}
+          icon={<Compass size={20} className="text-blue-600" />}
           color="bg-blue-50 dark:bg-blue-900/20"
           trend="up"
         />
         <StatCard
           title={t('dashboard.interviews')}
           value={stats.interviewsCount || 0}
-          icon={<Video size={20} className="text-green-600" />}
+          icon={<Mic size={20} className="text-green-600" />}
           color="bg-green-50 dark:bg-green-900/20"
           trend="up"
         />
         <StatCard
           title={t('dashboard.postViews')}
           value={stats.postsCount || 0}
-          icon={<Award size={20} className="text-orange-600" />}
+          icon={<Gauge size={20} className="text-orange-600" />}
           color="bg-orange-50 dark:bg-orange-900/20"
           trend="up"
         />
@@ -91,7 +90,7 @@ const AdvancedStats = ({ stats }: AdvancedStatsProps) => {
         >
           <div className="flex items-center justify-between mb-2">
             <h4 className="font-semibold">Success Rate</h4>
-            <Award size={24} />
+            <Gauge size={24} />
           </div>
           <div className="text-4xl font-black mb-2">{stats.successRate}%</div>
           <p className="text-sm opacity-90">Your application success rate this month</p>

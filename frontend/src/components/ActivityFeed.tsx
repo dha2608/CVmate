@@ -1,7 +1,7 @@
 import { useEffect, useState, memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/store/i18nStore';
-import { Clock, FileText, Video, MessageSquare, Briefcase, TrendingUp } from 'lucide-react';
+import { CalendarClock, ScrollText, Mic, PenLine, BriefcaseBusiness, Activity } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi, enUS } from 'date-fns/locale';
 
@@ -109,15 +109,17 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
     const iconClass = 'w-4 h-4 sm:w-5 sm:h-5';
     switch (type) {
       case 'resume':
-        return <FileText className={`${iconClass} text-blue-600 dark:text-blue-400`} />;
+        return <ScrollText className={`${iconClass} text-blue-600 dark:text-blue-400`} />;
       case 'interview':
-        return <Video className={`${iconClass} text-green-600 dark:text-green-400`} />;
+        return <Mic className={`${iconClass} text-green-600 dark:text-green-400`} />;
       case 'post':
-        return <MessageSquare className={`${iconClass} text-orange-600 dark:text-orange-400`} />;
+        return <PenLine className={`${iconClass} text-orange-600 dark:text-orange-400`} />;
       case 'job':
-        return <Briefcase className={`${iconClass} text-purple-600 dark:text-purple-400`} />;
+        return (
+          <BriefcaseBusiness className={`${iconClass} text-purple-600 dark:text-purple-400`} />
+        );
       case 'article':
-        return <TrendingUp className={`${iconClass} text-red-600 dark:text-red-400`} />;
+        return <Activity className={`${iconClass} text-red-600 dark:text-red-400`} />;
     }
   };
 
@@ -141,7 +143,7 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
         {showHeader && (
           <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-crimson-red dark:text-red-400" />
+            <CalendarClock className="w-5 h-5 text-crimson-red dark:text-red-400" />
             Recent Activity
           </h3>
         )}
@@ -165,12 +167,12 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
         {showHeader && (
           <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-crimson-red dark:text-red-400" />
+            <CalendarClock className="w-5 h-5 text-crimson-red dark:text-red-400" />
             Recent Activity
           </h3>
         )}
         <div className="text-center py-8">
-          <Clock className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+          <CalendarClock className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
           <p className="text-sm text-gray-500 dark:text-gray-400">Chưa có hoạt động gần đây</p>
         </div>
       </div>
@@ -181,7 +183,7 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
       {showHeader && (
         <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-crimson-red dark:text-red-400" />
+          <CalendarClock className="w-5 h-5 text-crimson-red dark:text-red-400" />
           Recent Activity
         </h3>
       )}
@@ -203,7 +205,7 @@ const ActivityFeed = memo(({ limit = 5, showHeader = true }: ActivityFeedProps) 
                 {activity.title}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
-                <Clock className="w-3 h-3" />
+                <CalendarClock className="w-3 h-3" />
                 {formatDistanceToNow(activity.timestamp, {
                   addSuffix: true,
                   locale: language === 'vi' ? vi : enUS,

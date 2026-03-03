@@ -29,19 +29,19 @@ import AIJobMatcher from '@/components/jobs/AIJobMatcher';
 // VirtualList removed - using infinite scroll with IntersectionObserver
 
 import {
-  Briefcase,
+  BriefcaseBusiness,
   MapPin,
   DollarSign,
-  Clock,
+  CalendarClock,
   Search,
-  Filter,
-  CheckCircle2,
+  SlidersHorizontal,
+  CircleCheckBig,
   Loader2,
   ChevronDown,
   ChevronUp,
   X,
-  Video,
-  MessageSquare,
+  Mic,
+  MessageCircleMore,
   Bell,
   BellOff,
   Trash2,
@@ -377,7 +377,7 @@ const Jobs = () => {
               className="w-full flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all group border border-blue-100 dark:border-blue-800"
             >
               <div className="bg-blue-500 dark:bg-blue-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                <Briefcase size={16} className="text-white" />
+                <BriefcaseBusiness size={16} className="text-white" />
               </div>
 
               <div className="flex-1 text-left">
@@ -396,7 +396,7 @@ const Jobs = () => {
               className="w-full flex items-start gap-3 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all group border border-purple-100 dark:border-purple-800"
             >
               <div className="bg-purple-500 dark:bg-purple-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                <Video size={16} className="text-white" />
+                <Mic size={16} className="text-white" />
               </div>
 
               <div className="flex-1 text-left">
@@ -434,7 +434,7 @@ const Jobs = () => {
               className="w-full flex items-start gap-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-all group border border-orange-100 dark:border-orange-800"
             >
               <div className="bg-orange-500 dark:bg-orange-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                <MessageSquare size={16} className="text-white" />
+                <MessageCircleMore size={16} className="text-white" />
               </div>
 
               <div className="flex-1 text-left">
@@ -481,7 +481,7 @@ const Jobs = () => {
           <div className="space-y-4">
             <div className="flex gap-4 items-center flex-wrap">
               <div className="flex items-center gap-2">
-                <Filter size={18} className="text-gray-500 dark:text-gray-400" />
+                <SlidersHorizontal size={18} className="text-gray-500 dark:text-gray-400" />
 
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('jobs.filters')}
@@ -921,7 +921,7 @@ const Jobs = () => {
         </div>
       ) : jobs.length === 0 ? (
         <div className="text-center py-16 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <Briefcase className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
+          <BriefcaseBusiness className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
 
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
             {t('jobs.noJobsAvailable')}
@@ -989,7 +989,7 @@ const Jobs = () => {
                     </span>
 
                     <span className="flex items-center gap-1">
-                      <Briefcase size={14} /> {job.type}
+                      <BriefcaseBusiness size={14} /> {job.type}
                     </span>
 
                     {job.salary && (
@@ -999,7 +999,7 @@ const Jobs = () => {
                     )}
 
                     <span className="flex items-center gap-1">
-                      <Clock size={14} /> {new Date(job.postedAt).toLocaleDateString()}
+                      <CalendarClock size={14} /> {new Date(job.postedAt).toLocaleDateString()}
                     </span>
                   </div>
 
@@ -1028,7 +1028,7 @@ const Jobs = () => {
                       disabled
                       className="text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 cursor-not-allowed"
                     >
-                      <CheckCircle2 size={14} className="mr-1" />
+                      <CircleCheckBig size={14} className="mr-1" />
 
                       {t('jobs.applied')}
                     </Button>

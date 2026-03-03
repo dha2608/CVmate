@@ -8,6 +8,7 @@ import {
   messageEvents,
   postTyping,
 } from '../controllers/messageController.js';
+import { validate, sendMessageSchema, typingSchema } from '../utils/validators.js';
 
 const router = express.Router();
 
@@ -16,8 +17,8 @@ router.get('/events', protectSSE, messageEvents);
 
 router.get('/conversations', protect, getConversations);
 router.get('/:userId', protect, getMessages);
-router.post('/typing', protect, postTyping);
-router.post('/', protect, sendMessage);
+router.post('/typing', protect, validate(typingSchema), postTyping);
+router.post('/', protect, validate(sendMessageSchema), sendMessage);
 router.post('/:userId/read', protect, markConversationRead);
 
 export default router;

@@ -18,7 +18,16 @@ import EducationForm from '@/components/builder/EducationForm';
 import SkillsForm from '@/components/builder/SkillsForm';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Menu, Eye, Edit3, Brain, Save, Download, Settings2, CheckCircle2 } from 'lucide-react';
+import {
+  Menu,
+  Eye,
+  PencilLine,
+  Sparkles,
+  Save,
+  Download,
+  SlidersHorizontal,
+  CircleCheckBig,
+} from 'lucide-react';
 import { api } from '@/lib/utils';
 import { useToastStore } from '@/store/toastStore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -59,7 +68,7 @@ const SummaryPanel = memo(
               disabled={enhancing}
               className="gap-2 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
             >
-              <Brain size={16} className={enhancing ? 'animate-spin' : ''} />
+              <Sparkles size={16} className={enhancing ? 'animate-spin' : ''} />
               {enhancing ? 'Enhancing…' : 'AI Enhance'}
             </Button>
           </div>
@@ -458,7 +467,7 @@ const Builder = () => {
   const renderFormPanel = () => {
     switch (activeTab) {
       case 'personal':
-        return <PersonalForm />;
+        return <PersonalForm onNext={() => setActiveTab('summary')} />;
       case 'summary':
         return (
           <SummaryPanel
@@ -507,7 +516,7 @@ const Builder = () => {
                       onClick={() => setShowTour(true)}
                       className="hidden sm:flex gap-2 text-xs"
                     >
-                      <Brain size={14} />
+                      <Sparkles size={14} />
                       Take Tour
                     </Button>
                   )}
@@ -521,7 +530,7 @@ const Builder = () => {
                         exit={{ opacity: 0, x: -10 }}
                         className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400"
                       >
-                        <CheckCircle2 size={16} />
+                        <CircleCheckBig size={16} />
                         <span>Saved</span>
                       </motion.div>
                     )}
@@ -533,7 +542,7 @@ const Builder = () => {
                     className="hidden sm:flex gap-2"
                     data-tour="actions"
                   >
-                    <Settings2 size={16} />
+                    <SlidersHorizontal size={16} />
                     Settings
                   </Button>
                   <Button
@@ -617,7 +626,7 @@ const Builder = () => {
                       : 'text-gray-500 dark:text-gray-400'
                   }`}
                 >
-                  <Edit3 size={18} />
+                  <PencilLine size={18} />
                   Edit
                 </button>
                 <button

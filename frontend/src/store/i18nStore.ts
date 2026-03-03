@@ -326,6 +326,12 @@ interface Translations {
     unfollow: string;
     following: string;
     followers: string;
+    guidelines?: string;
+    guidelineRespect?: string;
+    guidelineShare?: string;
+    guidelineSupport?: string;
+    guidelineNoSpam?: string;
+    joinDescription?: string;
   };
   blog: {
     title: string;
@@ -415,6 +421,8 @@ interface Translations {
     confidenceScore?: string;
     overallPerformance?: string;
     startNew?: string;
+    history?: string;
+    inProgress?: string;
   };
   jobs: {
     findDreamJob: string;
@@ -518,6 +526,85 @@ interface Translations {
     jobApplied: string;
     jobApplyFailed: string;
     somethingWentWrong: string;
+  };
+  admin: {
+    title: string;
+    subtitle: string;
+    refresh: string;
+    accessDenied: string;
+    accessDeniedDesc: string;
+    backToDashboard: string;
+    overview: string;
+    users: string;
+    posts: string;
+    articles: string;
+    jobs: string;
+    bannedUsers: string;
+    pendingPosts: string;
+    premiumUsers: string;
+    totalRevenue: string;
+    monthlySubs: string;
+    yearlySubs: string;
+    searchPlaceholder: string;
+    search: string;
+    user: string;
+    role: string;
+    subscription: string;
+    status: string;
+    actions: string;
+    setUser: string;
+    setAdmin: string;
+    setFree: string;
+    setPremium: string;
+    unban: string;
+    ban: string;
+    banned: string;
+    active: string;
+    all: string;
+    pending: string;
+    approved: string;
+    rejected: string;
+    content: string;
+    created: string;
+    approve: string;
+    reject: string;
+    delete: string;
+    unknownUser: string;
+    noContent: string;
+    reason: string;
+    titleColumn: string;
+    author: string;
+    category: string;
+    published: string;
+    yes: string;
+    no: string;
+    unpublish: string;
+    publish: string;
+    company: string;
+    type: string;
+    postedBy: string;
+    applicants: string;
+    deletePostConfirm: string;
+    deletePostTitle: string;
+    deleteArticleConfirm: string;
+    deleteArticleTitle: string;
+    deleteJobConfirm: string;
+    deleteJobTitle: string;
+    rejectPostTitle: string;
+    rejectReason: string;
+    rejectionReason: string;
+    cancel: string;
+    dataRefreshed: string;
+    userBanned: string;
+    userUnbanned: string;
+    roleUpdated: string;
+    subscriptionUpdated: string;
+    postUpdated: string;
+    postDeleted: string;
+    articlePublishUpdated: string;
+    articleDeleted: string;
+    jobDeleted: string;
+    loadFailed: string;
   };
 }
 
@@ -817,6 +904,13 @@ const translations: Record<Language, Translations> = {
       unfollow: 'Bỏ theo dõi',
       following: 'đang theo dõi',
       followers: 'người theo dõi',
+      guidelines: 'Quy tắc cộng đồng',
+      guidelineRespect: 'Tôn trọng và chuyên nghiệp',
+      guidelineShare: 'Chia sẻ kiến thức và kinh nghiệm',
+      guidelineSupport: 'Hỗ trợ và khuyến khích nhau',
+      guidelineNoSpam: 'Không spam hay tự quảng cáo',
+      joinDescription:
+        'Kết nối với các chuyên gia, chia sẻ kinh nghiệm và cùng phát triển sự nghiệp.',
     },
     blog: {
       title: 'Blog & Tin tức Sự nghiệp',
@@ -914,6 +1008,8 @@ const translations: Record<Language, Translations> = {
       confidenceScore: 'Điểm tự tin',
       overallPerformance: 'Hiệu suất tổng thể',
       startNew: 'Phiên mới',
+      history: 'Lịch sử phỏng vấn',
+      inProgress: 'Đang diễn ra',
     },
     jobs: {
       findDreamJob: 'Tìm công việc mơ ước',
@@ -1060,6 +1156,85 @@ const translations: Record<Language, Translations> = {
       jobApplied: 'Đã ứng tuyển thành công!',
       jobApplyFailed: 'Ứng tuyển thất bại. Vui lòng thử lại.',
       somethingWentWrong: 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
+    },
+    admin: {
+      title: 'Bảng điều khiển quản trị',
+      subtitle: 'Quản lý người dùng, nội dung, việc làm, gói đăng ký và kiểm duyệt.',
+      refresh: 'Làm mới',
+      accessDenied: 'Truy cập bị từ chối',
+      accessDeniedDesc: 'Bạn cần quyền quản trị viên để xem trang này.',
+      backToDashboard: 'Về trang chủ',
+      overview: 'Tổng quan',
+      users: 'Người dùng',
+      posts: 'Bài đăng',
+      articles: 'Bài viết',
+      jobs: 'Việc làm',
+      bannedUsers: 'Bị cấm',
+      pendingPosts: 'Chờ duyệt',
+      premiumUsers: 'Premium',
+      totalRevenue: 'Tổng doanh thu',
+      monthlySubs: 'Gói tháng',
+      yearlySubs: 'Gói năm',
+      searchPlaceholder: 'Tìm theo tên hoặc email',
+      search: 'Tìm kiếm',
+      user: 'Người dùng',
+      role: 'Vai trò',
+      subscription: 'Gói đăng ký',
+      status: 'Trạng thái',
+      actions: 'Thao tác',
+      setUser: 'Đặt User',
+      setAdmin: 'Đặt Admin',
+      setFree: 'Đặt Free',
+      setPremium: 'Đặt Premium',
+      unban: 'Bỏ cấm',
+      ban: 'Cấm',
+      banned: 'Bị cấm',
+      active: 'Hoạt động',
+      all: 'Tất cả',
+      pending: 'Chờ duyệt',
+      approved: 'Đã duyệt',
+      rejected: 'Bị từ chối',
+      content: 'Nội dung',
+      created: 'Ngày tạo',
+      approve: 'Duyệt',
+      reject: 'Từ chối',
+      delete: 'Xóa',
+      unknownUser: 'Không rõ',
+      noContent: '(Không có nội dung)',
+      reason: 'Lý do:',
+      titleColumn: 'Tiêu đề',
+      author: 'Tác giả',
+      category: 'Danh mục',
+      published: 'Đã xuất bản',
+      yes: 'Có',
+      no: 'Không',
+      unpublish: 'Gỡ xuất bản',
+      publish: 'Xuất bản',
+      company: 'Công ty',
+      type: 'Loại',
+      postedBy: 'Đăng bởi',
+      applicants: 'Ứng viên',
+      deletePostConfirm: 'Xóa vĩnh viễn bài đăng này? Hành động không thể hoàn tác.',
+      deletePostTitle: 'Xóa bài đăng',
+      deleteArticleConfirm: 'Xóa vĩnh viễn bài viết này? Hành động không thể hoàn tác.',
+      deleteArticleTitle: 'Xóa bài viết',
+      deleteJobConfirm: 'Xóa vĩnh viễn việc làm này? Hành động không thể hoàn tác.',
+      deleteJobTitle: 'Xóa việc làm',
+      rejectPostTitle: 'Từ chối bài đăng',
+      rejectReason: 'Lý do từ chối (không bắt buộc):',
+      rejectionReason: 'Lý do từ chối',
+      cancel: 'Hủy',
+      dataRefreshed: 'Đã làm mới dữ liệu quản trị',
+      userBanned: 'Đã cấm người dùng',
+      userUnbanned: 'Đã bỏ cấm người dùng',
+      roleUpdated: 'Đã cập nhật vai trò',
+      subscriptionUpdated: 'Đã cập nhật gói đăng ký',
+      postUpdated: 'Đã cập nhật bài đăng',
+      postDeleted: 'Đã xóa bài đăng',
+      articlePublishUpdated: 'Đã cập nhật trạng thái xuất bản',
+      articleDeleted: 'Đã xóa bài viết',
+      jobDeleted: 'Đã xóa việc làm',
+      loadFailed: 'Tải dữ liệu thất bại',
     },
   },
   en: {
@@ -1358,6 +1533,13 @@ const translations: Record<Language, Translations> = {
       unfollow: 'Unfollow',
       following: 'following',
       followers: 'followers',
+      guidelines: 'Community Guidelines',
+      guidelineRespect: 'Be respectful and professional',
+      guidelineShare: 'Share knowledge and experiences',
+      guidelineSupport: 'Support and encourage others',
+      guidelineNoSpam: 'No spam or self-promotion',
+      joinDescription:
+        'Connect with professionals, share experiences, and grow your career together.',
     },
     blog: {
       title: 'Career Blog & News',
@@ -1453,6 +1635,8 @@ const translations: Record<Language, Translations> = {
       confidenceScore: 'Confidence score',
       overallPerformance: 'Overall performance',
       startNew: 'Start new',
+      history: 'Interview History',
+      inProgress: 'In Progress',
     },
     jobs: {
       findDreamJob: 'Find your dream job',
@@ -1605,6 +1789,85 @@ const translations: Record<Language, Translations> = {
       jobApplied: 'Applied successfully!',
       jobApplyFailed: 'Failed to apply. Please try again.',
       somethingWentWrong: 'Something went wrong. Please try again later.',
+    },
+    admin: {
+      title: 'Admin Management Console',
+      subtitle: 'Manage users, content, jobs, subscriptions, and moderation actions.',
+      refresh: 'Refresh',
+      accessDenied: 'Access denied',
+      accessDeniedDesc: 'You need admin privileges to view this page.',
+      backToDashboard: 'Back to dashboard',
+      overview: 'Overview',
+      users: 'Users',
+      posts: 'Posts',
+      articles: 'Articles',
+      jobs: 'Jobs',
+      bannedUsers: 'Banned Users',
+      pendingPosts: 'Pending Posts',
+      premiumUsers: 'Premium Users',
+      totalRevenue: 'Total Revenue',
+      monthlySubs: 'Monthly Subs',
+      yearlySubs: 'Yearly Subs',
+      searchPlaceholder: 'Search by name or email',
+      search: 'Search',
+      user: 'User',
+      role: 'Role',
+      subscription: 'Subscription',
+      status: 'Status',
+      actions: 'Actions',
+      setUser: 'Set User',
+      setAdmin: 'Set Admin',
+      setFree: 'Set Free',
+      setPremium: 'Set Premium',
+      unban: 'Unban',
+      ban: 'Ban',
+      banned: 'Banned',
+      active: 'Active',
+      all: 'All',
+      pending: 'Pending',
+      approved: 'Approved',
+      rejected: 'Rejected',
+      content: 'Content',
+      created: 'Created',
+      approve: 'Approve',
+      reject: 'Reject',
+      delete: 'Delete',
+      unknownUser: 'Unknown user',
+      noContent: '(No content)',
+      reason: 'Reason:',
+      titleColumn: 'Title',
+      author: 'Author',
+      category: 'Category',
+      published: 'Published',
+      yes: 'Yes',
+      no: 'No',
+      unpublish: 'Unpublish',
+      publish: 'Publish',
+      company: 'Company',
+      type: 'Type',
+      postedBy: 'Posted by',
+      applicants: 'Applicants',
+      deletePostConfirm: 'Delete this post permanently? This action cannot be undone.',
+      deletePostTitle: 'Delete Post',
+      deleteArticleConfirm: 'Delete this article permanently? This action cannot be undone.',
+      deleteArticleTitle: 'Delete Article',
+      deleteJobConfirm: 'Delete this job permanently? This action cannot be undone.',
+      deleteJobTitle: 'Delete Job',
+      rejectPostTitle: 'Reject Post',
+      rejectReason: 'Reason for rejection (optional):',
+      rejectionReason: 'Rejection Reason',
+      cancel: 'Cancel',
+      dataRefreshed: 'Admin data refreshed',
+      userBanned: 'User banned',
+      userUnbanned: 'User unbanned',
+      roleUpdated: 'User role updated',
+      subscriptionUpdated: 'User subscription updated',
+      postUpdated: 'Post updated',
+      postDeleted: 'Post deleted',
+      articlePublishUpdated: 'Article publish state updated',
+      articleDeleted: 'Article deleted',
+      jobDeleted: 'Job deleted',
+      loadFailed: 'Failed to load data',
     },
   },
 };

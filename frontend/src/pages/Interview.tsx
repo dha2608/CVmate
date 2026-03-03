@@ -1,10 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useI18n } from '@/store/i18nStore';
 import { useToastStore } from '@/store/toastStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Lightbulb, RotateCcw, Timer, Volume2, VolumeX } from 'lucide-react';
+import {
+  ArrowLeft,
+  Loader2,
+  Lightbulb,
+  RotateCcw,
+  Timer,
+  Volume2,
+  VolumeX,
+  History,
+  ChevronRight,
+  Medal,
+} from 'lucide-react';
 import { useInterviewStore } from '@/store/interviewStore';
 import InterviewDashboard from '@/components/interview/InterviewDashboard';
 import PersonaSelector from '@/components/interview/PersonaSelector';
@@ -78,11 +89,27 @@ const Interview = () => {
     sendUserMessage,
     endSession,
     reset,
+    interviews,
+    isLoadingHistory,
+    fetchInterviews,
+    loadInterview,
   } = useInterviewStore();
 
   useEffect(() => {
     setAvatarOk(true);
   }, [persona]);
+
+  // Fetch interview history on mount
+  useEffect(() => {
+    fetchInterviews();
+  }, [fetchInterviews]);
+
+  const handleLoadInterview = useCallback(
+    async (id: string) => {
+      await loadInterview(id);
+    },
+    [loadInterview]
+  );
 
   // Show toast when error occurs with better handling
   const prevErrorRef = useRef<string | null>(null);
@@ -180,12 +207,15 @@ const Interview = () => {
 
   const handleStartInterview = async (personaId: string) => {
     await startSession(personaId as any);
-    setTimeElapsed(0);
-    trackEvent('interview_started', { persona: personaId });
-    // Start timer
-    timerRef.current = setInterval(() => {
-      setTimeElapsed((prev) => prev + 1);
-    }, 1000);
+    // Only start timer if session actually started (API succeeded)
+    const { persona: currentPersona, status: currentStatus } = useInterviewStore.getState();
+    if (currentPersona && currentStatus === 'active') {
+      setTimeElapsed(0);
+      trackEvent('interview_started', { persona: personaId });
+      timerRef.current = setInterval(() => {
+        setTimeElapsed((prev) => prev + 1);
+      }, 1000);
+    }
   };
 
   const handleSend = async () => {
@@ -240,7 +270,7 @@ const Interview = () => {
 
   if (!persona) {
     return (
-      <MainLayout layoutMode="narrow" showRightSidebar={false}>
+      <MainLayout layoutMode="narrow" showRightSidebar={false} key="interview-selector">
         <div className="py-4 sm:py-6 lg:py-8">
           <div className="mb-6 sm:mb-8">
             <Button
@@ -294,6 +324,111 @@ const Interview = () => {
           </div>
 
           <PersonaSelector onSelect={handleStartInterview} isLoading={isStarting} />
+
+          {/* Interview History */}
+          {(interviews.length > 0 || isLoadingHistory) && (
+            <div className="mt-8 sm:mt-10">
+              <div className="flex items-center gap-2 mb-4">
+                <History className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+                  {t('interview.history') || 'Interview History'}
+                </h2>
+              </div>
+
+              {isLoadingHistory ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {interviews.slice(0, 10).map((item) => {
+                    const personaLabel =
+                      item.persona === 'friendly-hr'
+                        ? t('interview.friendlyHR')
+                        : item.persona === 'strict-manager'
+                          ? t('interview.strictManager')
+                          : item.persona === 'tech-lead'
+                            ? t('interview.techLead')
+                            : item.persona === 'startup-founder'
+                              ? t('interview.startupFounder')
+                              : item.persona === 'executive'
+                                ? t('interview.executive')
+                                : item.persona === 'academic'
+                                  ? t('interview.academic')
+                                  : t('interview.englishNative');
+
+                    const score =
+                      item.feedback?.overallScore ?? item.feedback?.confidenceScore ?? null;
+                    const isCompleted = item.status === 'completed';
+                    const date = new Date(item.createdAt);
+                    const timeAgo = (() => {
+                      const diff = Date.now() - date.getTime();
+                      const mins = Math.floor(diff / 60000);
+                      const hours = Math.floor(diff / 3600000);
+                      const days = Math.floor(diff / 86400000);
+                      if (days > 0) return `${days}d ago`;
+                      if (hours > 0) return `${hours}h ago`;
+                      return `${mins}m ago`;
+                    })();
+
+                    return (
+                      <button
+                        key={item._id}
+                        onClick={() => handleLoadInterview(item._id)}
+                        className="w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md transition-all text-left group"
+                      >
+                        <div
+                          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            isCompleted && score != null && score >= 70
+                              ? 'bg-green-100 dark:bg-green-900/30'
+                              : isCompleted
+                                ? 'bg-amber-100 dark:bg-amber-900/30'
+                                : 'bg-gray-100 dark:bg-gray-800'
+                          }`}
+                        >
+                          {isCompleted && score != null ? (
+                            <Medal
+                              className={`w-5 h-5 ${score >= 70 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}
+                            />
+                          ) : (
+                            <Timer className="w-5 h-5 text-gray-400" />
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                            {personaLabel}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {timeAgo} ·{' '}
+                            {isCompleted
+                              ? t('interview.completed') || 'Completed'
+                              : t('interview.inProgress') || 'In Progress'}
+                          </p>
+                        </div>
+
+                        {score != null && (
+                          <div
+                            className={`text-sm font-bold px-2.5 py-1 rounded-full ${
+                              score >= 70
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                : score >= 40
+                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                            }`}
+                          >
+                            {Math.round(score)}%
+                          </div>
+                        )}
+
+                        <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors flex-shrink-0" />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </MainLayout>
     );
@@ -334,7 +469,10 @@ const Interview = () => {
       error.toLowerCase().includes('service temporarily unavailable'));
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div
+      key="interview-session"
+      className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
+    >
       {isAIConfigError && (
         <div className="px-4 pt-4">
           <AIFeatureNotice feature="AI Interview Practice" />

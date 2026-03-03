@@ -10,17 +10,17 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import ActivityFeed from '@/components/ActivityFeed';
 import {
-  FileText,
-  MessageSquare,
-  Video,
-  TrendingUp,
-  Target,
-  BookOpen,
-  BarChart3,
-  Briefcase,
-  BookMarked,
-  Award,
-  Clock,
+  ScrollText,
+  PenLine,
+  Mic,
+  Activity,
+  Compass,
+  Feather,
+  ChartSpline,
+  Rocket,
+  NotebookPen,
+  Gauge,
+  CalendarClock,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi, enUS } from 'date-fns/locale';
@@ -162,7 +162,7 @@ const Dashboard = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex-1">
               <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide flex items-center gap-1 mb-1">
-                <Target size={14} className="text-crimson-red" />
+                <Compass size={14} className="text-crimson-red" />
                 {t('dashboard.nextBestAction') || 'Next best action'}
               </p>
               <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-1">
@@ -201,28 +201,28 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
           <QuickActionCard
-            icon={<FileText className="text-blue-600" size={24} />}
+            icon={<ScrollText className="text-blue-600" size={24} />}
             title={t('dashboard.createCV')}
             desc={t('dashboard.atsFriendly')}
             color="bg-blue-50 hover:bg-blue-100/80 border-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-900/30 dark:border-blue-900/50"
             onClick={handleBuilderClick}
           />
           <QuickActionCard
-            icon={<Video className="text-green-600" size={24} />}
+            icon={<Mic className="text-green-600" size={24} />}
             title={t('dashboard.interview')}
             desc={t('dashboard.practiceAI')}
             color="bg-green-50 hover:bg-green-100/80 border-green-100 dark:bg-green-950/30 dark:hover:bg-green-900/30 dark:border-green-900/50"
             onClick={handleInterviewClick}
           />
           <QuickActionCard
-            icon={<MessageSquare className="text-orange-600" size={24} />}
+            icon={<PenLine className="text-orange-600" size={24} />}
             title={t('dashboard.community')}
             desc={t('dashboard.getAdvice')}
             color="bg-orange-50 hover:bg-orange-100/80 border-orange-100 dark:bg-orange-950/30 dark:hover:bg-orange-900/30 dark:border-orange-900/50"
             onClick={handleCommunityClick}
           />
           <QuickActionCard
-            icon={<BookOpen className="text-rose-600" size={24} />}
+            icon={<Feather className="text-rose-600" size={24} />}
             title={t('dashboard.article')}
             desc={t('dashboard.shareKnowledge')}
             color="bg-rose-50 hover:bg-rose-100/80 border-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/30 dark:border-rose-900/50"
@@ -233,7 +233,7 @@ const Dashboard = () => {
         {/* Stats Grid - 6 metrics */}
         <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow">
           <h2 className="text-heading-3 mb-4 flex items-center gap-2">
-            <TrendingUp size={20} className="text-crimson-red" />
+            <Activity size={20} className="text-crimson-red" />
             {t('dashboard.yourActivity')}
           </h2>
           {isLoading ? (
@@ -245,7 +245,7 @@ const Dashboard = () => {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <StatCard
-                icon={<FileText size={18} className="text-blue-600" />}
+                icon={<ScrollText size={18} className="text-blue-600" />}
                 label={t('dashboard.cvsCreated')}
                 value={stats.resumesCount || 0}
                 color="text-blue-600 dark:text-blue-400"
@@ -253,7 +253,7 @@ const Dashboard = () => {
                 delay={0}
               />
               <StatCard
-                icon={<Video size={18} className="text-green-600" />}
+                icon={<Mic size={18} className="text-green-600" />}
                 label={t('dashboard.interviews')}
                 value={stats.interviewsCount || 0}
                 color="text-green-600 dark:text-green-400"
@@ -261,7 +261,7 @@ const Dashboard = () => {
                 delay={0.05}
               />
               <StatCard
-                icon={<MessageSquare size={18} className="text-orange-600" />}
+                icon={<PenLine size={18} className="text-orange-600" />}
                 label={t('dashboard.posts')}
                 value={stats.postsCount || 0}
                 color="text-orange-600 dark:text-orange-400"
@@ -269,7 +269,7 @@ const Dashboard = () => {
                 delay={0.1}
               />
               <StatCard
-                icon={<BookMarked size={18} className="text-rose-600" />}
+                icon={<NotebookPen size={18} className="text-rose-600" />}
                 label={t('dashboard.articles')}
                 value={stats.articlesCount || 0}
                 color="text-rose-600 dark:text-rose-400"
@@ -277,7 +277,7 @@ const Dashboard = () => {
                 delay={0.15}
               />
               <StatCard
-                icon={<Briefcase size={18} className="text-purple-600" />}
+                icon={<Rocket size={18} className="text-purple-600" />}
                 label={t('dashboard.applications')}
                 value={stats.applicationsCount || 0}
                 color="text-purple-600 dark:text-purple-400"
@@ -285,7 +285,7 @@ const Dashboard = () => {
                 delay={0.2}
               />
               <StatCard
-                icon={<Award size={18} className="text-amber-600" />}
+                icon={<Gauge size={18} className="text-amber-600" />}
                 label={t('dashboard.avgAtsScore')}
                 value={stats.avgAtsScore > 0 ? `${stats.avgAtsScore}%` : '—'}
                 color="text-amber-600 dark:text-amber-400"
@@ -300,7 +300,7 @@ const Dashboard = () => {
         {!isLoading && (stats.avgAtsScore > 0 || stats.avgInterviewScore > 0) && (
           <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-5">
             <h2 className="text-heading-3 mb-4 flex items-center gap-2">
-              <BarChart3 size={20} className="text-crimson-red" />
+              <ChartSpline size={20} className="text-crimson-red" />
               {t('dashboard.analytics')}
             </h2>
             <div className="space-y-4">
@@ -352,7 +352,7 @@ const Dashboard = () => {
         {!isLoading && (stats.recentResumes.length > 0 || stats.recentInterviews.length > 0) && (
           <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-5">
             <h2 className="text-heading-3 mb-4 flex items-center gap-2">
-              <Clock size={20} className="text-crimson-red" />
+              <CalendarClock size={20} className="text-crimson-red" />
               {t('dashboard.recentItems')}
             </h2>
             <div className="space-y-2.5">
@@ -363,7 +363,10 @@ const Dashboard = () => {
                   onClick={() => navigate(`/builder?id=${r._id}`)}
                   whileHover={{ scale: 1.01 }}
                 >
-                  <FileText size={16} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                  <ScrollText
+                    size={16}
+                    className="text-blue-600 dark:text-blue-400 flex-shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                       {r.title || 'Untitled CV'}
@@ -386,7 +389,7 @@ const Dashboard = () => {
                   onClick={() => navigate('/interview')}
                   whileHover={{ scale: 1.01 }}
                 >
-                  <Video size={16} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                  <Mic size={16} className="text-green-600 dark:text-green-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                       {iv.persona}

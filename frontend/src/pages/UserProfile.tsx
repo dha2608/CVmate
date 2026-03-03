@@ -4,7 +4,7 @@ import MainLayout, { resolveAssetUrl } from '@/components/layout/MainLayout';
 import { apiRequest, api } from '@/lib/utils';
 import {
   Loader2,
-  Briefcase,
+  BriefcaseBusiness,
   FileText,
   MapPin,
   Link2,
@@ -13,11 +13,11 @@ import {
   UserPlus,
   UserMinus,
   Eye,
-  Trophy,
+  Medal,
   MessageSquare,
   Heart,
   Award,
-  CheckCircle2,
+  CircleCheckBig,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
@@ -66,7 +66,7 @@ interface UserAchievement {
 
 const ACHIEVEMENT_META: Record<
   string,
-  { label: string; icon: typeof Trophy; color: string; bg: string }
+  { label: string; icon: typeof Medal; color: string; bg: string }
 > = {
   first_cv: {
     label: 'CV Đầu Tiên',
@@ -76,13 +76,13 @@ const ACHIEVEMENT_META: Record<
   },
   complete_profile: {
     label: 'Hoàn Thiện Hồ Sơ',
-    icon: CheckCircle2,
+    icon: CircleCheckBig,
     color: 'text-green-600 dark:text-green-400',
     bg: 'bg-green-50 dark:bg-green-900/30',
   },
   apply_job: {
     label: 'Ứng Tuyển Đầu Tiên',
-    icon: Briefcase,
+    icon: BriefcaseBusiness,
     color: 'text-purple-600 dark:text-purple-400',
     bg: 'bg-purple-50 dark:bg-purple-900/30',
   },
@@ -336,7 +336,7 @@ const UserProfile = () => {
                       <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
                         {user.yearsOfExperience && (
                           <span className="inline-flex items-center gap-1.5">
-                            <Briefcase className="w-4 h-4" />
+                            <BriefcaseBusiness className="w-4 h-4" />
                             {user.yearsOfExperience} năm kinh nghiệm
                           </span>
                         )}
@@ -432,7 +432,7 @@ const UserProfile = () => {
             {(user.yearsOfExperience || user.currentRole) && (
               <div className="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-sm">
                 <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-crimson-red dark:text-red-400" />
+                  <BriefcaseBusiness className="w-5 h-5 text-crimson-red dark:text-red-400" />
                   Thông tin nghề nghiệp
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -484,7 +484,7 @@ const UserProfile = () => {
                 {industries.length > 0 && (
                   <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-sm">
                     <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                      <Briefcase className="w-5 h-5 text-crimson-red dark:text-red-400" />
+                      <BriefcaseBusiness className="w-5 h-5 text-crimson-red dark:text-red-400" />
                       Ngành / Lĩnh vực
                     </h2>
                     <div className="flex flex-wrap gap-2">
@@ -554,7 +554,7 @@ const UserProfile = () => {
               <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700 mb-4">
                 {[
                   { key: 'posts' as TabType, label: 'Bài viết', icon: MessageSquare },
-                  { key: 'achievements' as TabType, label: 'Thành tựu', icon: Trophy },
+                  { key: 'achievements' as TabType, label: 'Thành tựu', icon: Medal },
                 ].map((tab) => (
                   <button
                     key={tab.key}
@@ -634,7 +634,7 @@ const UserProfile = () => {
                       {achievements.map((ach) => {
                         const meta = ACHIEVEMENT_META[ach.type] || {
                           label: ach.type,
-                          icon: Trophy,
+                          icon: Medal,
                           color: 'text-gray-600 dark:text-gray-400',
                           bg: 'bg-gray-50 dark:bg-gray-700/50',
                         };

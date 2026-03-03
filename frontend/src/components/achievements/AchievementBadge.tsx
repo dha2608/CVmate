@@ -1,4 +1,11 @@
-import { Trophy, FileText, UserCheck, Briefcase, MessageSquare, MessageCircle } from 'lucide-react';
+import {
+  Medal,
+  ScrollText,
+  UserCheck,
+  BriefcaseBusiness,
+  PenLine,
+  MessageCircleMore,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface AchievementBadgeProps {
@@ -9,7 +16,7 @@ interface AchievementBadgeProps {
 
 const achievementConfig = {
   first_cv: {
-    icon: FileText,
+    icon: ScrollText,
     label: 'First CV',
     color: 'from-blue-500 to-cyan-500',
     bgColor: 'bg-blue-50 dark:bg-blue-900/20',
@@ -23,21 +30,21 @@ const achievementConfig = {
     borderColor: 'border-purple-200 dark:border-purple-800',
   },
   apply_job: {
-    icon: Briefcase,
+    icon: BriefcaseBusiness,
     label: 'First Application',
     color: 'from-green-500 to-emerald-500',
     bgColor: 'bg-green-50 dark:bg-green-900/20',
     borderColor: 'border-green-200 dark:border-green-800',
   },
   write_post: {
-    icon: MessageSquare,
+    icon: PenLine,
     label: 'First Post',
     color: 'from-orange-500 to-red-500',
     bgColor: 'bg-orange-50 dark:bg-orange-900/20',
     borderColor: 'border-orange-200 dark:border-orange-800',
   },
   complete_interview: {
-    icon: MessageCircle,
+    icon: MessageCircleMore,
     label: 'First Interview',
     color: 'from-indigo-500 to-purple-500',
     bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
@@ -45,14 +52,14 @@ const achievementConfig = {
   },
 };
 
-export const AchievementBadge: React.FC<AchievementBadgeProps> = ({ 
-  type, 
-  unlocked, 
-  size = 'md' 
+export const AchievementBadge: React.FC<AchievementBadgeProps> = ({
+  type,
+  unlocked,
+  size = 'md',
 }) => {
   const config = achievementConfig[type];
   const Icon = config.icon;
-  
+
   const sizeClasses = {
     sm: 'w-8 h-8',
     md: 'w-12 h-12',
@@ -73,9 +80,10 @@ export const AchievementBadge: React.FC<AchievementBadgeProps> = ({
       className={`
         ${sizeClasses[size]} 
         rounded-full 
-        ${unlocked 
-          ? `bg-gradient-to-br ${config.color} shadow-lg` 
-          : `bg-gray-200 dark:bg-gray-700 ${config.bgColor} border-2 ${config.borderColor}`
+        ${
+          unlocked
+            ? `bg-gradient-to-br ${config.color} shadow-lg`
+            : `bg-gray-200 dark:bg-gray-700 ${config.bgColor} border-2 ${config.borderColor}`
         }
         flex items-center justify-center
         transition-all duration-300
@@ -93,18 +101,14 @@ export const AchievementBadge: React.FC<AchievementBadgeProps> = ({
 };
 
 export const AchievementList: React.FC<{ achievements: any[] }> = ({ achievements }) => {
-  const allTypes: Array<'first_cv' | 'complete_profile' | 'apply_job' | 'write_post' | 'complete_interview'> = [
-    'first_cv',
-    'complete_profile',
-    'apply_job',
-    'write_post',
-    'complete_interview',
-  ];
+  const allTypes: Array<
+    'first_cv' | 'complete_profile' | 'apply_job' | 'write_post' | 'complete_interview'
+  > = ['first_cv', 'complete_profile', 'apply_job', 'write_post', 'complete_interview'];
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
       {allTypes.map((type) => {
-        const unlocked = achievements.some(a => a.type === type);
+        const unlocked = achievements.some((a) => a.type === type);
         return (
           <div key={type} className="flex flex-col items-center gap-2">
             <AchievementBadge type={type} unlocked={unlocked} size="md" />

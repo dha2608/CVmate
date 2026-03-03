@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useInterviewStore } from '@/store/interviewStore';
 import { useI18n } from '@/store/i18nStore';
-import { BadgeCheck, BarChart3, Sparkles } from 'lucide-react';
+import { BadgeCheck, ChartSpline, Sparkles } from 'lucide-react';
 
 const DIMENSIONS: {
   key: 'communication' | 'content' | 'confidence' | 'structure';
@@ -67,7 +67,7 @@ const InterviewResult = () => {
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-crimson-red to-fire-red flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-white" />
+            <ChartSpline className="w-5 h-5 text-white" />
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">

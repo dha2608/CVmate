@@ -6,7 +6,16 @@ import { useToastStore } from '@/store/toastStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Heart, MessageCircle, Clock, Eye, Send, Trash2, Loader2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Heart,
+  MessageCircleMore,
+  CalendarClock,
+  Eye,
+  SendHorizontal,
+  Trash2,
+  Loader2,
+} from 'lucide-react';
 import SEOHead from '@/components/SEOHead';
 import ExportShare from '@/components/ExportShare';
 import { api } from '@/lib/utils';
@@ -196,7 +205,7 @@ const BlogDetail = () => {
                   <div className="flex items-center justify-center gap-4 text-gray-500 dark:text-gray-400 text-sm">
                     <span>{new Date(article.createdAt).toLocaleDateString()}</span>
                     <span className="flex items-center gap-1">
-                      <Clock size={14} />
+                      <CalendarClock size={14} />
                       {readTime} min read
                     </span>
                     <span className="flex items-center gap-1">
@@ -244,7 +253,7 @@ const BlogDetail = () => {
                   <span className="text-sm font-medium">{likesCount}</span>
                 </button>
                 <div className="flex items-center gap-2 text-gray-500">
-                  <MessageCircle size={20} />
+                  <MessageCircleMore size={20} />
                   <span className="text-sm font-medium">{comments.length}</span>
                 </div>
               </div>
@@ -277,6 +286,7 @@ const BlogDetail = () => {
                         }
                       }}
                       disabled={isSubmittingComment}
+                      maxLength={2000}
                     />
                     <Button
                       size="icon"
@@ -287,7 +297,7 @@ const BlogDetail = () => {
                       {isSubmittingComment ? (
                         <Loader2 className="animate-spin" size={16} />
                       ) : (
-                        <Send size={16} />
+                        <SendHorizontal size={16} />
                       )}
                     </Button>
                   </div>

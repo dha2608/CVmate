@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoreVertical } from 'lucide-react';
+import { EllipsisVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface MenuItem {
@@ -21,7 +21,7 @@ export const LongPressMenu = ({
   items,
   children,
   trigger = 'longpress',
-  className
+  className,
 }: LongPressMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -31,7 +31,9 @@ export const LongPressMenu = ({
   const touchEnd = useRef<{ clientX: number; clientY: number } | null>(null);
 
   const handleLongPressStart = (e: React.TouchEvent | React.MouseEvent) => {
-    if (trigger !== 'longpress') {return;}
+    if (trigger !== 'longpress') {
+      return;
+    }
 
     const touches = 'touches' in e ? e.touches : null;
     const clientX = touches?.[0]?.clientX ?? ('clientX' in e ? e.clientX : 0);
@@ -42,7 +44,7 @@ export const LongPressMenu = ({
     longPressTimer.current = setTimeout(() => {
       setPosition({ x: clientX, y: clientY });
       setIsOpen(true);
-      
+
       // Haptic feedback (if available)
       if ('vibrate' in navigator) {
         navigator.vibrate(50);
@@ -85,7 +87,7 @@ export const LongPressMenu = ({
   return (
     <div
       ref={containerRef}
-      className={cn("relative", className)}
+      className={cn('relative', className)}
       onTouchStart={handleLongPressStart}
       onTouchEnd={handleLongPressEnd}
       onTouchCancel={handleLongPressEnd}
@@ -95,7 +97,7 @@ export const LongPressMenu = ({
       onClick={handleClick}
     >
       {children}
-      
+
       <AnimatePresence>
         {isOpen && (
           <>
@@ -125,9 +127,9 @@ export const LongPressMenu = ({
                     setIsOpen(false);
                   }}
                   className={cn(
-                    "w-full px-4 py-2 text-left text-sm flex items-center gap-3",
-                    "hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
-                    item.destructive && "text-red-600 dark:text-red-400"
+                    'w-full px-4 py-2 text-left text-sm flex items-center gap-3',
+                    'hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
+                    item.destructive && 'text-red-600 dark:text-red-400'
                   )}
                 >
                   {item.icon && <span className="w-4 h-4">{item.icon}</span>}

@@ -1,5 +1,17 @@
 import { useState } from 'react';
-import { Download, Share2, FileText, FileCode, File, Copy, Check, Mail, Facebook, Twitter, Linkedin } from 'lucide-react';
+import {
+  Download,
+  Share2,
+  ScrollText,
+  FileCode,
+  File,
+  Copy,
+  Check,
+  AtSign,
+  Facebook,
+  Twitter,
+  Linkedin,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToastStore } from '@/store/toastStore';
 import { useI18n } from '@/store/i18nStore';
@@ -21,8 +33,10 @@ const ExportShare = ({ type, data, fileName, shareUrl }: ExportShareProps) => {
     try {
       const { default: jsPDF } = await import('jspdf');
       const { default: html2canvas } = await import('html2canvas');
-      
-      const element = document.getElementById(type === 'resume' ? 'resume-preview' : 'article-content');
+
+      const element = document.getElementById(
+        type === 'resume' ? 'resume-preview' : 'article-content'
+      );
       if (!element) {
         toast.error(t('export.elementNotFound'));
         return;
@@ -59,14 +73,21 @@ const ExportShare = ({ type, data, fileName, shareUrl }: ExportShareProps) => {
   };
 
   const handleExportHTML = () => {
-    const element = document.getElementById(type === 'resume' ? 'resume-preview' : 'article-content');
+    const element = document.getElementById(
+      type === 'resume' ? 'resume-preview' : 'article-content'
+    );
     if (!element) {
       toast.error(t('export.elementNotFound'));
       return;
     }
 
     const htmlContent = element.outerHTML;
-    const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${fileName || 'Export'}</title></head><body>${htmlContent}</body></html>`], { type: 'text/html' });
+    const blob = new Blob(
+      [
+        `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${fileName || 'Export'}</title></head><body>${htmlContent}</body></html>`,
+      ],
+      { type: 'text/html' }
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -103,18 +124,28 @@ const ExportShare = ({ type, data, fileName, shareUrl }: ExportShareProps) => {
 
   const handleShare = (platform: 'facebook' | 'twitter' | 'linkedin' | 'email') => {
     const url = shareUrl || window.location.href;
-    const title = type === 'resume' ? data.personalInfo?.fullName || 'My Resume' : data.title || 'Article';
+    const title =
+      type === 'resume' ? data.personalInfo?.fullName || 'My Resume' : data.title || 'Article';
     const text = type === 'resume' ? 'Check out my resume' : data.summary || '';
 
     switch (platform) {
       case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+          '_blank'
+        );
         break;
       case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank');
+        window.open(
+          `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
+          '_blank'
+        );
         break;
       case 'linkedin':
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+        window.open(
+          `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+          '_blank'
+        );
         break;
       case 'email':
         window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n\n' + url)}`;
@@ -146,7 +177,7 @@ const ExportShare = ({ type, data, fileName, shareUrl }: ExportShareProps) => {
               }}
               className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
             >
-              <FileText size={16} className="text-red-600" />
+              <ScrollText size={16} className="text-red-600" />
               {t('export.pdf')}
             </button>
             <button
@@ -209,19 +240,14 @@ const ExportShare = ({ type, data, fileName, shareUrl }: ExportShareProps) => {
               }}
               className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
             >
-              <Mail size={16} className="text-gray-600" />
+              <AtSign size={16} className="text-gray-600" />
               {t('export.email')}
             </button>
           </div>
         </div>
       )}
 
-      {showMenu && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setShowMenu(false)}
-        />
-      )}
+      {showMenu && <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />}
     </div>
   );
 };

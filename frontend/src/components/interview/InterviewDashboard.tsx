@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, Clock, Mic, Brain, Target, Zap } from 'lucide-react';
+import { Activity, CalendarClock, Mic, Sparkles, Compass, Zap } from 'lucide-react';
 import { useInterviewStore } from '@/store/interviewStore';
 
 interface Metrics {
@@ -102,7 +102,7 @@ const InterviewDashboard = () => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
       <MetricCard
-        icon={Clock}
+        icon={CalendarClock}
         label="Response Time"
         value={metrics.responseTime}
         unit="s"
@@ -116,20 +116,20 @@ const InterviewDashboard = () => {
         color="bg-green-500"
       />
       <MetricCard
-        icon={Brain}
+        icon={Sparkles}
         label="Confidence"
         value={metrics.confidenceLevel}
         unit="%"
         color="bg-purple-500"
       />
       <MetricCard
-        icon={Target}
+        icon={Compass}
         label="Questions"
         value={metrics.questionsAnswered}
         color="bg-orange-500"
       />
       <MetricCard
-        icon={TrendingUp}
+        icon={Activity}
         label="Overall Score"
         value={metrics.averageScore}
         unit="%"

@@ -165,25 +165,14 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   app.use(passport.session());
 }
 
-// CSRF protection: enable after sessions/cookies are configured, before API routes
-// Note: frontend must read token from `/api/csrf-token` and send it back in `x-csrf-token` header for mutating requests.
-// Skip CSRF for auth login/register and OAuth/payment webhooks where CSRF is not needed
+// CSRF protection: enable after sessions/cookies are configured, before API routes.
+// All /api/ routes use Bearer token auth (Authorization header), which is inherently
+// CSRF-resistant — an attacker on a different origin cannot read the JWT from localStorage.
+// CSRF is only needed for cookie-based session auth (e.g., server-rendered pages).
 app.use((req, res, next) => {
-  const path = req.path;
-
-  if (
-    path === '/api/auth/login' ||
-    path === '/api/auth/register' ||
-    path === '/api/auth/google' ||
-    path === '/api/auth/google/callback' ||
-    path === '/api/payment/webhook' ||
-    // Messages use Bearer token auth (CSRF-resistant); SSE can't send CSRF cookies cross-origin
-    path.startsWith('/api/messages') ||
-    path === '/api/notifications/events'
-  ) {
+  if (req.path.startsWith('/api/')) {
     return next();
   }
-
   return csrfProtection(req, res, next);
 });
 

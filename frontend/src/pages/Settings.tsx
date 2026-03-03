@@ -8,20 +8,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
-  User,
+  CircleUserRound,
   Bell,
-  Shield,
-  Globe,
+  ShieldCheck,
+  Languages,
   Moon,
   Sun,
   Trash2,
-  Key,
-  Mail,
+  KeyRound,
+  AtSign,
   Save,
   Eye,
   EyeOff,
-  Lock,
-  Smartphone,
+  LockKeyhole,
+  Fingerprint,
 } from 'lucide-react';
 import { api } from '@/lib/utils';
 import { twoFactorApi } from '@/lib/apiClient';
@@ -167,11 +167,11 @@ const Settings = () => {
   };
 
   const tabs = [
-    { id: 'profile', label: t('settings.profile') || 'Profile', icon: User },
-    { id: 'security', label: t('settings.security') || 'Security', icon: Shield },
+    { id: 'profile', label: t('settings.profile') || 'Profile', icon: CircleUserRound },
+    { id: 'security', label: t('settings.security') || 'Security', icon: ShieldCheck },
     { id: 'notifications', label: t('settings.notifications') || 'Notifications', icon: Bell },
-    { id: 'privacy', label: t('settings.privacy') || 'Privacy', icon: Lock },
-    { id: 'account', label: t('settings.account') || 'Account', icon: User },
+    { id: 'privacy', label: t('settings.privacy') || 'Privacy', icon: LockKeyhole },
+    { id: 'account', label: t('settings.account') || 'Account', icon: CircleUserRound },
   ];
 
   return (
@@ -224,6 +224,7 @@ const Settings = () => {
                           value={profileData.name}
                           onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                           className="dark:bg-gray-700 dark:border-gray-600"
+                          maxLength={100}
                         />
                       </div>
                       <div>
@@ -264,6 +265,7 @@ const Settings = () => {
                           rows={4}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-crimson-red"
                           placeholder={t('settings.bioPlaceholder') || 'Tell us about yourself...'}
+                          maxLength={500}
                         />
                       </div>
                       <Button
@@ -362,7 +364,7 @@ const Settings = () => {
                         }
                         className="bg-crimson-red hover:bg-fire-red text-white"
                       >
-                        <Key size={16} className="mr-2" />
+                        <KeyRound size={16} className="mr-2" />
                         {loading
                           ? t('settings.changing') || 'Changing...'
                           : t('settings.changePassword') || 'Change Password'}
@@ -373,7 +375,7 @@ const Settings = () => {
                   {/* Two-Factor Authentication */}
                   <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      <Smartphone size={18} className="inline mr-2" />
+                      <Fingerprint size={18} className="inline mr-2" />
                       {t('settings.twoFactorAuth') || 'Two-Factor Authentication'}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -385,7 +387,7 @@ const Settings = () => {
                       /* 2FA is ON - show disable form */
                       <div className="space-y-4">
                         <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm font-medium">
-                          <Lock size={16} />
+                          <LockKeyhole size={16} />
                           {t('settings.twoFactorEnabled') || '2FA is currently enabled'}
                         </div>
                         <div>
@@ -520,7 +522,7 @@ const Settings = () => {
                         disabled={twoFactorLoading}
                         className="dark:border-gray-600 dark:text-gray-300"
                       >
-                        <Smartphone size={16} className="mr-2" />
+                        <Fingerprint size={16} className="mr-2" />
                         {twoFactorLoading
                           ? t('settings.settingUp') || 'Setting up...'
                           : t('settings.setupTwoFactor') || 'Set Up 2FA'}
@@ -730,7 +732,7 @@ const Settings = () => {
                             onClick={toggleLanguage}
                             className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                           >
-                            <Globe size={16} />
+                            <Languages size={16} />
                             <span className="text-sm">
                               {language === 'vi' ? 'Tiếng Việt' : 'English'}
                             </span>

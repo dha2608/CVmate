@@ -7,24 +7,24 @@ import { useI18n } from '@/store/i18nStore';
 import { useNewsStore } from '@/store/newsStore';
 import { Button } from '@/components/ui/button';
 import {
-  Home,
-  Users,
-  Briefcase,
-  MessageSquare,
+  LayoutDashboard,
+  UsersRound,
+  BriefcaseBusiness,
+  MessageCircleMore,
   Bell,
   Search,
   LogOut,
-  FileText,
+  NotebookText,
   Sun,
   Moon,
-  Globe,
-  Trophy,
+  Languages,
+  Medal,
   Bookmark,
-  Crown,
-  Shield,
-  MoreHorizontal,
-  User,
-  Settings2,
+  Gem,
+  ShieldCheck,
+  Ellipsis,
+  CircleUserRound,
+  SlidersHorizontal,
 } from 'lucide-react';
 import Footer from '@/components/Footer';
 import SupportChat from '@/components/SupportChat';
@@ -201,25 +201,25 @@ const MainLayout = ({
             <ul className="flex items-center gap-1 sm:gap-1.5 md:gap-2 h-full flex-shrink-0">
               {/* Primary nav items */}
               <NavItem
-                icon={<Home size={18} className="sm:w-5 sm:h-5" />}
+                icon={<LayoutDashboard size={18} className="sm:w-5 sm:h-5" />}
                 label={t('nav.home')}
                 active={isActive('/dashboard')}
                 onClick={() => navigate('/dashboard')}
               />
               <NavItem
-                icon={<Users size={18} className="sm:w-5 sm:h-5" />}
+                icon={<UsersRound size={18} className="sm:w-5 sm:h-5" />}
                 label={t('nav.community')}
                 active={isActive('/community')}
                 onClick={() => navigate('/community')}
               />
               <NavItem
-                icon={<Briefcase size={18} className="sm:w-5 sm:h-5" />}
+                icon={<BriefcaseBusiness size={18} className="sm:w-5 sm:h-5" />}
                 label={t('nav.jobs')}
                 active={isActive('/jobs')}
                 onClick={() => navigate('/jobs')}
               />
               <NavItem
-                icon={<MessageSquare size={18} className="sm:w-5 sm:h-5" />}
+                icon={<MessageCircleMore size={18} className="sm:w-5 sm:h-5" />}
                 label={t('nav.messages')}
                 active={isActive('/messaging')}
                 onClick={() => navigate('/messaging')}
@@ -251,7 +251,7 @@ const MainLayout = ({
                     className={`p-1 sm:p-1.5 rounded-md group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors ${['/blog', '/notifications', '/bookmarks'].some((p) => isActive(p)) ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
                   >
                     <div className="relative">
-                      <MoreHorizontal size={18} className="sm:w-5 sm:h-5" />
+                      <Ellipsis size={18} className="sm:w-5 sm:h-5" />
                       {unreadCount > 0 && (
                         <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 animate-pulse" />
                       )}
@@ -278,7 +278,7 @@ const MainLayout = ({
                     }}
                     role="menuitem"
                   >
-                    <FileText size={16} />
+                    <NotebookText size={16} />
                     {t('nav.blog')}
                   </button>
                   <button
@@ -333,7 +333,7 @@ const MainLayout = ({
                   className="p-1.5 sm:p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-1"
                   aria-label={`Toggle language (${language === 'vi' ? 'VI' : 'EN'})`}
                 >
-                  <Globe size={16} className="sm:w-[18px] sm:h-[18px]" />
+                  <Languages size={16} className="sm:w-[18px] sm:h-[18px]" />
                   <span className="text-xs font-medium">{language === 'vi' ? 'VI' : 'EN'}</span>
                 </button>
               </li>
@@ -396,7 +396,7 @@ const MainLayout = ({
                       }}
                       role="menuitem"
                     >
-                      <User className="w-4 h-4 mr-2" />
+                      <CircleUserRound className="w-4 h-4 mr-2" />
                       {t('nav.profile') || 'Profile'}
                     </Button>
                     <Button
@@ -408,7 +408,7 @@ const MainLayout = ({
                       }}
                       role="menuitem"
                     >
-                      <Settings2 className="w-4 h-4 mr-2" />
+                      <SlidersHorizontal className="w-4 h-4 mr-2" />
                       {t('nav.settings') || 'Settings'}
                     </Button>
                     <Button
@@ -420,7 +420,7 @@ const MainLayout = ({
                       }}
                       role="menuitem"
                     >
-                      <Trophy className="w-4 h-4 mr-2" />
+                      <Medal className="w-4 h-4 mr-2" />
                       {t('nav.achievements') || 'Achievements'}
                     </Button>
                     <Button
@@ -432,7 +432,7 @@ const MainLayout = ({
                       }}
                       role="menuitem"
                     >
-                      <Crown className="w-4 h-4 mr-2" />
+                      <Gem className="w-4 h-4 mr-2" />
                       {language === 'vi' ? 'Bảng giá' : 'Pricing'}
                     </Button>
                     {user?.role === 'admin' && (
@@ -445,7 +445,7 @@ const MainLayout = ({
                         }}
                         role="menuitem"
                       >
-                        <Shield className="w-4 h-4 mr-2" />
+                        <ShieldCheck className="w-4 h-4 mr-2" />
                         {language === 'vi' ? 'Quản trị' : 'Admin'}
                       </Button>
                     )}
@@ -593,7 +593,7 @@ const NewsSidebar = () => {
           className="text-gray-400 hover:text-gray-900 dark:hover:text-white h-8 w-8 p-0"
           aria-label={t('dashboard.viewAll')}
         >
-          <MoreHorizontal size={16} />
+          <Ellipsis size={16} />
         </Button>
       </div>
       {newsArticles.length > 0 ? (

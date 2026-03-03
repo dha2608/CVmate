@@ -3,25 +3,26 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import {
-  Shield,
-  Users,
-  FileText,
-  Briefcase,
-  MessageSquare,
-  DollarSign,
-  RefreshCw,
+  ShieldCheck,
+  UsersRound,
+  NotebookText,
+  BriefcaseBusiness,
+  PenLine,
+  Wallet,
+  RotateCw,
   Ban,
   UserCheck,
   Trash2,
-  CheckCircle2,
+  CircleCheckBig,
   XCircle,
-  Crown,
+  Gem,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/utils';
 import { useToastStore } from '@/store/toastStore';
 import { confirmDialog } from '@/components/ui/confirm-dialog';
+import { useI18n } from '@/store/i18nStore';
 
 type AdminTab = 'overview' | 'users' | 'posts' | 'articles' | 'jobs';
 
@@ -36,6 +37,7 @@ const Admin = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const toast = useToastStore();
+  const { t } = useI18n();
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [loading, setLoading] = useState(false);
@@ -77,7 +79,7 @@ const Admin = () => {
       const res = await api.getAdminOverview();
       if (res.success) setOverview(res.data);
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to load overview');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
@@ -86,7 +88,7 @@ const Admin = () => {
       const res = await api.getAdminUsers({ page: 1, limit: 100, search: userSearch || undefined });
       if (res.success) setUsers(res.data || []);
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to load users');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
@@ -96,7 +98,7 @@ const Admin = () => {
       const res = await api.getAdminPosts({ page: 1, limit: 100, status });
       if (res.success) setPosts(res.data || []);
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to load posts');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
@@ -105,7 +107,7 @@ const Admin = () => {
       const res = await api.getAdminArticles({ page: 1, limit: 100 });
       if (res.success) setArticles(res.data || []);
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to load articles');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
@@ -114,7 +116,7 @@ const Admin = () => {
       const res = await api.getAdminJobs({ page: 1, limit: 100 });
       if (res.success) setJobs(res.data || []);
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to load jobs');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
@@ -122,7 +124,7 @@ const Admin = () => {
     setLoading(true);
     try {
       await Promise.all([loadOverview(), loadUsers(), loadPosts(), loadArticles(), loadJobs()]);
-      toast.success('Admin data refreshed');
+      toast.success(t('admin.dataRefreshed'));
     } finally {
       setLoading(false);
     }
@@ -137,9 +139,9 @@ const Admin = () => {
       }
       await loadUsers();
       await loadOverview();
-      toast.success(target.isBanned ? 'User unbanned' : 'User banned');
+      toast.success(target.isBanned ? t('admin.userUnbanned') : t('admin.userBanned'));
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to update ban state');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
@@ -148,9 +150,9 @@ const Admin = () => {
       const nextRole = target.role === 'admin' ? 'user' : 'admin';
       await api.updateAdminUserRole(target._id, nextRole);
       await loadUsers();
-      toast.success('User role updated');
+      toast.success(t('admin.roleUpdated'));
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to update role');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
@@ -164,9 +166,9 @@ const Admin = () => {
       });
       await loadUsers();
       await loadOverview();
-      toast.success('User subscription updated');
+      toast.success(t('admin.subscriptionUpdated'));
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to update subscription');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
@@ -175,33 +177,33 @@ const Admin = () => {
       let reason: string | undefined = undefined;
       if (status === 'rejected') {
         const input = await confirmDialog({
-          message: 'Reason for rejection (optional):',
-          title: 'Reject Post',
-          confirmText: 'Reject',
-          cancelText: 'Cancel',
+          message: t('admin.rejectReason'),
+          title: t('admin.rejectPostTitle'),
+          confirmText: t('admin.reject'),
+          cancelText: t('admin.cancel'),
           variant: 'destructive',
           requireInput: true,
-          inputPlaceholder: 'Enter reason (optional)',
-          inputLabel: 'Rejection Reason',
+          inputPlaceholder: t('admin.rejectReason'),
+          inputLabel: t('admin.rejectionReason'),
         });
-        if (input === false) return; // User cancelled
+        if (input === false) return;
         reason = typeof input === 'string' ? input : undefined;
       }
       await api.updateAdminPostStatus(postId, status, reason);
       await loadPosts();
       await loadOverview();
-      toast.success('Post updated');
+      toast.success(t('admin.postUpdated'));
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to update post');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
   const handleDeletePost = async (postId: string) => {
     const confirmed = await confirmDialog({
-      message: 'Delete this post permanently? This action cannot be undone.',
-      title: 'Delete Post',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
+      message: t('admin.deletePostConfirm'),
+      title: t('admin.deletePostTitle'),
+      confirmText: t('admin.delete'),
+      cancelText: t('admin.cancel'),
       variant: 'destructive',
     });
     if (!confirmed) return;
@@ -209,9 +211,9 @@ const Admin = () => {
       await api.deleteAdminPost(postId);
       await loadPosts();
       await loadOverview();
-      toast.success('Post deleted');
+      toast.success(t('admin.postDeleted'));
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to delete post');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
@@ -219,18 +221,18 @@ const Admin = () => {
     try {
       await api.toggleAdminArticlePublish(articleId);
       await loadArticles();
-      toast.success('Article publish state updated');
+      toast.success(t('admin.articlePublishUpdated'));
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to update article');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
   const handleDeleteArticle = async (articleId: string) => {
     const confirmed = await confirmDialog({
-      message: 'Delete this article permanently? This action cannot be undone.',
-      title: 'Delete Article',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
+      message: t('admin.deleteArticleConfirm'),
+      title: t('admin.deleteArticleTitle'),
+      confirmText: t('admin.delete'),
+      cancelText: t('admin.cancel'),
       variant: 'destructive',
     });
     if (!confirmed) return;
@@ -238,18 +240,18 @@ const Admin = () => {
       await api.deleteAdminArticle(articleId);
       await loadArticles();
       await loadOverview();
-      toast.success('Article deleted');
+      toast.success(t('admin.articleDeleted'));
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to delete article');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
   const handleDeleteJob = async (jobId: string) => {
     const confirmed = await confirmDialog({
-      message: 'Delete this job permanently? This action cannot be undone.',
-      title: 'Delete Job',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
+      message: t('admin.deleteJobConfirm'),
+      title: t('admin.deleteJobTitle'),
+      confirmText: t('admin.delete'),
+      cancelText: t('admin.cancel'),
       variant: 'destructive',
     });
     if (!confirmed) return;
@@ -257,9 +259,9 @@ const Admin = () => {
       await api.deleteAdminJob(jobId);
       await loadJobs();
       await loadOverview();
-      toast.success('Job deleted');
+      toast.success(t('admin.jobDeleted'));
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to delete job');
+      toast.error(error?.message || t('admin.loadFailed'));
     }
   };
 
@@ -270,35 +272,35 @@ const Admin = () => {
           className={tabButtonClass(activeTab === 'overview')}
           onClick={() => setActiveTab('overview')}
         >
-          Overview
+          {t('admin.overview')}
         </button>
         <button
           className={tabButtonClass(activeTab === 'users')}
           onClick={() => setActiveTab('users')}
         >
-          Users
+          {t('admin.users')}
         </button>
         <button
           className={tabButtonClass(activeTab === 'posts')}
           onClick={() => setActiveTab('posts')}
         >
-          Posts
+          {t('admin.posts')}
         </button>
         <button
           className={tabButtonClass(activeTab === 'articles')}
           onClick={() => setActiveTab('articles')}
         >
-          Articles
+          {t('admin.articles')}
         </button>
         <button
           className={tabButtonClass(activeTab === 'jobs')}
           onClick={() => setActiveTab('jobs')}
         >
-          Jobs
+          {t('admin.jobs')}
         </button>
       </div>
     ),
-    [activeTab]
+    [activeTab, t]
   );
 
   if (!user) return null;
@@ -308,12 +310,10 @@ const Admin = () => {
       <MainLayout>
         <div className="max-w-3xl mx-auto py-16 text-center">
           <XCircle className="mx-auto text-red-500 mb-4" size={56} />
-          <h1 className="text-2xl font-bold mb-2">Access denied</h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            You need admin privileges to view this page.
-          </p>
+          <h1 className="text-2xl font-bold mb-2">{t('admin.accessDenied')}</h1>
+          <p className="text-gray-600 dark:text-gray-300">{t('admin.accessDeniedDesc')}</p>
           <Button className="mt-6" onClick={() => navigate('/dashboard')}>
-            Back to dashboard
+            {t('admin.backToDashboard')}
           </Button>
         </div>
       </MainLayout>
@@ -327,21 +327,21 @@ const Admin = () => {
           <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
-                <Shield size={20} />
+                <ShieldCheck size={20} />
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                  Admin Management Console
+                  {t('admin.title')}
                 </h1>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                  Manage users, content, jobs, subscriptions, and moderation actions.
+                  {t('admin.subtitle')}
                 </p>
               </div>
             </div>
 
             <Button onClick={refreshAll} disabled={loading} className="flex items-center gap-2">
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              Refresh
+              <RotateCw size={16} className={loading ? 'animate-spin' : ''} />
+              {t('admin.refresh')}
             </Button>
           </div>
 
@@ -351,55 +351,55 @@ const Admin = () => {
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <OverviewCard
-              icon={<Users size={18} />}
-              label="Users"
+              icon={<UsersRound size={18} />}
+              label={t('admin.users')}
               value={overview?.usersCount ?? 0}
             />
             <OverviewCard
               icon={<Ban size={18} />}
-              label="Banned Users"
+              label={t('admin.bannedUsers')}
               value={overview?.bannedUsersCount ?? 0}
             />
             <OverviewCard
-              icon={<MessageSquare size={18} />}
-              label="Posts"
+              icon={<PenLine size={18} />}
+              label={t('admin.posts')}
               value={overview?.postsCount ?? 0}
             />
             <OverviewCard
-              icon={<CheckCircle2 size={18} />}
-              label="Pending Posts"
+              icon={<CircleCheckBig size={18} />}
+              label={t('admin.pendingPosts')}
               value={overview?.pendingPostsCount ?? 0}
             />
             <OverviewCard
-              icon={<FileText size={18} />}
-              label="Articles"
+              icon={<NotebookText size={18} />}
+              label={t('admin.articles')}
               value={overview?.articlesCount ?? 0}
             />
             <OverviewCard
-              icon={<Briefcase size={18} />}
-              label="Jobs"
+              icon={<BriefcaseBusiness size={18} />}
+              label={t('admin.jobs')}
               value={overview?.jobsCount ?? 0}
             />
             <OverviewCard
-              icon={<Crown size={18} />}
-              label="Premium Users"
+              icon={<Gem size={18} />}
+              label={t('admin.premiumUsers')}
               value={overview?.premiumUsersCount ?? 0}
             />
             <OverviewCard
-              icon={<DollarSign size={18} />}
-              label="Total Revenue"
+              icon={<Wallet size={18} />}
+              label={t('admin.totalRevenue')}
               value={overview?.totalRevenue ?? 0}
               suffix="USD"
             />
             <OverviewCard
-              icon={<DollarSign size={18} />}
-              label="Monthly Subs"
+              icon={<Wallet size={18} />}
+              label={t('admin.monthlySubs')}
               value={overview?.premiumMonthlyCount ?? 0}
               suffix={`× $8/mo`}
             />
             <OverviewCard
-              icon={<DollarSign size={18} />}
-              label="Yearly Subs"
+              icon={<Wallet size={18} />}
+              label={t('admin.yearlySubs')}
               value={overview?.premiumYearlyCount ?? 0}
               suffix={`× $80/yr`}
             />
@@ -412,11 +412,11 @@ const Admin = () => {
               <Input
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                placeholder="Search by name or email"
+                placeholder={t('admin.searchPlaceholder')}
                 className="max-w-sm"
               />
               <Button variant="outline" onClick={loadUsers}>
-                Search
+                {t('admin.search')}
               </Button>
             </div>
 
@@ -424,11 +424,11 @@ const Admin = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3">User</th>
-                    <th className="text-left py-3">Role</th>
-                    <th className="text-left py-3">Subscription</th>
-                    <th className="text-left py-3">Status</th>
-                    <th className="text-right py-3">Actions</th>
+                    <th className="text-left py-3">{t('admin.user')}</th>
+                    <th className="text-left py-3">{t('admin.role')}</th>
+                    <th className="text-left py-3">{t('admin.subscription')}</th>
+                    <th className="text-left py-3">{t('admin.status')}</th>
+                    <th className="text-right py-3">{t('admin.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -440,20 +440,23 @@ const Admin = () => {
                       </td>
                       <td className="py-3">{u.role}</td>
                       <td className="py-3">
-                        {u.subscription?.plan || 'free'} / {u.subscription?.status || 'active'}
+                        {u.subscription?.plan || 'free'} /{' '}
+                        {u.subscription?.status || t('admin.active').toLowerCase()}
                       </td>
-                      <td className="py-3">{u.isBanned ? 'Banned' : 'Active'}</td>
+                      <td className="py-3">{u.isBanned ? t('admin.banned') : t('admin.active')}</td>
                       <td className="py-3">
                         <div className="flex justify-end flex-wrap gap-2">
                           <Button size="sm" variant="outline" onClick={() => handleRoleToggle(u)}>
-                            {u.role === 'admin' ? 'Set User' : 'Set Admin'}
+                            {u.role === 'admin' ? t('admin.setUser') : t('admin.setAdmin')}
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleSubscriptionToggle(u)}
                           >
-                            {u.subscription?.plan === 'premium' ? 'Set Free' : 'Set Premium'}
+                            {u.subscription?.plan === 'premium'
+                              ? t('admin.setFree')
+                              : t('admin.setPremium')}
                           </Button>
                           <Button
                             size="sm"
@@ -465,7 +468,7 @@ const Admin = () => {
                             ) : (
                               <Ban size={14} className="mr-1" />
                             )}
-                            {u.isBanned ? 'Unban' : 'Ban'}
+                            {u.isBanned ? t('admin.unban') : t('admin.ban')}
                           </Button>
                         </div>
                       </td>
@@ -489,7 +492,7 @@ const Admin = () => {
                     setTimeout(loadPosts, 0);
                   }}
                 >
-                  {status}
+                  {t(`admin.${status}`)}
                 </button>
               ))}
             </div>
@@ -498,11 +501,11 @@ const Admin = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3">User</th>
-                    <th className="text-left py-3">Content</th>
-                    <th className="text-left py-3">Status</th>
-                    <th className="text-left py-3">Created</th>
-                    <th className="text-right py-3">Actions</th>
+                    <th className="text-left py-3">{t('admin.user')}</th>
+                    <th className="text-left py-3">{t('admin.content')}</th>
+                    <th className="text-left py-3">{t('admin.status')}</th>
+                    <th className="text-left py-3">{t('admin.created')}</th>
+                    <th className="text-right py-3">{t('admin.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -510,16 +513,18 @@ const Admin = () => {
                     <tr key={p._id} className="border-b border-gray-100 dark:border-gray-700/60">
                       <td className="py-3">
                         <div className="font-semibold text-gray-900 dark:text-white">
-                          {p.user?.name || 'Unknown user'}
+                          {p.user?.name || t('admin.unknownUser')}
                         </div>
                         <div className="text-xs text-gray-500">{p.user?.email || ''}</div>
                       </td>
                       <td className="py-3 max-w-md">
                         <p className="text-sm text-gray-700 dark:text-gray-200 line-clamp-2">
-                          {p.content || '(No content)'}
+                          {p.content || t('admin.noContent')}
                         </p>
                         {p.rejectedReason && (
-                          <p className="text-xs text-red-600 mt-1">Reason: {p.rejectedReason}</p>
+                          <p className="text-xs text-red-600 mt-1">
+                            {t('admin.reason')} {p.rejectedReason}
+                          </p>
                         )}
                       </td>
                       <td className="py-3">
@@ -532,7 +537,7 @@ const Admin = () => {
                                 : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                           }`}
                         >
-                          {p.status || 'pending'}
+                          {t(`admin.${p.status || 'pending'}`)}
                         </span>
                       </td>
                       <td className="py-3 text-xs text-gray-500">
@@ -545,28 +550,28 @@ const Admin = () => {
                             variant="outline"
                             onClick={() => handlePostStatus(p._id, 'approved')}
                           >
-                            Approve
+                            {t('admin.approve')}
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handlePostStatus(p._id, 'pending')}
                           >
-                            Pending
+                            {t('admin.pending')}
                           </Button>
                           <Button
                             size="sm"
                             variant="secondary"
                             onClick={() => handlePostStatus(p._id, 'rejected')}
                           >
-                            Reject
+                            {t('admin.reject')}
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
                             onClick={() => handleDeletePost(p._id)}
                           >
-                            <Trash2 size={14} className="mr-1" /> Delete
+                            <Trash2 size={14} className="mr-1" /> {t('admin.delete')}
                           </Button>
                         </div>
                       </td>
@@ -584,11 +589,11 @@ const Admin = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3">Title</th>
-                    <th className="text-left py-3">Author</th>
-                    <th className="text-left py-3">Category</th>
-                    <th className="text-left py-3">Published</th>
-                    <th className="text-right py-3">Actions</th>
+                    <th className="text-left py-3">{t('admin.titleColumn')}</th>
+                    <th className="text-left py-3">{t('admin.author')}</th>
+                    <th className="text-left py-3">{t('admin.category')}</th>
+                    <th className="text-left py-3">{t('admin.published')}</th>
+                    <th className="text-right py-3">{t('admin.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -597,9 +602,9 @@ const Admin = () => {
                       <td className="py-3 font-semibold text-gray-900 dark:text-white">
                         {a.title}
                       </td>
-                      <td className="py-3">{a.author?.name || 'Unknown'}</td>
+                      <td className="py-3">{a.author?.name || t('admin.unknownUser')}</td>
                       <td className="py-3">{a.category}</td>
-                      <td className="py-3">{a.isPublished ? 'Yes' : 'No'}</td>
+                      <td className="py-3">{a.isPublished ? t('admin.yes') : t('admin.no')}</td>
                       <td className="py-3">
                         <div className="flex justify-end gap-2">
                           <Button
@@ -607,14 +612,14 @@ const Admin = () => {
                             variant="outline"
                             onClick={() => handleToggleArticlePublish(a._id)}
                           >
-                            {a.isPublished ? 'Unpublish' : 'Publish'}
+                            {a.isPublished ? t('admin.unpublish') : t('admin.publish')}
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
                             onClick={() => handleDeleteArticle(a._id)}
                           >
-                            <Trash2 size={14} className="mr-1" /> Delete
+                            <Trash2 size={14} className="mr-1" /> {t('admin.delete')}
                           </Button>
                         </div>
                       </td>
@@ -632,12 +637,12 @@ const Admin = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3">Title</th>
-                    <th className="text-left py-3">Company</th>
-                    <th className="text-left py-3">Type</th>
-                    <th className="text-left py-3">Posted by</th>
-                    <th className="text-left py-3">Applicants</th>
-                    <th className="text-right py-3">Actions</th>
+                    <th className="text-left py-3">{t('admin.titleColumn')}</th>
+                    <th className="text-left py-3">{t('admin.company')}</th>
+                    <th className="text-left py-3">{t('admin.type')}</th>
+                    <th className="text-left py-3">{t('admin.postedBy')}</th>
+                    <th className="text-left py-3">{t('admin.applicants')}</th>
+                    <th className="text-right py-3">{t('admin.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -648,7 +653,7 @@ const Admin = () => {
                       </td>
                       <td className="py-3">{j.company}</td>
                       <td className="py-3">{j.type}</td>
-                      <td className="py-3">{j.postedBy?.name || 'Unknown'}</td>
+                      <td className="py-3">{j.postedBy?.name || t('admin.unknownUser')}</td>
                       <td className="py-3">
                         {Array.isArray(j.applicants) ? j.applicants.length : 0}
                       </td>
@@ -659,7 +664,7 @@ const Admin = () => {
                             variant="destructive"
                             onClick={() => handleDeleteJob(j._id)}
                           >
-                            <Trash2 size={14} className="mr-1" /> Delete
+                            <Trash2 size={14} className="mr-1" /> {t('admin.delete')}
                           </Button>
                         </div>
                       </td>

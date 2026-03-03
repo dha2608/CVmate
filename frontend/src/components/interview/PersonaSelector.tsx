@@ -4,9 +4,9 @@ import {
   Loader2,
   Zap,
   Code,
-  Briefcase,
+  BriefcaseBusiness,
   Globe,
-  Users,
+  UsersRound,
   Building2,
   GraduationCap,
 } from 'lucide-react';
@@ -54,7 +54,7 @@ const PersonaSelector = ({
       title: t('interview.friendlyHR'),
       desc: t('interview.friendlyHRDesc'),
       avatar: '', // Will use icon fallback
-      icon: Users,
+      icon: UsersRound,
       color: 'bg-blue-500',
       difficulty: 'Easy',
       category: 'hr',
@@ -64,7 +64,7 @@ const PersonaSelector = ({
       title: t('interview.strictManager'),
       desc: t('interview.strictManagerDesc'),
       avatar: '', // Will use icon fallback
-      icon: Briefcase,
+      icon: BriefcaseBusiness,
       color: 'bg-red-500',
       difficulty: 'Hard',
       category: 'technical',

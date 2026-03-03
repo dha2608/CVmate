@@ -5,7 +5,7 @@ import { useAchievementStore } from '@/store/achievementStore';
 import { useI18n } from '@/store/i18nStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { AchievementBadge } from '@/components/achievements/AchievementBadge';
-import { Trophy, Lock, CheckCircle2 } from 'lucide-react';
+import { Medal, Lock, CircleCheckBig } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type AchievementType =
@@ -73,7 +73,7 @@ const Achievements = () => {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-            <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-crimson-red dark:text-red-400" />
+            <Medal className="w-6 h-6 sm:w-8 sm:h-8 text-crimson-red dark:text-red-400" />
             {t('nav.achievements') || 'Achievements'}
           </h1>
           <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
@@ -142,7 +142,7 @@ const Achievements = () => {
                           {details.title}
                         </h3>
                         {unlocked ? (
-                          <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <CircleCheckBig className="w-4 h-4 text-green-500 flex-shrink-0" />
                         ) : (
                           <Lock className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         )}
@@ -167,7 +167,7 @@ const Achievements = () => {
         {/* Empty state when no achievements at all */}
         {!isLoading && unlockedCount === 0 && (
           <div className="mt-6 text-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-            <Trophy className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <Medal className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
             <p className="text-gray-500 dark:text-gray-400">
               {t('achievements.empty') ||
                 'No achievements yet. Start using CVmate to unlock badges!'}

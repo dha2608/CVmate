@@ -8,16 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Heart,
-  Briefcase,
-  MessageCircle,
+  BriefcaseBusiness,
+  MessageCircleMore,
   Bell,
   ShieldAlert,
   UserPlus,
   CheckCheck,
   Trash2,
-  Clock,
+  CalendarClock,
   Loader2,
-  Filter,
+  SlidersHorizontal,
   Search,
   X,
 } from 'lucide-react';
@@ -34,13 +34,13 @@ const NotificationIcon = ({ type }: { type: Notification['type'] }) => {
     case 'job':
       return (
         <div className="p-2 bg-blue-100 text-blue-600 rounded-full">
-          <Briefcase size={18} />
+          <BriefcaseBusiness size={18} />
         </div>
       );
     case 'comment':
       return (
         <div className="p-2 bg-green-100 text-green-600 rounded-full">
-          <MessageCircle size={18} />
+          <MessageCircleMore size={18} />
         </div>
       );
     case 'connection':
@@ -234,7 +234,7 @@ const Notifications = () => {
                 )}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <Filter size={16} className="text-gray-500 dark:text-gray-400" />
+                <SlidersHorizontal size={16} className="text-gray-500 dark:text-gray-400" />
                 <Button
                   variant={filter === 'all' ? 'default' : 'outline'}
                   size="sm"
@@ -266,7 +266,7 @@ const Notifications = () => {
                   onClick={() => setFilter('comment')}
                   className="text-xs"
                 >
-                  <MessageCircle size={12} className="mr-1" />
+                  <MessageCircleMore size={12} className="mr-1" />
                   {t('notifications.comments')}
                 </Button>
                 <Button
@@ -275,7 +275,7 @@ const Notifications = () => {
                   onClick={() => setFilter('job')}
                   className="text-xs"
                 >
-                  <Briefcase size={12} className="mr-1" />
+                  <BriefcaseBusiness size={12} className="mr-1" />
                   {t('notifications.jobs')}
                 </Button>
               </div>
@@ -362,7 +362,7 @@ const Notifications = () => {
                       </button>
                     </div>
                     <div className="flex items-center gap-2 mt-1.5">
-                      <Clock size={12} className="text-gray-400" />
+                      <CalendarClock size={12} className="text-gray-400" />
                       <span className="text-xs text-gray-500">
                         {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
                       </span>

@@ -1,13 +1,13 @@
 import { memo, useCallback, useMemo } from 'react';
 import { useResumeStore } from '@/store/resumeStore';
 import { Input } from '@/components/ui/input';
-import { User, Mail, Phone, MapPin, Linkedin, Globe, HelpCircle } from 'lucide-react';
+import { CircleUserRound, AtSign, Phone, MapPin, Linkedin, Globe, CircleHelp } from 'lucide-react';
 import { validateEmail, validateUrl } from '@/utils/validation';
 
 interface FieldConfig {
   key: 'fullName' | 'email' | 'phone' | 'address' | 'linkedin' | 'website';
   label: string;
-  icon: typeof User;
+  icon: typeof CircleUserRound;
   placeholder: string;
   required: boolean;
   help?: string;
@@ -33,7 +33,7 @@ const PersonalField = memo(function PersonalField({ field, value, onChange }: Pe
         </label>
         {field.help && (
           <div className="group relative">
-            <HelpCircle size={14} className="text-gray-400 cursor-help" />
+            <CircleHelp size={14} className="text-gray-400 cursor-help" />
             <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-10 w-48 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg">
               {field.help}
               <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
@@ -46,7 +46,9 @@ const PersonalField = memo(function PersonalField({ field, value, onChange }: Pe
         onChange={(e) => onChange(field.key, e.target.value)}
         placeholder={field.placeholder}
         type={field.key === 'email' ? 'email' : field.key === 'phone' ? 'tel' : 'text'}
-        className={isEmpty && field.required ? 'border-amber-300 focus:border-amber-500' : 'border-gray-200'}
+        className={
+          isEmpty && field.required ? 'border-amber-300 focus:border-amber-500' : 'border-gray-200'
+        }
       />
       {isEmpty && field.required && (
         <p className="text-xs text-amber-600 flex items-center gap-1">
@@ -70,7 +72,7 @@ const PersonalField = memo(function PersonalField({ field, value, onChange }: Pe
   );
 });
 
-const PersonalForm = () => {
+const PersonalForm = ({ onNext }: { onNext?: () => void }) => {
   const personalInfo = useResumeStore((s) => s.currentResume.personalInfo);
 
   const fields: FieldConfig[] = useMemo(
@@ -78,7 +80,7 @@ const PersonalForm = () => {
       {
         key: 'fullName',
         label: 'Full Name',
-        icon: User,
+        icon: CircleUserRound,
         placeholder: 'e.g. John Doe',
         required: true,
         help: 'Your full name as it should appear on your CV',
@@ -86,7 +88,7 @@ const PersonalForm = () => {
       {
         key: 'email',
         label: 'Email',
-        icon: Mail,
+        icon: AtSign,
         placeholder: 'e.g. john@example.com',
         required: true,
         help: 'Professional email address',
@@ -142,12 +144,15 @@ const PersonalForm = () => {
       <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
         <div className="flex items-start gap-4">
           <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-md">
-            <User size={24} />
+            <CircleUserRound size={24} />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Personal Information</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              Personal Information
+            </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              Start by filling in your basic contact information. This will appear at the top of your CV.
+              Start by filling in your basic contact information. This will appear at the top of
+              your CV.
             </p>
           </div>
         </div>
@@ -170,8 +175,8 @@ const PersonalForm = () => {
             <div className="flex items-center gap-2">
               <div
                 className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                  personalInfo.fullName && personalInfo.email 
-                    ? 'bg-green-500 animate-pulse' 
+                  personalInfo.fullName && personalInfo.email
+                    ? 'bg-green-500 animate-pulse'
                     : 'bg-gray-300 dark:bg-gray-600'
                 }`}
               />
@@ -184,8 +189,9 @@ const PersonalForm = () => {
             {personalInfo.fullName && personalInfo.email && (
               <button
                 onClick={() => {
-                  const nextSection = document.querySelector('[data-section="summary"]');
-                  nextSection?.scrollIntoView({ behavior: 'smooth' });
+                  if (onNext) {
+                    onNext();
+                  }
                 }}
                 className="text-xs text-crimson-red hover:text-fire-red font-medium transition-colors"
               >

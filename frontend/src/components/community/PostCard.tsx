@@ -6,7 +6,7 @@ import { useMessageStore } from '@/store/messageStore';
 import { useToastStore } from '@/store/toastStore';
 import { Button } from '@/components/ui/button';
 import { CommentItem } from './CommentItem';
-import { MoreHorizontal, Pencil, Trash2, Share2, Link2 } from 'lucide-react';
+import { Ellipsis, Pencil, Trash2, Share2, Link2 } from 'lucide-react';
 
 interface PostCardProps {
   post: any;
@@ -207,7 +207,7 @@ const PostCardComponent = ({ post }: PostCardProps) => {
               className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               aria-label="Post options"
             >
-              <MoreHorizontal className="w-5 h-5" />
+              <Ellipsis className="w-5 h-5" />
             </button>
             {showMenu && (
               <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
@@ -357,6 +357,7 @@ const PostCardComponent = ({ post }: PostCardProps) => {
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="Write a comment..."
               className="flex-1 border border-gray-300 dark:border-gray-600 rounded-full px-4 py-2 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-crimson-red/30 focus:border-crimson-red"
+              maxLength={2000}
             />
             <Button type="submit" size="sm" disabled={!commentText.trim()}>
               Post

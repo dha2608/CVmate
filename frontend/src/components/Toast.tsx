@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react';
 import { useToastStore } from '@/store/toastStore';
-import { CheckCircle2, XCircle, Info, AlertTriangle, X } from 'lucide-react';
+import { CircleCheckBig, XCircle, Info, TriangleAlert, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ToastType } from '@/store/toastStore';
 
@@ -11,9 +11,9 @@ const TOAST_EXIT = { opacity: 0, x: 100, scale: 0.95 };
 const TOAST_TRANSITION = { type: 'spring' as const, stiffness: 500, damping: 30 };
 
 const ICON_MAP: Record<ToastType, React.ReactNode> = {
-  success: <CheckCircle2 className="w-5 h-5 text-green-500" />,
+  success: <CircleCheckBig className="w-5 h-5 text-green-500" />,
   error: <XCircle className="w-5 h-5 text-red-500" />,
-  warning: <AlertTriangle className="w-5 h-5 text-yellow-500" />,
+  warning: <TriangleAlert className="w-5 h-5 text-yellow-500" />,
   info: <Info className="w-5 h-5 text-blue-500" />,
 };
 

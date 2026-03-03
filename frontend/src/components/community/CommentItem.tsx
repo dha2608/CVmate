@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
-import { Heart, Reply, Edit2, Trash2, MoreVertical, X } from 'lucide-react';
+import { Heart, Reply, PencilLine, Trash2, EllipsisVertical, X } from 'lucide-react';
 import { useConfirmDialog } from '@/components/ui/confirm-dialog';
 
 const normalizeImageUrl = (url: string | undefined | null): string | null => {
@@ -159,7 +159,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                     onClick={() => setShowMenu(!showMenu)}
                     className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-opacity"
                   >
-                    <MoreVertical size={14} />
+                    <EllipsisVertical size={14} />
                   </button>
 
                   {showMenu && (
@@ -171,7 +171,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                         }}
                         className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                       >
-                        <Edit2 size={12} />
+                        <PencilLine size={12} />
                         Edit
                       </button>
                       <button

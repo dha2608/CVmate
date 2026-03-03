@@ -1,12 +1,12 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
 import { requireAdmin } from '../middleware/adminMiddleware.js';
-import { 
+import {
   getAdminOverview,
   getUsers,
   updateUserRole,
   updateUserSubscription,
-  banUser, 
+  banUser,
   unbanUser,
   getPosts,
   updatePostStatus,
@@ -17,6 +17,7 @@ import {
   getJobs,
   deleteJob,
 } from '../controllers/adminController.js';
+import { validate, updatePostStatusSchema, updateUserRoleSchema } from '../utils/validators.js';
 
 const router = express.Router();
 
@@ -26,13 +27,13 @@ router.use(requireAdmin);
 router.get('/overview', getAdminOverview);
 
 router.get('/users', getUsers);
-router.put('/users/:id/role', updateUserRole);
+router.put('/users/:id/role', validate(updateUserRoleSchema), updateUserRole);
 router.put('/users/:id/subscription', updateUserSubscription);
 router.put('/users/:id/ban', banUser);
 router.put('/users/:id/unban', unbanUser);
 
 router.get('/posts', getPosts);
-router.put('/posts/:id/status', updatePostStatus);
+router.put('/posts/:id/status', validate(updatePostStatusSchema), updatePostStatus);
 router.delete('/posts/:id', deletePost);
 
 router.get('/articles', getArticles);

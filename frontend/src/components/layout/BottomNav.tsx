@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Home,
-  Briefcase,
-  MessageSquare,
-  User,
-  MoreHorizontal,
-  Users,
-  FileText,
+  LayoutDashboard,
+  BriefcaseBusiness,
+  MessageCircleMore,
+  CircleUserRound,
+  Ellipsis,
+  UsersRound,
+  NotebookText,
   Bookmark,
   Bell,
 } from 'lucide-react';
@@ -49,15 +49,15 @@ export const BottomNav = () => {
   }, [location.pathname]);
 
   const primaryItems = [
-    { icon: Home, path: '/dashboard', label: t('nav.home') },
-    { icon: Briefcase, path: '/jobs', label: t('nav.jobs') },
-    { icon: MessageSquare, path: '/messages', label: t('nav.messages') },
-    { icon: User, path: '/profile', label: language === 'vi' ? 'Hồ sơ' : 'Profile' },
+    { icon: LayoutDashboard, path: '/dashboard', label: t('nav.home') },
+    { icon: BriefcaseBusiness, path: '/jobs', label: t('nav.jobs') },
+    { icon: MessageCircleMore, path: '/messages', label: t('nav.messages') },
+    { icon: CircleUserRound, path: '/profile', label: language === 'vi' ? 'Hồ sơ' : 'Profile' },
   ];
 
   const moreItems = [
-    { icon: Users, path: '/community', label: t('nav.community') },
-    { icon: FileText, path: '/blog', label: t('nav.blog') },
+    { icon: UsersRound, path: '/community', label: t('nav.community') },
+    { icon: NotebookText, path: '/blog', label: t('nav.blog') },
     { icon: Bookmark, path: '/bookmarks', label: language === 'vi' ? 'Đã lưu' : 'Bookmarks' },
     { icon: Bell, path: '/alerts', label: t('nav.alerts') },
   ];
@@ -168,7 +168,7 @@ export const BottomNav = () => {
             animate={isMoreOpen ? { rotate: 90 } : { rotate: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <MoreHorizontal size={20} />
+            <Ellipsis size={20} />
           </motion.div>
           <span className="text-xs mt-1 font-medium">{language === 'vi' ? 'Thêm' : 'More'}</span>
           {isMoreItemActive && !isMoreOpen && (

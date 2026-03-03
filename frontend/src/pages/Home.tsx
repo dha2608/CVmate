@@ -13,13 +13,13 @@ import { Button } from '@/components/ui/button';
 import SEOHead from '@/components/SEOHead';
 
 import {
-  Brain,
-  FileText,
-  Video,
-  Users,
-  ArrowRight,
+  Sparkles,
+  ScrollText,
+  Mic,
+  UsersRound,
+  MoveRight,
   Check,
-  BookOpen,
+  Feather,
   ExternalLink,
   Moon,
   Sun,
@@ -197,7 +197,7 @@ const Home = () => {
                 >
                   {t('home.getStartedFree')}
 
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <MoveRight className="ml-2 w-5 h-5" />
                 </Button>
 
                 <Button
@@ -262,7 +262,7 @@ const Home = () => {
 
               <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
                 <FeatureCard
-                  icon={<FileText className="w-8 h-8" />}
+                  icon={<ScrollText className="w-8 h-8" />}
                   title={t('home.aiCVBuilder')}
                   description={t('home.aiCVBuilderDesc')}
                   color="text-crimson-red"
@@ -273,7 +273,7 @@ const Home = () => {
 
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <FeatureCard
-                  icon={<Video className="w-8 h-8" />}
+                  icon={<Mic className="w-8 h-8" />}
                   title={t('home.aiInterviewPractice')}
                   description={t('home.aiInterviewPracticeDesc')}
                   color="text-crimson-red"
@@ -284,7 +284,7 @@ const Home = () => {
 
               <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
                 <FeatureCard
-                  icon={<Users className="w-8 h-8" />}
+                  icon={<UsersRound className="w-8 h-8" />}
                   title={t('home.careerCommunity')}
                   description={t('home.careerCommunityDesc')}
                   color="text-crimson-red"
@@ -332,7 +332,7 @@ const Home = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-2 mb-4">
-                <BookOpen className="w-8 h-8 text-crimson-red" />
+                <Feather className="w-8 h-8 text-crimson-red" />
 
                 <h2 className="text-4xl md:text-5xl font-black text-jet-black dark:text-white">
                   {t('home.latestCareerInsights')}
@@ -375,7 +375,7 @@ const Home = () => {
                       </div>
                     ) : (
                       <div className="h-48 w-full bg-gradient-to-br from-crimson-red to-fire-red flex items-center justify-center">
-                        <BookOpen className="w-16 h-16 text-white opacity-50" />
+                        <Feather className="w-16 h-16 text-white opacity-50" />
                       </div>
                     )}
 
@@ -411,7 +411,7 @@ const Home = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <BookOpen className="mx-auto text-gray-400 mb-4" size={48} />
+                <Feather className="mx-auto text-gray-400 mb-4" size={48} />
 
                 <p className="text-gray-600 dark:text-gray-400">{t('home.noArticlesYet')}</p>
               </div>
@@ -426,7 +426,7 @@ const Home = () => {
                 >
                   {t('home.viewAllArticles')}
 
-                  <ArrowRight className="ml-2 w-4 h-4" />
+                  <MoveRight className="ml-2 w-4 h-4" />
                 </Button>
               </div>
             )}
@@ -437,7 +437,7 @@ const Home = () => {
 
         <section className="py-24 bg-jet-black text-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <Brain className="w-16 h-16 mx-auto mb-6 text-crimson-red" />
+            <Sparkles className="w-16 h-16 mx-auto mb-6 text-crimson-red" />
 
             <h2 className="text-4xl md:text-5xl font-black mb-6">{t('home.readyToLand')}</h2>
 
@@ -452,7 +452,7 @@ const Home = () => {
             >
               {t('home.startBuildingNow')}
 
-              <ArrowRight className="ml-2 w-5 h-5" />
+              <MoveRight className="ml-2 w-5 h-5" />
             </Button>
           </div>
         </section>

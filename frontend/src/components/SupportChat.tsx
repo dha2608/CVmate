@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
+import { MessageCircleMore, X, SendHorizontal, Bot, CircleUserRound, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/utils';
 import { useToastStore } from '@/store/toastStore';
@@ -7,7 +7,9 @@ import { useToastStore } from '@/store/toastStore';
 const SupportChatComponent = () => {
   const toast = useToastStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Array<{ type: 'user' | 'bot'; text: string; time: Date }>>([
+  const [messages, setMessages] = useState<
+    Array<{ type: 'user' | 'bot'; text: string; time: Date }>
+  >([
     {
       type: 'bot',
       text: 'Xin chào! Tôi là trợ lý AI của CV Mate. Tôi có thể giúp gì cho bạn?',
@@ -43,9 +45,9 @@ const SupportChatComponent = () => {
 
     try {
       const conversationHistory = messages.slice(-10).map((msg) => ({
-          type: msg.type,
-          text: msg.text,
-        }));
+        type: msg.type,
+        text: msg.text,
+      }));
 
       const response = await api.chatWithAI(userMessageText, conversationHistory);
 
@@ -66,7 +68,7 @@ const SupportChatComponent = () => {
       const errorMessage =
         error.message ||
         'Xin lỗi, tôi gặp sự cố. Vui lòng thử lại sau hoặc gửi email đến support@cvmate.com.';
-      
+
       setMessages((prev) => [
         ...prev,
         {
@@ -75,7 +77,7 @@ const SupportChatComponent = () => {
           time: new Date(),
         },
       ]);
-      
+
       toast.error('Không thể kết nối với AI. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
@@ -98,7 +100,7 @@ const SupportChatComponent = () => {
         }`}
         aria-label="Open support chat"
       >
-        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+        {isOpen ? <X size={24} /> : <MessageCircleMore size={24} />}
       </button>
 
       {isOpen && (
@@ -113,7 +115,9 @@ const SupportChatComponent = () => {
               </div>
               <div>
                 <h3 className="font-bold text-sm">CV Mate AI Support</h3>
-                <p className="text-xs text-red-100">{isLoading ? 'Đang suy nghĩ...' : 'Trả lời ngay lập tức'}</p>
+                <p className="text-xs text-red-100">
+                  {isLoading ? 'Đang suy nghĩ...' : 'Trả lời ngay lập tức'}
+                </p>
               </div>
             </div>
             <button
@@ -127,7 +131,10 @@ const SupportChatComponent = () => {
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
             {messages.map((message, index) => (
-              <div key={index} className={`flex gap-2 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div
+                key={index}
+                className={`flex gap-2 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
                 {message.type === 'bot' && (
                   <div className="w-8 h-8 bg-crimson-red rounded-full flex items-center justify-center flex-shrink-0">
                     <Bot size={16} className="text-white" />
@@ -141,13 +148,18 @@ const SupportChatComponent = () => {
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.text}</p>
-                  <p className={`text-xs mt-1 ${message.type === 'user' ? 'text-red-100' : 'text-gray-500 dark:text-gray-400'}`}>
-                    {message.time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                  <p
+                    className={`text-xs mt-1 ${message.type === 'user' ? 'text-red-100' : 'text-gray-500 dark:text-gray-400'}`}
+                  >
+                    {message.time.toLocaleTimeString('vi-VN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </p>
                 </div>
                 {message.type === 'user' && (
                   <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User size={16} className="text-gray-600" />
+                    <CircleUserRound size={16} className="text-gray-600" />
                   </div>
                 )}
               </div>
@@ -171,7 +183,11 @@ const SupportChatComponent = () => {
                 disabled={!inputValue.trim() || isLoading}
                 className="bg-crimson-red hover:bg-fire-red text-white px-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                {isLoading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <SendHorizontal size={18} />
+                )}
               </Button>
             </div>
             <p className="text-xs text-gray-500 mt-2 text-center">

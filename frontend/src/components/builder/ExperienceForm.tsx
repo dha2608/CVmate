@@ -3,7 +3,7 @@ import { useResumeStore, type IExperience } from '@/store/resumeStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Brain, Plus, Briefcase } from 'lucide-react';
+import { Trash2, Sparkles, Plus, BriefcaseBusiness } from 'lucide-react';
 
 interface ExperienceItemProps {
   exp: IExperience;
@@ -74,9 +74,7 @@ const ExperienceItem = memo(function ExperienceItem({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            End Date
-          </label>
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">End Date</label>
           <Input
             value={exp.endDate}
             onChange={(e) => onUpdate(index, { ...exp, endDate: e.target.value })}
@@ -98,7 +96,7 @@ const ExperienceItem = memo(function ExperienceItem({
             onClick={() => onEnhance(index, exp.description)}
             disabled={isEnhancing}
           >
-            <Brain size={14} className={isEnhancing ? 'animate-spin' : ''} />
+            <Sparkles size={14} className={isEnhancing ? 'animate-spin' : ''} />
             {isEnhancing ? 'Enhancing...' : 'AI Enhance'}
           </Button>
         </div>
@@ -166,7 +164,10 @@ const ExperienceForm = () => {
     } catch (error: any) {
       const { useToastStore } = await import('@/store/toastStore');
       const errorMsg = error?.message || 'Failed to enhance text';
-      if (!errorMsg.toLowerCase().includes('unavailable') && !errorMsg.toLowerCase().includes('api key')) {
+      if (
+        !errorMsg.toLowerCase().includes('unavailable') &&
+        !errorMsg.toLowerCase().includes('api key')
+      ) {
         useToastStore.getState().error(errorMsg);
       }
     } finally {
@@ -200,9 +201,9 @@ const ExperienceForm = () => {
               List your professional work history, starting with your most recent position
             </p>
           </div>
-          <Button 
-            size="sm" 
-            onClick={handleAdd} 
+          <Button
+            size="sm"
+            onClick={handleAdd}
             className="gap-2 bg-gradient-to-r from-crimson-red to-fire-red hover:from-fire-red hover:to-crimson-red text-white shadow-md"
           >
             <Plus size={16} /> Add Position
@@ -210,22 +211,22 @@ const ExperienceForm = () => {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {items}
-      </div>
+      <div className="space-y-4">{items}</div>
 
       {experience.length === 0 && (
         <div className="bg-gray-50 dark:bg-gray-800/50 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-12 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-            <Briefcase className="w-8 h-8 text-gray-400 dark:text-gray-600" />
+            <BriefcaseBusiness className="w-8 h-8 text-gray-400 dark:text-gray-600" />
           </div>
-          <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No experience added yet</h4>
+          <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            No experience added yet
+          </h4>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Start building your professional profile by adding your work experience
           </p>
-          <Button 
-            size="sm" 
-            onClick={handleAdd} 
+          <Button
+            size="sm"
+            onClick={handleAdd}
             className="gap-2 bg-gradient-to-r from-crimson-red to-fire-red hover:from-fire-red hover:to-crimson-red text-white"
           >
             <Plus size={16} /> Add Your First Position

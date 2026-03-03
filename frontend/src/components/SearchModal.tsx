@@ -2,7 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Briefcase, FileText, MessageSquare, User, Loader2, X } from 'lucide-react';
+import {
+  Search,
+  BriefcaseBusiness,
+  NotebookText,
+  PenLine,
+  CircleUserRound,
+  Loader2,
+  X,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/store/i18nStore';
 import { api } from '@/lib/utils';
@@ -34,13 +42,13 @@ const RESULT_COLORS: Record<SearchResult['type'], string> = {
 const getResultIcon = (type: SearchResult['type']) => {
   switch (type) {
     case 'job':
-      return <Briefcase className="w-4 h-4" />;
+      return <BriefcaseBusiness className="w-4 h-4" />;
     case 'article':
-      return <FileText className="w-4 h-4" />;
+      return <NotebookText className="w-4 h-4" />;
     case 'post':
-      return <MessageSquare className="w-4 h-4" />;
+      return <PenLine className="w-4 h-4" />;
     case 'user':
-      return <User className="w-4 h-4" />;
+      return <CircleUserRound className="w-4 h-4" />;
   }
 };
 

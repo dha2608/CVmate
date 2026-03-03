@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useI18n } from '@/store/i18nStore';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
-import { Check, X, Brain, Zap, Crown, ArrowRight } from 'lucide-react';
+import { Check, X, Sparkles, Zap, Gem, ArrowRight } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import SEOHead from '@/components/SEOHead';
 
@@ -47,16 +47,16 @@ const Pricing = () => {
   const features = {
     free: isVi
       ? [
-      { name: 'Tạo CV cơ bản', included: true },
-      { name: '1 CV template', included: true },
-      { name: 'Xuất PDF', included: true },
-      { name: 'Lưu CV không giới hạn', included: true },
-      { name: 'AI Interview Practice', included: false },
-      { name: 'AI CV Enhancement', included: false },
-      { name: 'AI Job Matching', included: false },
-      { name: 'Nhiều CV templates', included: false },
-      { name: 'Priority Support', included: false },
-      { name: 'Advanced Analytics', included: false },
+          { name: 'Tạo CV cơ bản', included: true },
+          { name: '1 CV template', included: true },
+          { name: 'Xuất PDF', included: true },
+          { name: 'Lưu CV không giới hạn', included: true },
+          { name: 'AI Interview Practice', included: false },
+          { name: 'AI CV Enhancement', included: false },
+          { name: 'AI Job Matching', included: false },
+          { name: 'Nhiều CV templates', included: false },
+          { name: 'Priority Support', included: false },
+          { name: 'Advanced Analytics', included: false },
         ]
       : [
           { name: 'Basic CV creation', included: true },
@@ -72,16 +72,16 @@ const Pricing = () => {
         ],
     premium: isVi
       ? [
-      { name: 'Tất cả tính năng Free', included: true },
-      { name: 'AI Interview Practice', included: true },
-      { name: 'AI CV Enhancement', included: true },
-      { name: 'AI Job Matching', included: true },
-      { name: '10+ CV templates', included: true },
-      { name: 'Priority Support', included: true },
-      { name: 'Advanced Analytics', included: true },
-      { name: 'Export nhiều định dạng', included: true },
-      { name: 'Custom branding', included: true },
-      { name: 'Unlimited AI suggestions', included: true },
+          { name: 'Tất cả tính năng Free', included: true },
+          { name: 'AI Interview Practice', included: true },
+          { name: 'AI CV Enhancement', included: true },
+          { name: 'AI Job Matching', included: true },
+          { name: '10+ CV templates', included: true },
+          { name: 'Priority Support', included: true },
+          { name: 'Advanced Analytics', included: true },
+          { name: 'Export nhiều định dạng', included: true },
+          { name: 'Custom branding', included: true },
+          { name: 'Unlimited AI suggestions', included: true },
         ]
       : [
           { name: 'Everything in Free', included: true },
@@ -94,7 +94,7 @@ const Pricing = () => {
           { name: 'Multi-format export', included: true },
           { name: 'Custom branding', included: true },
           { name: 'Unlimited AI suggestions', included: true },
-    ],
+        ],
   };
 
   const compareRows = isVi
@@ -195,7 +195,11 @@ const Pricing = () => {
       <MainLayout layoutMode="full-width" showRightSidebar={false}>
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 py-12 lg:py-20">
           <div className="max-w-7xl mx-auto">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12 lg:mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center mb-12 lg:mb-16"
+            >
               <h1 className="text-heading-1 mb-4">{copy.headerTitle}</h1>
               <p className="text-body text-lg max-w-2xl mx-auto mb-8">{copy.headerSubtitle}</p>
 
@@ -211,61 +215,108 @@ const Pricing = () => {
                   className={`px-6 py-2 rounded-md font-semibold transition-all relative ${billingCycle === 'yearly' ? 'bg-crimson-red text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                 >
                   {copy.yearly}
-                  <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">{copy.saveBadge}</span>
+                  <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                    {copy.saveBadge}
+                  </span>
                 </button>
               </div>
             </motion.div>
 
             <div className="grid md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="card-base relative">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="card-base relative"
+              >
                 <div className="text-center mb-8">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-xl mb-4">
                     <Zap className="w-8 h-8 text-gray-600 dark:text-gray-400" />
                   </div>
                   <h2 className="text-heading-2 mb-2">{copy.freeLabel}</h2>
                   <div className="mb-4">
-                    <span className="text-4xl font-black text-jet-black dark:text-white">{pricing[billingCycle].free === 0 ? copy.freePrice : `${(pricing[billingCycle].free / 1000).toLocaleString('vi-VN')}k`}</span>
-                    {pricing[billingCycle].free > 0 && <span className="text-gray-600 dark:text-gray-400">{billingCycle === 'monthly' ? copy.perMonth : copy.perYear}</span>}
+                    <span className="text-4xl font-black text-jet-black dark:text-white">
+                      {pricing[billingCycle].free === 0
+                        ? copy.freePrice
+                        : `${(pricing[billingCycle].free / 1000).toLocaleString('vi-VN')}k`}
+                    </span>
+                    {pricing[billingCycle].free > 0 && (
+                      <span className="text-gray-600 dark:text-gray-400">
+                        {billingCycle === 'monthly' ? copy.perMonth : copy.perYear}
+                      </span>
+                    )}
                   </div>
                   <p className="text-body-sm text-gray-600 dark:text-gray-400">{copy.freeDesc}</p>
                 </div>
 
-                <Button onClick={() => handleSubscribe('free')} variant="outline" className="w-full mb-8 h-12 border-2 border-gray-300 dark:border-gray-600 hover:border-crimson-red dark:hover:border-red-500">
+                <Button
+                  onClick={() => handleSubscribe('free')}
+                  variant="outline"
+                  className="w-full mb-8 h-12 border-2 border-gray-300 dark:border-gray-600 hover:border-crimson-red dark:hover:border-red-500"
+                >
                   {copy.freeCta}
                 </Button>
 
                 <ul className="space-y-4">
                   {features.free.map((feature, index) => (
                     <li key={index} className="flex items-start gap-3">
-                      {feature.included ? <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" /> : <X className="w-5 h-5 text-gray-300 dark:text-gray-600 flex-shrink-0 mt-0.5" />}
-                      <span className={`text-body-sm ${feature.included ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-600 line-through'}`}>{feature.name}</span>
+                      {feature.included ? (
+                        <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <X className="w-5 h-5 text-gray-300 dark:text-gray-600 flex-shrink-0 mt-0.5" />
+                      )}
+                      <span
+                        className={`text-body-sm ${feature.included ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-600 line-through'}`}
+                      >
+                        {feature.name}
+                      </span>
                     </li>
                   ))}
                 </ul>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="card-base relative border-2 border-crimson-red dark:border-red-500">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="card-base relative border-2 border-crimson-red dark:border-red-500"
+              >
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
                   <span className="bg-gradient-to-r from-crimson-red to-fire-red text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-2">
-                    <Crown className="w-4 h-4" />
+                    <Gem className="w-4 h-4" />
                     {copy.popular}
                   </span>
                 </div>
 
                 <div className="text-center mb-8">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-crimson-red to-fire-red rounded-xl mb-4">
-                    <Brain className="w-8 h-8 text-white" />
+                    <Sparkles className="w-8 h-8 text-white" />
                   </div>
                   <h2 className="text-heading-2 mb-2">{copy.premiumLabel}</h2>
                   <div className="mb-4">
-                    <span className="text-4xl font-black text-crimson-red dark:text-red-400">{billingCycle === 'monthly' ? `${(pricing.monthly.premium / 1000).toLocaleString('vi-VN')}k` : `${(pricing.yearly.premium / 1000).toLocaleString('vi-VN')}k`}</span>
-                    <span className="text-gray-600 dark:text-gray-400">{billingCycle === 'monthly' ? copy.perMonth : copy.perYear}</span>
-                    {billingCycle === 'yearly' && <div className="text-sm text-green-600 dark:text-green-400 mt-1">{copy.yearlySaveNote}</div>}
+                    <span className="text-4xl font-black text-crimson-red dark:text-red-400">
+                      {billingCycle === 'monthly'
+                        ? `${(pricing.monthly.premium / 1000).toLocaleString('vi-VN')}k`
+                        : `${(pricing.yearly.premium / 1000).toLocaleString('vi-VN')}k`}
+                    </span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {billingCycle === 'monthly' ? copy.perMonth : copy.perYear}
+                    </span>
+                    {billingCycle === 'yearly' && (
+                      <div className="text-sm text-green-600 dark:text-green-400 mt-1">
+                        {copy.yearlySaveNote}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-body-sm text-gray-600 dark:text-gray-400">{copy.premiumDesc}</p>
+                  <p className="text-body-sm text-gray-600 dark:text-gray-400">
+                    {copy.premiumDesc}
+                  </p>
                 </div>
 
-                <Button onClick={() => handleSubscribe('premium')} className="w-full mb-8 h-12 bg-gradient-to-r from-crimson-red to-fire-red hover:from-fire-red hover:to-crimson-red text-white shadow-lg">
+                <Button
+                  onClick={() => handleSubscribe('premium')}
+                  className="w-full mb-8 h-12 bg-gradient-to-r from-crimson-red to-fire-red hover:from-fire-red hover:to-crimson-red text-white shadow-lg"
+                >
                   {copy.premiumCta}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
@@ -274,33 +325,71 @@ const Pricing = () => {
                   {features.premium.map((feature, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-body-sm text-gray-900 dark:text-white">{feature.name}</span>
+                      <span className="text-body-sm text-gray-900 dark:text-white">
+                        {feature.name}
+                      </span>
                     </li>
                   ))}
                 </ul>
               </motion.div>
             </div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-16 lg:mt-20">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-16 lg:mt-20"
+            >
               <h2 className="text-heading-2 text-center mb-8">{copy.compareTitle}</h2>
               <div className="card-base overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-4 px-4 font-semibold text-jet-black dark:text-white">{copy.featureCol}</th>
-                      <th className="text-center py-4 px-4 font-semibold text-jet-black dark:text-white">{copy.freeLabel}</th>
-                      <th className="text-center py-4 px-4 font-semibold text-crimson-red dark:text-red-400">{copy.premiumLabel}</th>
+                      <th className="text-left py-4 px-4 font-semibold text-jet-black dark:text-white">
+                        {copy.featureCol}
+                      </th>
+                      <th className="text-center py-4 px-4 font-semibold text-jet-black dark:text-white">
+                        {copy.freeLabel}
+                      </th>
+                      <th className="text-center py-4 px-4 font-semibold text-crimson-red dark:text-red-400">
+                        {copy.premiumLabel}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {compareRows.map((row, index) => (
-                      <tr key={index} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td className="py-4 px-4 text-body-sm text-gray-900 dark:text-white">{row.feature}</td>
-                        <td className="py-4 px-4 text-center">
-                          {typeof row.free === 'boolean' ? row.free ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto" /> : <span className="text-body-sm text-gray-900 dark:text-white">{row.free}</span>}
+                      <tr
+                        key={index}
+                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      >
+                        <td className="py-4 px-4 text-body-sm text-gray-900 dark:text-white">
+                          {row.feature}
                         </td>
                         <td className="py-4 px-4 text-center">
-                          {typeof row.premium === 'boolean' ? row.premium ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto" /> : <span className="text-body-sm text-crimson-red dark:text-red-400 font-semibold">{row.premium}</span>}
+                          {typeof row.free === 'boolean' ? (
+                            row.free ? (
+                              <Check className="w-5 h-5 text-green-500 mx-auto" />
+                            ) : (
+                              <X className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto" />
+                            )
+                          ) : (
+                            <span className="text-body-sm text-gray-900 dark:text-white">
+                              {row.free}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4 text-center">
+                          {typeof row.premium === 'boolean' ? (
+                            row.premium ? (
+                              <Check className="w-5 h-5 text-green-500 mx-auto" />
+                            ) : (
+                              <X className="w-5 h-5 text-gray-300 dark:text-gray-600 mx-auto" />
+                            )
+                          ) : (
+                            <span className="text-body-sm text-crimson-red dark:text-red-400 font-semibold">
+                              {row.premium}
+                            </span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -309,7 +398,12 @@ const Pricing = () => {
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mt-16 lg:mt-20">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-16 lg:mt-20"
+            >
               <h2 className="text-heading-2 text-center mb-8">{copy.faqTitle}</h2>
               <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 {faqs.map((faq, index) => (

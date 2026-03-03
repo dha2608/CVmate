@@ -1,7 +1,14 @@
 import { create } from 'zustand';
 import { api } from '@/lib/utils';
 
-export type PersonaType = 'friendly-hr' | 'strict-manager' | 'english-native' | 'tech-lead' | 'startup-founder' | 'executive' | 'academic';
+export type PersonaType =
+  | 'friendly-hr'
+  | 'strict-manager'
+  | 'english-native'
+  | 'tech-lead'
+  | 'startup-founder'
+  | 'executive'
+  | 'academic';
 
 export interface InterviewMessage {
   role: 'user' | 'assistant' | 'system';
@@ -32,6 +39,15 @@ export interface InterviewFeedback {
   perQuestionFeedback?: InterviewPerQuestionFeedback[];
 }
 
+export interface InterviewSummary {
+  _id: string;
+  persona: PersonaType;
+  feedback?: InterviewFeedback;
+  status: 'active' | 'completed';
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface InterviewState {
   interviewId: string | null;
   persona: PersonaType | null;
@@ -43,9 +59,15 @@ interface InterviewState {
   isEnding: boolean;
   error: string | null;
 
+  // History
+  interviews: InterviewSummary[];
+  isLoadingHistory: boolean;
+
   startSession: (persona: PersonaType) => Promise<void>;
   sendUserMessage: (message: string) => Promise<void>;
   endSession: (retryCount?: number) => Promise<void>;
+  fetchInterviews: () => Promise<void>;
+  loadInterview: (id: string) => Promise<void>;
   reset: () => void;
 }
 
@@ -59,6 +81,10 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
   isSending: false,
   isEnding: false,
   error: null,
+
+  // History
+  interviews: [],
+  isLoadingHistory: false,
 
   startSession: async (persona: PersonaType) => {
     set({ isStarting: true, error: null });
@@ -85,7 +111,9 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
 
   sendUserMessage: async (message: string) => {
     const { interviewId, messages, status } = get();
-    if (!interviewId || status === 'completed') {return;}
+    if (!interviewId || status === 'completed') {
+      return;
+    }
 
     // Optimistic update: add user message immediately
     const optimisticMessages: InterviewMessage[] = [
@@ -109,40 +137,77 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       });
     } catch (error: any) {
       console.error('sendUserMessage error', error);
-      
+
       // Handle specific error cases
       let errorMessage = 'Failed to send message';
       const status = error.status || 0;
       const errorText = error.message || '';
       const errorLower = errorText.toLowerCase();
       const errorType = (error as any).type || '';
-      
-      if (status === 402 || errorLower.includes('payment') || errorLower.includes('insufficient credits')) {
-        errorMessage = 'AI provider account has insufficient credits or requires payment. Please check your Hugging Face billing or quota.';
-      } else if (status === 429 || errorLower.includes('rate limit') || errorLower.includes('rate_limit')) {
+
+      if (
+        status === 402 ||
+        errorLower.includes('payment') ||
+        errorLower.includes('insufficient credits')
+      ) {
+        errorMessage =
+          'AI provider account has insufficient credits or requires payment. Please check your Hugging Face billing or quota.';
+      } else if (
+        status === 429 ||
+        errorLower.includes('rate limit') ||
+        errorLower.includes('rate_limit')
+      ) {
         // Check if it's from server rate limiter or OpenAI API
-        if (errorType === 'server_rate_limit' || errorLower.includes('daily limit') || errorLower.includes('ai service rate limit')) {
-          errorMessage = 'You have reached the server rate limit for AI features. In development mode, the limit is 100 requests/hour. Please wait a moment and try again, or upgrade to premium for higher limits.';
-        } else if (errorLower.includes('quota') || errorLower.includes('exceeded your current quota') || errorLower.includes('billing')) {
-          errorMessage = 'AI API quota exceeded. Your account has run out of credits or reached its usage limit.\n\nPlease check your provider dashboard and adjust your plan or usage, then wait a few minutes and try again.';
+        if (
+          errorType === 'server_rate_limit' ||
+          errorLower.includes('daily limit') ||
+          errorLower.includes('ai service rate limit')
+        ) {
+          errorMessage =
+            'You have reached the server rate limit for AI features. In development mode, the limit is 100 requests/hour. Please wait a moment and try again, or upgrade to premium for higher limits.';
+        } else if (
+          errorLower.includes('quota') ||
+          errorLower.includes('exceeded your current quota') ||
+          errorLower.includes('billing')
+        ) {
+          errorMessage =
+            'AI API quota exceeded. Your account has run out of credits or reached its usage limit.\n\nPlease check your provider dashboard and adjust your plan or usage, then wait a few minutes and try again.';
         } else {
-          errorMessage = 'AI API rate limit exceeded. This usually means:\n• Too many requests in a short time\n• Your account has reached its API quota\n• Insufficient credits in your AI provider account\n\nPlease wait 1-2 minutes before trying again, or check your provider billing.';
+          errorMessage =
+            'AI API rate limit exceeded. This usually means:\n• Too many requests in a short time\n• Your account has reached its API quota\n• Insufficient credits in your AI provider account\n\nPlease wait 1-2 minutes before trying again, or check your provider billing.';
         }
-      } else if (errorLower.includes('quota') || errorLower.includes('exceeded your current quota')) {
-        errorMessage = 'AI API quota exceeded. Your account has run out of credits or reached its usage limit.\n\nPlease check your provider dashboard and adjust your plan or usage, then wait a few minutes and try again.';
-      } else if (status === 401 || errorLower.includes('unauthorized') || errorLower.includes('api key') || errorLower.includes('invalid')) {
-        errorMessage = 'AI API key is invalid or missing. Please check HF_API_KEY in your backend .env file and restart the server.';
-      } else if (status === 503 || errorLower.includes('503') || errorLower.includes('service temporarily unavailable') || errorLower.includes('service unavailable')) {
-        errorMessage = errorText || 'Service temporarily unavailable. Please try again in a few moments.';
+      } else if (
+        errorLower.includes('quota') ||
+        errorLower.includes('exceeded your current quota')
+      ) {
+        errorMessage =
+          'AI API quota exceeded. Your account has run out of credits or reached its usage limit.\n\nPlease check your provider dashboard and adjust your plan or usage, then wait a few minutes and try again.';
+      } else if (
+        status === 401 ||
+        errorLower.includes('unauthorized') ||
+        errorLower.includes('api key') ||
+        errorLower.includes('invalid')
+      ) {
+        errorMessage =
+          'AI API key is invalid or missing. Please check HF_API_KEY in your backend .env file and restart the server.';
+      } else if (
+        status === 503 ||
+        errorLower.includes('503') ||
+        errorLower.includes('service temporarily unavailable') ||
+        errorLower.includes('service unavailable')
+      ) {
+        errorMessage =
+          errorText || 'Service temporarily unavailable. Please try again in a few moments.';
       } else if (errorLower.includes('not configured') || errorLower.includes('not configured')) {
-        errorMessage = 'AI API key is not configured. Please set HF_API_KEY in your backend .env file and restart the server.';
+        errorMessage =
+          'AI API key is not configured. Please set HF_API_KEY in your backend .env file and restart the server.';
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       // Revert optimistic update on error
-      set({ 
-        error: errorMessage, 
+      set({
+        error: errorMessage,
         isSending: false,
         messages, // Revert to previous messages
       });
@@ -151,11 +216,18 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
 
   endSession: async (retryCount = 0) => {
     const { interviewId, status, endSession: endSessionFn } = get();
-    if (!interviewId || status === 'completed') {return;}
+    if (!interviewId || status === 'completed') {
+      return;
+    }
 
     set({ isEnding: true, error: null });
     try {
-      const response = await api.endInterview(interviewId) as { success: boolean; data: any; warning?: string; message?: string };
+      const response = (await api.endInterview(interviewId)) as {
+        success: boolean;
+        data: any;
+        warning?: string;
+        message?: string;
+      };
       if (!response.success) {
         throw new Error((response as any).message || 'Failed to end interview');
       }
@@ -167,7 +239,7 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
         status: interview.status || 'completed',
         isEnding: false,
       });
-      
+
       // Show warning if fallback feedback was used
       if (response.warning) {
         const { useToastStore } = await import('@/store/toastStore');
@@ -175,29 +247,33 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       }
     } catch (error: any) {
       console.error('endSession error', error);
-      
+
       // Retry mechanism for retryable errors (max 2 retries)
-      const isRetryable = error?.details?.retryable || error?.status === 503 || error?.status === 429;
+      const isRetryable =
+        error?.details?.retryable || error?.status === 503 || error?.status === 429;
       if (isRetryable && retryCount < 2) {
         const { useToastStore } = await import('@/store/toastStore');
-        useToastStore.getState().warning(`Service temporarily unavailable. Retrying... (${retryCount + 1}/2)`);
+        useToastStore
+          .getState()
+          .warning(`Service temporarily unavailable. Retrying... (${retryCount + 1}/2)`);
         set({ isEnding: false });
         // Wait 2 seconds before retry
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         return get().endSession(retryCount + 1);
       }
-      
+
       let errorMessage = error.message || 'Failed to end interview';
-      
+
       // Provide helpful error messages
       if (error?.status === 503 || error?.message?.toLowerCase().includes('unavailable')) {
-        errorMessage = 'AI feedback service is temporarily unavailable. Please try again in a few moments.';
+        errorMessage =
+          'AI feedback service is temporarily unavailable. Please try again in a few moments.';
       } else if (error?.status === 429) {
         errorMessage = 'Rate limit exceeded. Please wait a moment and try again.';
       } else if (error?.status === 402) {
         errorMessage = 'AI service quota exceeded. Please check your account limits.';
       }
-      
+
       set({ error: errorMessage, isEnding: false });
     }
   },
@@ -215,5 +291,39 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       error: null,
     });
   },
-}));
 
+  fetchInterviews: async () => {
+    set({ isLoadingHistory: true });
+    try {
+      const response = await api.getInterviews();
+      if (response.success) {
+        set({ interviews: response.data || [], isLoadingHistory: false });
+      } else {
+        set({ isLoadingHistory: false });
+      }
+    } catch {
+      set({ isLoadingHistory: false });
+    }
+  },
+
+  loadInterview: async (id: string) => {
+    set({ isStarting: true, error: null });
+    try {
+      const response = await api.getInterview(id);
+      if (!response.success) {
+        throw new Error('Failed to load interview');
+      }
+      const interview = response.data;
+      set({
+        interviewId: interview._id,
+        persona: interview.persona,
+        messages: interview.chatHistory || [],
+        feedback: interview.feedback || null,
+        status: interview.status || 'completed',
+        isStarting: false,
+      });
+    } catch (error: any) {
+      set({ error: error.message || 'Failed to load interview', isStarting: false });
+    }
+  },
+}));

@@ -1,12 +1,12 @@
 import MainLayout from '@/components/layout/MainLayout';
 import SEOHead from '@/components/SEOHead';
-import { Users, Target, Zap, Heart } from 'lucide-react';
+import { UsersRound, Compass, Zap, Heart } from 'lucide-react';
 
 const About = () => {
   return (
     <>
-      <SEOHead 
-        title="About Us - CV Mate" 
+      <SEOHead
+        title="About Us - CV Mate"
         description="Learn about CV Mate - AI-powered career platform"
       />
       <MainLayout layoutMode="centered" showRightSidebar={false}>
@@ -20,13 +20,13 @@ const About = () => {
             <div className="space-y-8">
               <section>
                 <h2 className="text-2xl font-bold text-jet-black mb-4 flex items-center gap-2">
-                  <Target className="w-6 h-6 text-crimson-red" />
+                  <Compass className="w-6 h-6 text-crimson-red" />
                   Our Mission
                 </h2>
                 <p className="text-gray-700 leading-relaxed">
-                  CV Mate được tạo ra với sứ mệnh giúp mọi người tìm được công việc mơ ước của mình. 
-                  Chúng tôi tin rằng mọi người đều xứng đáng có một CV chuyên nghiệp và cơ hội để thể hiện 
-                  khả năng của mình trong các cuộc phỏng vấn.
+                  CV Mate được tạo ra với sứ mệnh giúp mọi người tìm được công việc mơ ước của mình.
+                  Chúng tôi tin rằng mọi người đều xứng đáng có một CV chuyên nghiệp và cơ hội để
+                  thể hiện khả năng của mình trong các cuộc phỏng vấn.
                 </p>
               </section>
 
@@ -65,14 +65,14 @@ const About = () => {
 
               <section>
                 <h2 className="text-2xl font-bold text-jet-black mb-4 flex items-center gap-2">
-                  <Users className="w-6 h-6 text-crimson-red" />
+                  <UsersRound className="w-6 h-6 text-crimson-red" />
                   Our Team
                 </h2>
                 <p className="text-gray-700 leading-relaxed">
-                  Chúng tôi là một nhóm các nhà phát triển và chuyên gia về nghề nghiệp, 
-                  đam mê giúp mọi người đạt được mục tiêu nghề nghiệp của họ. 
-                  Chúng tôi kết hợp công nghệ AI tiên tiến với hiểu biết sâu sắc về thị trường việc làm 
-                  để tạo ra một nền tảng mạnh mẽ và dễ sử dụng.
+                  Chúng tôi là một nhóm các nhà phát triển và chuyên gia về nghề nghiệp, đam mê giúp
+                  mọi người đạt được mục tiêu nghề nghiệp của họ. Chúng tôi kết hợp công nghệ AI
+                  tiên tiến với hiểu biết sâu sắc về thị trường việc làm để tạo ra một nền tảng mạnh
+                  mẽ và dễ sử dụng.
                 </p>
               </section>
 
@@ -82,10 +82,19 @@ const About = () => {
                   Our Values
                 </h2>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                  <li><strong>Innovation:</strong> Luôn tìm cách cải thiện và đổi mới</li>
-                  <li><strong>Accessibility:</strong> Làm cho công cụ tạo CV trở nên dễ tiếp cận với mọi người</li>
-                  <li><strong>Quality:</strong> Cam kết cung cấp dịch vụ chất lượng cao</li>
-                  <li><strong>User-Centric:</strong> Đặt người dùng làm trung tâm của mọi quyết định</li>
+                  <li>
+                    <strong>Innovation:</strong> Luôn tìm cách cải thiện và đổi mới
+                  </li>
+                  <li>
+                    <strong>Accessibility:</strong> Làm cho công cụ tạo CV trở nên dễ tiếp cận với
+                    mọi người
+                  </li>
+                  <li>
+                    <strong>Quality:</strong> Cam kết cung cấp dịch vụ chất lượng cao
+                  </li>
+                  <li>
+                    <strong>User-Centric:</strong> Đặt người dùng làm trung tâm của mọi quyết định
+                  </li>
                 </ul>
               </section>
 
@@ -95,7 +104,10 @@ const About = () => {
                   Bạn có câu hỏi hoặc gợi ý? Chúng tôi rất muốn nghe từ bạn!
                 </p>
                 <p className="text-gray-700">
-                  Email: <a href="mailto:contact@cvmate.com" className="text-crimson-red hover:underline">contact@cvmate.com</a>
+                  Email:{' '}
+                  <a href="mailto:contact@cvmate.com" className="text-crimson-red hover:underline">
+                    contact@cvmate.com
+                  </a>
                 </p>
               </section>
             </div>

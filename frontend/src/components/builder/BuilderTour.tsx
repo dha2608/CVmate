@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { X, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, CircleCheckBig } from 'lucide-react';
 import { useI18n } from '@/store/i18nStore';
 
 interface TourStep {
@@ -16,28 +16,32 @@ const tourSteps: TourStep[] = [
   {
     id: 'sidebar',
     title: 'Navigation Sidebar',
-    description: 'Use this sidebar to navigate between different sections of your CV. Each section shows a completion status.',
+    description:
+      'Use this sidebar to navigate between different sections of your CV. Each section shows a completion status.',
     target: '[data-tour="sidebar"]',
     position: 'right',
   },
   {
     id: 'form',
     title: 'Edit Form',
-    description: 'Fill in your information here. Changes are saved automatically and reflected in the preview on the right.',
+    description:
+      'Fill in your information here. Changes are saved automatically and reflected in the preview on the right.',
     target: '[data-tour="form"]',
     position: 'left',
   },
   {
     id: 'preview',
     title: 'Live Preview',
-    description: 'See how your CV looks in real-time. This is exactly how it will appear when you download it as PDF.',
+    description:
+      'See how your CV looks in real-time. This is exactly how it will appear when you download it as PDF.',
     target: '[data-tour="preview"]',
     position: 'left',
   },
   {
     id: 'actions',
     title: 'Actions & Settings',
-    description: 'Access templates, AI tools, section management, and download options from the Settings button.',
+    description:
+      'Access templates, AI tools, section management, and download options from the Settings button.',
     target: '[data-tour="actions"]',
     position: 'bottom',
   },
@@ -60,7 +64,7 @@ const BuilderTour = ({ isOpen, onClose }: BuilderTourProps) => {
     if (step) {
       const element = document.querySelector(step.target) as HTMLElement;
       setTargetElement(element);
-      
+
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         setTimeout(() => {
@@ -177,8 +181,8 @@ const BuilderTour = ({ isOpen, onClose }: BuilderTourProps) => {
                           index === currentStep
                             ? 'bg-crimson-red'
                             : index < currentStep
-                            ? 'bg-green-500'
-                            : 'bg-gray-300 dark:bg-gray-600'
+                              ? 'bg-green-500'
+                              : 'bg-gray-300 dark:bg-gray-600'
                         }`}
                       />
                     ))}
@@ -190,7 +194,7 @@ const BuilderTour = ({ isOpen, onClose }: BuilderTourProps) => {
                   >
                     {currentStep === tourSteps.length - 1 ? (
                       <>
-                        <CheckCircle2 size={14} className="mr-1" />
+                        <CircleCheckBig size={14} className="mr-1" />
                         Finish
                       </>
                     ) : (

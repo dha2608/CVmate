@@ -14,13 +14,13 @@ import BookmarkButton from '@/components/BookmarkButton';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { SkeletonCard, SkeletonText } from '@/components/ui/skeleton';
 import {
-  PenTool,
-  RefreshCw,
+  Feather,
+  RotateCw,
   ExternalLink,
   Newspaper,
   Loader2,
   Search,
-  Filter,
+  SlidersHorizontal,
   X,
   ChevronDown,
 } from 'lucide-react';
@@ -206,7 +206,7 @@ const Blog = () => {
                 onClick={() => setShowFilters(!showFilters)}
                 className="flex items-center gap-2 w-full sm:w-auto"
               >
-                <Filter size={16} />
+                <SlidersHorizontal size={16} />
                 <span className="hidden sm:inline">{t('blog.filters') || 'Lọc'}</span>
                 {selectedCategory !== 'all' && (
                   <span className="bg-crimson-red text-white rounded-full px-2 py-0.5 text-xs">
@@ -274,7 +274,7 @@ const Blog = () => {
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
-              <PenTool className="inline mr-2" size={16} />
+              <Feather className="inline mr-2" size={16} />
               {t('blog.communityArticles')} ({filteredArticles.length})
             </button>
           </div>
@@ -283,7 +283,7 @@ const Blog = () => {
         {showCreate && (
           <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-6 mb-6 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-2 mb-4 text-gray-900 dark:text-white font-semibold border-b dark:border-gray-700 pb-2">
-              <PenTool size={18} />
+              <Feather size={18} />
               <h2>{t('blog.createNewArticle')}</h2>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
@@ -297,6 +297,7 @@ const Blog = () => {
                   required
                   placeholder="e.g. 5 Tips for a Perfect CV"
                   className="dark:bg-gray-700 dark:border-gray-600"
+                  maxLength={300}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -364,7 +365,7 @@ const Blog = () => {
                 size="sm"
                 className="flex items-center gap-2"
               >
-                <RefreshCw className={newsLoading ? 'animate-spin' : ''} size={16} />
+                <RotateCw className={newsLoading ? 'animate-spin' : ''} size={16} />
                 {t('blog.refresh')}
               </Button>
             </div>
@@ -473,7 +474,7 @@ const Blog = () => {
               <div className="space-y-6">
                 {articles.length === 0 ? (
                   <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
-                    <PenTool className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
+                    <Feather className="mx-auto text-gray-400 dark:text-gray-500 mb-4" size={48} />
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
                       {t('blog.noArticlesYet')}
                     </p>

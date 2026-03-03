@@ -6,7 +6,7 @@ import { useI18n } from '@/store/i18nStore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import BookmarkButton from '@/components/BookmarkButton';
-import { Bookmark, Briefcase, FileText, Trash2 } from 'lucide-react';
+import { Bookmark, BriefcaseBusiness, NotebookText, Trash2 } from 'lucide-react';
 import { api } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -184,9 +184,9 @@ const Bookmarks = () => {
                     }`}
                   >
                     {item.bookmarkType === 'job' ? (
-                      <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
+                      <BriefcaseBusiness className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
                     ) : (
-                      <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
+                      <NotebookText className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
                     )}
                   </div>
 

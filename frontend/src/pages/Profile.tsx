@@ -8,21 +8,21 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  User,
-  Mail,
+  CircleUserRound,
+  AtSign,
   Camera,
   Save,
   X,
   Loader2,
-  Shield,
-  Crown,
-  CreditCard,
+  ShieldCheck,
+  Gem,
+  Wallet,
   MapPin,
-  Briefcase,
+  BriefcaseBusiness,
   Linkedin,
   Github,
   Globe2,
-  CheckCircle2,
+  CircleCheckBig,
   Circle,
 } from 'lucide-react';
 import { api } from '@/lib/utils';
@@ -61,7 +61,7 @@ const ProfileCompletionBar = memo(({ fields }: { fields: CompletionField[] }) =>
               f.filled ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'
             }`}
           >
-            {f.filled ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
+            {f.filled ? <CircleCheckBig className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
             {f.label}
           </span>
         ))}
@@ -548,7 +548,7 @@ const Profile = () => {
                   {formData.name || user.name}
                 </h1>
                 <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
-                  <Shield size={12} className="sm:w-3.5 sm:h-3.5" />
+                  <ShieldCheck size={12} className="sm:w-3.5 sm:h-3.5" />
                   <span className="capitalize">{formData.role}</span>
                 </p>
               </div>
@@ -585,7 +585,7 @@ const Profile = () => {
                   <div
                     className={`p-1.5 sm:p-2 rounded-full flex-shrink-0 ${subscription?.plan === 'premium' ? 'bg-yellow-400' : 'bg-gray-300 dark:bg-gray-600'}`}
                   >
-                    <Crown
+                    <Gem
                       size={16}
                       className={`sm:w-5 sm:h-5 ${subscription?.plan === 'premium' ? 'text-yellow-900' : 'text-gray-600 dark:text-gray-300'}`}
                     />
@@ -642,7 +642,7 @@ const Profile = () => {
                           </>
                         ) : (
                           <>
-                            <CreditCard size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                            <Wallet size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                             {t('profile.upgradeToPremium')}
                           </>
                         )}
@@ -670,19 +670,20 @@ const Profile = () => {
             <div className="space-y-4 sm:space-y-6">
               <div className="space-y-2">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <User size={14} className="sm:w-4 sm:h-4" /> {t('profile.fullName')}
+                  <CircleUserRound size={14} className="sm:w-4 sm:h-4" /> {t('profile.fullName')}
                 </label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="h-10 sm:h-11 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600"
                   placeholder={t('profile.fullName')}
+                  maxLength={100}
                 />
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <Mail size={14} className="sm:w-4 sm:h-4" /> {t('profile.email')}
+                  <AtSign size={14} className="sm:w-4 sm:h-4" /> {t('profile.email')}
                 </label>
                 <Input
                   value={formData.email}
@@ -696,7 +697,7 @@ const Profile = () => {
 
               <div className="space-y-2">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <Shield size={14} className="sm:w-4 sm:h-4" /> {t('profile.accountRole')}
+                  <ShieldCheck size={14} className="sm:w-4 sm:h-4" /> {t('profile.accountRole')}
                 </label>
                 <div className="h-10 sm:h-11 w-full px-3 flex items-center bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md text-sm sm:text-base text-gray-500 dark:text-gray-400 capitalize">
                   {formData.role}
@@ -705,13 +706,14 @@ const Profile = () => {
 
               <div className="space-y-2">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <Briefcase size={14} className="sm:w-4 sm:h-4" /> Headline
+                  <BriefcaseBusiness size={14} className="sm:w-4 sm:h-4" /> Headline
                 </label>
                 <Input
                   value={formData.headline}
                   onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
                   className="h-10 sm:h-11 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600"
                   placeholder="Ví dụ: Senior Frontend Engineer • React | TypeScript | UX"
+                  maxLength={100}
                 />
               </div>
 
@@ -725,11 +727,12 @@ const Profile = () => {
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className="h-10 sm:h-11 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600"
                     placeholder="Thành phố, Quốc gia"
+                    maxLength={100}
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <Briefcase size={14} className="sm:w-4 sm:h-4" /> Years of Experience
+                    <BriefcaseBusiness size={14} className="sm:w-4 sm:h-4" /> Years of Experience
                   </label>
                   <Input
                     type="number"
@@ -746,25 +749,27 @@ const Profile = () => {
 
               <div className="space-y-2">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <Briefcase size={14} className="sm:w-4 sm:h-4" /> Current Role
+                  <BriefcaseBusiness size={14} className="sm:w-4 sm:h-4" /> Current Role
                 </label>
                 <Input
                   value={formData.currentRole}
                   onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
                   className="h-10 sm:h-11 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600"
                   placeholder="Ví dụ: Frontend Engineer tại Công ty X"
+                  maxLength={100}
                 />
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <User size={14} className="sm:w-4 sm:h-4" /> Bio
+                  <CircleUserRound size={14} className="sm:w-4 sm:h-4" /> Bio
                 </label>
                 <textarea
                   className="w-full min-h-[96px] border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md text-sm p-3"
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   placeholder="Giới thiệu ngắn gọn về bản thân, mục tiêu nghề nghiệp, thế mạnh..."
+                  maxLength={500}
                 />
               </div>
 
@@ -803,6 +808,7 @@ const Profile = () => {
                     onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
                     className="h-9 text-xs sm:text-sm dark:bg-gray-700 dark:border-gray-600"
                     placeholder="https://www.linkedin.com/in/..."
+                    maxLength={200}
                   />
                 </div>
                 <div className="space-y-2">
@@ -814,6 +820,7 @@ const Profile = () => {
                     onChange={(e) => setFormData({ ...formData, github: e.target.value })}
                     className="h-9 text-xs sm:text-sm dark:bg-gray-700 dark:border-gray-600"
                     placeholder="https://github.com/..."
+                    maxLength={200}
                   />
                 </div>
                 <div className="space-y-2">
@@ -825,6 +832,7 @@ const Profile = () => {
                     onChange={(e) => setFormData({ ...formData, portfolio: e.target.value })}
                     className="h-9 text-xs sm:text-sm dark:bg-gray-700 dark:border-gray-600"
                     placeholder="https://your-portfolio.com"
+                    maxLength={200}
                   />
                 </div>
               </div>
