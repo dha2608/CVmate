@@ -115,14 +115,16 @@ export const commentPostSchema = z.object({
 export const createResumeSchema = z
   .object({
     title: z.string().min(1).max(200).trim().optional(),
-    personalInfo: z.object({
-      fullName: z.string().min(1, 'Full name is required').max(100).trim(),
-      email: z.string().email('Invalid email format').trim(),
-      phone: z.string().trim().optional().or(z.literal('')),
-      address: z.string().trim().optional().or(z.literal('')),
-      linkedin: z.string().url('Invalid LinkedIn URL').optional().or(z.literal('')),
-      website: z.string().url('Invalid website URL').optional().or(z.literal('')),
-    }),
+    personalInfo: z
+      .object({
+        fullName: z.string().max(100).trim().optional().or(z.literal('')),
+        email: z.string().max(200).trim().optional().or(z.literal('')),
+        phone: z.string().trim().optional().or(z.literal('')),
+        address: z.string().trim().optional().or(z.literal('')),
+        linkedin: z.string().trim().optional().or(z.literal('')),
+        website: z.string().trim().optional().or(z.literal('')),
+      })
+      .optional(),
     summary: z.string().max(2000).trim().optional().or(z.literal('')),
     experience: z
       .array(
@@ -244,7 +246,7 @@ export const sendMessageSchema = z
   );
 
 export const typingSchema = z.object({
-  receiverId: z.string().min(1, 'Receiver is required'),
+  recipientId: z.string().min(1, 'Recipient is required'),
 });
 
 /**

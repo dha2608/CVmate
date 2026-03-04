@@ -261,11 +261,12 @@ const Builder = () => {
       const canvas = await html2canvas(previewElement, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
@@ -273,13 +274,13 @@ const Builder = () => {
       let heightLeft = imgHeight;
       let position = 0;
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
 
@@ -365,9 +366,14 @@ const Builder = () => {
 
   const handleAiGenerate = useCallback(
     async (payload: { prompt?: string; jobDescription?: string; role?: string; mode?: string }) => {
+      const effectivePrompt = payload.prompt || payload.jobDescription;
+      if (!effectivePrompt?.trim()) {
+        toast.error('Please provide a prompt or job description for AI generation');
+        return;
+      }
       const store = useResumeStore.getState();
       const data = await store.aiGenerateFull({
-        prompt: payload.prompt || payload.jobDescription,
+        prompt: effectivePrompt,
         role: (payload.role as any) || 'fullstack',
         mode: (payload.mode as 'concise' | 'human') || 'human',
       });

@@ -1,12 +1,19 @@
 import { v2 as cloudinary } from 'cloudinary';
 
 // Configured from env: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true,
-});
+const isConfigured =
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET;
+
+if (isConfigured) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true,
+  });
+}
 
 export interface CloudinaryUploadResult {
   secure_url: string;
@@ -28,6 +35,13 @@ export const uploadToCloudinary = (
   folder: string,
   options: { publicId?: string; transformation?: object[] } = {}
 ): Promise<CloudinaryUploadResult> => {
+  if (!isConfigured) {
+    return Promise.reject(
+      new Error(
+        'Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET env vars.'
+      )
+    );
+  }
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {

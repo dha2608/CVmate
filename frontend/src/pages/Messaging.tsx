@@ -88,6 +88,7 @@ const Messaging = () => {
             }
           } catch (error) {
             console.error('Failed to load user:', error);
+            setSearchParams({}, { replace: true }); // Clear param to prevent retry loop
           }
         };
         loadUserAndCreateConv();
