@@ -386,22 +386,15 @@ app.get('/api/health', async (req: Request, res: Response) => {
     checks.aiService = { status: 'warning', message: 'Not configured' };
   }
 
-  // Check storage (uploads directory)
-  try {
-    const fs = await import('fs');
-    const path = await import('path');
-    const { fileURLToPath } = await import('url');
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const uploadsDir = path.join(__dirname, '../uploads');
-
-    if (fs.existsSync(uploadsDir)) {
-      checks.storage = { status: 'ok' };
-    } else {
-      checks.storage = { status: 'warning', message: 'Uploads directory not found' };
-    }
-  } catch (error) {
-    checks.storage = { status: 'error', message: 'Cannot check storage' };
+  // Check storage (Cloudinary)
+  if (
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+  ) {
+    checks.storage = { status: 'ok', message: 'Cloudinary configured' };
+  } else {
+    checks.storage = { status: 'warning', message: 'Cloudinary credentials not configured' };
   }
 
   const health = {
