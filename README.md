@@ -1,281 +1,127 @@
 # CV Mate - AI Career Ecosystem
 
-CV Mate is an "All-in-one" career support platform powered by AI, designed to help users create ATS-friendly CVs in under 5 minutes and practice interviews with AI personas.
-
-## ✨ Features
-
-### 🔐 Authentication & Onboarding
-- **Email/Password** authentication
-- **Google OAuth 2.0** integration
-- **Onboarding flow** - Set your career goal (New Job, Internship, Career Switch)
-
-### 📝 CV Builder (Core Feature)
-- **ATS-friendly templates** - Black & white, minimal columns
-- **AI Enhance** - Transform raw bullet points into professional language
-- **ATS Checker** - Compare CV with Job Description, get keyword suggestions
-- **PDF Export** - Download selectable PDF with jsPDF
-- **Template Selector** - Multiple professional templates
-- **Section Reorder** - Drag & drop sections
-- **AI Suggestions** - Smart content suggestions
-
-### 🤖 AI Interview Simulator (Killer Feature)
-- **3 AI Personas**:
-  - Friendly HR - Focus on culture fit and soft skills
-  - Strict Manager - Technical challenges and problem-solving
-  - English Native - Language proficiency test
-- **Speech-to-Text** - Voice input using Web Speech API
-- **Real-time Feedback** - Confidence score, accuracy, improvement suggestions
-
-### 👥 Community Hub
-- **Newsfeed** - Share posts and get feedback
-- **CV Sharing** - Share CV (with sensitive info hidden) for community feedback
-- **Interactions** - Like and comment on posts
-
-### 📰 Career Blog
-- **CMS Admin** - Create and manage articles
-- **AI Summary** - Auto-generate article summaries
-
-### 💼 Job Search
-- **Job Listings** - Browse and search jobs
-- **AI Job Matcher** - Match CV with job descriptions
-- **Bookmarks** - Save favorite jobs
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React 18 + Vite, TypeScript, Tailwind CSS, Shadcn/UI, Zustand, Framer Motion
-- **Backend**: Node.js + Express.js, MongoDB (Mongoose)
-- **AI**: Hugging Face Inference API (Llama 3 / open-source LLMs)
-- **Authentication**: JWT + Google OAuth 2.0 (Passport.js)
-- **PDF Export**: jsPDF + html2canvas
-- **Speech Recognition**: Web Speech API (Browser native)
-- **Deployment**: Vercel (Frontend) + Render (Backend)
-- **State Management**: Zustand with persistence
-- **UI Components**: Shadcn/UI + Custom components with Glassmorphism
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+ installed
-- MongoDB instance (local or MongoDB Atlas)
-- Hugging Face API Token (HF_API_KEY) cho các tính năng AI
-- Google OAuth 2.0 credentials (for Google login - optional)
-
-### Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd CVmate
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables**
-
-#### Backend (`.env` in project root or `api/`)
-
-```env
-# Server
-PORT=5001
-NODE_ENV=development
-
-# Database
-MONGODB_URI=mongodb://localhost:27017/cvmate
-# MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/cvmate
-
-# JWT Secret (required - at least 32 characters)
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-
-# Session Secret (for OAuth)
-SESSION_SECRET=your-session-secret-key-change-this
-
-# AI Provider (Hugging Face Inference API)
-HF_API_KEY=your-huggingface-api-token-here
-# Chat / text model cho Interview, Resume AI, Article summary
-HF_CHAT_MODEL=meta-llama/Meta-Llama-3-8B-Instruct
-# Speech-to-text model (tuỳ chọn, nếu dùng server-side)
-HF_STT_MODEL=openai/whisper-small
-
-# Google OAuth 2.0 (optional)
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_CALLBACK_URL=http://localhost:5001/api/auth/google/callback
-# Production: https://yourdomain.com/api/auth/google/callback
-
-# Frontend URL (CORS + OAuth redirect)
-FRONTEND_URL=http://localhost:5173
-# Production: https://yourdomain.com
-
-# Rate Limiting (optional; defaults exist)
-AI_RATE_LIMIT=100
-FREE_USER_DAILY_LIMIT=100
-AUTH_RATE_LIMIT=5
-```
-
-#### Frontend (`.env` in project root)
-
-```env
-VITE_API_URL=http://localhost:5001/api
-# Production: https://api.yourdomain.com/api
-```
-
-#### Notes
-
-- AI features require `HF_API_KEY` với đủ quota / credits trên Hugging Face.
-- Google OAuth requires HTTPS in production.
-
-### Running the App
-
-**Start both frontend and backend:**
-```bash
-npm run dev
-```
-
-**Or run separately:**
-```bash
-# Frontend only
-npm run client:dev
-
-# Backend only
-npm run server:dev
-```
-
-- **Frontend**: http://localhost:5173
-- **Backend**: http://localhost:5001
-
-### Verify Setup
-
-Check environment variables:
-```bash
-node api/scripts/check-env.js
-```
-
-## 🚀 Deployment
-
-### Deploy on Vercel
-
-#### Files to check
-
-- `vercel.json` - routing configuration
-- `package.json` - scripts and dependencies
-- `api/index.ts` - serverless entry point
-
-#### Vercel Dashboard settings
-
-- **Framework Preset**: Vite
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist`
-- **Install Command**: `npm install`
-
-#### Environment Variables
-
-**Required**
-```
-MONGO_URI=mongodb+srv://...
-JWT_SECRET=your-super-secret-jwt-key-min-32-chars
-```
-
-**Recommended / Optional**
-```
-HF_API_KEY=your-huggingface-api-token
-HF_CHAT_MODEL=meta-llama/Meta-Llama-3-8B-Instruct
-FRONTEND_URL=https://your-domain.vercel.app
-SESSION_SECRET=your-session-secret
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-GOOGLE_CALLBACK_URL=https://your-domain.vercel.app/api/auth/google/callback
-STRIPE_SECRET_KEY=sk_...
-NEWS_API_KEY=...
-```
-
-### Other platforms
-
-- **Railway**: Deploy from GitHub, add environment variables.
-- **Render**: Web Service, build `npm run build`, start with appropriate server command.
-- **Heroku**: Connect repo, deploy branch, set Config Vars.
-
-### Post-deploy checks
-
-1. Health: `https://your-domain.com/api/health`
-2. Frontend: `https://your-domain.com`
-3. API: `https://your-domain.com/api/*`
-
-## 💳 Stripe Sandbox (Test Mode) Quick Guide
-
-Khi test Stripe ở môi trường sandbox/test mode:
-
-1. Đảm bảo backend có biến môi trường:
-   - `STRIPE_SECRET_KEY=sk_test_...`
-   - `STRIPE_WEBHOOK_SECRET=whsec_...` (nếu dùng webhook)
-2. Frontend/flow nâng cấp phải điều hướng tới checkout session do API trả về.
-3. Dùng thẻ test Stripe phổ biến:
-   - Card number: `4242 4242 4242 4242`
-   - Expiry: bất kỳ ngày tương lai (ví dụ `12/34`)
-   - CVC: bất kỳ 3 số (ví dụ `123`)
-   - ZIP/Postal: bất kỳ (ví dụ `10000`)
-4. Test thất bại thanh toán (tuỳ chọn):
-   - `4000 0000 0000 0002` (generic decline)
-
-Lưu ý:
-- Không dùng thẻ thật trong test mode.
-- Sau khi thanh toán test thành công, kiểm tra redirect về `payment/success` và trạng thái subscription trong profile.
-
-## 📁 Project Structure
-
-```
-CVmate/
-├── api/                    # Backend (Node.js + Express)
-│   ├── config/            # Database, Passport config
-│   ├── controllers/       # Business logic
-│   ├── models/            # MongoDB schemas
-│   ├── routes/            # API endpoints
-│   ├── middleware/        # Auth, Rate limiting
-│   ├── services/          # External services
-│   ├── utils/             # Utilities (logger, errors, validators)
-│   └── scripts/           # Utility scripts
-├── src/                   # Frontend (React + Vite)
-│   ├── components/        # Reusable components
-│   ├── pages/             # Page components
-│   ├── store/             # Zustand state management
-│   ├── hooks/             # Custom React hooks
-│   ├── lib/               # Utilities & API helpers
-│   └── styles/            # CSS files
-└── public/                # Static assets
-```
-
-## 🔒 Security & Rate Limiting
-
-- **Free Users**: 10 requests/day for ATS Checker & Interview sessions
-- **AI Endpoints**: 20 requests/hour for AI Enhance & Interview chat
-- **Auth Endpoints**: 5 requests/15 minutes for login/register
-
-## 🧪 Development
-
-### Available Scripts
-
-```bash
-# Development
-npm run dev              # Run both frontend and backend
-npm run client:dev       # Frontend only
-npm run server:dev       # Backend only
-
-# Build
-npm run build            # Build frontend for production
-
-# Utilities
-node api/scripts/check-env.js    # Check environment variables
-node api/scripts/kill-port.js    # Kill process on port 5001
-```
-
-## 📝 License
-
-MIT
+CV Mate is an all-in-one AI-powered career platform designed to help users create ATS-friendly CVs in under 5 minutes and practice interviews through intelligent AI personas.
 
 ---
 
-**Last Updated**: 2026-02-03
+## Features
+
+### Authentication & Onboarding
+
+- Email / Password authentication  
+- Google OAuth 2.0 integration  
+- Guided onboarding flow to define career goals:
+  - New Job  
+  - Internship  
+  - Career Switch  
+
+---
+
+### CV Builder (Core Feature)
+
+- ATS-friendly templates (minimal, recruiter-optimized layouts)  
+- AI Enhance: Transform raw bullet points into professional, impact-driven language  
+- ATS Checker: Compare CV with Job Description and receive keyword optimization suggestions  
+- PDF Export: Download selectable PDF using jsPDF  
+- Template Selector: Multiple professional layouts  
+- Section Reordering: Drag & drop CV sections  
+- AI Suggestions: Smart, context-aware content recommendations  
+
+---
+
+### AI Interview Simulator (Flagship Feature)
+
+**Available AI Personas**
+
+- Friendly HR — Focus on culture fit and soft skills  
+- Strict Manager — Technical challenges and problem-solving  
+- English Native — Language proficiency evaluation  
+
+**Capabilities**
+
+- Speech-to-Text using Web Speech API  
+- Real-time feedback and scoring  
+- Confidence analysis  
+- Accuracy evaluation  
+- Personalized improvement suggestions  
+
+---
+
+### Community Hub
+
+- Newsfeed for sharing career-related posts  
+- CV sharing with sensitive information hidden  
+- Like and comment interactions for peer feedback  
+
+---
+
+### Career Blog
+
+- Admin CMS for article creation and management  
+- AI-powered article summary generation  
+
+---
+
+### Job Search
+
+- Browse and search job listings  
+- AI Job Matcher: Match CV with job descriptions  
+- Bookmark system for saving preferred jobs  
+
+---
+
+## Tech Stack
+
+**Frontend**
+
+- React 18 + Vite  
+- TypeScript  
+- Tailwind CSS  
+- Shadcn/UI  
+- Zustand  
+- Framer Motion  
+
+**Backend**
+
+- Node.js  
+- Express.js  
+- MongoDB (Mongoose)  
+
+**AI**
+
+- Hugging Face Inference API (Llama 3 / open-source LLMs)  
+
+**Authentication**
+
+- JWT  
+- Google OAuth 2.0 (Passport.js)  
+
+**Other Integrations**
+
+- jsPDF + html2canvas (PDF export)  
+- Web Speech API (browser-native speech recognition)  
+- Vercel (Frontend deployment)  
+- Render (Backend deployment)  
+- Zustand persistence for state management  
+- Custom UI components with glassmorphism design  
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+  
+- MongoDB instance (local or MongoDB Atlas)  
+- Hugging Face API Token (`HF_API_KEY`)  
+- Google OAuth 2.0 credentials (optional)  
+
+---
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd CVmate
